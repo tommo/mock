@@ -11,23 +11,23 @@ local function fixpath(p)
 	return p
 end
 
-
-function splitPath( path )
+local function splitPath( path )
 	path = fixpath( path )
 	return string.match( path, "(.-)[\\/]-([^\\/]-%.?([^%.\\/]*))$" )
 end
 
-function stripExt(p)
+local function stripExt(p)
 	return string.gsub( p, '%..*$', '' )
 end
 
-function stripDir(p)
+local function stripDir(p)
 	p=fixpath(p)
 	return string.match(p, "[%w_.%%]+$")
 end
 
 --asset index library
 local AssetLibrary = {}
+local AssetSearchCache = {}
 
 --asset loaders
 local AssetLoaders = {}
@@ -87,7 +87,8 @@ function loadAssetLibrary( indexPath )
 		return
 	end
 	
-	AssetLibrary={}
+	AssetLibrary = {}
+	AssetSearchCache = {}
 	for path, value in pairs( data ) do
 		--we don't need all the information from python
 		registerAssetNode( path, value )		
@@ -191,9 +192,36 @@ function preloadIntoAssetNode( path, asset )
 end
 
 --------------------------------------------------------------------
-function findAsset( path )
-	error('todo')	
+
+
+function findAssetNode( path, assetType )
+	local tag = path..'@'..( assetType or '' )	
+	local result = AssetSearchCache[ tag ]
+	if result == nil then
+		for k, node in pairs( AssetLibrary ) do
+			if not assetType or node.type == assetType then
+				if k == path then
+					result = node
+					break
+				elseif k:endWith( path ) then
+					result = node
+					break
+				elseif stripExt( k ):endWith( path ) then
+					result = node
+					break
+				end
+			end
+		end
+		AssetSearchCache[ tag ] = result or false
+	end
+	return result or nil
+end	
+
+function findAsset( path, assetType )
+	local node = findAssetNode( path, assetType )
+	return node and node.path or nil
 end
+
 
 --------------------------------------------------------------------
 --load asset of node
