@@ -1,0 +1,99 @@
+module 'mock'
+
+
+local sortModeValue = {
+	iso =                	MOAILayer.SORT_ISO;
+	priority_ascending = 	MOAILayer.SORT_PRIORITY_ASCENDING;
+	priority_descending =	MOAILayer.SORT_PRIORITY_DESCENDING;
+	x_ascending =        	MOAILayer.SORT_X_ASCENDING;
+	x_descending =       	MOAILayer.SORT_X_DESCENDING;
+	y_ascending =        	MOAILayer.SORT_Y_ASCENDING;
+	y_descending =       	MOAILayer.SORT_Y_DESCENDING;
+	z_ascending =        	MOAILayer.SORT_Z_ASCENDING;
+	z_descending =       	MOAILayer.SORT_Z_DESCENDING;
+	vector_ascending =   	MOAILayer.SORT_VECTOR_ASCENDING;
+	vector_descending =  	MOAILayer.SORT_VECTOR_DESCENDING;
+}
+
+CLASS: Layer ()
+	:MODEL {
+		Field 'name'      :string()   :getset('Name');
+		Field 'visible'   :boolean()  :isset('Visible') :noedit();
+		Field 'locked'    :boolean()  :noedit(); --editor only property
+		Field 'sortMode'  :enum( EnumLayerSortMode ) :getset('SortMode');
+		Field 'priority'  :int() :noedit();
+	}
+
+function Layer:__init( name )
+	self.name     = name or ''
+	self.visible  = true
+	self.sortMode = 'priority_ascending'
+	self.default  = false
+	self.moaiLayers = setmetatable( {}, { __mode='k' } )
+	self.locked   = false
+end
+
+function Layer:setName( name )
+	self.name = name
+	emitSignal( 'layer.update', self, 'name' )
+end
+
+function Layer:getName()
+	return self.name
+end
+
+function Layer:setVisible( visible )
+	emitSignal( 'layer.update', self, 'visible' )
+	self.visible = visible
+	for l in pairs( self.moaiLayers ) do
+		l:setVisible( visible )
+	end
+end
+
+function Layer:isVisible()
+	return self.visible
+end
+
+function Layer:setLocked( locked )
+	self.locked = locked
+end
+
+function Layer:isLocked()
+	return self.locked
+end
+
+function Layer:getSortMode()
+	return self.sortMode
+end
+
+function Layer:setSortMode( mode )
+	self.sortMode = mode
+	emitSignal( 'layer.update', self, 'sort' )
+end
+
+function Layer:makeMoaiLayer( partition )
+	local layer     = MOAILayer.new()
+	local partition = partition or MOAIPartition.new()
+
+	layer:setPartition( partition )
+	layer.name     = self.name
+
+	layer.priority = self.priority or 0
+
+	local moaiSortMode	
+	if self.sortMode then
+		moaiSortMode = sortModeValue[ self.sortMode ]
+	else
+		moaiSortMode = MOAILayer.SORT_NONE
+	end
+
+	layer:setSortMode( moaiSortMode )
+	layer.sortMode = moaiSortMode
+	layer.source   = self
+
+	layer:setVisible( self.visible )
+
+	self.moaiLayers[ layer ] = true
+	return layer
+end
+
