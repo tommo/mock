@@ -406,11 +406,11 @@ end
 ---------Visibility Control
 --------------------------------------------------------------------
 function Entity:isVisible()
-	return self._prop:getAttr( MOAIProp.ACTUAL_VISIBLE )
+	return self._prop:getAttr( MOAIProp.ATTR_VISIBLE )
 end
 
 function Entity:isLocalVisible()
-	local vis = self._prop:getAttr( MOAIProp.ATTR_VISIBLE )
+	local vis = self._prop:getAttr( MOAIProp.ATTR_LOCAL_VISIBLE )
 	return vis == 1
 end
 

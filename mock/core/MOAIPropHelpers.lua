@@ -54,11 +54,11 @@ local ATTR_TRANSLATE    = MOAIProp. ATTR_TRANSLATE
 local INHERIT_COLOR     = MOAIProp. INHERIT_COLOR
 local COLOR_TRAIT       = MOAIProp. COLOR_TRAIT 
 
-local ATTR_ROTATE_QUAT  = MOAIProp.ATTR_ROTATE_QUAT
+local ATTR_ROTATE_QUAT  = MOAIProp. ATTR_ROTATE_QUAT
 
+local ATTR_LOCAL_VISIBLE= MOAIProp. ATTR_LOCAL_VISIBLE
 local ATTR_VISIBLE      = MOAIProp. ATTR_VISIBLE
 local INHERIT_VISIBLE   = MOAIProp. INHERIT_VISIBLE
-local ACTUAL_VISIBLE    = MOAIProp. ACTUAL_VISIBLE
 
 local ATTR_R_COL        = MOAIColor. ATTR_R_COL
 local ATTR_G_COL        = MOAIColor. ATTR_G_COL
@@ -97,7 +97,7 @@ end
 
 --TODO: convert to support offical MOAI visiblity control
 function inheritVisible( p1, p2 ) 
-	return p1:setAttrLink ( INHERIT_VISIBLE, p2, ACTUAL_VISIBLE )
+	return p1:setAttrLink ( INHERIT_VISIBLE, p2, ATTR_VISIBLE )
 end
 
 function inheritTransformColor( p1, p2 )
