@@ -53,7 +53,6 @@ require 'mock.tools.LogHelper'
 
 require 'mock.core.BehaviorTree'
 require 'mock.core.Actor'
-require 'mock.core.FSM'
 
 require 'mock.core.MOAIActionHelpers'
 require 'mock.core.MOAIPropHelpers'
