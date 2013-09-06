@@ -247,7 +247,7 @@ function Actor:unsubscribeAll()
 	self._subscribed = nil
 end
 
-function Actor:broadcast( msg, data )
+function Actor:broadcast( msg, data, source )
 	local subs = self._subscribers
 	if not subs then return end
 	for obj, transform in pairs( subs ) do
@@ -255,14 +255,14 @@ function Actor:broadcast( msg, data )
 			local m1 = transform[msg]			
 			local tt=type(m1)
 			if tt == 'function' then
-				m1( obj, msg, data, self )
+				m1( obj, msg, data, source or self )
 			elseif tt == 'string' then
-				obj:tell( m1, data, self )
+				obj:tell( m1, data, source or self )
 			elseif tt ~= false then
-				obj:tell( msg, data, self )
+				obj:tell( msg, data, source or self )
 			end
 		else
-			obj:tell( msg, data, self )
+			obj:tell( msg, data, source or self )
 		end
 	end
 end

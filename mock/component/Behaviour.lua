@@ -63,4 +63,6 @@ function Behaviour:getScene()
 end
 
 --------------------------------------------------------------------
-
+function Behaviour:broadcast( ... )
+	return self._entity:broadcast( ... )
+end

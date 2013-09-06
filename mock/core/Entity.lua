@@ -719,9 +719,7 @@ end
 
 --------------------------------------------------------------------
 registerEntity( 'Entity', Entity )
-
 --------------------------------------------------------------------
-
 
 local function _cloneEntity( src, cloneComponents, cloneChildren )
 	local dst = clone( src )
