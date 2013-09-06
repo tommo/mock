@@ -212,16 +212,16 @@ end
 
 ---- Subscribe & Broadcast
 function Actor:subscribe(target, msgTransform)
-	local subs=target._subscribers
+	local subs = target._subscribers
 	if not subs then
-		subs={}
+		subs = {}
 		target._subscribers=subs
 	end
 	subs[self]=msgTransform or false
 	local subed=self._subscribed
 	if not subed then
-		subed={}
-		self._subscribed=subed
+		subed = {}
+		self._subscribed = subed
 	end
 	subed[target]=true
 end
@@ -237,28 +237,28 @@ function Actor:unsubscribe(target)
 end
 
 function Actor:unsubscribeAll()
-	local subed=self._subscribed
+	local subed = self._subscribed
 	if subed then
 		for t in pairs(subed) do
-			local subs=t._subscribers
-			if subs then t[self]=nil end
+			local subs = t._subscribers
+			if subs then t[self] = nil end
 		end
 	end
-	self._subscribed=nil
+	self._subscribed = nil
 end
 
-function Actor:broadcast(msg,data)
-	local subs=self._subscribers
+function Actor:broadcast( msg, data )
+	local subs = self._subscribers
 	if not subs then return end
-	for obj,transform in pairs(subs) do
+	for obj, transform in pairs( subs ) do
 		if transform then
-			local m1=transform[msg]			
+			local m1 = transform[msg]			
 			local tt=type(m1)
-			if tt=='function' then
-				m1(obj,msg,data,self)
-			elseif tt=='string' then
+			if tt == 'function' then
+				m1( obj, msg, data, self )
+			elseif tt == 'string' then
 				obj:tell( m1, data, self )
-			elseif tt~=false then
+			elseif tt ~= false then
 				obj:tell( msg, data, self )
 			end
 		else
@@ -323,10 +323,10 @@ function Actor:getState()
 end
 
 
-function Actor:inState(s1,...)
+function Actor:inState(...)
 	for i = 1, select( '#', ... ) do
 		local s = select( i , ... )
-		if s == s1 then return s end
+		if s == self.state then return s end
 	end
 	return false
 end
@@ -469,7 +469,7 @@ function Actor:wait(a)
 		return self:waitActionBoth(a)
 	elseif type(a) == 'string' then
 		return self:waitSignal(a)
-	else
+	elseif a then
 		return block(a)
 	end
 end

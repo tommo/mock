@@ -8,3 +8,5 @@ require 'mock.asset.DefaultFont'
 require 'mock.asset.Font'
 require 'mock.asset.AuroraSprite'
 require 'mock.asset.Particle'
+
+require 'mock.asset.FSMScheme'

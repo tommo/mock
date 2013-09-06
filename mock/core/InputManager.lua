@@ -51,7 +51,6 @@ function TouchState:__init( id )
 end
 
 function TouchState:getDistance()
-	print( self.x, self.y, self.x0, self.y0 )
 	return distance( self.x, self.y, self.x0, self.y0 )
 end
 

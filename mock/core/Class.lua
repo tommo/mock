@@ -200,7 +200,7 @@ function newclass( b, superclass, name  )
 
 	buildInstanceBuilder(b)
 	if superclass.__initclass then
-		superclass.__initclass( b )
+		superclass:__initclass( b )
 	end
 	return b
 end

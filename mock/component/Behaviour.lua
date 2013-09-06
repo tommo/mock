@@ -12,12 +12,14 @@ function Behaviour:onDetach( b )
 	self:removeInputListener()
 end
 
-function Behaviour:onStart()
+function Behaviour:onStart( entity )	
+	self:subscribe( entity )
 	if self.onThread then
 		self:addCoroutine( 'onThread' )
 	end
 end
 
+--------------------------------------------------------------------
 function Behaviour:getEntity()
 	return self._entity
 end
@@ -34,6 +36,7 @@ function Behaviour:getParent()
 	return self._entity.parent
 end
 
+--------------------------------------------------------------------
 function Behaviour:enableInputListener( option )
 	enableInputListener( self, option )
 end
@@ -42,6 +45,7 @@ function Behaviour:removeInputListener()
 	removeInputListener( self )
 end
 
+--------------------------------------------------------------------
 function Behaviour:getComponent( comType )
 	return self._entity:getComponent( comType )
 end
@@ -57,4 +61,6 @@ end
 function Behaviour:getScene()
 	return self._entity.scene
 end
+
+--------------------------------------------------------------------
 

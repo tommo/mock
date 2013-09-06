@@ -172,20 +172,20 @@ local function applyFSMTrait( targetClass, FSMData )
 		--TODO: implement this
 	end
 
-	--use for make state-specific variable table
-	function targetClass:getEnv( name ) 
-		local envtable = self.envtable
-		if not envtable then
-			envtable = {}
-			self.envtable = envtable
-		end
-		local t = envtable[ name ]
-		if not t then
-			t={}
-			envtable[ name ]=t
-		end
-		return t
-	end
+	-- --use for make state-specific variable table
+	-- function targetClass:getEnv( name ) 
+	-- 	local envtable = self.envtable
+	-- 	if not envtable then
+	-- 		envtable = {}
+	-- 		self.envtable = envtable
+	-- 	end
+	-- 	local t = envtable[ name ]
+	-- 	if not t then
+	-- 		t={}
+	-- 		envtable[ name ]=t
+	-- 	end
+	-- 	return t
+	-- end
 
 	--set entry
 	targetClass.currentStateFunc = FSMData['start'].func
