@@ -56,7 +56,12 @@ function FSMController:__initclass( subclass )
 	subclass.fsm = newStateMethodCollector( subclass )
 end
 
-function FSMController:update( dt )
+function FSMController:onStart( entity )
+	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
+	Behaviour.onStart( self, entity )
+end
+
+function FSMController:updateFSM( dt )
 	local func = self.currentStateFunc
 	if func then 		
 		return func( self, dt, 0 )
@@ -72,7 +77,7 @@ function FSMController:setScheme( schemePath )
 		self:validStateMethods()
 	else
 		self.currentStateFunc = nil
-	end
+	end	
 end
 
 function FSMController:validStateMethods()
@@ -83,10 +88,10 @@ function FSMController:getScheme()
 	return self.schemePath
 end
 
-function FSMController:onThread()
+function FSMController:onThreadFSMUpdate()
 	local dt = 0
 	while true do
-		self:update( dt )
+		self:updateFSM( dt )
 		dt = coroutine.yield()
 	end
 end

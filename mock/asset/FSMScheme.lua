@@ -33,7 +33,6 @@ local function buildFSMScheme( FSMData )
 			while true do
 				transMsg, transMsgArg = self:pollMsg()
 				if not transMsg then break end
-				print( transMsg )
 				nextState = jump and jump[ transMsg ]
 				if nextState then break end
 			end
