@@ -150,6 +150,10 @@ function Game:init( option, fromEditor )
 		layer.priority = 1000000
 	end
 
+	----- Global Objects
+	self.globalObjectLibrary = GlobalObjectLibrary()
+	self.globalObjectLibrary:load( option['global_objects'] )
+
 	--load setting data
 	self.settingFileName = option['setting_file'] or 'setting'
 	self.userDataPath    = MOAIEnvironment.documentDirectory or '.'
@@ -233,12 +237,13 @@ function Game:saveConfig( path )
 	end
 
 	local data = {
-		name          = self.name,
-		version       = self.version,
-		title         = self.title,
-		asset_library = self.assetLibraryIndex,
-		graphics      = self.graphicsOption,
-		layers        = layerConfigs,
+		name           = self.name,
+		version        = self.version,
+		title          = self.title,
+		asset_library  = self.assetLibraryIndex,
+		graphics       = self.graphicsOption,
+		layers         = layerConfigs,
+		global_objects = self.globalObjectLibrary:save()
 	}
 
 	local output = MOAIJsonParser.encode( data )
@@ -458,6 +463,18 @@ end
 function Game:setThrottle(v)
 	self.throttle=v
 	return self.actionRoot:throttle(v*1)
+end
+--------------------------------------------------------------------
+---------Global object( config? )
+--------------------------------------------------------------------
+
+function Game:getGlobalObjectLibrary()
+	return self.globalObjectLibrary
+end
+
+
+function Game:getGlobalObject( path )
+	return self.globalObjectLibrary:get( path )
 end
 
 --------------------------------------------------------------------
