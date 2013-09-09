@@ -103,6 +103,10 @@ function AssetNode:getName()
 	return stripDir( self.path )
 end
 
+function AssetNode:getBaseName()
+	return stripExt( self:getName() )
+end
+
 function AssetNode:getType()
 	return self.type
 end
@@ -118,7 +122,9 @@ function AssetNode:getChildPath( name )
 end
 
 function AssetNode:getObjectFile( name )
-	return self.objectFiles[ name ]
+	local objectFiles = self.objectFiles
+	if not objectFiles then return false end
+	return objectFiles[ name ]
 end
 
 function AssetNode:getFilePath( )
@@ -126,7 +132,9 @@ function AssetNode:getFilePath( )
 end
 
 function AssetNode:getAbsObjectFile( name )
-	local path = self.objectFiles[ name ]
+	local objectFiles = self.objectFiles
+	if not objectFiles then return false end
+	local path = objectFiles[ name ]
 	if path then
 		return absProjectPath( path )
 	else
@@ -220,6 +228,14 @@ end
 function findAsset( path, assetType )
 	local node = findAssetNode( path, assetType )
 	return node and node.path or nil
+end
+
+function findAndLoadAsset( path, assetType )
+	local node = findAssetNode( path, assetType )
+	if node then
+		return loadAsset( node.path )
+	end
+	return nil
 end
 
 

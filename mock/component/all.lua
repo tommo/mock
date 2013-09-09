@@ -27,6 +27,7 @@ require 'mock.component.Box2DBody'
 
 ---- Extended
 require 'mock.component.AuroraSprite'
+require 'mock.component.SpineSprite'
 
 ---- AI
 require 'mock.component.FSMController'

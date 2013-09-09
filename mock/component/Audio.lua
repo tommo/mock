@@ -31,7 +31,8 @@ registerComponent( 'SoundListener', SoundListener )
 --------------------------------------------------------------------
 CLASS: SoundSource ()
 	:MODEL{
-
+		Field 'defaultClip' :asset('fmod_event')  :getset('DefaultClip');
+		Field 'autoPlay'    :boolean();
 	}
 
 function SoundSource:__init()
@@ -49,10 +50,25 @@ function SoundSource:onDetach( entity )
 	self.eventInstances = nil
 end
 
+function SoundSource:setDefaultClip( path )
+	self.defaultClipPath = path
+end
+
+function SoundSource:getDefaultClip()
+	return self.defaultClipPath
+end
+
+function SoundSource:onStart()
+	if self.autoPlay and self.defaultClipPath then
+		
+	end
+end
+
 function SoundSource:setEventPrefix( prefix )
 	self.eventNamePrefix = prefix or false
 end
 
+--------------------------------------------------------------------
 local inheritLoc = inheritLoc
 function SoundSource:_addInstance( evt, follow )
 	self:clearInstances()
@@ -64,58 +80,74 @@ function SoundSource:_addInstance( evt, follow )
 	return evt
 end
 
-function SoundSource:_playEvent3DAt( eventName, x,y,z, follow, looped )
-	local prefix = self.eventNamePrefix
-	if prefix then eventName = prefix..eventName end
+
+local function _affirmFmodEvent( event )
+	if not event then return nil end
+	if type( event ) == 'string' then
+		event, node = loadAsset( event) 
+		if node and node.type == 'fmod_event' then return event:getFullName() end
+	else
+		return event:getFullName()
+	end
+	_error( 'unknown sound event type:', event )
+	return nil
+end
+
+function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )
+	local eventId = _affirmFmodEvent( event )
+	if not eventId then return false end
+
 	local evt	
-	evt = MOAIFmodEventMgr.playEvent3D( eventName, x,y,z )
+	evt = MOAIFmodEventMgr.playEvent3D( eventId, x,y,z )
 	if evt then
 		return self:_addInstance( evt, follow~=false )
 	else
-		_error( 'sound event not found:', eventName )
+		_error( 'sound event not found:', eventId )
 	end
 end
 
-function SoundSource:playEvent3DAt( eventName, x,y,z, follow )
-	return self:_playEvent3DAt( eventName, x,y,z, follow, nil )
-end
-
-function SoundSource:playEvent3D( eventName, follow )
-	local x,y,z
-	x,y,z = self._entity:getWorldLoc()
-	return self:playEvent3DAt( eventName, x,y,z, follow )
-end
-
-function SoundSource:loopEvent3DAt( eventName, x,y,z, follow )
-	return self:_playEvent3DAt( eventName, x,y,z, follow, true )
-end
-
-function SoundSource:loopEvent3D( eventName, follow )
-	local x,y,z
-	x,y,z = self._entity:getWorldLoc()
-	return self:loopEvent3DAt( eventName, x,y,z, follow )
-end
-
---------------------------------------------------------------------
-function SoundSource:_playEvent2D( eventName, looped )
-	local prefix = self.eventNamePrefix
-	if prefix then eventName = prefix..eventName end
-	local evt = MOAIFmodEventMgr.playEvent2D( eventName, looped )
+function SoundSource:_playEvent2D( event, looped )
+	local eventId = _affirmFmodEvent( event )
+	if not eventId then return false end
+	
+	local evt = MOAIFmodEventMgr.playEvent2D( eventId, looped )
 	if evt then
 		return self:_addInstance( evt, false )
 	else
-		_error( 'sound event not found:', eventName )
+		_error( 'sound event not found:', eventId )
 	end
 end
 
-function SoundSource:playEvent2D( eventName )
-	return self:_playEvent2D( eventName, nil )
+--------------------------------------------------------------------
+function SoundSource:playEvent3DAt( event, x,y,z, follow )
+	return self:_playEvent3DAt( event, x,y,z, follow, nil )
 end
 
-function SoundSource:loopEvent2D( eventName )
-	return self:_playEvent2D( eventName, true )
+function SoundSource:playEvent3D( event, follow )
+	local x,y,z
+	x,y,z = self._entity:getWorldLoc()
+	return self:playEvent3DAt( event, x,y,z, follow )
 end
 
+function SoundSource:playEvent2D( event )
+	return self:_playEvent2D( event, nil )
+end
+
+function SoundSource:loopEvent3DAt( event, x,y,z, follow )
+	return self:_playEvent3DAt( event, x,y,z, follow, true )
+end
+
+function SoundSource:loopEvent3D( event, follow )
+	local x,y,z
+	x,y,z = self._entity:getWorldLoc()
+	return self:loopEvent3DAt( event, x,y,z, follow )
+end
+
+function SoundSource:loopEvent2D( event )
+	return self:_playEvent2D( event, true )
+end
+
+--------------------------------------------------------------------
 function SoundSource:isBusy()
 	self:clearInstances()
 	return next(self.eventInstances) ~= nil
@@ -133,3 +165,4 @@ end
 
 
 registerComponent( 'SoundSource', SoundSource )
+--------------------------------------------------------------------

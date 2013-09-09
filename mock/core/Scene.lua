@@ -134,7 +134,9 @@ function Scene:threadMain( dt )
 		local pendingDestroy = self.pendingDestroy
 		self.pendingDestroy = {}
 		for entity in pairs( pendingDestroy ) do
-			entity:destroyNow()
+			if entity.scene then
+				entity:destroyNow()
+			end
 		end
 		coroutine.yield()
 
