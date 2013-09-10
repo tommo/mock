@@ -10,6 +10,7 @@ CLASS: Deck2D ()
 
 function Deck2D:__init()
 	self._deck = self:createMoaiDeck()
+	self._deck.source = self
 	self.name  = 'deck'
 	self.w = 0
 	self.h = 0
@@ -24,6 +25,16 @@ function Deck2D:setTexture( path )
 	self.texturePath = path
 	self.texture = tex
 	self:update()
+end
+
+function Deck2D:getSize()
+	return self.w , self.h
+end
+
+function Deck2D:getRect()
+	local ox,oy = self:getOrigin()
+	local w,h   = self:setSize()
+	return ox - w/2, oy - h/2, ox + w/2, oy + h/2 
 end
 
 function Deck2D:getTexture()
@@ -98,6 +109,7 @@ function Quad2D:update()
 	local w, h = self.w, self.h
 	deck:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 end
+
 
 
 --------------------------------------------------------------------

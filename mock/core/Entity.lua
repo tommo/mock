@@ -226,7 +226,10 @@ end
 
 function Entity:getComponentByName( name )
 	for com, comType in pairs( self.components ) do
-		if comType.__name == name then return com end		
+		while comType do
+			if comType.__name == name then return com end		
+			comType = comType.__super
+		end
 	end
 end
 

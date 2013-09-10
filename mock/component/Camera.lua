@@ -563,5 +563,10 @@ end
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
-
 registerComponent( 'Camera', Camera)
+
+registerEntity( 'Camera', 
+	function()
+		return SingleEntity( Camera() )
+	end
+	)
