@@ -74,5 +74,9 @@ function SpineSprite:play( clipName, mode )
 	self.animState = state 
 end
 
+function SpineSprite:stop()
+	self.animState:stop()
+end
+
 
 

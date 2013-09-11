@@ -39,7 +39,7 @@ local function loadSingleTexture( pixmapPath, group )
 	tex.pixmapPath = pixmapPath
 
 	local transform = MOAIImage.TRUECOLOR
-	if group['premultiply_alpha'] then
+	if group['premultiply_alpha'] ~= false then
 		transform = transform + MOAIImage.PREMULTIPLY_ALPHA
 	end
 	
