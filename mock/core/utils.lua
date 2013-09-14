@@ -194,6 +194,10 @@ function distance(x1,y1,x2,y2)
 	return sqrt(dx*dx+dy*dy)
 end
 
+function math.magnitude( dx, dy )
+	return sqrt( dx*dx + dy*dy )
+end
+
 function normalize(x,y)
 	return sqrt(x*x+y*y)
 end
@@ -267,9 +271,8 @@ end
 
 
 -------------General Math Helper
-function lerp(v1,v2,k)
-	local k1=1-k
-	return v1*k1+v2*k
+function lerp( v1, v2, k )
+	return v1 * ( 1 - k ) + v2 * k
 end
 
 local lerp=lerp

@@ -65,18 +65,24 @@ function SpineSprite:getSprite()
 end
 
 function SpineSprite:play( clipName, mode )
+	if self.animState  then
+		self.animState:stop()
+	end
 	local state = MOAISpineAnimationState.new()
 	state:init( self.skeletonData )
 	state:setSkeleton( self.skeleton )
-	state:setMode( MOAITimer.CONTINUE  )
+	state:setMode( mode or MOAITimer.CONTINUE  )
 	state:setAnimation( clipName, true, 0 )
 	state:start()
 	self.animState = state 
 end
 
+function SpineSprite:getClipLength( name )
+	--TODO
+	return 1
+end
+
 function SpineSprite:stop()
 	self.animState:stop()
 end
-
-
 

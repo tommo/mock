@@ -47,6 +47,7 @@ function TouchState:__init( id )
 
 	self.t0   = 0
 	self.t1   = 0
+	self.t1_b = 0
 
 end
 
@@ -56,6 +57,10 @@ end
 
 function TouchState:getDeltaTime()
 	return self.t1 - self.t0
+end
+
+function TouchState:getEventDeltaTime()
+	return self.t1 - self.t1_b
 end
 
 function TouchState:getAverageSpeed()
@@ -180,16 +185,22 @@ end
 
 function InputDevice:sendTouchEvent( evtype, idx, x, y, mockup )
 	local touchState = self:getTouchState( idx )
+	local t = self:getTime()
 
 	if evtype == 'down' then
 		touchState.down = true
-		touchState.t0   = self:getTime()
+		touchState.t0   = t
 		touchState.x0   = x
 		touchState.y0   = y
 	elseif evtype == 'up' then
 		touchState.down = false
-		touchState.t1  = self:getTime()
+		touchState.t1_b = touchState.t1
+	else
+		touchState.t1_b = touchState.t1
 	end
+	
+	touchState.t1 = t
+
 	touchState.x = x
 	touchState.y = y
 	for func in pairs( self.touchListeners ) do

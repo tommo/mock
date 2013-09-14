@@ -89,12 +89,12 @@ local function buildFSMScheme( FSMData )
 			local nextStateName = nextState.name
 			local exit = self[ exitname ]
 			if exit then --exit previous state
-				exit( self, nextStateName, nextState.localName, transMsg, transMsgArg )
+				exit( self, nextStateName, transMsg, transMsgArg )
 			end
 			self:setState( nextStateName )
 			local enter = self[ nextState.entername ]
 			if enter then --entering new state
-				enter( self, name, localName, transMsg, transMsgArg )
+				enter( self, name, transMsg, transMsgArg )
 			end
 
 			--activate and enter new state handler

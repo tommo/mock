@@ -218,6 +218,7 @@ end
 -- end
 
 function Entity:getComponent( clas )
+	if not self.components then return nil end
 	for com, comType in pairs( self.components ) do
 		if comType == clas then return com end
 		if isClass( comType ) and comType:isSubclass( clas ) then return com end
@@ -225,6 +226,7 @@ function Entity:getComponent( clas )
 end
 
 function Entity:getComponentByName( name )
+	if not self.components then return nil end
 	for com, comType in pairs( self.components ) do
 		while comType do
 			if comType.__name == name then return com end		

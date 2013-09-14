@@ -20,7 +20,7 @@ CLASS:  ParticleEmitterConfig()
 		Field 'distance'  :number()  :range(0);
 		Field 'frequency' :number()  :range(0);		
 		Field 'magnitude' :type('vec2') :range(0)  :getset('Magnitude');		
-		Field 'angle'     :number()  :range(-360, 360);		
+		Field 'angle'     :type('vec2') :range(-360, 360) :getset('Angle');	
 		Field 'emission'  :int()     :range(0);		
 		Field 'radius'    :number()  :range(0);	
 	}
@@ -31,7 +31,7 @@ function ParticleEmitterConfig:__init()
 	self.distance  = 10
 	self.frequency = 0.02
 	self.magnitude = { 10, 10 }
-	self.angle     = 0
+	self.angle     = { 0, 0  }
 	self.emission  = 5
 	self.surge     = 0
 	self.radius    = 5
@@ -67,6 +67,7 @@ function ParticleEmitterConfig:updateEmitter( em )
 
 end
 
+--------------------------------------------------------------------
 function ParticleEmitterConfig:setMagnitude( min, max )
 	min = min or 0
 	self.magnitude = { min, max or min }
@@ -75,6 +76,16 @@ end
 function ParticleEmitterConfig:getMagnitude()
 	return unpack( self.magnitude )
 end
+
+function ParticleEmitterConfig:setAngle( min, max )
+	min = min or 0
+	self.angle = { min, max or min }
+end
+
+function ParticleEmitterConfig:getAngle()
+	return unpack( self.angle )
+end
+
 
 --------------------------------------------------------------------
 CLASS:  ParticleStateConfig()

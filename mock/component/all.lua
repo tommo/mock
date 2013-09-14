@@ -31,3 +31,4 @@ require 'mock.component.SpineSprite'
 
 ---- AI
 require 'mock.component.FSMController'
+require 'mock.component.UpdateListener'
