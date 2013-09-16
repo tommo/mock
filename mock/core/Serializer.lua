@@ -37,9 +37,10 @@ function SerializeObjectMap:__init()
 	self.currentId  = 10000
 end
 
-function SerializeObjectMap:map( obj )
+function SerializeObjectMap:map( obj, noNewRef )
 	local id = self.objects[ obj ]
 	if id then return id end
+	if noNewRef then return nil end
 	id = self.currentId + 1
 	self.currentId = id
 	id = 'OBJ'..id
@@ -56,7 +57,7 @@ end
 
 local _serializeObject, _serializeField
 
-function _serializeField( obj, f, data, objMap )
+function _serializeField( obj, f, data, objMap, noNewRef )
 	local id = f:getId()
 
 	local ft = f:getType()
@@ -90,7 +91,7 @@ function _serializeField( obj, f, data, objMap )
 			end
 		else --ref
 			for i, item in ipairs( fieldValue ) do
-				array[ i ] = objMap:map( item )
+				array[ i ] = objMap:map( item, noNewRef )
 			end
 		end
 		data[ id ] = array
@@ -100,13 +101,13 @@ function _serializeField( obj, f, data, objMap )
 	if f.__objtype == 'sub' then
 		data[ id ] = _serializeObject( fieldValue, objMap )
 	else --ref					
-		data[ id ] = objMap:map( fieldValue )
+		data[ id ] = objMap:map( fieldValue, noNewRef )
 	end
 
 end
 
 --------------------------------------------------------------------
-function _serializeObject( obj, objMap )
+function _serializeObject( obj, objMap, noNewRef )
 	local tt = type(obj)
 	if tt == 'string' or tt == 'number' or tt == 'boolean' then
 		return { model = false, body = obj }
@@ -121,7 +122,7 @@ function _serializeObject( obj, objMap )
 
 	for _,f in ipairs( fields ) do
 		if not f:getMeta( 'nosave', false ) then
-			_serializeField( obj, f, data, objMap )		
+			_serializeField( obj, f, data, objMap, noNewRef )
 		end
 	end
 	----	

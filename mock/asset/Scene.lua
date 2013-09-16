@@ -5,10 +5,10 @@ registerSignals{
 	'scene.deserialize',
 }
 
+--------------------------------------------------------------------
 local function entitySortFunc( a, b )
 	return  a._priority < b._priority
 end
-
 
 --------------------------------------------------------------------
 local function collectEntity( entity, objMap )
@@ -46,10 +46,37 @@ local function collectEntity( entity, objMap )
 	}
 end
 
+--------------------------------------------------------------------
+local function insertEntity( scn, parent, edata, objMap )
+	local id = edata['id']
+	local components = edata['components']
+	local children   = edata['children']
 
+	local entity = objMap[ id ][ 1 ]
+	--components
+	for _, comId in ipairs( components ) do
+		local com = objMap[ comId ][ 1 ]
+		entity:attach( com )
+	end
+	if scn then
+		scn:addEntity( entity )
+	elseif parent then
+		parent:addChild( entity )
+	end
+
+	--chilcren
+	for i, childData in ipairs( children ) do
+		insertEntity( nil, entity, childData, objMap )
+	end
+
+	return entity
+end
+
+
+--------------------------------------------------------------------
 function serializeScene( scene )
 	emitSignal( 'scene.serialize', scene )
-	objMap = SerializeObjectMap()
+	local objMap = SerializeObjectMap()
 	local entityList = {}
 	for e in pairs( scene.entities ) do
 		if not e.parent then --1st level entity
@@ -76,7 +103,6 @@ function serializeScene( scene )
 		end
 	end
 
-
 	return {
 		_assetType = 'scene',
 		meta       = scene.metaData or {},
@@ -86,31 +112,6 @@ function serializeScene( scene )
 end
 
 --------------------------------------------------------------------
-local function insertEntity( scn, parent, edata, objMap )
-	local id = edata['id']
-	local components = edata['components']
-	local children   = edata['children']
-
-	local entity = objMap[ id ][ 1 ]
-	--components
-	for _, comId in ipairs( components ) do
-		local com = objMap[ comId ][ 1 ]
-		entity:attach( com )
-	end
-	if scn then
-		scn:addEntity( entity )
-	else
-		parent:addChild( entity )
-	end
-
-	--chilcren
-	for i, childData in ipairs( children ) do
-		insertEntity( nil, entity, childData, objMap )
-	end
-
-	return entity
-end
-
 function deserializeScene( data, scn )
 	local objMap = {}
 	_deserializeObjectMap( data.map, objMap )
@@ -143,6 +144,35 @@ function serializeSceneToFile( scn, path )
 	return true
 end
 
+--------------------------------------------------------------------
+--PREFAB
+--------------------------------------------------------------------
+function serializeEntity( obj )
+	local objMap = SerializeObjectMap()
+	local data = collectEntity( obj, objMap )
+	local map = {}
+	while true do
+		local newObjects = objMap:flush()
+		if next( newObjects ) then
+			for obj, id in pairs( newObjects )  do
+				map[ id ] = _serializeObject( obj, objMap, 'noNewRef' )
+			end
+		else
+			break
+		end
+	end
+	return {				
+		map    = map,
+		body   = data
+	}
+end
+
+function deserializeEntity( data )
+	local objMap = {}
+	_deserializeObjectMap( data.map, objMap )
+	return insertEntity( nil, nil, data.body, objMap )
+end
+
 -------------------------------------------------------------------
 local function sceneLoader( node, option )
 	local data = loadAssetDataTable( node:getAbsFilePath() )
@@ -155,13 +185,4 @@ local function sceneLoader( node, option )
 end
 
 registerAssetLoader( 'scene', sceneLoader )
---------------------------------------------------------------------
 
-function loadScene( path )
-	local node = getAssetNode( path )
-	if node:getType() == 'scene' then
-		return loadAsset( path )
-	else
-		_errorf( '%s is not a scene asset', tostring(path) )
-	end
-end

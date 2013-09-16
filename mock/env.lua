@@ -123,7 +123,7 @@ end
 mock.injectGlobalSymbols( _G )
 
 --------------------------------------------------------------------
-----Let's POLLUTE THE GLOBAL ENV
+----INIT
 --------------------------------------------------------------------
 function mock.init( configPath, fromEditor )
 	mock.game:loadConfig( configPath,fromEditor )

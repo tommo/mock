@@ -3,6 +3,7 @@ require 'mock.asset.ParticleProcs'
 module 'mock'
 
 local makeParticleSystem, makeParticleForce, makeParticleEmitter
+
 --------------------------------------------------------------------
 local function _unpack(m)
 	local tt=type(m)
@@ -12,11 +13,17 @@ local function _unpack(m)
 	error('????')
 end
 
+
+local EnumParticleType = { 
+	{'distance', 'distance'},
+	{'timed', 'timed' }
+}
+
 --------------------------------------------------------------------
 CLASS:  ParticleEmitterConfig()
 	:MODEL {
 		Field 'name'      :string();
-		Field 'type'      :enum{ {'distance', 'distance'}, {'timed', 'timed' } };
+		Field 'type'      :enum( EnumParticleType );
 		Field 'distance'  :number()  :range(0);
 		Field 'frequency' :number()  :range(0);		
 		Field 'magnitude' :type('vec2') :range(0)  :getset('Magnitude');		
@@ -102,7 +109,7 @@ function ParticleStateConfig:__init()
 	self.name         = 'state'
 	self.active       = true
 	self.initScript   = ''
-	self.renderScript = 'sprite(); '
+	self.renderScript = 'proc.p.moveAlong()\nsprite()\n'
 	self.life         = 1	
 end
 
@@ -171,10 +178,10 @@ CLASS:  ParticleSystemConfig()
 	:MODEL{
 		Field 'particles'    :int()  :range(0);
 		Field 'sprites'      :int()  :range(0);
-		Field 'emitters'     :array(ParticleEmitterConfig) :sub() :noedit();
-		Field 'states'       :array(ParticleStateConfig)   :ref() :noedit(); 
+		Field 'emitters'     :array( ParticleEmitterConfig ) :sub() :noedit();
+		Field 'states'       :array( ParticleStateConfig )   :ref() :noedit(); 
 		Field 'blend'        :enum( BLEND_MODES );
-		Field 'deck'         :asset('deck2d\\..*');
+		Field 'deck'         :asset( 'deck2d\\..*' );
 	}
 
 function ParticleSystemConfig:__init()
@@ -263,6 +270,7 @@ end
 function ParticleSystemConfig:_pushToPool( sys )
 	if not self.allowPool then return end
 	table.insert( self.systemPool, sys )	
+	sys:clearSprites()
 end
 
 function ParticleSystemConfig:requestSystem()

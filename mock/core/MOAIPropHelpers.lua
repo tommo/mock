@@ -181,7 +181,10 @@ function setPropBlend( prop, blend )
 	elseif blend == 'multiply' then prop:setBlendMode( BLEND_MULTIPLY )
 	elseif blend == 'normal'   then prop:setBlendMode( BLEND_NORMAL )
 	elseif blend == 'mask'     then prop:setBlendMode( GL_ZERO,GL_SRC_ALPHA )	
-	elseif blend == 'solid'    then prop:setBlendMode( GL_ONE,GL_ZERO )	
+	elseif blend == 'solid'    then prop:setBlendMode( GL_ONE,GL_ZERO )
+	elseif type(blend) == 'table' then
+		local s, d = unpack( blend )
+		prop:setBlendMode( s, d )
 	end
 end
 

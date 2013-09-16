@@ -28,7 +28,22 @@ module 'mock'
 
 local pairs,ipairs,setmetatable,unpack=pairs,ipairs,setmetatable,unpack
 
+--------------------------------------------------------------------
+----GAME MODULES
+--------------------------------------------------------------------
 
+require 'GameModule'
+function loadAllGameModules()
+	for k, node in pairs( getAssetLibrary() ) do
+		if node:getType() == 'lua' then
+			local modulePath = k:gsub( '/', '.' )
+			modulePath = modulePath:sub( 1, #modulePath - 4 )
+			GameModule.loadGameModule( modulePath )
+		end
+	end
+end
+
+--------------------------------------------------------------------
 registerSignals{
 	'msg',
 	'app.start',
@@ -111,7 +126,7 @@ end
 
 function Game:init( option, fromEditor )
 	self.initialized = true
-	loadAssetLibrary( option['asset_library'])
+	
 	self.assetLibraryIndex = option['asset_library']
 	self.name    = option['name'] or 'GAME'
 	self.version = option['version'] or '0.0.1'
@@ -119,7 +134,10 @@ function Game:init( option, fromEditor )
 
 	--grahpics profile( only for desktop version? )
 	self.graphicsOption = option['graphics']
+
 	self:initGraphics( fromEditor )
+	loadAssetLibrary( self.assetLibraryIndex )
+	loadAllGameModules()
 
 	--load layers
 	for i, data  in ipairs( option['layers'] or {} ) do
@@ -622,6 +640,5 @@ function Game:getCurrentRenderContext()
 	return self.currentRenderContext or 'game'
 end
 
-
-
 game = Game()
+

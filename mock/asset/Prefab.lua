@@ -1,6 +1,9 @@
 module 'mock'
 CLASS: Prefab ( Entity )
 
--- function loadFromPrefab
+function Prefab:createInstance()
+end
+
+
 
 registerAssetLoader( 'prefab',  loadPrefab )

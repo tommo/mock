@@ -724,8 +724,11 @@ end
 
 --------------------------------------------------------------------
 registerEntity( 'Entity', Entity )
---------------------------------------------------------------------
 
+
+--------------------------------------------------------------------
+--Serializer Related
+--------------------------------------------------------------------
 local function _cloneEntity( src, cloneComponents, cloneChildren )
 	local dst = clone( src )
 	if cloneComponents ~= false then
