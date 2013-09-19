@@ -1,7 +1,10 @@
 module 'mock' 
 
-require 'mock.asset.Scene'
 require 'mock.asset.Common'
+
+require 'mock.asset.Scene'
+require 'mock.asset.Prefab'
+
 require 'mock.asset.Texture'
 require 'mock.asset.Deck2D'
 require 'mock.asset.DefaultFont'

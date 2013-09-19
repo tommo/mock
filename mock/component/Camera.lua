@@ -163,6 +163,9 @@ function Camera:__init( option )
 	self:setPerspective( false )
 
 	self.context = 'game'
+
+	self.parallaxEnabled = true
+
 end
 
 function Camera:onAttach( entity )
@@ -252,15 +255,18 @@ function Camera:updateLayers()
 	for id, sceneLayer in ipairs( scene.layers ) do
 		local name  = sceneLayer.name
 		if self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name )) then
+			local source   = sceneLayer.source
 			local layer    = MOAILayer.new()
 			layer.name     = name
 			layer.priority = -1
-			layer.source   = sceneLayer.source
+			layer.source   = source
 			layer:setPartition( sceneLayer:getPartition() )
 
 			layer:setViewport( self.viewport )
 			layer:setCamera( self._camera )
-			
+			if self.parallaxEnabled and source.parallax then
+				layer:setParallax( unpack(source.parallax) )
+			end
 			--TODO: should be moved to debug facility
 			layer:showDebugLines( true )
 			local world = game:getBox2DWorld()

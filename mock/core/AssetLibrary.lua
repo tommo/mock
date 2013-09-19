@@ -22,7 +22,7 @@ end
 
 local function stripDir(p)
 	p=fixpath(p)
-	return string.match(p, "[%w_.%%]+$")
+	return string.match(p, "[^\\/]+$")
 end
 
 --asset index library

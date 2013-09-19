@@ -108,8 +108,7 @@ end
 
 function removeInputListener( self )
 	local data = self.__inputListenerData
-	if not data then return end
-
+	if not data then return end	
 	local inputDevice = data.inputDevice
 	if data.mouseCallback then
 		inputDevice:removeMouseListener( data.mouseCallback )

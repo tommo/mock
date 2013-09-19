@@ -12,6 +12,7 @@ require 'mock.component.Text'
 -- require 'mock.component.TileMap'
 require 'mock.component.PatchProp'
 require 'mock.component.ParticleSystem'
+require 'mock.component.ParticleEmitter'
 
 require 'mock.component.DrawScript'
 require 'mock.component.InputScript'

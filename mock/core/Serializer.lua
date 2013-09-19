@@ -281,6 +281,8 @@ end
 
 local function deserialize( obj, data, objMap )
 	objMap = objMap or {}
+	if not data then return obj end
+	
 	local map = data.map or {}
 	local rootId = data.root
 	if not rootId then return nil end
@@ -329,6 +331,7 @@ function deserializeFromFile( obj, path, objMap )
 	local file=io.open( path, 'rb' )
 	if file then
 		local str = file:read('*a')
+		file:close()
 		if deflate then
 			str  = MOAIDataBuffer.inflate( str )
 		end

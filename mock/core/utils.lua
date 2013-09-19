@@ -143,6 +143,16 @@ function table.randremove(t)
 	end
 end
 
+function table.extractvalues( t )
+	local r = {}
+	local i = 1
+	for k, v in pairs( t ) do
+		r[i] = v
+		i = i + 1
+	end
+	return r
+end
+
 -----------
 
 function table.print(t) 

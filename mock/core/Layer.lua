@@ -20,6 +20,7 @@ CLASS: Layer ()
 		Field 'name'      :string()   :getset('Name');
 		Field 'visible'   :boolean()  :isset('Visible') :noedit();
 		Field 'locked'    :boolean()  :noedit(); --editor only property
+		Field 'parallax'  :type('vec2') :getset('Parallax');
 		Field 'sortMode'  :enum( EnumLayerSortMode ) :getset('SortMode');
 		Field 'priority'  :int() :noedit();
 	}
@@ -69,6 +70,14 @@ end
 function Layer:setSortMode( mode )
 	self.sortMode = mode
 	emitSignal( 'layer.update', self, 'sort' )
+end
+
+function Layer:getParallax()
+	return unpack( self.parallax )
+end
+
+function Layer:setParallax( x, y )
+	self.parallax = { x, y }
 end
 
 function Layer:makeMoaiLayer( partition )

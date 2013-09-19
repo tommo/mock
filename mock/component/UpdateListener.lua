@@ -1,6 +1,6 @@
 CLASS: UpdateListener ()
 	:MODEL{
-		Field 'active' :isset('Active');
+		Field 'active' :boolean() :isset('Active');
 	}
 
 function UpdateListener:__init()
@@ -15,8 +15,8 @@ function UpdateListener:setActive( a )
 	self.active = a ~= false
 end
 
-function UpdateListener:onAttach( entity )
-	entity.scene:addUpdateListener( self )
+function UpdateListener:onStart()
+	self._entity.scene:addUpdateListener( self )
 end
 
 function UpdateListener:onDetach( entity )

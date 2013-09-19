@@ -56,7 +56,8 @@ end
 
 function Entity:_insertIntoScene( scene, layer )
 	self.scene = scene
-	self.layer = layer or self.layer
+	local layer = layer or self.layer
+	self.layer = layer
 	scene.entities[ self ] = true
 	
 	--TODO: edge case: component created inside onAttach may get initialized twice
@@ -84,6 +85,13 @@ function Entity:_insertIntoScene( scene, layer )
 	local name = self.name
 	if name then
 		scene:changeEntityName( self, false, name )
+	end
+
+	--pre-added children
+	for child in pairs( self.children ) do
+		if not child.scene then
+			child:_insertIntoScene( scene, child.layer or layer )
+		end
 	end
 
 	if scene.running then
@@ -324,7 +332,11 @@ function Entity:addChild( entity, layerName )
 
 	local scene = self.scene
 	local layer = layerName and scene:getLayer(layerName) or self.layer
-	entity:_insertIntoScene( scene, layer )
+	if scene then
+		entity:_insertIntoScene( scene, layer )
+	else
+		entity.layer = layer
+	end
 
 	return entity
 end

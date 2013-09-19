@@ -151,6 +151,7 @@ function Game:init( option, fromEditor )
 		end
 		layer:setSortMode( data['sort'] )
 		layer:setVisible( data['visible'] ~= false )
+		layer.parallax = data['parallax'] or {1,1}
 		layer.priority = i
 		layer:setLocked( data['locked'] )
 	end
@@ -249,6 +250,7 @@ function Game:saveConfig( path )
 				visible  = l.visible,
 				default  = l.default,
 				locked   = l.locked,
+				parallax = l.parallax
 				-- priority = l.priority
 			}
 		end
