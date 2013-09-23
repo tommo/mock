@@ -17,7 +17,7 @@ end
 
 --------------------------------------------------------------------
 function PrefabLoader( node )
-	local path = node:getAbsFilePath()
+	local path = node:getObjectFile( 'def' )
 	local data = loadAssetDataTable( path )
 	return Prefab( data )	
 end

@@ -175,7 +175,8 @@ end
 
 -------------------------------------------------------------------
 local function sceneLoader( node, option )
-	local data = loadAssetDataTable( node:getAbsFilePath() )
+	local path = node:getObjectFile( 'def' )
+	local data = loadAssetDataTable( path )
 	local scn = option.scene or Scene()
 	--configuration
 	scn:enter()

@@ -146,8 +146,6 @@ function AssetNode:getAbsFilePath()
 	return absProjectPath( self.filePath )
 end
 
-
-
 function registerAssetNode( path, data )
 	ppath=splitPath(path)
 	local node = setmetatable(

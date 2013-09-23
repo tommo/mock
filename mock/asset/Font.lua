@@ -84,7 +84,7 @@ function loadTextStyle( styleData )
 end
 
 local function loadStyleSheet( node )
-	local sheetData = loadAssetDataTable( node:getObjectFile('def') or node:getFilePath() )
+	local sheetData = loadAssetDataTable( node:getObjectFile('def') )
 	local fonts  = {}   --preloaded fonts
 	local sheet  = {}
 	--load fonts
