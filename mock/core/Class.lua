@@ -27,7 +27,6 @@ local setmetatable  = setmetatable
 local getmetatable  = getmetatable
 
 local rawget, rawset = rawget, rawset
-
 --------------------------------------------------------------------
 -- CLASS
 --------------------------------------------------------------------
@@ -322,7 +321,7 @@ function Model.fromClass( clas )
 	--TODO:support moai class
 	local m = rawget( clas, '__model' )
 	if not m then
-		print( 'create model for', clas.__name )
+		-- print( 'create model for', clas.__name )
 		m = Model( clas )
 	end
 	assert( m.__name == clas.__fullname )

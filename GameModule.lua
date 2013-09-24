@@ -31,7 +31,6 @@ end
 ]]
 
 local gameModulePaths = {}
-
 function addGameModulePath( pattern )
 	table.insert( gameModulePaths, pattern )
 end
@@ -44,7 +43,20 @@ function clearGameModulePath()
 	gameModulePaths = {}
 end
 
+local gameModuleMap   = {} --for runtime cache
+function addGameModuleMapping( srcPath, dstPath )
+	gameModuleMap[ srcPath ] = dstPath
+end
+
 local function searchFile( path )
+	local mapped = gameModuleMap[ path ]
+	if mapped then
+		local fp = io.open( mapped, 'r' )
+		if fp then
+			fp:close()
+			return mapped
+		end
+	end
 	path = path:gsub( '%.','/' )
 	for i, pattern in ipairs( gameModulePaths ) do
 		local f = pattern:gsub( '?', path )
@@ -134,6 +146,7 @@ function _loadGameModule( path )
 			errtype =	'compile',
 			msg     = compileErr
 		}
+		print( 'failtocompile', compileErr ) 
 		return nil, 'failtocompile', compileErr
 	end
 	local m = _createEmptyModule( path, fullpath )
@@ -230,3 +243,17 @@ function unloadGameModule( path )
 	return flushErrorInfo()
 end
 
+--------------------------------------------------------------------
+function compilePlainLua( inputFile, outputFile )
+	local f = loadfile( inputFile )
+	if f then
+		local str = string.dump( f )
+		local fp = io.open( outputFile, 'w' )
+		if fp then
+			fp:write( str )
+			fp:close()
+			return true
+		end
+	end
+	return false
+end

@@ -33,7 +33,15 @@ local pairs,ipairs,setmetatable,unpack=pairs,ipairs,setmetatable,unpack
 --------------------------------------------------------------------
 
 require 'GameModule'
-function loadAllGameModules()
+function loadAllGameModules( scriptLibrary )
+	if scriptLibrary then
+		local data = game:loadJSONData( scriptLibrary )
+		if data then 
+			for k,v in pairs( data ) do
+				GameModule.addGameModuleMapping( k, v )
+			end
+		end
+	end
 	for k, node in pairs( getAssetLibrary() ) do
 		if node:getType() == 'lua' then
 			local modulePath = k:gsub( '/', '.' )
@@ -137,7 +145,7 @@ function Game:init( option, fromEditor )
 
 	self:initGraphics( fromEditor )
 	loadAssetLibrary( self.assetLibraryIndex )
-	loadAllGameModules()
+	loadAllGameModules( option['script_library'] or false )
 
 	--load layers
 	for i, data  in ipairs( option['layers'] or {} ) do
@@ -240,7 +248,7 @@ function Game:init( option, fromEditor )
 end
 
 
-function Game:saveConfig( path )
+function Game:saveConfigToTable()
 	local layerConfigs = {}
 	for i,l in pairs( self.layers ) do
 		if l.name ~= '_GII_EDITOR_LAYER'  then
@@ -266,14 +274,40 @@ function Game:saveConfig( path )
 		global_objects = self.globalObjectLibrary:save()
 	}
 
+	return data
+end
+
+function Game:saveConfigToFile( path )
+	local data = self:saveConfigToTable()
+	return self:saveJSONData( data, path, 'game config' )
+end
+
+function Game:saveJSONData( data, path, dataInfo )
+	dataInfo = dataInfo or 'json'
 	local output = MOAIJsonParser.encode( data )
 	local file = io.open( path, 'w' )
 	if file then
 		file:write(output)
 		file:close()
-		_stat( 'game config saved to', path )
+		_stat( dataInfo, 'saved to', path )
 	else
-		_error( 'can not save game config to', path )
+		_error( 'can not save ', dataInfo , 'to' , path )
+	end
+end
+
+function Game:loadJSONData( path, dataInfo )
+	local file = io.open( path, 'rb' )
+	if file then
+		local str = file:read('*a')
+		-- local str = MOAIDataBuffer.inflate( str )
+		local data = MOAIJsonParser.decode( str )
+		if data then
+			_stat( dataInfo, 'loaded from', path )
+			return data
+		end
+		_error( 'invalid json data for ', dataInfo , 'at' , path )
+	else
+		_error( 'file not found for ', dataInfo , 'at' , path )
 	end
 end
 
@@ -282,14 +316,16 @@ end
 --------------------------------------------------------------------
 function Game:initGraphics( fromEditor )
 	local option = self.graphicsOption or {}
+	
 	local w, h = getDeviceResolution()
-	if w*h == 0 then
+	if w * h == 0 then
 		w, h  = option['device_width'] or 800, option['device_height'] or 600
 	end
+
 	self.deviceWidth  = w
 	self.deviceHeight = h
 
-	self.width   = option['width'] or w
+	self.width   = option['width']  or w
 	self.height  = option['height'] or h
 
 	self.viewportMode = option['viewport_mode'] or 'fit'
@@ -297,7 +333,7 @@ function Game:initGraphics( fromEditor )
 	local fullscreen = option['fullscreen'] or false
 	self.fullscreen = fullscreen	
 
-	_stat( 'opening window', self.title, w, h)
+	_stat( 'opening window', self.title, w, h,  self.deviceWidth, self.deviceHeight )
 	if not fromEditor then
 		--FIXME: crash here if no canvas shown up yet
 		MOAISim.openWindow( self.title, self.deviceWidth, self.deviceHeight  )
@@ -308,6 +344,7 @@ end
 function Game:setViewportScale( w, h )
 	self.width  = w
 	self.height = h
+	_stat( 'gfx.resize', w, h )
 	emitSignal( 'gfx.resize', w, h )
 end
 
@@ -318,6 +355,7 @@ end
 function Game:setDeviceSize( w, h )
 	self.deviceWidth  = w
 	self.deviceHeight = h
+	_stat( 'device.resize', w, h )
 	emitSignal( 'device.resize', self.width, self.height )
 end
 
@@ -326,19 +364,20 @@ function Game:getDeviceResolution( )
 end
 
 function Game:getViewportRect()
+	local viewWidth, viewHeight = MOAIGfxDevice.getViewSize()
 	local mode = self.viewportMode or 'fit'
 	if mode == 'fit' then
 		local aspect = self.width / self.height
-		local w = math.min( self.deviceWidth, self.deviceHeight * aspect )
-		local h = math.min( self.deviceWidth / aspect, self.deviceHeight )
+		local w = math.min( viewWidth, viewHeight * aspect )
+		local h = math.min( viewWidth / aspect, viewHeight )
 		local x0,y0,x1,y1
-		x0 = ( self.deviceWidth - w ) / 2
-		y0 = ( self.deviceHeight - h ) / 2
+		x0 = ( viewWidth - w ) / 2
+		y0 = ( viewHeight - h ) / 2
 		x1 = x0 + w
 		y1 = y0 + h
 		return x0,y0,x1,y1
 	end
-	return 0,0,self.deviceWidth,self.deviceHeight
+	return 0, 0, viewWidth, viewHeight
 end
 
 function Game:onResize( w, h )

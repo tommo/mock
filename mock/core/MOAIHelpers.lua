@@ -47,14 +47,13 @@ function getDeviceScreenSpec()
 end
 
 local deviceResolutions={
-	iphone={320,480},
-	iphone4={640,960},
-	iphone5={640,1136},
-	ipad={768,1024},
-	ipad2={768,1024},
-	ipad3={768*2,1024*2},
-
-	android={480,800},
+	iphone  = {320,480},
+	iphone4 = {640,960},
+	iphone5 = {640,1136},
+	ipad    = {768,1024},
+	ipad2   = {768,1024},
+	ipad3   = {768*2,1024*2},
+	android = {480,800},
 }
 
 function getResolutionByDevice(simDeviceName,simDeviceOrientation)
@@ -164,3 +163,4 @@ end
 -------replace system os.clock
 os._clock=os.clock
 os.clock=MOAISim.getDeviceTime
+

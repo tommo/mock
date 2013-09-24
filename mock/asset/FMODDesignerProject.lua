@@ -12,7 +12,7 @@ end
 function FMODDesignerProject:load( path, id )
 	if self.loaded then return false end
 	_stat( 'loading fmod project from', path )
-	self.loaded = MOAIFmodEventMgr.loadProject( path )
+	self.loaded = MOAIFmodEventMgr.loadProject( path .. '/'.. id ..'.fev' )
 	self.projectId = id
 
 	if self.loaded then
@@ -95,7 +95,7 @@ end
 --------------------------------------------------------------------
 function FMODProjectLoader( node )
 	local proj = FMODDesignerProject()
-	proj:load( node:getObjectFile('fev'), node:getBaseName() )
+	proj:load( node:getObjectFile('export'), node:getBaseName() )
 	return proj
 end
 

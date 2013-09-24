@@ -1,3 +1,5 @@
+if not MOAIBox2DBody then return end
+
 local insert = table.insert
 local setmetatable = setmetatable
 

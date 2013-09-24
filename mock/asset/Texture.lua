@@ -79,7 +79,7 @@ local function loadTexPack( config )
 	local configPath = base .. '/atlas.json'
 	local f = io.open( configPath, 'r' )
 	if not f then 
-		error( 'file not found', configPath )   --TODO: proper exception handle
+		error( 'file not found:' .. configPath, 2 )   --TODO: proper exception handle
 		return nil
 	end
 	local text = f:read( '*a' )
