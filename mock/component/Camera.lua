@@ -393,7 +393,6 @@ function Camera:updateViewport( updateRenderStack )
 	
 	self.viewportWndRect  = { vx0, vy0, vx1, vy1 }
 	self.viewport:setSize( vx0, vy0, vx1, vy1 )
-	print( 'Viewport Rect:',  vx0, vy0, vx1, vy1 )
 
 	self:updateZoom()
 end

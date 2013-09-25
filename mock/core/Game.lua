@@ -245,6 +245,13 @@ function Game:init( option, fromEditor )
 	----ask other systems to initialize
 	emitSignal( 'game.init' )
 
+	----load scenes
+	if option['scenes'] then
+		for alias, scnPath in ipairs( option['scenes'] ) do
+			self.scenes[ alias ] = scnPath
+		end
+	end
+	self.entryScene = option['entry_scene']
 end
 
 
@@ -275,6 +282,11 @@ function Game:saveConfigToTable()
 	}
 
 	return data
+end
+
+function Game:saveConfigToString()
+	local data = self:saveConfigToTable()
+	return MOAIJsonParser.encode( data )	
 end
 
 function Game:saveConfigToFile( path )
@@ -392,6 +404,18 @@ end
 --------------------------------------------------------------------
 ------Scene control
 --------------------------------------------------------------------
+function Game:enterEntryScene()
+	if self.entryScene then
+		local scene, node = loadAsset( self.entryScene )
+		if not node then 
+			return error('entry scene not found')
+		end
+		if node.type ~= 'scene' then
+			return error('invalid type of entry scene:' .. tostring( node.type ) )
+		end
+	end
+end
+
 function Game:addScene( name, scn, initNow )
 	assert( not self.scenes[ name ], 'Duplicated scene:'..name )
 
@@ -411,14 +435,6 @@ function Game:enterScene(name,option)
 	assert( scn, 'scene not found:'..name )
 	if scn.active then return end
 	return scn:enter( option or {} )
-end
-
-function Game:getActiveScenes()
-	local l = {}
-	for k, scn in pairs( self.scenes ) do
-		if scn.active then l[k] = scn end
-	end
-	return l
 end
 
 --------------------------------------------------------------------

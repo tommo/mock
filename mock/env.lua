@@ -129,6 +129,10 @@ function mock.init( configPath, fromEditor )
 	mock.game:loadConfig( configPath,fromEditor )
 end
 
+function mock.start( option )
+	mock.game:enterEntryScene( option )
+end
+
 function mock.printtable( t )
 	for k,v in pairs( t ) do
 		print (k,v)
