@@ -57,6 +57,9 @@ end
 function Entity:_insertIntoScene( scene, layer )
 	self.scene = scene
 	local layer = layer or self.layer
+	if type(layer) == 'string' then
+		layer = scene:getLayer( layer )
+	end
 	self.layer = layer
 	scene.entities[ self ] = true
 	
@@ -331,13 +334,18 @@ function Entity:addChild( entity, layerName )
 	if self.scissorRect then entity:_setScissorRect( self.scissorRect ) end
 
 	local scene = self.scene
-	local layer = layerName and scene:getLayer(layerName) or self.layer
-	if scene then
-		entity:_insertIntoScene( scene, layer )
-	else
-		entity.layer = layer
-	end
 
+	if scene then
+		local targetLayer
+		if layerName then 
+			targetLayer = scene:getLayer( layerName )
+		else
+			targetLayer = entity.layer or self.layer
+		end
+		entity:_insertIntoScene( scene, targetLayer )
+	else
+		entity.layer = layerName or entity.layer or self.layer
+	end
 	return entity
 end
 
@@ -743,6 +751,7 @@ registerEntity( 'Entity', Entity )
 --------------------------------------------------------------------
 local function _cloneEntity( src, cloneComponents, cloneChildren )
 	local dst = clone( src )
+	dst.layer = src.layer
 	if cloneComponents ~= false then
 		for com in pairs( src.components ) do
 			local com1 = clone( com )

@@ -30,7 +30,8 @@ local AssetLibrary = {}
 local AssetSearchCache = {}
 
 --asset loaders
-local AssetLoaders = {}
+local AssetLoaders   = {}
+local AssetUnloaders = {}
 
 ---env
 local AssetBasePath   = false
@@ -182,8 +183,9 @@ end
 
 --------------------------------------------------------------------
 --loader: func( assetType, filePath )
-function registerAssetLoader( assetType, loader )
-	AssetLoaders[ assetType ] = loader
+function registerAssetLoader( assetType, loader, unloader )
+	AssetLoaders[ assetType ]   = loader
+	AssetUnloaders[ assetType ] = unloader
 end
 
 --------------------------------------------------------------------
@@ -283,9 +285,14 @@ end
 
 --------------------------------------------------------------------
 function releaseAsset( path )
-	-- 
+	-- 	
 	node = getAssetNode( path )
 	if node then
+		local atype  = node.type
+		local unloader = AssetUnloaders[ atype ]
+		if unloader then
+			unloader( asset, node )
+		end
 		node.asset = nil
 		_stat( 'released node asset', path )
 	end
