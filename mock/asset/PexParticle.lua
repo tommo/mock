@@ -1,5 +1,9 @@
 module 'mock'
 
+local function varianceRange( v, variance )
+	return v-variance/2, v+variance/2
+end
+
 local GL2ZGL = {
 	[ 0 ]      = MOAIProp.GL_ZERO;
 	[ 1 ]      = MOAIProp.GL_ONE;
@@ -64,10 +68,13 @@ local templateInitScript = [[
 	rot1=variance($rot1,$rot1Variance)
 
 	if '$emitterType'=='gravity' then
-		speed=variance($speed,$speedVariance)
+		-- speed=variance($speed,$speedVariance)
 
-		vx=cos(angle)*speed
-		vy=sin(angle)*speed
+		-- vx=cos(angle)*speed
+		-- vy=sin(angle)*speed
+		
+		vx = 0
+		vy = 0
 
 		if $hasRadAcc then radAcc=variance($radAcc,$radAccVariance)	end
 		if $hasTanAcc then tanAcc=variance($tanAcc,$tanAccVariance) end
@@ -97,8 +104,7 @@ local templateInitScript = [[
 
 local templateRenderScript = [[
 	--render script
-	if '$emitterType'=='gravity' then
-
+	if '$emitterType'=='gravity' then		
 		if $gravityX~=0 then vx=vx+$gravityX end
 		if $gravityY~=0 then vy=vy+$gravityY end
 		
@@ -304,8 +310,9 @@ local function loadPexParticleConfig( node )
 	em.name = 'default'
 	em.type = 'timed'
 	em.frequency = 0 --FIXME
-	-- em.magnitude = 
+	em.magnitude = varianceRange( pexData.speed, pexData.speedVariance )
 	em.emission  = emission
+	em.angle     = varianceRange( pexData.angle, pexData.angleVariance )
 
 	--System
 	local cfg = ParticleSystemConfig()

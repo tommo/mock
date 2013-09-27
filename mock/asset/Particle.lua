@@ -38,7 +38,7 @@ function ParticleEmitterConfig:__init()
 	self.distance  = 10
 	self.frequency = 0.02
 	self.magnitude = { 10, 10 }
-	self.angle     = { 0, 0  }
+	self.angle     = { 0, 0 }
 	self.emission  = 5
 	self.surge     = 0
 	self.radius    = 5
