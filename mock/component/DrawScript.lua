@@ -29,18 +29,31 @@ function DrawScript:inside( x,y,z,pad )
 end
 
 function DrawScript:onAttach( entity )	
-	
-	if entity.onDraw then
-		local onDraw = entity.onDraw
+	local drawOwner, onDraw
+	if self.onDraw then 
+		onDraw = self.onDraw
+		drawOwner = self
+	elseif entity.onDraw then
+		onDraw = entity.onDraw
+		drawOwner = entity
+	end
+	if onDraw then
 		self.deck:setDrawCallback( 
-			function(...) return onDraw(entity, ... ) end
+			function(...) return onDraw( drawOwner, ... ) end
 		)
 	end
 
-	if entity.onGetRect then
-		local onGetRect = entity.onGetRect
-		self.deck:setDrawCallback( 
-			function(...) return onGetRect(entity, ... ) end
+	local rectOwner, onGetRect
+	if self.onGetRect then 
+		onGetRect = self.onGetRect
+		rectOwner = self
+	elseif entity.onGetRect then
+		onGetRect = entity.onGetRect
+		rectOwner = entity
+	end
+	if onGetRect then
+		self.deck:setRectCallback( 
+			function(...) return onGetRect( rectOwner, ... ) end
 		)
 	end
 		

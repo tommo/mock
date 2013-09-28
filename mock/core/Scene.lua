@@ -41,13 +41,9 @@ end
 function Scene:init()
 	if self.initialized then return end 
 	self.initialized  = true
-
 	self.exiting = false
 	self.active  = true
 
-	self.timer   = MOAITimer.new()
-	self.timer:setMode( MOAITimer.CONTINUE )
-	
 	-- self.mainLayer = self:addLayer( 'main' )
 	local layers = {}
 	local defaultLayer
@@ -77,8 +73,14 @@ function Scene:init()
 	end
 	)
 
+	_stat( 'Initialize Scene' )
+
+	self.timer   = MOAITimer.new()
+	self.timer:setMode( MOAITimer.CONTINUE )
 	self.timer:attach( self:getActionRoot() )
 	self.timer:start()
+
+	emitSignal( 'scene.init', self )	
 
 end
 
@@ -87,10 +89,8 @@ function Scene:getActionRoot( root )
 end
 
 function Scene:threadMain( dt )
-	
 	local lastTime = game:getTime()
 	while true do	
-		if not self.running then self:start() end
 		local nowTime = game:getTime()
 
 		if self.active then
@@ -198,25 +198,17 @@ end
 --------------------------------------------------------------------
 --Flow Control
 --------------------------------------------------------------------
-function Scene:enter( option )
-	if self.active then return end
-	_stat( 'Entering Scene: %s', self.name )
-	self:init( self.option and self.option.actionRoot )
-	self.active = true
-	--callback onenter
-	local onEnter = self.onEnter
-	if onEnter then onEnter( self, option ) end
-	emitSignal( 'scene.enter', self )	
-end
-
 function Scene:start()
 	if self.running then return end
+	local onStart = self.onStart
+	if onStart then onStart( self ) end
 	self.running = true
 	for ent in pairs( self.entities ) do
 		if not ent.parent then
 			ent:start()
 		end
 	end
+	emitSignal( 'scene.start', self )	
 end
 
 function Scene:stop()

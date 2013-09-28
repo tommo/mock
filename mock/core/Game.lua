@@ -64,7 +64,8 @@ registerSignals{
 	'device.resize',
 
 	'scene.update',
-	'scene.enter',
+	'scene.init',
+	'scene.start',
 	'scene.exit',
 
 	'layer.update',
@@ -351,9 +352,14 @@ function Game:initGraphics( fromEditor )
 		MOAISim.openWindow( self.title, self.deviceWidth, self.deviceHeight  )
 	end
 	self.graphicsInitialized = true
+	if self.pendingResize then
+		self.pendingResize = nil
+		self:onResize( unpack( pendingResize ) )
+	end
 end
 
 function Game:setViewportScale( w, h )
+	if self.width == w and self.height == h then return end
 	self.width  = w
 	self.height = h
 	_stat( 'gfx.resize', w, h )
@@ -365,6 +371,7 @@ function Game:getViewportScale()
 end
 
 function Game:setDeviceSize( w, h )
+	-- if self.deviceWidth == w and self.deviceHeight == h then return end
 	self.deviceWidth  = w
 	self.deviceHeight = h
 	_stat( 'device.resize', w, h )
@@ -404,7 +411,7 @@ end
 --------------------------------------------------------------------
 ------Scene control
 --------------------------------------------------------------------
-function Game:enterEntryScene()
+function Game:startEntryScene()
 	if self.entryScene then
 		local scene, node = loadAsset( self.entryScene )
 		if not node then 
@@ -413,6 +420,7 @@ function Game:enterEntryScene()
 		if node.type ~= 'scene' then
 			return error('invalid type of entry scene:' .. tostring( node.type ) )
 		end
+		scene:start()
 	end
 end
 
@@ -430,11 +438,12 @@ function Game:getScene( name )
 	return self.scenes[ name ]
 end
 
-function Game:enterScene(name,option)
+function Game:startScene(name,option)
 	local scn=self.scenes[ name ]
 	assert( scn, 'scene not found:'..name )
 	if scn.active then return end
-	return scn:enter( option or {} )
+	scn:init( option or {} )
+	scn:start()
 end
 
 --------------------------------------------------------------------

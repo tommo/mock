@@ -254,9 +254,11 @@ function ParticleSystemConfig:buildSystem()
 	for i, s in ipairs( states ) do
 		system:setState( i, s )
 	end
-	system:reserveSprites   ( self.sprites or 100 )
-	system:reserveParticles ( self.particles or 50, regCount+1 )
-
+	system.particleCount = self.particles or 50
+	system.spriteCount   = self.sprites or 100
+	system.regCount = regCount + 1 
+	system:reserveSprites   ( system.spriteCount )
+	system:reserveParticles ( system.particleCount, system.regCount )
 	if self.surge then system:surge(self.surge) end
 	
 	setupMoaiProp( system, self )
@@ -271,6 +273,7 @@ function ParticleSystemConfig:_pushToPool( sys )
 	if not self.allowPool then return end
 	table.insert( self.systemPool, sys )	
 	sys:clearSprites()
+	sys:reserveParticles( sys.particleCount, sys.regCount )
 end
 
 function ParticleSystemConfig:requestSystem()

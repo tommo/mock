@@ -118,7 +118,7 @@ function deserializeScene( data, scn )
 	
 	if not scn then
 		scn = Scene()
-		scn:enter()
+		scn:init()
 	end
 
 	for i, edata in ipairs( data.entities ) do
@@ -179,7 +179,7 @@ local function sceneLoader( node, option )
 	local data = loadAssetDataTable( path )
 	local scn = option.scene or Scene()
 	--configuration
-	scn:enter()
+	scn:init()
 	--entities
 	deserializeScene( data, scn )
 	return scn, false

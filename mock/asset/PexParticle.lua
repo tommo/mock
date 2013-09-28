@@ -1,7 +1,7 @@
 module 'mock'
 
 local function varianceRange( v, variance )
-	return v-variance/2, v+variance/2
+	return { v-variance, v+variance }
 end
 
 local GL2ZGL = {
@@ -124,8 +124,10 @@ local templateRenderScript = [[
 				vy=vy-ca*tanAcc
 			end
 
-			dx=dx+vx
-			dy=dy+vy
+			-- dx=dx+vx
+			-- dy=dy+vy
+			dx = dx + p.dx
+			dy = dy + p.dy
 		end
 		
 		p.x=p.x+vx
