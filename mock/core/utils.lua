@@ -208,6 +208,10 @@ function math.magnitude( dx, dy )
 	return sqrt( dx*dx + dy*dy )
 end
 
+function math.sign( v )
+	return v>0 and 1 or v<0 and -1 or 0
+end
+
 function normalize(x,y)
 	return sqrt(x*x+y*y)
 end

@@ -164,3 +164,4 @@ end
 os._clock=os.clock
 os.clock=MOAISim.getDeviceTime
 
+MOAIJsonParser.defaultEncodeFlags = 0x02 + 0x80  --indent 2, sort key

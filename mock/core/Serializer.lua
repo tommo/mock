@@ -301,7 +301,7 @@ local deflate = false
 
 function serializeToString( obj )
 	local data = serialize( obj )
-	local str  = MOAIJsonParser.encode( data )
+	local str  = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
 	return str	
 end
 

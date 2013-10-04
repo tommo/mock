@@ -67,12 +67,6 @@ function Scene:init()
 
 	if self.onLoad then self:onLoad() end
 
-	self.mainThread=MOAICoroutine.new()
-	self.mainThread:run(function()
-		return self:threadMain()
-	end
-	)
-
 	_stat( 'Initialize Scene' )
 
 	self.timer   = MOAITimer.new()
@@ -84,8 +78,8 @@ function Scene:init()
 
 end
 
-function Scene:getActionRoot( root )
-	return game.actionRoot
+function Scene:getActionRoot()
+	return game:getActionRoot()
 end
 
 function Scene:threadMain( dt )
@@ -94,9 +88,8 @@ function Scene:threadMain( dt )
 		local nowTime = game:getTime()
 
 		if self.active then
-			local dt = nowTime -lastTime
+			local dt = nowTime - lastTime
 			lastTime = nowTime
-			
 			--callNextFrame
 			local pendingCall = self.pendingCall
 			self.pendingCall = {}
@@ -146,7 +139,6 @@ function Scene:threadMain( dt )
 			self.exitingTime = false
 			self:exitNow()
 		end
-
 	--end of main loop
 	end
 end
@@ -200,9 +192,17 @@ end
 --------------------------------------------------------------------
 function Scene:start()
 	if self.running then return end
+	if not self.initialized then self:init() end
+	self.running = true
 	local onStart = self.onStart
 	if onStart then onStart( self ) end
-	self.running = true
+
+	self.mainThread=MOAICoroutine.new()
+	self.mainThread:run(function()
+		return self:threadMain()
+	end
+	)
+
 	for ent in pairs( self.entities ) do
 		if not ent.parent then
 			ent:start()
@@ -214,6 +214,8 @@ end
 function Scene:stop()
 	if not self.running then return end
 	self.running = false
+	self.mainThread:stop()
+	self.mainThread = false
 end
 
 function Scene:exitLater(time)
@@ -221,6 +223,7 @@ function Scene:exitLater(time)
 end
 
 function Scene:exit(nextScene)
+	_stat( 'scene exit' )
 	self.exiting = true	
 end
 

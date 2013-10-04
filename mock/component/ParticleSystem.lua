@@ -1,20 +1,24 @@
-module 'mock'
 --------------------------------------------------------------------
 CLASS: ParticleSystem ()
 	:MODEL {
 		Field 'config'  :asset( 'particle_.+' ) :getset( 'Config' );
-
+		Field 'inheritTransform' :boolean();
 	}
 
 function ParticleSystem:__init( config )
 	self._system = false
 	-- self:setConfig( config )	
 	self.emitters = {}
+	self.inheritTransform = false
 end
 
 function ParticleSystem:onAttach( entity )
 	if self._system then 
-		entity:_attachProp( self._system )
+		if self.inheritTransform then
+			entity:_attachProp( self._system )
+		else
+			entity:_insertPropToLayer( self._system )
+		end
 	end
 end
 

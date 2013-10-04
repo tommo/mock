@@ -103,11 +103,21 @@ function serializeScene( scene )
 		end
 	end
 
+	--guid
+	local guidMap = {}
+	for obj, id in pairs( objMap.objects ) do
+		local guid = obj.__guid
+		if guid then
+			guidMap[ id ] = guid
+		end
+	end
+
 	return {
 		_assetType = 'scene',
 		meta       = scene.metaData or {},
 		map        = map,
-		entities   = entities
+		entities   = entities,
+		guid       = guidMap
 	}
 end
 
@@ -125,14 +135,19 @@ function deserializeScene( data, scn )
 		insertEntity( scn, nil, edata, objMap )
 	end
 	scn.metaData = data['meta'] or {}
-
+	if data['guid'] then
+		for id, guid in pairs( data['guid'] ) do
+			local obj = objMap[ id ][ 1 ]
+			obj.__guid = guid
+		end
+	end
 	emitSignal( 'scene.deserialize', scn )
 	return scn
 end
 
 function serializeSceneToFile( scn, path )
 	local data = serializeScene( scn )
-	local str  = MOAIJsonParser.encode( data )
+	local str  = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
 	local file = io.open( path, 'wb' )
 	if file then
 		file:write( str )

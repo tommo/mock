@@ -1,5 +1,10 @@
 module 'mock'
 
+local EVENT_SPINE_ANIMATION_START    = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_START
+local EVENT_SPINE_ANIMATION_END      = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_END
+local EVENT_SPINE_ANIMATION_COMPLETE = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_COMPLETE
+local EVENT_SPINE_ANIMATION_EVENT    = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_EVENT
+
 CLASS: SpineSprite ()
 	:MODEL{
 		Field 'sprite' :asset('spine') :getset('Sprite') :label('Sprite');
@@ -11,10 +16,11 @@ registerComponent( 'SpineSprite', SpineSprite )
 
 function SpineSprite:__init()
 	self.skeleton  = MOAISpineSkeleton.new()
-	self.propInserted = false
-	self.animState = false
-	self.defaultClip = ''
-	self.autoPlay    = true
+	self.propInserted  = false
+	self.animState     = false
+	self.defaultClip   = ''
+	self.autoPlay      = true
+	self._onAnimationEvent  = false
 end
 
 function SpineSprite:onAttach( entity )
@@ -64,6 +70,14 @@ function SpineSprite:getSprite()
 	return self.spritePath
 end
 
+local function _onSpineAnimationEvent( state, trackId, name, varInt, varFloat, varString )
+	return state.owner:onAnimationEvent( trackId, name, varInt, varFloat, varString )
+end
+
+local function _onSpineAnimationComplete( state, trackId, loopCount )
+	return state.owner:onAnimationComplete( trackId, loopCount )
+end
+
 function SpineSprite:play( clipName, mode )
 	if self.animState  then
 		self.animState:stop()
@@ -72,9 +86,21 @@ function SpineSprite:play( clipName, mode )
 	state:init( self.skeletonData )
 	state:setSkeleton( self.skeleton )
 	state:setMode( mode or MOAITimer.CONTINUE  )
-	state:setAnimation( clipName, true, 0 )
+	if not self:affirmClip( clipName ) then
+		_warn( 'spine anim not found:', clipName )
+		return false
+	end
+	state:setAnimation( 0, clipName, true, 0 )
 	state:start()
+	state.owner = self
+	state:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )
+	-- state:setListener( EVENT_SPINE_ANIMATION_COMPLETE, _onSpineAnimationComplete )
 	self.animState = state 
+end
+
+function SpineSprite:affirmClip( name )
+	local t = self.skeletonData._animationTable
+	return t[ name ]
 end
 
 function SpineSprite:getClipLength( name )
@@ -86,3 +112,13 @@ function SpineSprite:stop()
 	self.animState:stop()
 end
 
+function SpineSprite:setAnimationEventListener( listener )
+	self._onAnimationEvent = listener
+end
+
+function SpineSprite:onAnimationEvent( trackId, evName, varInt, varFloat, varString )
+	local callback = self._onAnimationEvent
+	if callback then
+		return callback( evName, varInt, varFloat, varString )
+	end
+end

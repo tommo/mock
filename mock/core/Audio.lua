@@ -5,7 +5,7 @@ module 'mock'
 function initFmodDesigner()
 	--TODO: accept config from startup script
 	local MOAIFmodEventMgrReady = MOAIFmodEventMgr.init{
-			["soundMemoryMB"]              =  32 ;
+			["soundMemoryMB"]              =  16 ;
 			["rsxMemoryMB"]                =  0 ;
 			["voiceLRUBufferMB"]           =  0 ;
 			["voiceLRUMaxMB"]              =  0 ;
@@ -16,11 +16,11 @@ function initFmodDesigner()
 			["nCompressedCodecs"]          =  32 ;
 			["nMaxInputChannels"]          =  6 ;
 			["enableSoundSystem"]          =  true ;
-			["enableDistantLowpass"]       =  true ;
-			["enableEnvironmentalReverb"]  =  true ;
+			["enableDistantLowpass"]       =  false ;
+			["enableEnvironmentalReverb"]  =  false ;
 			["enableNear2DBlend"]          =  false ;
-			["enableAuditioning"]          =  true ;
-			["enableProfiling"]            =  true ;
+			["enableAuditioning"]          =  false ;
+			["enableProfiling"]            =  false ;
 			["enableFsCallbacks"]          =  false ;
 			["disableSound"]               =  false ;
 			["dopplerScale"]               =  0 ;

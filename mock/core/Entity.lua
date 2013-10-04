@@ -16,6 +16,7 @@ CLASS: Entity ( Actor )
 		Field 'loc'      :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'      :type('vec3') :getset('Rot') :label('Rot');
 		Field 'scl'      :type('vec3') :getset('Scl') :label('Scl');
+		Field 'piv'      :type('vec3') :getset('Piv') :label('Piv');
 		
 		Field 'visible'  :boolean() :get('isLocalVisible') :set('setVisible');
 		Field 'color'    :type('color')  :getset('Color') ;
@@ -40,6 +41,7 @@ function Entity:__init( data )
 	self._prop       = _prop
 	k = k + 1
 	self._priority   = k
+	_prop:setPriority( k )
 	self.scene       = false --not loaded yet
 	self.components  = {}
 	self.children    = {}
@@ -48,8 +50,8 @@ function Entity:__init( data )
 	self.active      = true
 	self.localActive = false
 	self.started     = false
-	if type(data)=='table' then
-		local trans=data.transform
+	if type(data) == 'table' then
+		local trans = data.transform
 		if trans then return setupMoaiTransform( _prop, trans ) end
 	end
 end

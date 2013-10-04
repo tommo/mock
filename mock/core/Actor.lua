@@ -365,7 +365,7 @@ function Actor:waitStateEnter(...)
 	end
 end
 
-function Actor:waitStateLeave(s)
+function Actor:waitStateExit(s)
 	while self.state == s do
 		yield()
 	end

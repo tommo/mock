@@ -24,3 +24,18 @@ EnumLayerSortMode = {
 	{ "vector_ascending"    , 'vector_ascending'     },
 	{ "vector_descending"   , 'vector_descending'    },
 }
+
+
+EnumEaseType={
+	{	'ease_in'		     , MOAIEaseType.EASE_IN        },
+	{	'ease_out'	     , MOAIEaseType.EASE_OUT       },
+	{	'flat'		       , MOAIEaseType.FLAT           },
+	{	'linear'		     , MOAIEaseType.LINEAR         },
+	{	'sharp_ease_in'  , MOAIEaseType.SHARP_EASE_IN  },
+	{	'sharp_ease_out' , MOAIEaseType.SHARP_EASE_OUT },
+	{	'sharp_smooth'   , MOAIEaseType.SHARP_SMOOTH   },
+	{	'smooth'		     , MOAIEaseType.SMOOTH         },
+	{	'soft_ease_in'   , MOAIEaseType.SOFT_EASE_IN   },
+	{	'soft_ease_out'  , MOAIEaseType.SOFT_EASE_OUT  },
+	{	'soft_smooth'	   , MOAIEaseType.SOFT_SMOOT     },
+}

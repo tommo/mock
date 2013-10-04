@@ -32,6 +32,7 @@ function Layer:__init( name )
 	self.default  = false
 	self.moaiLayers = setmetatable( {}, { __mode='k' } )
 	self.locked   = false
+	self.parallax = {1,1}
 end
 
 function Layer:setName( name )
