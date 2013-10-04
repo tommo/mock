@@ -25,28 +25,10 @@ end
 
 function SpineSprite:onAttach( entity )
 	entity:_attachProp( self.skeleton )
-	self:insertSlots()
 end
 
 function SpineSprite:onDetach( entity )
-	self:removeSlots()
 	entity:_detachProp( self.skeleton )
-end
-
-function SpineSprite:insertSlots()
-	if not self.propInserted then
-		local entity = self._entity
-		if not entity then return end
-		self.skeleton:insertIntoPartition( entity.layer:getPartition() )
-		self.propInserted = true
-	end
-end
-
-function SpineSprite:removeSlots()
-	if self.propInserted then
-		self.skeleton:removeFromPartition()
-		self.propInserted = false
-	end
 end
 
 function SpineSprite:onStart( entity )
@@ -60,9 +42,6 @@ function SpineSprite:setSprite( path )
 	self.skeletonData = loadAsset( path )
 	if self.skeletonData  then
 		self.skeleton:load( self.skeletonData )
-		self:insertSlots()
-	else
-		self:removeSlots()		
 	end
 end
 
@@ -90,6 +69,7 @@ function SpineSprite:play( clipName, mode )
 		_warn( 'spine anim not found:', clipName )
 		return false
 	end
+	self.skeleton:setToSetupPose()
 	state:setAnimation( 0, clipName, true, 0 )
 	state:start()
 	state.owner = self
