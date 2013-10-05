@@ -28,9 +28,19 @@ local function loadFont( node )
 	end
 
 	if atype == 'font_bmfont' then
-		--font texture will be loaded by system
-		--its path will be modified in deployment
-		font:loadFromBMFont( node.objectFiles['font'] )
+		local texPaths = {}
+		for k, v in pairs( node.dependency ) do
+			if k:sub(1,3) == 'tex' then
+				local id = tonumber( k:sub(5,-1) )
+				texPaths[ id ] = v
+			end
+		end
+		local textures = {}
+		for i, path in ipairs( texPaths ) do
+			local tex, node = loadAsset( path )
+			table.insert( textures, tex )
+		end
+		font:loadFromBMFont( node.objectFiles['font'], textures )
 	elseif atype == 'font_ttf' then
 		local filename = node.objectFiles['font']
 		font:load( filename )

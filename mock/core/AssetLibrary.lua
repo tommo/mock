@@ -143,6 +143,12 @@ function AssetNode:getAbsObjectFile( name )
 	end
 end
 
+function AssetNode:getDependency( name )
+	local dependency = self.dependency
+	if not dependency then return false end
+	return dependency[name]
+end
+
 function AssetNode:getAbsFilePath()
 	return absProjectPath( self.filePath )
 end
@@ -158,7 +164,9 @@ function registerAssetNode( path, data )
 			objectFiles = data['objectFiles'],
 			type        = data['type'],
 			parent      = ppath,
-			asset       = data['type'] == 'folder' and true or false
+			asset       = data['type'] == 'folder' and true or false,
+			fileTime    = data['fileTime'],
+			dependency  = data['dependency'],
 		}, 
 		AssetNode
 		)
