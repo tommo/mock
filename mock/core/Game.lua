@@ -160,6 +160,7 @@ function Game:init( option, fromEditor )
 		end
 		layer:setSortMode( data['sort'] )
 		layer:setVisible( data['visible'] ~= false )
+		layer:setEditorVisible( data['editor_visible'] ~= false )
 		layer.parallax = data['parallax'] or {1,1}
 		layer.priority = i
 		layer:setLocked( data['locked'] )
@@ -266,7 +267,8 @@ function Game:saveConfigToTable()
 				visible  = l.visible,
 				default  = l.default,
 				locked   = l.locked,
-				parallax = l.parallax
+				parallax = l.parallax,
+				editor_visible  = l.editorVisible,
 				-- priority = l.priority
 			}
 		end

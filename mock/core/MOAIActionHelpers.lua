@@ -1,15 +1,15 @@
 ----TODO: move related host code from MDD into libmoai
-local yield=coroutine.yield
-local tmpNode=MOAIColor.new()
+local yield       = coroutine.yield
+local tmpNode     = MOAIColor.new()
 
-local setAttr=tmpNode.setAttr
-local seekAttr=tmpNode.seekAttr
-local moveAttr=tmpNode.moveAttr
+local setAttr     = tmpNode.setAttr
+local seekAttr    = tmpNode.seekAttr
+local moveAttr    = tmpNode.moveAttr
 
 
-local tmpaction=MOAITimer.new()
-local EVENT_STOP=MOAIAction.EVENT_STOP
-local setListener=tmpaction.setListener
+local tmpaction   = MOAITimer.new()
+local EVENT_STOP  = MOAIAction.EVENT_STOP
+local setListener = tmpaction.setListener
 function funcAfter(action,func)
 	return setListener(action,EVENT_STOP,func)
 end

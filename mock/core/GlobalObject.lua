@@ -83,6 +83,7 @@ local function loadGlobalObject( objData, parent )
 end
 
 function GlobalObjectLibrary:load( data )
+	if not data then return end
 	loadGlobalObject( data, self.root )	
 end
 

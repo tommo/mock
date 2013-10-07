@@ -61,21 +61,24 @@ function SpineSprite:play( clipName, mode )
 	if self.animState  then
 		self.animState:stop()
 	end
+	mode = mode or MOAITimer.NORMAL
 	local state = MOAISpineAnimationState.new()
 	state:init( self.skeletonData )
 	state:setSkeleton( self.skeleton )
-	state:setMode( mode or MOAITimer.CONTINUE  )
+	state:setMode( mode )
 	if not self:affirmClip( clipName ) then
 		_warn( 'spine anim not found:', clipName )
 		return false
 	end
 	self.skeleton:setToSetupPose()
-	state:setAnimation( 0, clipName, true, 0 )
+	local loop = mode == MOAITimer.LOOP
+	state:setAnimation( 0, clipName, loop )
 	state:start()
 	state.owner = self
 	state:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )
 	-- state:setListener( EVENT_SPINE_ANIMATION_COMPLETE, _onSpineAnimationComplete )
 	self.animState = state 
+	return state
 end
 
 function SpineSprite:affirmClip( name )

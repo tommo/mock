@@ -57,10 +57,7 @@ local templateInitScript = [[
 	end
 
 	angle=variance($angle,$angleVariance)
-	
-	r0,g0,b0,a0=variance1($r0,$r0v),variance1($g0,$g0v),variance1($b0,$b0v),variance1($a0,$a0v)
-	r1,g1,b1,a1=variance1($r1,$r1v),variance1($g1,$g1v),variance1($b1,$b1v),variance1($a1,$a1v)
-
+		
 	s0=variance($startParticleSize,$startParticleSizeVariance)			
 	s1=variance($finishParticleSize,$finishParticleSizeVariance)
 			
@@ -99,7 +96,9 @@ local templateInitScript = [[
 		maxRadius=variance($maxRadius, $maxRadiusVariance)
 
 	end
-	
+
+	r0,g0,b0,a0 = variance1($r0,$r0v),variance1($g0,$g0v),variance1($b0,$b0v),variance1($a0,$a0v)
+	r1,g1,b1,a1 = variance1($r1,$r1v),variance1($g1,$g1v),variance1($b1,$b1v),variance1($a1,$a1v)
 ]]
 
 local templateRenderScript = [[
@@ -120,8 +119,8 @@ local templateRenderScript = [[
 			end
 
 			if $hasTanAcc then
-				vx=vx+sa*tanAcc
-				vy=vy-ca*tanAcc
+				vx=vx-sa*tanAcc
+				vy=vy+ca*tanAcc
 			end
 
 			-- dx=dx+vx
@@ -146,10 +145,10 @@ local templateRenderScript = [[
 
 	sprite()
 	local easeType=EaseType.LINEAR
-	if $easeR then sp.r=ease(r0,r1,easeType) else sp.r=$r0 end
-	if $easeG then sp.g=ease(g0,g1,easeType) else sp.g=$g0 end
-	if $easeB then sp.b=ease(b0,b1,easeType) else sp.b=$b0 end
-	if $easeA then sp.opacity=ease(a0,a1,easeType) else sp.opacity=$a0 end
+	if $easeR then sp.r = ease( r0, r1,easeType) else sp.r=$r0 end
+	if $easeG then sp.g = ease( g0, g1,easeType) else sp.g=$g0 end
+	if $easeB then sp.b = ease( b0, b1,easeType) else sp.b=$b0 end
+	if $easeA then sp.opacity = ease( a0, a1,easeType) else sp.opacity=$a0 end
 
 	size = ease(s0,s1)
 	sp.sx = size
@@ -278,7 +277,6 @@ function pexToParticleScript( file ) --convert pex to 2 particle script
 			"%$(%w+)",
 			dataRender
 		)
-
 	return init, render, pexData
 
 end
@@ -297,7 +295,7 @@ local function loadPexParticleConfig( node )
 	local emission =
 		pexData.maxParticles
 		/ ( math.max( 0.1, pexData.particleLifeSpan + pexData.particleLifespanVariance ) )
-		/ 60
+		/ 60 /2
 	if emission < 1 then emission = 1 end
 
 	--state

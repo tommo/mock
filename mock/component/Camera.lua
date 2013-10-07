@@ -64,10 +64,12 @@ local function updateRenderStack()
 		else
 			rt = renderData.deviceRenderTable
 		end
-
+		local isEditorCamera = cam.FLAG_EDITOR_OBJECT
 		for i, layer in ipairs( cam.moaiLayers ) do
-			count = count + 1
-			insert( rt, layer )
+			if not ( isEditorCamera and ( not layer.source.editorVisible ) ) then
+				count = count + 1
+				insert( rt, layer )
+			end
 		end
 
 	end
@@ -101,6 +103,8 @@ local function _onLayerUpdate( layer, var )
 			cam:reorderLayers()
 		end
 		updateRenderStack()
+	elseif var == 'editor_visible' then
+		updateRenderStack()
 	end
 end
 
@@ -115,6 +119,7 @@ CLASS: Camera ( Actor )
 	Field 'perspective' :boolean() :isset('Perspective');
 	Field 'nearPlane'   :number()  :getset('NearPlane');
 	Field 'farPlane'    :number()  :getset('FarPlane');
+	Field 'priority'    :int()     :getset('Priority');
 	Field 'FOV'         :number()  :getset('FOV')    :range( 0, 360 ) ;
 }
 
@@ -298,6 +303,20 @@ function Camera:getRenderLayer( name )
 	end
 	return nil
 end
+
+--------------------------------------------------------------------
+function Camera:getPriority()
+	return self.priority
+end
+
+function Camera:setPriority( p )
+	local p = p or 0
+	if self.priority ~= p then
+		self.priority = p
+		updateRenderStack()	
+	end
+end
+
 --------------------------------------------------------------------
 function Camera:setPerspective( p )
 	self.perspective = p
