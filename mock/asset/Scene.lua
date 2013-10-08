@@ -188,17 +188,26 @@ function deserializeEntity( data )
 	return insertEntity( nil, nil, data.body, objMap )
 end
 
+function loadSceneData( path )
+	local node = getAssetNode( path )
+	local data = node.cached.data
+	if not data then
+		local path = node:getObjectFile( 'def' )
+		data = loadAssetDataTable( path )
+		node.cached.data = data
+	end
+	return data
+end
+
 -------------------------------------------------------------------
 local function sceneLoader( node, option )
-	local path = node:getObjectFile( 'def' )
-	local data = loadAssetDataTable( path )
-	local scn = option.scene or Scene()
+	local data = loadSceneData( node:getNodePath() )
+	local scn  = option.scene or Scene()
 	--configuration
 	scn:init()
 	--entities
 	deserializeScene( data, scn )
-	return scn, false
+	return scn, false --no cache
 end
 
 registerAssetLoader( 'scene', sceneLoader )
-

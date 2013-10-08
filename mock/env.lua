@@ -130,7 +130,8 @@ function mock.init( configPath, fromEditor )
 end
 
 function mock.start( option )
-	mock.game:startEntryScene( option )
+	mock.game:openEntryScene( option )
+	mock.game:start()
 end
 
 function mock.printtable( t )

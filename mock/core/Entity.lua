@@ -79,10 +79,6 @@ function Entity:_insertIntoScene( scene, layer )
 		scene:addUpdateListener( self )
 	end
 	
-	if self.onThread then
-		self:addCoroutine('onThread')		
-	end
-
 	--callback
 	local entityListener = scene.entityListener
 	if entityListener then entityListener( 'add', self, scene, layer ) end	
@@ -99,10 +95,7 @@ function Entity:_insertIntoScene( scene, layer )
 		end
 	end
 
-	if scene.running then
-		return self:start()
-	end
-
+	scene.pendingStart[ self ] = true
 end
 
 --------------------------------------------------------------------
@@ -141,6 +134,7 @@ end
 function Entity:destroyNow()
 	local scene     = self.scene
 	local onDestroy = self.onDestroy
+	if not scene then return end
 
 	self:unsubscribeAll()
 	self:disconnectAll()
@@ -462,6 +456,9 @@ function Entity:start()
 	end
 	for child in pairs( self.children ) do
 		child:start()
+	end
+	if self.onThread then
+		self:addCoroutine('onThread')		
 	end
 end
 

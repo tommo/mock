@@ -19,6 +19,7 @@ function Scene:__init( option )
 	self.entities        = {}
 	self.entitiesByName  = {}
 
+	self.pendingStart    = {}
 	self.pendingDestroy  = {}
 	self.laterDestroy    = {}
 	self.pendingCall     = {}
@@ -45,6 +46,19 @@ function Scene:init()
 	self.active  = true
 
 	-- self.mainLayer = self:addLayer( 'main' )
+	self:updateLayers()
+
+	if self.onLoad then self:onLoad() end
+
+	_stat( 'Initialize Scene' )
+
+	self.timer   = MOAITimer.new()
+	self.timer:setMode( MOAITimer.CONTINUE )
+	self.timer:attach( self:getActionRoot() )
+
+end
+
+function Scene:updateLayers()
 	local layers = {}
 	local defaultLayer
 	
@@ -64,18 +78,6 @@ function Scene:init()
 
 	assert( self.defaultLayer )
 	self.layers = layers
-
-	if self.onLoad then self:onLoad() end
-
-	_stat( 'Initialize Scene' )
-
-	self.timer   = MOAITimer.new()
-	self.timer:setMode( MOAITimer.CONTINUE )
-	self.timer:attach( self:getActionRoot() )
-	self.timer:start()
-
-	emitSignal( 'scene.init', self )	
-
 end
 
 function Scene:getActionRoot()
@@ -118,6 +120,12 @@ function Scene:threadMain( dt )
 					entity:destroy()
 					laterDestroy[ entity ] = nil
 				end
+			end
+
+			local pendingStart = self.pendingStart
+			self.pendingStart = {}
+			for entity in pairs( pendingStart ) do
+				entity:start()
 			end
 
 		--end of step update
@@ -208,13 +216,14 @@ function Scene:start()
 			ent:start()
 		end
 	end
-	emitSignal( 'scene.start', self )	
+	self.timer:start()
 end
 
 function Scene:stop()
 	if not self.running then return end
 	self.running = false
 	self.mainThread:stop()
+	self.timer:stop()
 	self.mainThread = false
 end
 
@@ -222,20 +231,19 @@ function Scene:exitLater(time)
 	self.exitingTime = game:getTime() + time
 end
 
-function Scene:exit(nextScene)
+function Scene:exit()
 	_stat( 'scene exit' )
 	self.exiting = true	
 end
 
 function Scene:exitNow()
 	_codemark('Exit Scene: %s',self.name)
+	self:stop()
 	self.active  = false
 	self.exiting = false
-	self.running = false
-	self.timer:stop()
-	emitSignal( 'scene.exit', self )
 	if self.onExit then self.onExit() end
-	self:clear()
+	self:clear()	
+	emitSignal( 'scene.exit', self )	
 end
 
 
@@ -315,16 +323,13 @@ function Scene:clear( keepEditorEntity )
 			end
 		end
 	end
-
 	--layers in Scene is not in render stack, just let it go
-	-- self.layers          = {}
-		
 	self.laterDestroy    = {}
 	self.pendDestroy     = {}
 	self.pendingCall     = {}
 	self.entitiesByName  = {}
+	self.pendingStart    = {}
 
-	self.updateListeners = {}
+	-- self.updateListeners = {}
 	self.defaultCamera   = false
 end
-

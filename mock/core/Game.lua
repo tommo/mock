@@ -59,14 +59,19 @@ registerSignals{
 	'app.end',
 
 	'game.init',
+	'game.start',
+	'game.pause',
+	'game.resume',
+	'game.stop',
 	'game.update',
+
 	'gfx.resize',
 	'device.resize',
 
+	'mainscene.open',
+	'mainscene.close',
+
 	'scene.update',
-	'scene.init',
-	'scene.start',
-	'scene.exit',
 
 	'layer.update',
 	'layer.add',
@@ -93,6 +98,7 @@ function Game:__init()
 	self.layers        = {}
 	self.gfx           = { w = 640, h = 480, viewportRect = {0,0,640,480} }
 	self.time          = 0
+	self.mainScene     = Scene()
 
 	local l = self:addLayer( 'main' )
 	l.default = true
@@ -145,6 +151,8 @@ function Game:init( option, fromEditor )
 	self.graphicsOption = option['graphics']
 
 	self:initGraphics( fromEditor )
+	
+
 	loadAssetLibrary( self.assetLibraryIndex )
 	loadAllGameModules( option['script_library'] or false )
 
@@ -253,7 +261,11 @@ function Game:init( option, fromEditor )
 			self.scenes[ alias ] = scnPath
 		end
 	end
+	
 	self.entryScene = option['entry_scene']
+
+	self.mainScene:init()
+
 end
 
 
@@ -413,39 +425,48 @@ end
 --------------------------------------------------------------------
 ------Scene control
 --------------------------------------------------------------------
-function Game:startEntryScene()
+function Game:openEntryScene()
 	if self.entryScene then
-		local scene, node = loadAsset( self.entryScene )
-		if not node then 
-			return error('entry scene not found')
-		end
-		if node.type ~= 'scene' then
-			return error('invalid type of entry scene:' .. tostring( node.type ) )
-		end
-		scene:start()
+		self:openSceneByPath( self.entryScene )
+		self:start()
 	end
 end
 
-function Game:addScene( name, scn, initNow )
-	assert( not self.scenes[ name ], 'Duplicated scene:'..name )
 
-	self.scenes[ name ] = scn
-	scn.name = name
-	scn.game = self
-	
-	if initNow then	return scn:init() end
+function Game:openScene( id, additive )
+	local scnPath = self.scenes[ id ]
+	if not scnPath then
+		return _error( 'scene not defined', id )
+	end
+	return self:openSceneByPath( scnPath, additive )
 end
 
-function Game:getScene( name )
-	return self.scenes[ name ]
+function Game:openSceneByPath( scnPath, additive )
+	local mainScene = self.mainScene
+	if not additive then
+		mainScene:clear( true )
+	end
+	mainScene.running = false --start entity in batch
+	local scn, node = loadAsset( scnPath, { scene = mainScene } )
+	if not node then 
+		return _error('scene not found', id, scnPath )
+	end
+	if node.type ~= 'scene' then
+		return _error('invalid type of entry scene:', tostring( node.type ), scnPath )
+	end
+	emitSignal( 'mainscene.open', scn )
+	return scn
 end
 
-function Game:startScene(name,option)
-	local scn=self.scenes[ name ]
-	assert( scn, 'scene not found:'..name )
-	if scn.active then return end
-	scn:init( option or {} )
-	scn:start()
+function Game:onSceneExit( scn )
+	assert( scn == self.mainScene )
+	local pendingScene = self.pendingScene
+	self.mainScene = false
+	emitSignal( 'mainscene.close', scn )
+	if pendingScene then
+		self.pendingScene = false
+		return self:openSceneByPath( pendingScene )
+	end
 end
 
 --------------------------------------------------------------------
@@ -510,23 +531,38 @@ function Game:setStep(step,stepMul)
 end
 
 function Game:pause()
+	if self.paused then return end 
 	self.paused = true
-	return self.actionRoot:pause()
+	-- self.actionRoot:pause()
+	self.mainScene:pause()
+	emitSignal( 'game.pause', self )
 end
 
 function Game:stop()
-	os.exit() --TODO:  ????
+	-- self.actionRoot:stop()
+	self.mainScene:stop()
+	self.mainScene:clear( true )
+	self:resetClock()
+	emitSignal( 'game.stop', self )
 end
 
-function Game:start( entryScene )
-	entryScene = entryScene or self.entryScene
+function Game:start()
 	self.paused = false
-	return self.actionRoot:stop()
+	-- self.actionRoot:start()
+	self.mainScene:start()
+	
+	if self.paused then
+		emitSignal( 'game.resume', self )
+	else
+		emitSignal( 'game.start', self )
+	end
+
 end
 
 function Game:isPaused()
 	return self.paused
 end
+
 
 function Game:pushActionRoot( action )
 	action.prev = self.actionRoot

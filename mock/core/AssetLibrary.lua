@@ -128,6 +128,10 @@ function AssetNode:getObjectFile( name )
 	return objectFiles[ name ]
 end
 
+function AssetNode:getNodePath()
+	return self.path
+end
+
 function AssetNode:getFilePath( )
 	return self.filePath
 end
@@ -154,7 +158,7 @@ function AssetNode:getAbsFilePath()
 end
 
 function registerAssetNode( path, data )
-	ppath=splitPath(path)
+	ppath = splitPath(path)
 	local node = setmetatable(
 		{
 			path        = path,
@@ -163,14 +167,16 @@ function registerAssetNode( path, data )
 			properties  = data['properties'],
 			objectFiles = data['objectFiles'],
 			type        = data['type'],
-			parent      = ppath,
-			asset       = data['type'] == 'folder' and true or false,
+			parent      = ppath,			
 			fileTime    = data['fileTime'],
 			dependency  = data['dependency'],
 		}, 
 		AssetNode
 		)
-	
+
+	node.cached = {}
+	node.cached.asset = data['type'] == 'folder' and true or false
+
 	AssetLibrary[ path ] = node
 	return node
 end
@@ -201,7 +207,7 @@ end
 function preloadIntoAssetNode( path, asset )
 	local node = getAssetNode( path )
 	if node then
-		node.asset = asset 
+		node.cached.asset = asset 
 		return asset
 	end
 	return false
@@ -261,7 +267,7 @@ function loadAsset( path, option )
 	end
 
 	if loadPolicy ~= 'force' then
-		local asset  = node.asset
+		local asset  = node.cached.asset
 		if asset then
 			return asset, node
 		end
@@ -272,7 +278,7 @@ function loadAsset( path, option )
 
 	if node.parent then
 		loadAsset( node.parent )
-		if node.asset then return node.asset end --already preloaded		
+		if node.cached.asset then return node.cached.asset end --already preloaded		
 	end
 
 	--load from file
@@ -282,7 +288,7 @@ function loadAsset( path, option )
 	local asset, cached  = loader( node, option )	
 	if asset then
 		if cached ~= false then
-			node.asset = asset
+			node.cached.asset = asset
 		end
 		return asset, node
 	else
@@ -301,7 +307,7 @@ function releaseAsset( path )
 		if unloader then
 			unloader( asset, node )
 		end
-		node.asset = nil
+		node.cached = {}
 		_stat( 'released node asset', path )
 	end
 
