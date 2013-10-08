@@ -64,14 +64,21 @@ local function updateRenderStack()
 		else
 			rt = renderData.deviceRenderTable
 		end
-		local isEditorCamera = cam.FLAG_EDITOR_OBJECT
-		for i, layer in ipairs( cam.moaiLayers ) do
-			if not ( isEditorCamera and ( not layer.source.editorVisible ) ) then
+		if not cam.FLAG_EDITOR_OBJECT then
+			for i, layer in ipairs( cam.moaiLayers ) do
 				count = count + 1
 				insert( rt, layer )
 			end
+		else
+			for i, layer in ipairs( cam.moaiLayers ) do
+				local src = layer.source
+				local visible = src.editorVisible and src.editorSolo~='hidden'
+				if visible then
+					count = count + 1
+					insert( rt, layer )
+				end
+			end
 		end
-
 	end
 
 	for context, renderData in pairs( contextMap ) do

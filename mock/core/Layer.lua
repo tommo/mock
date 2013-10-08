@@ -21,6 +21,7 @@ CLASS: Layer ()
 		Field 'visible'   :boolean()  :isset('Visible') :noedit();
 		Field 'editVis'   :boolean()  :isset('EditorVisible') :noedit();
 		Field 'locked'    :boolean()  :noedit(); --editor only property
+		Field 'solo'      :boolean()  :isset('EditorSolo') :noedit();
 		Field 'parallax'  :type('vec2') :getset('Parallax');
 		Field 'sortMode'  :enum( EnumLayerSortMode ) :getset('SortMode');
 		Field 'priority'  :int() :noedit();
@@ -30,6 +31,7 @@ function Layer:__init( name )
 	self.name     = name or ''
 	self.visible  = true
 	self.editorVisible = true
+	self.editorSolo  = false
 	self.sortMode = 'priority_ascending'
 	self.default  = false
 	self.moaiLayers = setmetatable( {}, { __mode='k' } )
@@ -66,6 +68,16 @@ end
 
 function Layer:isEditorVisible()
 	return self.editorVisible
+end
+
+
+function Layer:setEditorSolo( solo )
+	self.editorSolo = solo and 'solo' or false
+	emitSignal( 'layer.update', self, 'editor_visible' )
+end
+
+function Layer:isEditorSolo()
+	return self.editorSolo == 'solo'
 end
 
 function Layer:setLocked( locked )
