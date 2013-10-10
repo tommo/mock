@@ -1,13 +1,18 @@
 module 'character'
 
-
---------------------------------------------------------------------
 CLASS: CharacterActionEvent ()
-	:MODEL{		
+CLASS: CharacterActionTrack ()
+--------------------------------------------------------------------
+CharacterActionEvent
+:MODEL{		
+		Field 'pos'    :range(0);
+		Field 'length' :range(0);
+		Field 'parent' :type( CharacterActionTrack ) :no_edit();		
 	}
 
 function CharacterActionEvent:__init()
-	self.actions = {}
+	self.pos    = 0
+	self.length = 10
 end
 
 function CharacterActionEvent:start()
@@ -17,15 +22,31 @@ function CharacterActionEvent:tostring()
 end
 
 --------------------------------------------------------------------
-CLASS: CharacterActionTrack ()
-	:MODEL{
+
+CharacterActionTrack
+:MODEL{
 		Field 'name' :string();		
 		Field 'events' :array( CharacterActionEvent ) :no_edit();		
 	}
 
 function CharacterActionTrack:__init()
 	self.name = 'track'
-	self.actions = {}
+	self.events = {}
+end
+
+function CharacterActionTrack:addEvent( pos )
+	local ev = CharacterActionEvent()
+	table.insert( self.events, ev )
+	ev.parent = self
+	ev.pos = pos
+	ev.length = 10
+	return ev
+end
+
+function CharacterActionTrack:removeEvent( ev )
+	for i, e in ipairs( self.events ) do
+		if e == ev then return table.remove( self.events, i )  end
+	end	
 end
 
 
@@ -44,6 +65,17 @@ end
 function CharacterAction:start()
 end
 
+function CharacterAction:addTrack()
+	local track = CharacterActionTrack()
+	table.insert( self.tracks, track )
+	return track
+end
+
+function CharacterAction:removeTrack( track )
+	for i, t in ipairs( self.tracks ) do
+		if t == track then return table.remove( self.tracks, i )  end
+	end	
+end
 --------------------------------------------------------------------
 CLASS: CharacterConfig ()
 	:MODEL{
