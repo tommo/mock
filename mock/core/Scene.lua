@@ -92,6 +92,13 @@ function Scene:threadMain( dt )
 		if self.active then
 			local dt = nowTime - lastTime
 			lastTime = nowTime
+			--start
+			local pendingStart = self.pendingStart
+			self.pendingStart = {}
+			for entity in pairs( pendingStart ) do
+				entity:start()
+			end
+
 			--callNextFrame
 			local pendingCall = self.pendingCall
 			self.pendingCall = {}
@@ -122,12 +129,7 @@ function Scene:threadMain( dt )
 				end
 			end
 
-			local pendingStart = self.pendingStart
-			self.pendingStart = {}
-			for entity in pairs( pendingStart ) do
-				entity:start()
-			end
-
+			
 		--end of step update
 		end
 

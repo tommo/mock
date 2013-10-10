@@ -18,13 +18,13 @@ local sortModeValue = {
 CLASS: Layer ()
 	:MODEL {
 		Field 'name'      :string()   :getset('Name');
-		Field 'visible'   :boolean()  :isset('Visible') :noedit();
-		Field 'editVis'   :boolean()  :isset('EditorVisible') :noedit();
-		Field 'locked'    :boolean()  :noedit(); --editor only property
-		Field 'solo'      :boolean()  :isset('EditorSolo') :noedit();
+		Field 'visible'   :boolean()  :isset('Visible') :no_edit();
+		Field 'editVis'   :boolean()  :isset('EditorVisible') :no_edit();
+		Field 'locked'    :boolean()  :no_edit(); --editor only property
+		Field 'solo'      :boolean()  :isset('EditorSolo') :no_edit();
 		Field 'parallax'  :type('vec2') :getset('Parallax');
 		Field 'sortMode'  :enum( EnumLayerSortMode ) :getset('SortMode');
-		Field 'priority'  :int() :noedit();
+		Field 'priority'  :int() :no_edit();
 	}
 
 function Layer:__init( name )

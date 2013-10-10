@@ -41,7 +41,15 @@ function SpineSprite:setSprite( path )
 	self.spritePath = path	
 	self.skeletonData = loadAsset( path )
 	if self.skeletonData  then
-		self.skeleton:load( self.skeletonData )
+		local entity = self._entity
+		if entity then
+			entity:_detachProp( self.skeleton )		
+			self.skeleton  = MOAISpineSkeleton.new()
+			self.skeleton:load( self.skeletonData )
+			entity:_attachProp( self.skeleton )
+		else
+			self.skeleton:load( self.skeletonData )
+		end
 	end
 end
 

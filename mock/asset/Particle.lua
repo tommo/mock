@@ -100,8 +100,8 @@ CLASS:  ParticleStateConfig()
 		Field 'name'         :string() ;
 		Field 'active'       :boolean() ;
 		Field 'life'         :number() :range(0);
-		Field 'initScript'   :string() :noedit();
-		Field 'renderScript' :string() :noedit();
+		Field 'initScript'   :string() :no_edit();
+		Field 'renderScript' :string() :no_edit();
 	}
 
 
@@ -178,8 +178,8 @@ CLASS:  ParticleSystemConfig()
 	:MODEL{
 		Field 'particles'    :int()  :range(0);
 		Field 'sprites'      :int()  :range(0);
-		Field 'emitters'     :array( ParticleEmitterConfig ) :sub() :noedit();
-		Field 'states'       :array( ParticleStateConfig )   :ref() :noedit(); 
+		Field 'emitters'     :array( ParticleEmitterConfig ) :sub() :no_edit();
+		Field 'states'       :array( ParticleStateConfig )   :ref() :no_edit(); 
 		Field 'blend'        :enum( BLEND_MODES );
 		Field 'deck'         :asset( 'deck2d\\..*' );
 	}

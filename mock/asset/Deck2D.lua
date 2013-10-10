@@ -3,7 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: Deck2D ()
 	:MODEL {
-		Field 'type'     :string()  :noedit();
+		Field 'type'     :string()  :no_edit();
 		Field 'name'     :string()  :getset('Name')    :readonly() ;
 		Field 'texture'  :string()  :getset('Texture') :readonly() ;		
 	}
@@ -242,7 +242,7 @@ end
 CLASS: Deck2DPack()
 :MODEL{
 	Field 'name'  :string();
-	Field 'decks' :array( Deck2D ) :noedit() :sub()
+	Field 'decks' :array( Deck2D ) :no_edit() :sub()
 }
 
 function Deck2DPack:__init()

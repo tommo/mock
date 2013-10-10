@@ -8,7 +8,7 @@ local unpack = unpack
 -- CLASS: Entity ( Actor ) 
 CLASS: Entity ( Actor )
 	:MODEL{
-		Field '_priority' :int() :noedit()  :set('setPriority');
+		Field '_priority' :int() :no_edit()  :set('setPriority');
 
 		Field 'name'     :string()  :getset('Name');
 		Field 'layer'    :type('layer')  :getset( 'Layer' );
@@ -446,6 +446,7 @@ end
 --------------------------------------------------------------------
 function Entity:start()
 	if self.started then return end
+	if not self.scene then return end
 	self.started = true
 	if self.onStart then
 		self:onStart()

@@ -294,7 +294,13 @@ end
 classBuilder = setmetatable( {}, { __index = affirmClass } )
 _G.CLASS  = classBuilder
 
-
+function findClass( term )
+	local l = #term
+	for n, clas in pairs( globalClassRegistry ) do		
+		if string.find( n, term, -l ) then return clas end
+	end
+	return nil
+end
 
 --------------------------------------------------------------------
 --MODEL & Field
@@ -326,6 +332,16 @@ function Model.fromClass( clas )
 	end
 	assert( m.__name == clas.__fullname )
 	return m	
+end
+
+function Model.find( term )
+	local clas = findClass( term )
+	return clas and Model.fromClass( clas ) or nil
+end
+
+function Model.findName( term )
+	local m = Model.find( term )
+	return m and m.__name or nil
 end
 
 function Model.fromName( fullname )
@@ -536,6 +552,10 @@ function Field:int()
 	return self:type('int')
 end
 
+function Field:no_nil()
+	return self:meta { no_nil = true } --will get validated against onStart
+end
+
 ---
 function Field:label( l )
 	self.__label = l
@@ -562,12 +582,12 @@ function Field:ref()
 	return self
 end
 
-function Field:noedit() --short cut
-	return self:meta{ noedit = true }
+function Field:no_edit() --short cut
+	return self:meta{ no_edit = true }
 end
 
-function Field:nosave() --short cut
-	return self:meta{ nosave = true }
+function Field:no_save() --short cut
+	return self:meta{ no_save = true }
 end
 
 function Field:readonly() --short cut
