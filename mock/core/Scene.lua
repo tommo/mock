@@ -128,7 +128,6 @@ function Scene:threadMain( dt )
 					laterDestroy[ entity ] = nil
 				end
 			end
-
 			
 		--end of step update
 		end
@@ -141,8 +140,7 @@ function Scene:threadMain( dt )
 				entity:destroyNow()
 			end
 		end
-		coroutine.yield()
-
+		local dt = coroutine.yield()
 		if self.exiting then 
 			self:exitNow() 
 		elseif self.exitingTime and self.exitingTime <= game:getTime() then

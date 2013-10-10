@@ -32,8 +32,9 @@ function SpineSprite:onDetach( entity )
 end
 
 function SpineSprite:onStart( entity )
-	if self.autoPlay and self.defaultClip then
-		self:play( self.defaultClip )
+	local default = self.defaultClip
+	if self.autoPlay and default and default ~= '' then
+		self:play( default )
 	end
 end
 
@@ -75,7 +76,8 @@ function SpineSprite:play( clipName, mode )
 	state:setSkeleton( self.skeleton )
 	state:setMode( mode )
 	if not self:affirmClip( clipName ) then
-		_warn( 'spine anim not found:', clipName )
+		_traceback()
+		_warn( 'spine anim clip not found:', clipName )
 		return false
 	end
 	self.skeleton:setToSetupPose()
@@ -100,7 +102,9 @@ function SpineSprite:getClipLength( name )
 end
 
 function SpineSprite:stop()
-	self.animState:stop()
+	if self.animState then
+		self.animState:stop()
+	end
 end
 
 function SpineSprite:setAnimationEventListener( listener )

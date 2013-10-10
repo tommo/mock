@@ -112,3 +112,8 @@ function _warnf( patt, ... )
 		return _warn( string.format( patt, ... ) )
 	end
 end
+
+function _traceback( msg, ... )
+	print( msg )
+	print( debug.traceback(2) )
+end
