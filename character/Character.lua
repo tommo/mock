@@ -49,11 +49,13 @@ end
 
 function Character:stop()
 	if not self.activeState then return end
+	self.activeState:stop()
+	self.activeState = false
+	self.spineSprite:stop()
 end
 
 -----
 function Character:onStart( ent )
-	print(' chara start ')
 	ent:attach( self.spineSprite )
 end
 

@@ -5,8 +5,8 @@ CLASS: CharacterActionTrack ()
 --------------------------------------------------------------------
 CharacterActionEvent
 :MODEL{		
-		Field 'pos'    :range(0);
-		Field 'length' :range(0);
+		Field 'pos'    :int() :range(0)  :getset('Pos');
+		Field 'length' :int() :range(0)  :getset('Length');
 		Field 'parent' :type( CharacterActionTrack ) :no_edit();		
 	}
 
@@ -25,6 +25,23 @@ end
 function CharacterActionEvent:toString()
 	return 'event'
 end
+
+function CharacterActionEvent:setPos( pos )
+	self.pos = pos
+end
+
+function CharacterActionEvent:getPos()
+	return self.pos
+end
+
+function CharacterActionEvent:setLength( length )
+	self.length = length
+end
+
+function CharacterActionEvent:getLength()
+	return self.length
+end
+
 
 --------------------------------------------------------------------
 
@@ -57,11 +74,15 @@ function CharacterActionTrack:removeEvent( ev )
 	end	
 end
 
+function CharacterActionTrack:toString()
+	return self.name
+end
 --------------------------------------------------------------------
 CLASS: CharacterActionState ()
 	:MODEL{}
 
 local function _actionStateEventListener( timer, key, timesExecuted, time, value )
+	print( key, time, value )
 	local state  = timer.state
 	local action = state.action
 	local span   = action.spanList[ key ]
@@ -77,7 +98,7 @@ function CharacterActionState:__init( action, target )
 	self.timer  = timer
 	local curve = action:getKeyCurve() 
 	timer:setCurve( curve )
-	timer:setSpan( curve:getLength() )
+	timer:setSpan( 100000 )
 	timer:setMode( MOAITimer.NORMAL )
 	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionStateEventListener )
 	timer.state = self
@@ -94,6 +115,19 @@ end
 function CharacterActionState:pause()
 	self.timer:pause()
 end
+
+function CharacterActionState:getTime()
+	return self.timer:getTime()
+end
+
+function CharacterActionState:isDone()
+	return self.timer:isDone()
+end
+
+function CharacterActionState:isPaused()
+	return self.timer:isPaused()
+end
+
 
 
 --------------------------------------------------------------------
@@ -153,7 +187,8 @@ function CharacterAction:_buildKeyCurve()
 	local curve = MOAIAnimCurve.new()
 	curve:reserveKeys( #spanPoints )
 	for i, pos in ipairs( spanPoints ) do
-		curve:setKey( i, pos, i )
+		local time = pos/1000 --ms convert to second
+		curve:setKey( i, time, i ) 
 		spanList[ i ] = spanSet[ pos ]
 	end
 	self.spanList = spanList
@@ -205,8 +240,8 @@ function CharacterConfig:getAction( name )
 	end
 	return nil
 end
---------------------------------------------------------------------
 
+--------------------------------------------------------------------
 local function loadCharacterConfig( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('config') )
 	local config = mock.deserialize( nil, data )
@@ -214,3 +249,21 @@ local function loadCharacterConfig( node )
 end
 
 mock.registerAssetLoader( 'character', loadCharacterConfig )
+
+--------------------------------------------------------------------
+
+local _TrackTypes = {}
+function getCharacterActionTrackTypeTable()
+	return _TrackTypes
+end
+
+function registerCharacterActionTrackType( name, trackClas )
+	if _TrackTypes[ name ] then
+		_warn( 'duplicated action track type', name )
+	end
+	_TrackTypes[ name ] = trackClas
+end
+
+function getCharacterActionTrackType( name )
+	return _TrackTypes[ name ]
+end
