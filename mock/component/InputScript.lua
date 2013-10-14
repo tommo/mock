@@ -11,11 +11,11 @@ function InputScript:__init( option )
 end
 
 function InputScript:onAttach( entity )
-	enableInputListener( entity, self.option )
+	installInputListener( entity, self.option )
 end
 
 function InputScript:onDetach( entity )
-	removeInputListener( entity )
+	uninstallInputListener( entity )
 end
 
 function InputScript:getInputDevice()

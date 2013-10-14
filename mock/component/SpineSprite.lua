@@ -105,6 +105,7 @@ function SpineSprite:stop()
 	if self.animState then
 		self.animState:stop()
 	end
+	self.skeleton:setToSetupPose()
 end
 
 function SpineSprite:setAnimationEventListener( listener )

@@ -1,5 +1,5 @@
-function _wrapMethod(class,fieldname,methodname)
-	local f=loadstring(
+function _wrapMethod( class, fieldname, methodname, arg, ... )
+	local f = loadstring(
 			string.format(
 				"return function( self, ... ) return self.%s:%s( ... ) end",
 				fieldname,
@@ -9,9 +9,9 @@ function _wrapMethod(class,fieldname,methodname)
 	class[methodname]=f
 end
 
-function _wrapMethods(class,fieldname,methodnames)
+function _wrapMethods( class, fieldname, methodnames )
 	for i,n in ipairs(methodnames) do
-		_wrapMethod(class,fieldname,n)
+		_wrapMethod( class, fieldname, n )
 	end
 end
 

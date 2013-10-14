@@ -24,8 +24,6 @@ CLASS: Entity ( Actor )
 
 wrapWithMoaiPropMethods( Entity, '_prop' )
 local setupMoaiTransform = setupMoaiTransform
-
-
 --------------------------------------------------------------------
 -------init
 --------------------------------------------------------------------
@@ -173,6 +171,7 @@ function Entity:destroyNow()
 	self.components = false	
 end
 
+--------------------------------------------------------------------
 function Entity:attach( com )
 	if not self.components then 
 		_error('attempt to attach component to a dead entity')
@@ -193,13 +192,6 @@ function Entity:attachList( l )
 	end
 end
 
--- function Entity:createComponent( name, ... )
--- 	local creator = componentRegistry[ name ]
--- 	if not creator then error( 'undefined component:'..name, 2 ) end
--- 	local com = creator( ... )
--- 	return self:attach( com )
--- end
-
 function Entity:detach( com )
 	if not self.components then return end
 	self.components[ com ] = nil
@@ -213,16 +205,6 @@ end
 function Entity:getComponents()
 	return self.components
 end
-
--- function Entity:getComponentList()
--- 	local result = {}
--- 	local i = 1
--- 	for com in pairs( self.components ) do
--- 		result[ i ] = com
--- 		i = i + 1
--- 	end
--- 	return result
--- end
 
 function Entity:getComponent( clas )
 	if not self.components then return nil end
@@ -265,8 +247,7 @@ function Entity:_detachProp( p )
 	self.layer:removeProp( p )
 end
 
-
-
+--------------------------------------------------------------------
 local inheritTransformColor = inheritTransformColor
 local inheritTransform      = inheritTransform
 local inheritLoc            = inheritLoc
@@ -274,7 +255,6 @@ local inheritLoc            = inheritLoc
 function Entity:_attachProp( p )
 	local _prop = self._prop
 	inheritTransformColorVisible( p, _prop )
-	-- if p:getClassName() == 'MDDMapObject' then error() end
 	self.layer:insertProp( p )
 	--TODO: better solution on scissor?
 	if self.scissorRect then p:setScissorRect( self.scissorRect ) end
@@ -554,7 +534,6 @@ function Entity:callNextFrame(f, ... )
 	insert( self.scene.pendingCall, t )
 end
 
-
 function Entity:callInterval( interval, func, ... )
 
 	local timer = self:createTimer()
@@ -713,14 +692,6 @@ function Entity:pick( x, y, z, pad )
 	
 	return nil
 end
-
---------------------------------------------------------------------
---Actor
---------------------------------------------------------------------
-function Entity:tell( ... )
-	return self:broadcast( ... )
-end
-
 --------------------------------------------------------------------
 --- Registry
 --------------------------------------------------------------------

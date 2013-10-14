@@ -4,7 +4,7 @@ module 'mock'
 	filter [ mouse, keyboard, touch, joystick ]
 ]]
 
-function enableInputListener( self, option )
+function installInputListener( self, option )
 	option = option or {}
 	local inputDevice       = option['device'] or mock.getDefaultInputDevice()
 	local refuseMockUpInput = option['no_mockup'] == true
@@ -106,7 +106,7 @@ function enableInputListener( self, option )
 	--TODO:...	
 end
 
-function removeInputListener( self )
+function uninstallInputListener( self )
 	local data = self.__inputListenerData
 	if not data then return end	
 	local inputDevice = data.inputDevice

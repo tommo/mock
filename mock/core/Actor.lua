@@ -41,102 +41,38 @@ function Actor:__init()
 end
 
 --------SIGNAL
-function Actor:connect(sig,methodname)
-	local connected=self.connected
-	if not connected then
-		connected={}
-		self.connected=connected
-	end
-	if type(self[methodname])~='function' then
-		error('Method not found:'..methodname,2)
-	end
-	local signal=connectSignalMethod(sig,self,methodname)
-	connected[signal]=methodname
+function Actor:connect( sig, methodName )
+	return self:connectForObject( self, sig, methodName )
 end
 
-function Actor:flushSignal(signame)
-	while self:pollSignal(signame) do end
-end
-
-function Actor:pollSignal(signame, tableResult)
-	local polling=self.polling
-	
-	if polling then
-		local poller=polling[signame]
-		if poller then
-			local firstParam=poller.firstParam
-			
-			if not firstParam then 
-				return false 
-			end
-			
-			if not firstParam.next then
-				poller.firstParam=false
-				poller.lastParam=false
-			else
-				poller.firstParam=firstParam.next
-			end
-			if tableResult then
-				return true,firstParam
-			else
-				return true,unpack(firstParam)
-			end
-		end
-	else
-		polling={} 
-		self.polling=polling
+function Actor:connectForObject( obj, sig, methodName )
+	local connectedSignals = self.connectedSignals
+	if not connectedSignals then
+		connectedSignals = {}
+		self.connectedSignals = connectedSignals
 	end
-	
-	local poller={
-		firstParam=false,
-		lastParam=false,		
-	}
-
-	local function queue(...)
-		local param={...}
-		local lastParam=poller.lastParam
-		if lastParam then
-			lastParam.next=param
-			poller.lastParam=param
-		else
-			poller.lastParam=param
-			poller.firstParam=param
-		end
-		
+	if type( obj[methodName] )~='function' then
+		error( 'Method not found:'..methodName, 2 )
 	end
-	poller.sig=connectSignalFunc(signame,queue)
-	poller.func=queue
-	polling[signame]=poller
-
-	return false
+	local signal = connectSignalMethod( sig, obj, methodName )
+	connectedSignals[ signal ] = obj
 end
 
-function Actor:emit(sig,...)
-	return emitSignal(sig,...)
-end
-
-function Actor:emitSignal(sig,...)
-	return emitSignal(sig,...)
+function Actor:emit( sig, ... )
+	return emitSignal( sig, ... )
 end
 
 function Actor:disconnectAll()
-	local connected=self.connected
-	if  connected then
-		for sig in pairs(connected) do
-			sig[self]=nil
-		end
-	end
-	local polling=self.polling
-	if polling then
-		for signame,p in pairs(polling) do
-			p.sig[p.func]=nil
-		end
+	local connectedSignals = self.connectedSignals
+	if not connectedSignals then return end
+	for sig, obj in pairs(connectedSignals) do
+		sig[ obj ]=nil
 	end
 end
 
 ---- msgbox?
 function Actor:tell(msg, data, source)
-	return insert(self.msgbox, {msg,data,source})
+	return insert( self.msgbox, {msg,data,source} )
 end
 
 function Actor:flushMsgBox()

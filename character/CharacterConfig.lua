@@ -70,8 +70,12 @@ end
 
 function CharacterActionTrack:removeEvent( ev )
 	for i, e in ipairs( self.events ) do
-		if e == ev then return table.remove( self.events, i )  end
+		if e == ev then 
+			table.remove( self.events, i )
+			return true
+		 end
 	end	
+	return false
 end
 
 function CharacterActionTrack:toString()
@@ -82,7 +86,6 @@ CLASS: CharacterActionState ()
 	:MODEL{}
 
 local function _actionStateEventListener( timer, key, timesExecuted, time, value )
-	print( key, time, value )
 	local state  = timer.state
 	local action = state.action
 	local span   = action.spanList[ key ]

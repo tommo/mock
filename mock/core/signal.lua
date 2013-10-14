@@ -23,34 +23,37 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
-local signalTable={}
-local weakmt={__mode='kv'}
-local function getSignal(sig)
-	local s=signalTable[sig]
+local signalTable = {}
+local weakmt = {__mode='v'}
+local function getSignal( sig )
+	local s = signalTable[sig]
 	if not s then 
 		return error('signal not found:'..sig)
 	end
 	return s
 end
 
-function connectSignalFunc(sig, func)
-	local s=getSignal(sig)
-	s[func]=true
+
+function connectSignalFunc( sig, func )
+	local s = getSignal(sig)
+	s[ func ] =  func
 	return s
 end
 
-function connectSignalMethod(sig, obj, methodname)
-	local s=getSignal(sig)
-	local m=obj[methodname]
-	s[obj]=m
+function connectSignalMethod( sig, obj, methodname )
+	local s = getSignal(sig)
+	local m = obj[methodname]	
+	s[ obj ] = function( ... )
+		return m( obj, ... )
+	end
 	return s
 end
 
 connectSignal = connectSignalFunc
 
-function disconnectSignal(sig,key)
-	local s=getSignal(sig)
-	s[key]=nil
+function disconnectSignal( sig, id )
+	local s = getSignal(sig)
+	s[id] = nil
 end
 
 function registerSignal(sig)
@@ -72,14 +75,8 @@ function registerSignals(sigtable)
 end
 
 function emitSignal(sig,...)
-	local s=getSignal(sig)
-
-	for k,v in pairs(s) do
-		if v==true then --key is funciton
-			k(...)
-		else
-			v(k,...)
-		end
+	local s = getSignal(sig)
+	for k, func in pairs(s) do
+		func( ... )		
 	end
 end
-

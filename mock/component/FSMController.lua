@@ -45,7 +45,7 @@ end
 --------------------------------------------------------------------
 CLASS:  FSMController ( Behaviour )
 	:MODEL{
-		Field 'state'  :string();
+		Field 'state'  :string() :readonly();
 		Field 'scheme' :asset('fsm_scheme') :getset('Scheme');
 	}
 
@@ -63,7 +63,7 @@ end
 
 function FSMController:updateFSM( dt )
 	local func = self.currentStateFunc
-	if func then 		
+	if func then
 		return func( self, dt, 0 )
 	end
 end
@@ -74,13 +74,13 @@ function FSMController:setScheme( schemePath )
 	self.scheme = scheme
 	if scheme then
 		self.currentStateFunc = scheme[ 'start' ].func
-		self:validStateMethods()
+		self:validateStateMethods()
 	else
 		self.currentStateFunc = nil
 	end	
 end
 
-function FSMController:validStateMethods()
+function FSMController:validateStateMethods()
 	--todo
 end
 

@@ -7,8 +7,8 @@ CLASS: Character ( mock.Behaviour )
 	}
 
 function Character:__init()
-	self.config  = false
-	self.default = 'default'
+	self.config      = false
+	self.default     = 'default'
 	self.activeState = false
 	self.spineSprite = mock.SpineSprite()
 end
@@ -57,8 +57,16 @@ end
 -----
 function Character:onStart( ent )
 	ent:attach( self.spineSprite )
+	if self.default and self.config then
+		if self.default == '' then return end
+		self:playAction( self.default )
+	end
 end
 
+function Character:onDetach( ent )
+	ent:detach( self.spineSprite )
+	return mock.Behaviour.onDetach( self, ent )
+end
 ------
 --EVENT ACTION:
 function Character:playAnim( clip )
