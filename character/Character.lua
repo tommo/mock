@@ -11,6 +11,7 @@ function Character:__init()
 	self.default     = 'default'
 	self.activeState = false
 	self.spineSprite = mock.SpineSprite()
+	self.soundSource = mock.SoundSource()
 end
 
 function Character:setConfig( configPath )
@@ -57,6 +58,7 @@ end
 -----
 function Character:onStart( ent )
 	ent:attach( self.spineSprite )
+	ent:attach( self.soundSource )
 	if self.default and self.config then
 		if self.default == '' then return end
 		self:playAction( self.default )
@@ -69,8 +71,8 @@ function Character:onDetach( ent )
 end
 ------
 --EVENT ACTION:
-function Character:playAnim( clip )
-	self.spineSprite:play( clip, MOAITimer.LOOP )
+function Character:playAnim( clip, loop )
+	self.spineSprite:play( clip, loop and MOAITimer.LOOP )
 end
 
 function Character:stopAnim()

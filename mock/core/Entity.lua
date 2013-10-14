@@ -427,10 +427,11 @@ end
 function Entity:start()
 	if self.started then return end
 	if not self.scene then return end
-	self.started = true
+	
 	if self.onStart then
 		self:onStart()
 	end
+	self.started = true
 	for com in pairs( self.components ) do
 		local onStart = com.onStart
 		if onStart then onStart( com, self ) end

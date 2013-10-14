@@ -22,6 +22,10 @@ end
 CLASS: TrackMessage ( CharacterActionTrack )
 	:MODEL{}
 
+function TrackMessage:getType()
+	return 'message'
+end
+
 function TrackMessage:createEvent()
 	return EventMessage()
 end

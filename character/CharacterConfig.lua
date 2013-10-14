@@ -56,6 +56,10 @@ function CharacterActionTrack:__init()
 	self.events = {}
 end
 
+function CharacterActionTrack:getType()
+	return 'track'
+end
+
 function CharacterActionTrack:createEvent()
 	return CharacterActionEvent()
 end
