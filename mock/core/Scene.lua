@@ -128,7 +128,6 @@ function Scene:threadMain( dt )
 					laterDestroy[ entity ] = nil
 				end
 			end
-			
 		--end of step update
 		end
 

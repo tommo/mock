@@ -11,7 +11,7 @@ CLASS: Entity ( Actor )
 		Field '_priority' :int() :no_edit()  :set('setPriority');
 
 		Field 'name'     :string()  :getset('Name');
-		Field 'layer'    :type('layer')  :getset( 'Layer' );
+		Field 'layer'    :type('layer')  :getset( 'Layer' ) :no_nil();
 
 		Field 'loc'      :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'      :type('vec3') :getset('Rot') :label('Rot');
@@ -177,12 +177,17 @@ function Entity:attach( com )
 		_error('attempt to attach component to a dead entity')
 		return com
 	end
+	assert( not self.components[ com ], 'component already attached!!!!'  )
 	self.components[ com ] = com:getClass()
 	if self.scene then
 		local onAttach = com.onAttach
 		if onAttach then onAttach( com, self ) end
-	end
+	end		
 	com._entity = self
+	if self.started then
+		local onStart = com.onStart
+		if onStart then onStart( com, self ) end
+	end
 	return com
 end
 
@@ -231,7 +236,7 @@ function Entity:com( id )
 	elseif tt == 'table' then
 		return self:getComponentByName()
 	elseif tt == 'nil' then
-		local id, com = next( self.components )
+		local com = next( self.components )
 		return com
 	else
 		_error( 'invalid component id', tostring(id) )
@@ -333,6 +338,11 @@ function Entity:findEntity( name )
 	return self.scene:findEntity( name )
 end
 
+function Entity:findEntityCom( entName, comId )
+	local ent = self:findEntity( entName )
+	return ent and ent:com( comId )
+end
+
 function Entity:findChild( name )
 	for child in pairs( self.children ) do
 		if child.name == name then return child end
@@ -432,9 +442,15 @@ function Entity:start()
 		self:onStart()
 	end
 	self.started = true
+	local copy = {}
 	for com in pairs( self.components ) do
+		copy[ com ] = true
+	end
+	for com, clas in pairs( copy ) do
 		local onStart = com.onStart
-		if onStart then onStart( com, self ) end
+		if onStart then 
+			onStart( com, self )
+		end
 	end
 	for child in pairs( self.children ) do
 		child:start()

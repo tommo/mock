@@ -45,7 +45,7 @@ end
 --------------------------------------------------------------------
 CLASS:  FSMController ( Behaviour )
 	:MODEL{
-		Field 'state'  :string() :readonly();
+		Field 'state'  :string() :readonly() :get('getState');
 		Field 'scheme' :asset('fsm_scheme') :getset('Scheme');
 	}
 
@@ -59,6 +59,11 @@ end
 function FSMController:onStart( entity )
 	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
 	Behaviour.onStart( self, entity )
+end
+
+function FSMController:getState()
+	local ent = self._entity
+	return ent and ent:getState()
 end
 
 function FSMController:updateFSM( dt )

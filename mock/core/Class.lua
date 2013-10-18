@@ -512,10 +512,16 @@ end
 
 function Field:array( t ) 
 	self.__type     = '@array'
-	self.__itemtype = t
+	self.__itemtype = t or 'number'
 	return self
 end
 
+function Field:collection( t ) 
+	self.__type     = '@array'
+	self.__itemtype = t or 'number'
+	self:meta{ ['collection'] = true }
+	return self
+end
 
 function Field:enum( t )
 	self.__type  = '@enum'

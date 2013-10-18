@@ -58,7 +58,7 @@ end
 
 function FMODEventGroup:load()
 	if self.project:isLoaded() then
-		self.loaded = MOAIFmodEventMgr.loadGroup( self.fullName )
+		self.loaded = MOAIFmodEventMgr.loadGroup( self.fullName, true, true )
 	else
 		self.loaded = false
 	end

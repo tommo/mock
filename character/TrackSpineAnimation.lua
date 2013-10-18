@@ -13,6 +13,10 @@ function EventSpineAnimation:__init()
 	self.loop   = false
 end
 
+function EventSpineAnimation:isResizable()
+	return false
+end
+
 function EventSpineAnimation:onStart( target, pos )
 	if self.clip == '' then
 		return target:stopAnim()
@@ -36,6 +40,10 @@ end
 --------------------------------------------------------------------
 CLASS: TrackSpineAnimation ( CharacterActionTrack )
 	:MODEL{}
+
+function TrackSpineAnimation:__init()
+	self.name = 'animation'
+end
 
 function TrackSpineAnimation:createEvent()
 	return EventSpineAnimation()

@@ -4,6 +4,8 @@ CLASS: Character ( mock.Behaviour )
 	:MODEL{
 		Field 'config'  :asset('character') :getset( 'Config' );
 		Field 'default' :string();
+		Field 'autoPlay' :boolean();
+		Field 'loop'     :boolean();
 	}
 
 function Character:__init()
@@ -12,6 +14,10 @@ function Character:__init()
 	self.activeState = false
 	self.spineSprite = mock.SpineSprite()
 	self.soundSource = mock.SoundSource()
+	self.throttle    = 1
+
+	self.actionEventCallbacks = false
+
 end
 
 function Character:setConfig( configPath )
@@ -32,6 +38,34 @@ function Character:updateConfig()
 	--todo
 end
 
+--------------------------------------------------------------------
+--Track access
+--------------------------------------------------------------------
+function Character:getAction( actionName )
+	if not self.config then return nil end
+	return self.config:getAction( actionName )
+end
+
+function Character:findTrack( actionName, trackName, trackType )
+	local action = self:getAction( actionName )
+	if not action then
+		_warn('character has no action', actionName)
+		return nil
+	end
+	return action:findTrack( trackName, trackType )
+end
+
+function Character:findTrackByType( actionName, trackType )
+	local action = self:getAction( actionName )
+	if not action then
+		_warn('character has no action', actionName)
+		return nil
+	end
+	return action:findTrackByType( trackType )
+end
+
+--------------------------------------------------------------------
+--playback
 function Character:playAction( name )
 	if not self.config then
 		_warn('character has no config')
@@ -42,7 +76,9 @@ function Character:playAction( name )
 		_warn( 'character has no action', name )
 		return false
 	end
-	local actionState = action:createState( self )
+	self:stop()
+	self:setThrottle( 1 )
+	local actionState = action:createActionState( self )
 	self.activeState = actionState
 	actionState:start()
 	return actionState
@@ -55,22 +91,62 @@ function Character:stop()
 	self.spineSprite:stop()
 end
 
+function Character:setThrottle( th )
+	self.throttle = th
+	if self.activeState then
+		self.activeState:setThrottle( th )
+	end
+	self.spineSprite:setThrottle( th )
+end
+
 -----
 function Character:onStart( ent )
 	ent:attach( self.spineSprite )
 	ent:attach( self.soundSource )
-	if self.default and self.config then
+	if self.autoPlay and self.default and self.config then
 		if self.default == '' then return end
 		self:playAction( self.default )
 	end
+	mock.Behaviour.onStart( self, ent )
 end
 
 function Character:onDetach( ent )
+	self:stop()
 	ent:detach( self.spineSprite )
 	return mock.Behaviour.onDetach( self, ent )
 end
+
+--------------------------------------------------------------------
+function Character:processActionEvent( ev, time )
+	ev:start( self, time )
+	if self.actionEventCallbacks then
+		for i, callback in ipairs( self.actionEventCallbacks ) do
+			callback( self, ev, time )
+		end
+	end
+end
+
+function Character:addActionEventCallback( cb )
+	local callbacks = self.actionEventCallbacks
+	if not callbacks then
+		callbacks = {}
+		self.actionEventCallbacks = callbacks
+	end
+	table.insert( callbacks, cb )
+end
+
+function Character:removeActionEventCallback( cb )
+	for i, v in ipairs( self.actionEventCallbacks ) do
+		if v == cb then
+			return table.remove( self.actionEventCallbacks, i )
+		end
+	end
+end
+
+
 ------
 --EVENT ACTION:
+
 function Character:playAnim( clip, loop )
 	self.spineSprite:play( clip, loop and MOAITimer.LOOP )
 end

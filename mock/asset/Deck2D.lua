@@ -236,6 +236,75 @@ function StretchPatch:update()
 	deck.patchHeight = h
 end
 
+
+--------------------------------------------------------------------
+CLASS: PolygonDeck ( Deck2D )
+	:MODEL{
+		Field 'vertexList' :array() :no_edit();		
+		Field 'indexList' :array() :no_edit();		
+	}
+
+local vertexFormat = MOAIVertexFormat.new ()
+vertexFormat:declareCoord ( 1, MOAIVertexFormat.GL_FLOAT, 2 )
+vertexFormat:declareUV ( 2, MOAIVertexFormat.GL_FLOAT, 2 )
+vertexFormat:declareColor ( 3, MOAIVertexFormat.GL_UNSIGNED_BYTE )
+
+function PolygonDeck:__init()
+	self.vertexList = {}
+	self.indexList  = {}
+end
+
+function PolygonDeck:createMoaiDeck()
+	local mesh = MOAIMesh.new ()	
+	mesh:setPrimType ( MOAIMesh.GL_TRIANGLE_FAN )
+	return mesh
+end
+
+function PolygonDeck:update()
+	-- local w, h = self.w, self.h
+	-- mesh:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
+	local mesh = self:getMoaiDeck()
+	local tex = self.texture
+	local u0,v0,u1,v1 
+	if tex.type == 'sub_texture' then
+		mesh:setTexture( tex.atlas )
+		u0,v0,u1,v1 = unpack( tex.uv )
+	else
+		mesh:setTexture( tex )
+		u0,v0,u1,v1 = 0,0,1,1
+	end
+	local us = u1-u0
+	local vs = v1-v0
+
+	local vertexList  = self.vertexList
+	local vertexCount = #vertexList
+	local indexList   = self.indexList
+	local indexCount  = #indexList
+
+	local vbo = MOAIVertexBuffer.new ()
+	vbo:setFormat ( vertexFormat )
+	vbo:reserveVerts ( vertexCount )
+	for i = 1, vertexCount, 4 do
+		local x, y = vertexList[ i ], vertexList[ i + 1 ]
+		local u, v = vertexList[ i + 2 ], vertexList[ i + 3 ]
+		vbo:writeFloat ( x, y )
+		vbo:writeFloat ( u*us + u0,  v*vs +v0 )
+		vbo:writeColor32 ( 1, 1, 1 )
+	end
+	vbo:bless ()
+
+	local ibo = MOAIIndexBuffer.new ()
+	ibo:reserve ( indexCount )
+	for i = 1, indexCount, 2 do
+		local a, b = indexList[ i ], indexList[ i + 1 ]
+		ibo:setIndex( i, a, b )
+	end
+
+	mesh:setVertexBuffer ( vbo )
+	-- mesh:setIndexBuffer ( ibo )
+
+end
+
 --------------------------------------------------------------------
 --PACK
 --------------------------------------------------------------------
@@ -270,6 +339,10 @@ function Deck2DPack:addDeck( name, dtype, src )
 		local patch = mock.StretchPatch()
 		patch:setTexture( src )
 		deck = patch
+	elseif dtype == 'polygon' then
+		local poly = mock.PolygonDeck()
+		poly:setTexture( src )
+		deck = poly
 	end
 	deck.type = dtype
 	deck:setName( name )
@@ -306,3 +379,4 @@ registerAssetLoader ( 'deck2d', Deck2DPackLoader )
 registerAssetLoader ( 'deck2d.quad',         Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.tileset',      Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.stretchpatch', Deck2DItemLoader )
+registerAssetLoader ( 'deck2d.polygon', Deck2DItemLoader )

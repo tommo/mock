@@ -25,9 +25,18 @@ function EventFmodSound:__init()
 	self.loop   = false
 end
 
+function EventFmodSound:resizable()
+	return false
+end
+
 function EventFmodSound:onStart( target, pos )
 	if self.sound then 
-		target.soundSource:playEvent2D( self.sound, self.loop )
+		if self.loop then
+			local evt = target.soundSource:loopEvent2D( self.sound )
+		else
+			local evt = target.soundSource:playEvent2D( self.sound )
+			-- if evt then evt:setPitch( target.throttle ) end
+		end
 	end
 end
 
@@ -40,6 +49,10 @@ end
 --------------------------------------------------------------------
 CLASS: TrackFmodSound ( CharacterActionTrack )
 	:MODEL{}
+
+function TrackFmodSound:__init()
+	self.name = 'sound'
+end
 
 function TrackFmodSound:getType()
 	return 'fmod_sound'

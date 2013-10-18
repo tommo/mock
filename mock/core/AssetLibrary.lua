@@ -284,7 +284,10 @@ function loadAsset( path, option )
 	--load from file
 	local atype  = node.type
 	local loader = AssetLoaders[ atype ]
-	if not loader then return false end
+	if not loader then
+		_warn( 'no loader for asset:', atype )
+		return false
+	end
 	local asset, cached  = loader( node, option )	
 	if asset then
 		if cached ~= false then

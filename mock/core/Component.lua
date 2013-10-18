@@ -25,6 +25,10 @@ function Component:getParent()
 	return self._entity.parent
 end
 
+function Component:findEntityCom( name, comId )
+	return self._entity:findEntityCom( name, comId )
+end
+
 --------------------------------------------------------------------
 function Component:getComponent( comType )
 	return self._entity:getComponent( comType )
@@ -217,4 +221,35 @@ end
 function getComponentType( name )
 	return componentRegistry[ name ]
 end
+
+
+--------------------------------------------------------------------
+-----------convert MOAIProp into attachable components
+--------------------------------------------------------------------
+
+local onAttachProp = function( self, entity )
+	return entity:_attachProp( self )
+end
+
+local onDetachProp = function( self, entity )
+	return entity:_detachProp( self )
+end
+
+function injectMoaiPropComponentMethod( clas )
+	injectMoaiClass( clas, {
+		onAttach       = onAttachProp,
+		onDetach       = onDetachProp,
+		setupProp      = setupMoaiProp,
+		setupTransform = setupMoaiTransform
+		})
+end
+
+injectMoaiPropComponentMethod( MOAIProp )
+injectMoaiPropComponentMethod( MOAIProp2D )
+injectMoaiPropComponentMethod( MOAITextBox )
+injectMoaiPropComponentMethod( MOAIParticleSystem )
+injectMoaiPropComponentMethod( MOAITextBox )
+
+
+
 

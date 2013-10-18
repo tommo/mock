@@ -7,10 +7,15 @@ CLASS: EventMessage ( CharacterActionEvent )
 	}
 function EventMessage:__init()
 	self.length = 0
+	self.name   = 'message'
+end
+
+function EventMessage:isResizable()
+	return true
 end
 
 function EventMessage:onStart( target, pos )
-	target:tell( self.message )
+	target:tell( self.message, self )
 end
 
 function EventMessage:toString()

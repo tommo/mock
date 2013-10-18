@@ -361,8 +361,10 @@ function Actor:waitFrames(f)
 	end
 end
 
+
+
 function Actor:waitTime(t)
-	local timer=MOAITimer.new()
+	local timer = MOAITimer.new()
 	timer:setSpan(t)
 	timer:start()
 	return block(timer)

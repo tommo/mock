@@ -1,7 +1,6 @@
 ----TODO: move related host code from MDD into libmoai
 local yield       = coroutine.yield
 local tmpNode     = MOAIColor.new()
-
 local setAttr     = tmpNode.setAttr
 local seekAttr    = tmpNode.seekAttr
 local moveAttr    = tmpNode.moveAttr
@@ -95,6 +94,15 @@ function actionGroup(list)
 	end)
 	return thread
 end
+
+-- local block       = MOAICoroutine.blockOnAction
+-- local timerCache  = {}
+-- function blockTime( t )
+-- 	local timer = timerCache[1] or MOAITimer.new()
+-- 	timer:setSpan(t)
+-- 	timer:start()
+-- 	return block(timer)
+-- end
 
 function delayedFunc(func,time,parentAction)
 	local timer=MOAITimer.new()

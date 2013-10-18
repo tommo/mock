@@ -21,12 +21,12 @@ end
 
 local globalCameraList = {}
 
-local function findMainCameraForScene( scene )
-	for _, cam in ipairs( globalCameraList ) do
-		if cam.scene == scene and cam.mainCamera then return cam end
-	end
-	return nil
-end
+-- local function findMainCameraForScene( scene )
+-- 	for _, cam in ipairs( globalCameraList ) do
+-- 		if cam.scene == scene and cam.mainCamera then return cam end
+-- 	end
+-- 	return nil
+-- end
 
 local function updateRenderStack()
 	--TODO: render order of framebuffers
@@ -119,15 +119,18 @@ connectSignalFunc( 'device.resize', _onDeviceResize )
 connectSignalFunc( 'gfx.resize', _onGameResize )
 connectSignalFunc( 'layer.update', _onLayerUpdate )
 -------------
-CLASS: Camera ( Actor )
+CLASS: Camera ( Component )
 
 :MODEL{
-	Field 'zoom'        :number()  :getset('Zoom')   :range(0) ;
-	Field 'perspective' :boolean() :isset('Perspective');
-	Field 'nearPlane'   :number()  :getset('NearPlane');
-	Field 'farPlane'    :number()  :getset('FarPlane');
-	Field 'priority'    :int()     :getset('Priority');
-	Field 'FOV'         :number()  :getset('FOV')    :range( 0, 360 ) ;
+	Field 'zoom'             :number()  :getset('Zoom')   :range(0) ;
+	Field 'perspective'      :boolean() :isset('Perspective');
+	Field 'nearPlane'        :number()  :getset('NearPlane');
+	Field 'farPlane'         :number()  :getset('FarPlane');
+	Field 'priority'         :int()     :getset('Priority');
+	Field 'FOV'              :number()  :getset('FOV')    :range( 0, 360 ) ;
+	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
+	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
+
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
@@ -165,7 +168,8 @@ function Camera:__init( option )
 	self.dummyLayer:setCamera( self._camera )
 	
 	self.includedLayers = option.included or 'all'
-	self.excludedLayers = option.excluded or ( option.included and 'all' or false )
+	-- self.excludedLayers = option.excluded or ( option.included and 'all' or false )
+	self.excludedLayers = {}
 	self:setFrameBuffer()
 
 	self:setFOV( 90 )
@@ -186,10 +190,11 @@ function Camera:onAttach( entity )
 	self:updateViewport()
 	self:updateLayers()
 	entity:_attachTransform( self._camera )
+	self:bindSceneLayers()
 	--use as main camera if no camera applied yet for current scene
-	if not findMainCameraForScene( self.scene ) then 
-		self:setMainCamera()
-	end
+	-- if not findMainCameraForScene( self.scene ) then 
+	-- 	self:setMainCamera()
+	-- end
 end
 
 function Camera:onDetach( entity )
@@ -202,33 +207,32 @@ end
 
 --------------------------------------------------------------------
 --will affect Entity:wndToWorld
-function Camera:setMainCamera()
-	if self.mainCamera then return end
+function Camera:bindSceneLayers()
 	local scene = self.scene
-	if not scene then return end
-	for _, cam in ipairs( globalCameraList ) do
-		if cam.mainCamera and cam ~= self and cam.scene == self.scene then
-			cam.mainCamera = false
-		end 
-	end
-
-	for k, layer in pairs( self.scene.layers ) do
-		local name = layer.name
-		if self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name )) then
-			layer:setViewport( self.viewport )
-			layer:setCamera( self._camera )
-		end
+	if not scene then return end	
+	for k, layer in pairs( scene.layers ) do
+		self:tryBindSceneLayer( layer )
 	end	
 end
 
-function Camera:isMainCamera()
-	return self.mainCamera
+function Camera:tryBindSceneLayer( layer )
+	local name = layer.name
+	if self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name )) then
+		layer:setViewport( self.viewport )
+		layer:setCamera( self._camera )
+	end
 end
 
-function Camera:getMainCamera()
-	if not self.scene then return nil end
-	return findMainCameraForScene( self.scene )
-end
+-- function Camera:unbindSceneLayer()
+-- 	local scene = self.scene
+-- 	if not scene then return end	
+-- 	for k, layer in pairs( scene.layers ) do
+-- 		if layer.mainCamera == self then
+-- 			layer:setViewport( self.viewport )
+-- 			layer:setCamera( self._camera )
+-- 		end
+-- 	end	
+-- end
 
 --------------------------------------------------------------------
 function Camera:isLayerIncluded( name )
@@ -311,6 +315,15 @@ function Camera:getRenderLayer( name )
 	return nil
 end
 
+function Camera:getExcludedLayers()
+	return self.excludedLayers
+end
+
+function Camera:setExcludedLayers( layers )
+	self.excludedLayers = layers
+	if self.scene then self:updateLayers() end
+end
+
 --------------------------------------------------------------------
 function Camera:getPriority()
 	return self.priority
@@ -342,6 +355,18 @@ function Camera:isPerspective()
 	return self.perspective
 end
 
+-------------------------------------------------------------------
+function Camera:setParallaxEnabled( p )
+	self.parallaxEnabled = p~=false
+	if self.scene then
+		self:updateLayers()
+	end
+end
+
+function Camera:isParallaxEnabled()
+	return self.parallaxEnabled
+end
+--------------------------------------------------------------------
 
 function Camera:setNearPlane( near )
 	local cam = self._camera
@@ -529,6 +554,10 @@ end
 ----
 function Camera:seekZoom( zoom, time, easeMode )
 	return self.zoomControlNode:seekAttr( 0, zoom, time, easeMode )
+end
+
+function Camera:moveZoom( zoom, time, easeMode )
+	return self.zoomControlNode:seekAttr( 0, zoom + self:getZoom(), time, easeMode )
 end
 
 function Camera:setZoom( zoom )

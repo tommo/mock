@@ -21,6 +21,7 @@ function SpineSprite:__init()
 	self.defaultClip   = ''
 	self.autoPlay      = true
 	self._onAnimationEvent  = false
+	self.throttle      = 1
 end
 
 function SpineSprite:onAttach( entity )
@@ -75,6 +76,7 @@ function SpineSprite:play( clipName, mode )
 	state:init( self.skeletonData )
 	state:setSkeleton( self.skeleton )
 	state:setMode( mode )
+	state:throttle( self.throttle )
 	if not self:affirmClip( clipName ) then
 		_traceback()
 		_warn( 'spine anim clip not found:', clipName )
@@ -83,12 +85,20 @@ function SpineSprite:play( clipName, mode )
 	self.skeleton:setToSetupPose()
 	local loop = mode == MOAITimer.LOOP
 	state:setAnimation( 0, clipName, loop )
+	state:setSpan( 1000000 )
 	state:start()
 	state.owner = self
 	state:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )
 	-- state:setListener( EVENT_SPINE_ANIMATION_COMPLETE, _onSpineAnimationComplete )
 	self.animState = state 
 	return state
+end
+
+function SpineSprite:setThrottle( th )
+	self.throttle = th
+	if self.animState then
+		self.animState:throttle( th )
+	end
 end
 
 function SpineSprite:affirmClip( name )

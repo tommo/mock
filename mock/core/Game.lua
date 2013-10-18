@@ -210,9 +210,19 @@ function Game:init( option, fromEditor )
 		end
 	)
 	MOAIActionMgr.setRoot( actionRoot )
-	-- MOAISim.setLoopFlags( 
-	-- 		MOAISim.LOOP_FLAGS_FIXED
-	-- 	)
+	MOAISim.setLoopFlags( 
+			-- MOAISim.LOOP_FLAGS_MULTISTEP
+			-- MOAISim.LOOP_FLAGS_DEFAULT
+			-- MOAISim.LOOP_FLAGS_DEFAULT
+			-- MOAISim.SIM_LOOP_FORCE_STEP
+			-- MOAISim.SIM_LOOP_NO_DEFICIT
+			MOAISim.SIM_LOOP_NO_SURPLUS
+		)
+	MOAISim.setLongDelayThreshold( 100 )
+	-- MOAISim.clearLoopFlags(
+	-- 	MOAISim.LOOP_FLAGS_DEFAULT
+		-- )
+	-- MOAISim.setStepMultiplier( 2 )
 	-- MOAISim.setLoopFlags( 
 	-- 		MOAISim.SIM_LOOP_FORCE_STEP
 	-- 	)
@@ -388,7 +398,7 @@ function Game:setDeviceSize( w, h )
 	-- if self.deviceWidth == w and self.deviceHeight == h then return end
 	self.deviceWidth  = w
 	self.deviceHeight = h
-	_stat( 'device.resize', w, h )
+	-- _stat( 'device.resize', w, h )
 	emitSignal( 'device.resize', self.width, self.height )
 end
 
@@ -446,6 +456,7 @@ function Game:openSceneByPath( scnPath, additive )
 	if not additive then
 		mainScene:clear( true )
 	end
+	local runningState = mainScene.running
 	mainScene.running = false --start entity in batch
 	local scn, node = loadAsset( scnPath, { scene = mainScene } )
 	if not node then 
@@ -454,6 +465,7 @@ function Game:openSceneByPath( scnPath, additive )
 	if node.type ~= 'scene' then
 		return _error('invalid type of entry scene:', tostring( node.type ), scnPath )
 	end
+	mainScene.running = runningState
 	emitSignal( 'mainscene.open', scn )
 	return scn
 end

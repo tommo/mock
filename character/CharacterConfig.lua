@@ -1,7 +1,12 @@
 module 'character'
 
+
 CLASS: CharacterActionEvent ()
 CLASS: CharacterActionTrack ()
+CLASS: CharacterAction ()
+CLASS: CharacterConfig ()
+
+
 --------------------------------------------------------------------
 CharacterActionEvent
 :MODEL{		
@@ -13,6 +18,24 @@ CharacterActionEvent
 function CharacterActionEvent:__init()
 	self.pos    = 0
 	self.length = 10
+end
+
+function CharacterActionEvent:findNextEvent()
+	-- self.parent:sortEvents()
+	local events = self.parent.events
+	local pos0 = self.pos
+	local pos = false
+	local res = nil
+	for i, e in ipairs( events ) do
+		local pos1 = e.pos
+		if e ~= self and pos1 > pos0  then
+			if not pos or pos > pos1 then
+				res = e
+				pos = pos1
+			end
+		end		
+	end
+	return res
 end
 
 function CharacterActionEvent:start( target, pos )
@@ -30,6 +53,10 @@ function CharacterActionEvent:setPos( pos )
 	self.pos = pos
 end
 
+function CharacterActionEvent:isResizable()
+	return false
+end
+
 function CharacterActionEvent:getPos()
 	return self.pos
 end
@@ -42,6 +69,15 @@ function CharacterActionEvent:getLength()
 	return self.length
 end
 
+function CharacterActionEvent:getTrack()
+	return self.parent
+end
+
+function CharacterActionEvent:getAction()
+	return self.parent.parent
+end
+
+
 
 --------------------------------------------------------------------
 
@@ -49,6 +85,7 @@ CharacterActionTrack
 :MODEL{
 		Field 'name' :string();		
 		Field 'events' :array( CharacterActionEvent ) :no_edit();		
+		Field 'parent' :type( CharacterAction ) :no_edit();
 	}
 
 function CharacterActionTrack:__init()
@@ -58,6 +95,15 @@ end
 
 function CharacterActionTrack:getType()
 	return 'track'
+end
+
+function CharacterActionTrack:getAction()
+	return self.parent
+end
+
+--whether build keyframe using event from the track
+function CharacterActionTrack:hasKeyFrames() 
+	return true
 end
 
 function CharacterActionTrack:createEvent()
@@ -82,9 +128,19 @@ function CharacterActionTrack:removeEvent( ev )
 	return false
 end
 
+local function _sortEvent( o1, o2 )
+	return o1.pos < o2.pos
+end
+
+function CharacterActionTrack:sortEvents()
+	table.sort( self.events, _sortEvent )
+end
+
 function CharacterActionTrack:toString()
 	return self.name
 end
+
+
 --------------------------------------------------------------------
 CLASS: CharacterActionState ()
 	:MODEL{}
@@ -93,8 +149,9 @@ local function _actionStateEventListener( timer, key, timesExecuted, time, value
 	local state  = timer.state
 	local action = state.action
 	local span   = action.spanList[ key ]
+	local target = state.target
 	for i, ev in ipairs( span ) do
-		ev:start( state.target, time )
+		target:processActionEvent( ev, timer:getTime() )
 	end
 end
 
@@ -109,10 +166,18 @@ function CharacterActionState:__init( action, target )
 	timer:setMode( MOAITimer.NORMAL )
 	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionStateEventListener )
 	timer.state = self
+	self.throttle = 1
+end
+
+function CharacterActionState:setThrottle( th )
+	th = th or 1
+	self.throttle = th
+	self.timer:throttle( th )
 end
 
 function CharacterActionState:start()
 	self.timer:start()
+	self.timer:throttle( self.throttle )
 end
 
 function CharacterActionState:stop()
@@ -138,10 +203,10 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: CharacterAction ()
-	:MODEL{
+CharacterAction	:MODEL{
 		Field 'name' :string();		
 		Field 'tracks' :array( CharacterActionTrack ) :no_edit();		
+		Field 'parent' :type( CharacterConfig ) :no_edit();
 	}
 
 function CharacterAction:__init()
@@ -155,6 +220,7 @@ end
 function CharacterAction:addTrack( t )
 	local track = t or CharacterActionTrack()
 	table.insert( self.tracks, track )
+	track.parent = self
 	return track
 end
 
@@ -164,7 +230,23 @@ function CharacterAction:removeTrack( track )
 	end	
 end
 
-function CharacterAction:createState( target )
+function CharacterAction:findTrack( name, trackType )
+	for i, t in ipairs( self.tracks ) do
+		if t.name == name then
+			if not trackType or t:getType() == trackType then return t end
+		end
+	end
+end
+
+function CharacterAction:findTrackByType( trackType )
+	for i, t in ipairs( self.tracks ) do
+		if t:getType() == trackType then return t end
+	end
+	return nil
+end
+
+
+function CharacterAction:createActionState( target )
 	local state = CharacterActionState( self, target )
 	return state
 end
@@ -178,16 +260,19 @@ function CharacterAction:_buildKeyCurve()
 	local spanSet    = {}
 	local spanList   = {}
 	for i, track in ipairs( self.tracks ) do
-		for i, event in ipairs( track.events ) do
-			local pos    = event.pos
-			local length = event.length
-			local t = spanSet[ pos ]
-			if not t then 
-				t = {}
-				spanSet[ pos ] = t
-				table.insert( spanPoints, pos )
+		track:sortEvents()
+		if track:hasKeyFrames() then
+			for i, event in ipairs( track.events ) do
+				local pos    = event.pos
+				local length = event.length
+				local t = spanSet[ pos ]
+				if not t then 
+					t = {}
+					spanSet[ pos ] = t
+					table.insert( spanPoints, pos )
+				end
+				table.insert( t, event )
 			end
-			table.insert( t, event )
 		end
 	end
 	table.sort( spanPoints )
@@ -204,8 +289,7 @@ function CharacterAction:_buildKeyCurve()
 end
 
 --------------------------------------------------------------------
-CLASS: CharacterConfig ()
-	:MODEL{
+CharacterConfig	:MODEL{
 		Field 'name'    :string();
 		Field 'spine'   :asset('spine') :getset('Spine');
 		Field 'actions' :array( CharacterAction ) :no_edit();		
@@ -229,6 +313,7 @@ function CharacterConfig:addAction( name )
 	local action = CharacterAction()
 	action.name = name
 	table.insert( self.actions, action )
+	action.parent = self
 	return action
 end
 
@@ -252,6 +337,17 @@ end
 local function loadCharacterConfig( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('config') )
 	local config = mock.deserialize( nil, data )
+	if config then --set parent nodes
+		for i, act in ipairs( config.actions ) do
+			act.parent = config		
+			for i, track in ipairs( act.tracks ) do
+				track.parent = act
+				for i, event in ipairs( track.events ) do
+					event.parent = track
+				end
+			end
+		end
+	end
 	return config
 end
 
