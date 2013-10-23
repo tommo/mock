@@ -7,12 +7,6 @@ local remove = table.remove
 		RenderTable 
 ]]
 
-EnumCameraViewportMode = {
-	{ 'EXPANDING', 'expanding' }, --expand to full screen
-	{ 'FIXED',     'fixed' },     --fixed size, in device unit
-	{ 'RELATIVE',  'relative' },  --relative size, in ratio
-}
-
 local function prioritySortFunc( a, b )	
 	local pa = a.priority or 0
 	local pb = b.priority or 0
@@ -50,7 +44,7 @@ local function updateRenderStack()
 			contextMap[ context ] = renderData
 		end
 
-		local fb = cam:getFrameBuffer()
+		local fb = cam:getMoaiFrameBuffer()
 		local rt
 		if fb ~= deviceBuffer then
 			rt = renderData.renderTableMap[ fb ]
@@ -130,7 +124,7 @@ CLASS: Camera ( Component )
 	Field 'FOV'              :number()  :getset('FOV')    :range( 0, 360 ) ;
 	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
 	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
-
+	Field 'framebuffer'      :asset('framebuffer')  :getset('FrameBufferPath');
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
@@ -145,6 +139,7 @@ function Camera:__init( option )
 
 	local cam = MOAICamera.new()
 	self._camera  = cam
+	self.frameBufferPath = false
 
 	self.relativeViewportSize = false
 	self.fixedViewportSize    = false
@@ -170,7 +165,7 @@ function Camera:__init( option )
 	self.includedLayers = option.included or 'all'
 	-- self.excludedLayers = option.excluded or ( option.included and 'all' or false )
 	self.excludedLayers = {}
-	self:setFrameBuffer()
+	self:setFrameBufferPath( false )
 
 	self:setFOV( 90 )
 	local defaultNearPlane, defaultFarPlane = -10000, 10000
@@ -573,16 +568,24 @@ function Camera:setPriority( p )
 	updateRenderStack()
 end
 
-function Camera:setFrameBuffer( fb )
+function Camera:setFrameBufferPath( fb )
+	self.frameBufferPath = fb or false
+	if fb then 
+		fb = mock.loadAsset( fb )
+		fb = fb and fb:getMoaiFrameBuffer()
+	end
 	self.frameBuffer = fb or MOAIGfxDevice.getFrameBuffer()
 	if self.scene then
 		self:updateViewport()
 		self:updateLayers()
-	end
-	return self.frameBuffer
+	end	
 end
 
-function Camera:getFrameBuffer()
+function Camera:getFrameBufferPath()
+	return self.frameBufferPath
+end
+
+function Camera:getMoaiFrameBuffer()
 	return self.frameBuffer
 end
 

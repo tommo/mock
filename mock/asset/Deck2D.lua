@@ -1,5 +1,24 @@
 module 'mock'
+--------------------------------------------------------------------
+local function getTextureUV( tex )
+	local ttype = tex.type
+	local t, uv
+	if ttype == 'sub_texture' then
+		t = tex.atlas
+		uv = tex.uv
+		
+	elseif ttype == 'framebuffer' then
+		t = tex:getMoaiFrameBuffer()
+		uv = { 0,0,1,1 }
 
+	else
+		t = tex
+		uv = { 0,1,1,0 }
+
+	end
+
+	return t, uv
+end
 --------------------------------------------------------------------
 CLASS: Deck2D ()
 	:MODEL {
@@ -105,14 +124,11 @@ end
 
 function Quad2D:update()
 	local deck = self:getMoaiDeck()
-	local tex = self.texture
-	if tex.type == 'sub_texture' then
-		deck:setTexture( tex.atlas )
-		deck:setUVRect( unpack( tex.uv ) )
-	else
-		deck:setTexture( tex )
-		deck:setUVRect( 0, 1, 1, 0 )
-	end
+	
+	local tex, uv = getTextureUV( self.texture )
+	deck:setTexture( tex )
+	deck:setUVRect( unpack( uv ) )
+
 	local w, h = self.w, self.h
 	deck:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 end
@@ -158,17 +174,12 @@ function Tileset:update()
 	local w1, h1   = tw + spacing, th + spacing
 	local col, row = math.floor(texW/w1), math.floor(texH/h1)	
 
-	local tex = self.texture
 	local deck = self:getMoaiDeck()
 
-	local u0,v0,u1,v1 
-	if tex.type == 'sub_texture' then
-		deck:setTexture( tex.atlas )
-		u0,v0,u1,v1 = unpack( tex.uv )
-	else
-		deck:setTexture( tex )
-		u0,v0,u1,v1 = 0, 0, 1, 1
-	end
+	local tex, uv = getTextureUV( self.texture )
+	local u0,v0,u1,v1 = unpack( uv )
+	deck:setTexture( tex )
+
 	local du, dv = u1 - u0, v1 - v0
 	deck:setSize(
 		col, row, 
@@ -220,14 +231,11 @@ end
 
 function StretchPatch:update()
 	local deck = self:getMoaiDeck()
-	local tex = self.texture
-	if tex.type == 'sub_texture' then
-		deck:setTexture( tex.atlas )
-		deck:setUVRect( 1, unpack( tex.uv ) )
-	else
-		deck:setTexture( tex )
-		deck:setUVRect( 1, 0, 0, 1, 1 )
-	end
+
+	local tex, uv = getTextureUV( self.texture )
+	deck:setTexture( tex )
+	deck:setUVRect( 1, unpack( uv ) )	
+
 	local w, h = self.w, self.h
 	deck:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 
@@ -273,15 +281,11 @@ function PolygonDeck:update()
 	-- local w, h = self.w, self.h
 	-- mesh:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 	local mesh = self:getMoaiDeck()
-	local tex = self.texture
-	local u0,v0,u1,v1 
-	if tex.type == 'sub_texture' then
-		mesh:setTexture( tex.atlas )
-		u0,v0,u1,v1 = unpack( tex.uv )
-	else
-		mesh:setTexture( tex )
-		u0,v0,u1,v1 = 0,1,1,0
-	end
+
+	local tex, uv = getTextureUV( self.texture )
+	local u0,v0,u1,v1 = unpack( uv )
+	mesh:setTexture( tex )
+	
 	local us = u1-u0
 	local vs = v1-v0
 

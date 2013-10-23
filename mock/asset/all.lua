@@ -17,3 +17,5 @@ require 'mock.asset.PexParticle'
 
 require 'mock.asset.FSMScheme'
 require 'mock.asset.FMODDesignerProject'
+
+require 'mock.asset.FrameBuffer'

@@ -67,3 +67,10 @@ EnumEaseType={
 	{	'soft_ease_out'  , MOAIEaseType.SOFT_EASE_OUT  },
 	{	'soft_smooth'	   , MOAIEaseType.SOFT_SMOOT     },
 }
+
+--------------------------------------------------------------------
+EnumCameraViewportMode = {
+	{ 'EXPANDING', 'expanding' }, --expand to full screen
+	{ 'FIXED',     'fixed' },     --fixed size, in device unit
+	{ 'RELATIVE',  'relative' },  --relative size, in ratio
+}
