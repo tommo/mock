@@ -1,26 +1,54 @@
-CLASS: ShaderEffectManager ()
-	:MODEL{}
+module 'mock'
+-- CLASS: ShaderEffectManager ()
+-- 	:MODEL{}
 
 --------------------------------------------------------------------
-
 CLASS: Shader ()
 	:MODEL{
 		Field 'vsh' :string();
 		Field 'fsh' :string();
-		Field 'attributes' :
 	}
+--------------------------------------------------------------------
+function Shader:__init()
+	self.shader =  MOAIShader.new()
+	self.shader.uniformTable = {}
+end
 
+function Shader:getMoaiShader()
+	return self.shader
+end
 
-local function loadShader(option)
+local _setAttr     = MOAIShader.setAttr
+local _setAttrLink = MOAIShader.setAttrLink
+
+function Shader:setAttr( name, v )
+	local shader = self.shader
+	local tt = type( name )
+	if tt == 'number' then return _setAttr( shader, name, v )  end
+	local ut = shader.uniformTable
+	local id = ut[ name ]
+	if not id then error('undefined uniform:'..name, 2) end
+	_setAttr( shader, id, v )
+end
+
+function Shader:setAttrLink( name, v )
+	local shader = self.shader
+	local tt = type( name )
+	if tt == 'number' then return _setAttrLink( shader, name, v )  end
+	local ut = shader.uniformTable
+	local id = ut[ name ]
+	if not id then error('undefined uniform:'..name, 2) end
+	_setAttrLink( shader, id, v )
+end
+
+function Shader:update()
 	local vsh,fsh=option.vsh,option.fsh
 
-	local shader=MOAIShader.new()
+	local shader= self.shader
 	shader:load(vsh,fsh)
-	if option.name then shader.name=option.name end
+	shader.source = self
 
 	--setup variables
-
-	if option.onLoad then option.onLoad(shader)	end
 	local attrs = option.attributes or {'position', 'uv', 'color'}
 	if attrs then
 		for i, a in ipairs(attrs) do
@@ -57,64 +85,18 @@ local function loadShader(option)
 				shader:declareUniform(i,name,MOAIShader.UNIFORM_WORLD_VIEW_PROJ)
 			end
 			uniformTable[ name ] = i
+
 		end
 	end
 	shader.uniformTable = uniformTable
 
-	local _setAttr = shader.setAttr
-	function shader:setAttr( name, v )
-		local tt = type( name )
-		if tt == 'number' then return _setAttr( self, name, v )  end
-		local ut = self.uniformTable
-		local id = ut[ name ]
-		if not id then error('undefined uniform:'..name, 2) end
-		_setAttr( self, id, v )
-	end
+end
 
-	local _setAttrLink = shader.setAttrLink
-	function shader:setAttrLink( name, v )
-		local tt = type( name )
-		if tt == 'number' then return _setAttrLink( self, name, v )  end
-		local ut = self.uniformTable
-		local id = ut[ name ]
-		if not id then error('undefined uniform:'..name, 2) end
-		_setAttrLink( self, id, v )
-	end
-
+--------------------------------------------------------------------
+local function shaderLoader( node )
+	local packData   = loadAssetDataTable( node:getObjectFile('def') )
+	local shader = deserialize( nil, packData )
 	return shader
 end
 
-
---------------------------------------------------------------------
-	--ALPHA_TEST
-	--------------------------------------------------------------------
-	alpha_test={
-		type='shader',
-		attributes={'position','uv','color'},
-		vsh=[[
-			attribute vec4 position;
-			attribute vec2 uv;
-			attribute vec4 color;
-
-			varying MEDP vec2 uvVarying;
-			varying LOWP vec4 colorVarying;
-
-			void main () {
-				gl_Position = position;
-				uvVarying = uv;
-				colorVarying = color;
-			}
-		]],
-
-		fsh=[[
-			varying LOWP vec4 colorVarying;
-			varying MEDP vec2 uvVarying;
-			uniform sampler2D sampler;
-
-			void main () {
-				LOWP vec4 tex = texture2D ( sampler, uvVarying );
-				if( tex.a < 0.1 ) { discard; return; }
-				gl_FragColor = tex * colorVarying;
-			}
-		]]
-	};
+registerAssetLoader ( 'shader', shaderLoader )
