@@ -1,5 +1,10 @@
 --------------------------------------------------------------------
+require 'mock.component.RenderComponent'
+require 'mock.component.DeckComponent'
+
+--------------------------------------------------------------------
 require 'mock.component.InputListener'
+
 --------------------------------------------------------------------
 require 'mock.component.Behaviour'
 

@@ -1,15 +1,42 @@
 module 'mock'
 
-EnumBlendModes = {
-	{ 'alpha',     'alpha'    },
-	{ 'add',       'add'      },
-	{ 'multiply',  'multiply' },
-	{ 'normal',    'normal'   },
-	{ 'mask',      'mask'     },
-	{ 'solid',     'solid'    },
+--------------------------------------------------------------------
+
+EnumTextureSize = {
+	{ '16',   16   },
+	{ '32',   32   },
+	{ '64',   64   },
+	{ '128',  128  },
+	{ '256',  256  },
+	{ '512',  512  },
+	{ '1024', 1024 },
+	{ '2048', 2048 },
+	{ '4096', 4096 }
 }
 
+--------------------------------------------------------------------
+EnumTextureFilter = {
+	{ 'Linear',    'linear'  },
+	{ 'Nearest',   'nearest' }
+}
 
+--------------------------------------------------------------------
+EnumTextureAtlasMode = {
+	{ 'No Atlas',  false },
+	{ 'Multiple',  'multiple' },
+	{ 'Single',    'single' }
+}
+
+--------------------------------------------------------------------
+EnumBlendModes = {
+	{ 'Alpha',     'alpha'    },
+	{ 'Add',       'add'      },
+	{ 'Multiply',  'multiply' },
+	{ 'Normal',    'normal'   },
+	{ 'Solid',     'solid'    },
+}
+
+--------------------------------------------------------------------
 EnumLayerSortMode = {
 	{ "none"                , false },
 	{ "iso"                 , 'iso'                  },
@@ -26,6 +53,7 @@ EnumLayerSortMode = {
 }
 
 
+--------------------------------------------------------------------
 EnumEaseType={
 	{	'ease_in'		     , MOAIEaseType.EASE_IN        },
 	{	'ease_out'	     , MOAIEaseType.EASE_OUT       },

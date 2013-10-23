@@ -1,12 +1,198 @@
 module ('mock')
 
-CLASS: SubTexture ()
-function SubTexture:getSize()
+CLASS: TextureLibrary ()
+CLASS: TextureGroup ()
+CLASS: Texture ()
+--------------------------------------------------------------------
+Texture	:MODEL{
+		Field 'path' :asset('texture') :readonly();
+		Field 'u0' :no_edit();
+		Field 'v0' :no_edit();
+		Field 'u1' :no_edit();
+		Field 'v1' :no_edit();
+		Field 'w' :readonly();
+		Field 'h' :readonly();
+		Field 'processor' :asset('texture_processor');
+
+		Field 'parent' :type( TextureGroup ) :no_edit();
+	}
+
+function Texture:__init( path )
+	self.path = path
+	self.u0 = 0
+	self.v0 = 1
+	self.u1 = 1
+	self.v1 = 0
+	self.w  = 100
+	self.h  = 100
+end
+
+function Texture:getMoaiTexture()
+	return self._texture
+end
+
+function Texture:getSize()
 	return self.w, self.h
 end
 
-function SubTexture:getPixmapRect()
-	return self.x, self.y, self.w, self.h
+function Texture:getPixmapRect()
+	return 0, 0, self.w, self.h
+end
+
+function Texture:getUVRect()
+	return 0,1,1,0
+end
+
+--------------------------------------------------------------------
+CLASS: SubTexture ( Texture )
+	:MODEL{
+		Field ''
+	}
+
+--------------------------------------------------------------------
+TextureGroup :MODEL{
+		Field 'name'           :string()  :no_edit();
+		
+		Field 'default'        :boolean() :no_edit();
+
+		Field 'filter'         :enum( EnumTextureFilter );
+		Field 'mipmap'         :boolean();
+		Field 'wrap'           :boolean();
+		Field 'atlasMode'      :enum( EnumTextureAtlasMode );
+		Field 'maxAtlasWidth'  :enum( EnumTextureSize );
+		Field 'maxAtlasHeight' :enum( EnumTextureSize );
+		Field 'processor'      :asset('texture_processor');
+
+		Field 'cache'          :string() :no_edit();
+
+		Field 'textures'       :array( Texture ) :no_edit();
+		Field 'parent'         :type( TextureLibrary ) :no_edit();
+		Field 'expanded'       :boolean() :no_edit();
+	}
+
+function TextureGroup:__init()
+	self.name           = 'TextureGroup'
+	self.filter         = 'linear'
+	self.mipmap         = false
+	self.wrap           = false
+	self.atlasMode      = false
+	self.maxAtlasWidth  = 1024
+	self.maxAtlasHeight = 1024
+	self.default        = false
+	self.expanded       = true
+	self.cache          = false
+	self.textures  = {}
+end
+
+function TextureGroup:addTextureFromPath( path )
+	local t = Texture()
+	t.path = path
+	return self:addTexture( t )
+end
+
+function TextureGroup:addTexture( t )
+	local pg = t.parent
+	if pg == self then return end
+	if pg then pg:removeTexture( t ) end
+	table.insert( self.textures, t )
+	t.parent = self
+	return t
+end
+
+function TextureGroup:removeTexture( t )
+	for i, t1 in ipairs( self.textures ) do
+		if t1 == t then 
+			table.remove( self.textures, i )
+			t.parent = false
+			return
+		end
+	end
+end
+
+function TextureGroup:findTexture( path )
+	for i, t in ipairs( self.textures ) do
+		if t.path == path then
+			return t
+		end
+	end
+	return nil
+end
+
+function TextureGroup:findAndRemoveTexture( path )
+	for i, t in ipairs( self.textures ) do
+		if t.path == path then
+			table.remove( self.textures, i )
+			t.parent = false
+			return t
+		end
+	end
+	return false
+end
+--------------------------------------------------------------------
+TextureLibrary :MODEL{
+		Field 'groups' :array( TextureGroup ) :no_edit();
+	}
+
+function TextureLibrary:__init()
+	self.groups = {}	
+end
+
+function TextureLibrary:getDefaultGroup()
+	return self.defaultGroup
+end
+
+function TextureLibrary:getGroup( name )
+	for i, g in ipairs( self.groups ) do
+		if g.name == name then return g end
+	end
+	return nil
+end
+
+function TextureLibrary:addGroup()
+	local g = TextureGroup()
+	g.parent = self
+	table.insert( self.groups, g )
+	return g
+end
+
+function TextureLibrary:removeGroup( g )
+	for i, g1 in ipairs( self.groups ) do
+		if g1 == g then 
+			table.remove( self.groups, i )
+			g.parent = false
+			return
+		end
+	end
+end
+
+function TextureLibrary:addTexture( path )
+	local t = Texture( path )
+	self.defaultGroup:addTexture( t )
+	return t
+end
+
+function TextureLibrary:findTexture( path )
+	for i, g in ipairs( self.groups ) do
+		local t = g:findTexture( path )
+		if t then return t end
+	end
+	return nil
+end
+
+function TextureLibrary:affirmTexture( path )
+	local t = self:findTexture( path )
+	if not t then
+		t = self:addTexture( path )
+	end
+	return t
+end
+
+function TextureLibrary:removeTexture( path )
+	for i, g in ipairs( self.groups ) do
+		local t =g:findAndRemoveTexture( path )
+		if t then return t end
+	end
+	return false
 end
 
 --------------------------------------------------------------------
@@ -59,7 +245,7 @@ local function loadSingleTexture( pixmapPath, group )
 	end	
 
 	tex:setFilter( filter )
-	tex:setWrap( group.wrapmode == 'wrap' )
+	tex:setWrap( group.wrap )
 
 	tex:load( absProjectPath( pixmapPath ), transform )
 	if tex:getSize() <= 0 then
@@ -105,7 +291,12 @@ local function loadTexPack( config )
 		local x, y, w, h = unpack( item.rect )
 		local tex  = atlases[ item.atlas + 1 ]
 		local name = item.name
-		tw,th = tex:getSize()
+		local size = data['size']
+		if size then
+			tw, th = unpack( size )
+		else
+			tw,th = tex:getSize()
+		end
 		local u0, v0, u1, v1 = x/tw, y/th, (x+w)/tw, (y+h)/th
 		textures[ name ] = SubTexture:rawInstance{
 			type   = 'sub_texture',
@@ -133,16 +324,15 @@ end
 local loadedTexPack = {}
 
 local function getTexPack( config )
-	local pack = loadedTexPack[ config.name ]
+	local pack = loadedTexPack[ config.cache ]
 	if pack then return pack end
 	pack = loadTexPack( config )
-	loadedTexPack[ config.name ] = pack
+	loadedTexPack[ config.cache ] = pack
 	return pack
 end
 
 --------texpack
 local function loadSubTexture( path, config )
-	local cacheDir = config[ 'cache' ]
 	local pack = getTexPack( config )	
 	assert( pack, 'texpack not loaded correctly.')
 	local sub = pack.textures[ path ]
@@ -154,7 +344,7 @@ local function loadTexture( node )
 	local configPath = node:getAbsObjectFile( 'config' )
 	
 	local config = loadAssetDataTable( configPath ) or defaultTextureConfig
-	if not config[ 'atlas_allowed' ] then
+	if not config[ 'atlas_mode' ] then
 		local pixmapPath = node.objectFiles[ 'pixmap' ]
 		return loadSingleTexture( pixmapPath, config )
 	else
@@ -163,7 +353,11 @@ local function loadTexture( node )
 	
 end
 
+function releaseTexPack( cachePath )
+	loadedTexPack[ cachePath ] = nil
+end
 
 registerAssetLoader( 'texture',     loadTexture )
-registerAssetLoader( 'texpack',     loadTexPack )
-registerAssetLoader( 'sub_texture', loadTexture )
+
+-- registerAssetLoader( 'texpack',     loadTexPack )
+-- registerAssetLoader( 'sub_texture', loadTexture )

@@ -77,11 +77,17 @@ function inheritLoc( p1, p2 )
 	return p1:setAttrLink ( INHERIT_LOC, p2, TRANSFORM_TRAIT )
 end
 
--- function linkRot( p1, p2 )
--- 	p1:setAttrLink( MOAIProp.ATTR_X_ROT, p2, MOAIProp.ATTR_X_ROT )
--- 	p1:setAttrLink( MOAIProp.ATTR_Y_ROT, p2, MOAIProp.ATTR_Y_ROT )
--- 	p1:setAttrLink( MOAIProp.ATTR_Z_ROT, p2, MOAIProp.ATTR_Z_ROT )
--- end
+function linkRot( p1, p2 )
+	p1:setAttrLink( MOAIProp.ATTR_X_ROT, p2, MOAIProp.ATTR_X_ROT )
+	p1:setAttrLink( MOAIProp.ATTR_Y_ROT, p2, MOAIProp.ATTR_Y_ROT )
+	p1:setAttrLink( MOAIProp.ATTR_Z_ROT, p2, MOAIProp.ATTR_Z_ROT )
+end
+
+function linkScl( p1, p2 )
+	p1:setAttrLink( MOAIProp.ATTR_X_SCL, p2, MOAIProp.ATTR_X_SCL )
+	p1:setAttrLink( MOAIProp.ATTR_Y_SCL, p2, MOAIProp.ATTR_Y_SCL )
+	p1:setAttrLink( MOAIProp.ATTR_Z_SCL, p2, MOAIProp.ATTR_Z_SCL )
+end
 
 function linkLoc( p1, p2 )
 	p1:setAttrLink( ATTR_TRANSLATE, p2, ATTR_TRANSLATE )
@@ -146,7 +152,13 @@ getLocX,setLocX,seekLocX,moveLocX = genAttrFunctions(MOAITransform.ATTR_X_LOC)
 getLocY,setLocY,seekLocY,moveLocY = genAttrFunctions(MOAITransform.ATTR_Y_LOC)
 getLocZ,setLocZ,seekLocZ,moveLocZ = genAttrFunctions(MOAITransform.ATTR_Z_LOC)
 
+getRotX,setRotX,seekRotX,moveRotX = genAttrFunctions(MOAITransform.ATTR_X_ROT)
+getRotY,setRotY,seekRotY,moveRotY = genAttrFunctions(MOAITransform.ATTR_Y_ROT)
+getRotZ,setRotZ,seekRotZ,moveRotZ = genAttrFunctions(MOAITransform.ATTR_Z_ROT)
 
+getSclX,setSclX,seekSclX,moveSclX = genAttrFunctions(MOAITransform.ATTR_X_SCL)
+getSclY,setSclY,seekSclY,moveSclY = genAttrFunctions(MOAITransform.ATTR_Y_SCL)
+getSclZ,setSclZ,seekSclZ,moveSclZ = genAttrFunctions(MOAITransform.ATTR_Z_SCL)
 
 
 ------------Apply transform & other common settings

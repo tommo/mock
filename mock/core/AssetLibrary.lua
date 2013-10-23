@@ -158,27 +158,26 @@ function AssetNode:getAbsFilePath()
 end
 
 function registerAssetNode( path, data )
-	ppath = splitPath(path)
-	local node = setmetatable(
-		{
+	local ppath = splitPath(path)
+	local node = setmetatable( { --fixed attributes
 			path        = path,
-			deploy      = data['deploy'] == true,
 			filePath    = data['filePath'],
-			properties  = data['properties'],
-			objectFiles = data['objectFiles'],
-			type        = data['type'],
 			parent      = ppath,			
-			fileTime    = data['fileTime'],
-			dependency  = data['dependency'],
-		}, 
-		AssetNode
-		)
-
+		}, AssetNode )
 	node.cached = {}
 	node.cached.asset = data['type'] == 'folder' and true or false
-
+	updateAssetNode( node, data )
 	AssetLibrary[ path ] = node
 	return node
+end
+
+function updateAssetNode( node, data ) --dynamic attributes
+	node.deploy      = data['deploy'] == true
+	node.properties  = data['properties']
+	node.objectFiles = data['objectFiles']
+	node.type        = data['type']
+	node.fileTime    = data['fileTime']
+	node.dependency  = data['dependency']
 end
 
 function unregisterAssetNode( path )
@@ -197,11 +196,13 @@ end
 
 --------------------------------------------------------------------
 --loader: func( assetType, filePath )
-function registerAssetLoader( assetType, loader, unloader )
+function registerAssetLoader( assetType, loader )
 	AssetLoaders[ assetType ]   = loader
-	AssetUnloaders[ assetType ] = unloader
 end
 
+function registerAssetUnloader( assetType, unloader )
+	AssetUnloaders[ assetType ] = unloader
+end
 --------------------------------------------------------------------
 --put preloaded asset into AssetNode of according path
 function preloadIntoAssetNode( path, asset )

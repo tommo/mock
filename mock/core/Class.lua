@@ -529,6 +529,13 @@ function Field:enum( t )
 	return self
 end
 
+function Field:selection( s )
+	if s then
+		self:meta{ selection = s }
+	end
+	return self
+end
+
 function Field:table( ktype, vtype ) 
 	self.__type    = v
 	self.__keytype = ktype

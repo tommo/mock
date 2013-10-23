@@ -5,7 +5,7 @@ CLASS: Deck2D ()
 	:MODEL {
 		Field 'type'     :string()  :no_edit();
 		Field 'name'     :string()  :getset('Name')    :readonly() ;
-		Field 'texture'  :string()  :getset('Texture') :readonly() ;		
+		Field 'texture'  :asset('texture')  :getset('Texture') :readonly() ;		
 	}
 
 function Deck2D:__init()
@@ -16,12 +16,14 @@ function Deck2D:__init()
 	self.h = 0
 end
 
-function Deck2D:setTexture( path )
+function Deck2D:setTexture( path, autoResize )
 	local tex, node = mock.loadAsset( path )
 	if not tex then return end
-	local w, h = tex:getSize()
-	self.w = w
-	self.h = h
+	if autoResize ~= false then
+		local w, h = tex:getSize()
+		self.w = w
+		self.h = h
+	end
 	self.texturePath = path
 	self.texture = tex
 	self:update()
@@ -31,9 +33,14 @@ function Deck2D:getSize()
 	return self.w , self.h
 end
 
+function Deck2D:setSize( w, h )
+	self.w = w
+	self.h = h
+end
+
 function Deck2D:getRect()
 	local ox,oy = self:getOrigin()
-	local w,h   = self:setSize()
+	local w,h   = self:getSize()
 	return ox - w/2, oy - h/2, ox + w/2, oy + h/2 
 end
 
@@ -240,8 +247,9 @@ end
 --------------------------------------------------------------------
 CLASS: PolygonDeck ( Deck2D )
 	:MODEL{
+		Field 'polyline'   :array() :no_edit();		
 		Field 'vertexList' :array() :no_edit();		
-		Field 'indexList' :array() :no_edit();		
+		Field 'indexList'  :array() :no_edit();		
 	}
 
 local vertexFormat = MOAIVertexFormat.new ()
@@ -250,13 +258,14 @@ vertexFormat:declareUV ( 2, MOAIVertexFormat.GL_FLOAT, 2 )
 vertexFormat:declareColor ( 3, MOAIVertexFormat.GL_UNSIGNED_BYTE )
 
 function PolygonDeck:__init()
+	self.polyline   = false
 	self.vertexList = {}
 	self.indexList  = {}
 end
 
 function PolygonDeck:createMoaiDeck()
 	local mesh = MOAIMesh.new ()	
-	mesh:setPrimType ( MOAIMesh.GL_TRIANGLE_FAN )
+	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
 	return mesh
 end
 
@@ -271,7 +280,7 @@ function PolygonDeck:update()
 		u0,v0,u1,v1 = unpack( tex.uv )
 	else
 		mesh:setTexture( tex )
-		u0,v0,u1,v1 = 0,0,1,1
+		u0,v0,u1,v1 = 0,1,1,0
 	end
 	local us = u1-u0
 	local vs = v1-v0
@@ -368,6 +377,7 @@ local function Deck2DItemLoader( node )
 	local item = pack:getDeck( name )
 	if item then
 		item:update()
+		node.cached.deckItem = item
 		return item:getMoaiDeck()
 	end
 	return nil

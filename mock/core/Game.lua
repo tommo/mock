@@ -186,7 +186,7 @@ function Game:init( option, fromEditor )
 		local layer = self:addLayer( '_GII_EDITOR_LAYER' )
 		layer.priority = 1000000
 	end
-
+	print('init layers')
 	----- Global Objects
 	self.globalObjectLibrary = GlobalObjectLibrary()
 	self.globalObjectLibrary:load( option['global_objects'] )

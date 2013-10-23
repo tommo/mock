@@ -46,7 +46,7 @@ function Scene:init()
 	self.active  = true
 
 	-- self.mainLayer = self:addLayer( 'main' )
-	self:updateLayers()
+	self:initLayers()
 
 	if self.onLoad then self:onLoad() end
 
@@ -58,7 +58,7 @@ function Scene:init()
 
 end
 
-function Scene:updateLayers()
+function Scene:initLayers()
 	local layers = {}
 	local defaultLayer
 	
@@ -75,7 +75,6 @@ function Scene:updateLayers()
 	else
 		self.defaultLayer = layers[1]
 	end
-
 	assert( self.defaultLayer )
 	self.layers = layers
 end

@@ -22,14 +22,14 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
-local pairs,ipairs=pairs,ipairs
-local tremove=table.remove
-local random=math.random
-local floor=math.floor
-local tonumber=tonumber
-local tostring=tostring
+local pairs,ipairs = pairs,ipairs
+local tremove      = table.remove
+local random       = math.random
+local floor        = math.floor
+local tonumber     = tonumber
+local tostring     = tostring
 
-local _print = print
+local _print       =  print
 
 function printf(patt,...)
 	return print(string.format(patt,...))
@@ -279,10 +279,41 @@ function floors(...)
 	return unpack(t)
 end
 
-function vecAngle(s,a)
-	return s*cos(a),s*sin(a)
+function vecAngle( angle, length )
+	return length * cos( angle * piD ), length * sin( angle * piD )
 end
 
+--------------------------------------------------------------------
+--gemometry related
+--------------------------------------------------------------------
+
+-- Returns the distance from p to the closest point on line segment a-b.
+function distanceToLine( ax, ay, bx, by, px, py )
+	local dx, dy = projectionPointToLine(ax, ay, bx, by, px, py )
+	dx = dx - px
+	dy = dx - py
+	return math.sqrt( dx * dx + dy * dy )
+end
+
+function projectPointToLine( ax, ay, bx, by, px, py )
+	local dx = bx - ax
+	local dy = by - ay
+	if dx == 0 and dy == 0 then return dx, dy  end
+	local t = ( (py-ay)*dy + (px-ax)*dx ) / (dy*dy + dx*dx)
+	
+	if t < 0 then
+		dx = ax
+		dy = ay
+	elseif t > 1 then
+		dx = bx
+		dy = by
+	else
+		dx = ax+t*dx
+		dy = ay+t*dy
+	end
+
+	return dx, dy 
+end
 
 -------------General Math Helper
 function lerp( v1, v2, k )
