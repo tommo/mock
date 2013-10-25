@@ -25,6 +25,7 @@
 
 module 'mock'
 
+local gii = rawget( _G, 'gii' )
 
 local pairs,ipairs,setmetatable,unpack=pairs,ipairs,setmetatable,unpack
 
@@ -662,6 +663,11 @@ function Game:setClearDepth( clear )
 end
 
 function Game:setClearColor( r,g,b,a )
+	self.clearColor = r and {r,g,b,a}	 or false
+	if gii then
+		local renderContext = gii.getRenderContext( 'game' )
+		renderContext.clearColor = self.clearColor
+	end
 	return MOAIGfxDevice.getFrameBuffer():setClearColor( r,g,b,a )
 end
 
@@ -724,7 +730,6 @@ end
 --------------------------------------------------------------------
 function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTableMap )
 	--render context helper for GII
-	local gii = rawget( _G, 'gii' )
 	if gii then
 		local renderContext = gii.getRenderContext( context )
 		assert( renderContext, 'render context not found:' .. context )

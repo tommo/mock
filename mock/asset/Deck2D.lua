@@ -19,6 +19,13 @@ local function getTextureUV( tex )
 
 	return t, uv
 end
+
+local loadedDecks = table.weak()
+
+function getLoadedDecks()
+	return loadedDecks
+end
+
 --------------------------------------------------------------------
 CLASS: Deck2D ()
 	:MODEL {
@@ -28,6 +35,7 @@ CLASS: Deck2D ()
 	}
 
 function Deck2D:__init()
+	loadedDecks[ self ] = true
 	self._deck = self:createMoaiDeck()
 	self._deck.source = self
 	self.name  = 'deck'
@@ -382,7 +390,8 @@ local function Deck2DItemLoader( node )
 	if item then
 		item:update()
 		node.cached.deckItem = item
-		return item:getMoaiDeck()
+		local deck = item:getMoaiDeck()
+		return deck
 	end
 	return nil
 end

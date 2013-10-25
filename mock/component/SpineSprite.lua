@@ -67,9 +67,9 @@ local function _onSpineAnimationComplete( state, trackId, loopCount )
 	return state.owner:onAnimationComplete( trackId, loopCount )
 end
 
-function SpineSprite:play( clipName, mode )
-	if self.animState  then
-		self.animState:stop()
+function SpineSprite:play( clipName, mode, resetPose )
+	if self.animState then
+		self.animState:stop( resetPose )
 	end
 	mode = mode or MOAITimer.NORMAL
 	local state = MOAISpineAnimationState.new()
@@ -82,7 +82,10 @@ function SpineSprite:play( clipName, mode )
 		_warn( 'spine anim clip not found:', clipName )
 		return false
 	end
-	self.skeleton:setToSetupPose()
+	
+	if resetPose ~= false then
+		self.skeleton:setToSetupPose()
+	end
 	local loop = mode == MOAITimer.LOOP
 	state:setAnimation( 0, clipName, loop )
 	state:setSpan( 1000000 )
@@ -111,11 +114,23 @@ function SpineSprite:getClipLength( name )
 	return 1
 end
 
-function SpineSprite:stop()
+function SpineSprite:stop( resetPose )
 	if self.animState then
 		self.animState:stop()
 	end
-	self.skeleton:setToSetupPose()
+	if resetPose ~= false then
+		self.skeleton:setToSetupPose()
+	end
+end
+
+function SpineSprite:pause( paused )
+	if self.animState then
+		self.animState:pause( paused )
+	end
+end
+
+function SpineSprite:resume()
+	return self:pause( false )
 end
 
 function SpineSprite:setAnimationEventListener( listener )

@@ -47,9 +47,7 @@ function FrameBuffer:update()
 	local fb = self.moaiBuffer
 	local gfx = game.gfx
 	if self.depth and false then
-		-- local colorFormat = MOAITexture.GL_DEPTH_COMPONENT16
 		local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
-		-- print( depthFormat )
 		fb:init( 
 			self.width, self.height, nil, depthFormat
 		)

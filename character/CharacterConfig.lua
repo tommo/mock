@@ -184,8 +184,8 @@ function CharacterActionState:stop()
 	self.timer:stop()
 end
 
-function CharacterActionState:pause()
-	self.timer:pause()
+function CharacterActionState:pause( paused )
+	self.timer:pause( paused )
 end
 
 function CharacterActionState:getTime()

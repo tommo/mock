@@ -305,16 +305,21 @@ function InputDevice:sendMouseEvent( evtype, x, y, btn, mockup )
 	end
 
 	if self.allowTouchSimulation then
-		local down = self.mouseState.left
-		local simTouchId = 1
+		local simTouchIdLeft  = 1
+		local simTouchIdRight = 2
 		if evtype == 'move' then
-			if down then				
-				return self:sendTouchEvent( 'move', simTouchId, x, y, mockup )
+			if self.mouseState.left then				
+				self:sendTouchEvent( 'move', simTouchIdLeft, x, y, mockup )
 			end
-		elseif evtype == 'down' and btn == 'left' then
-			return self:sendTouchEvent( 'down', simTouchId, x, y, mockup )
-		elseif evtype == 'up' and btn == 'left' then
-			return self:sendTouchEvent( 'up'  , simTouchId, x, y, mockup )
+			if self.mouseState.right then				
+				return self:sendTouchEvent( 'move', simTouchIdRight, x, y, mockup )
+			end
+		else
+			if btn == 'left' then
+				return self:sendTouchEvent( evtype, simTouchIdLeft,  x, y, mockup )
+			elseif btn == 'right' then
+				return self:sendTouchEvent( evtype, simTouchIdRight, x, y, mockup )
+			end
 		end
 	end
 end

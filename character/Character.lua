@@ -88,7 +88,17 @@ function Character:stop()
 	if not self.activeState then return end
 	self.activeState:stop()
 	self.activeState = false
-	self.spineSprite:stop()
+	self.spineSprite:stop( false )
+end
+
+function Character:pause( paused )
+	if not self.activeState then return end
+	self.activeState:pause( paused )
+	self.spineSprite:pause( paused )
+end
+
+function Character:resume()
+	return self:pause( false )
 end
 
 function Character:setThrottle( th )
@@ -147,12 +157,12 @@ end
 ------
 --EVENT ACTION:
 
-function Character:playAnim( clip, loop )
-	self.spineSprite:play( clip, loop and MOAITimer.LOOP )
+function Character:playAnim( clip, loop, resetPose )
+	self.spineSprite:play( clip, loop and MOAITimer.LOOP, resetPose )
 end
 
-function Character:stopAnim()
-	self.spineSprite:stop()
+function Character:stopAnim( resetPose )
+	self.spineSprite:stop( resetPose )
 end
 
 --------------------------------------------------------------------

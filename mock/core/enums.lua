@@ -74,3 +74,5 @@ EnumCameraViewportMode = {
 	{ 'FIXED',     'fixed' },     --fixed size, in device unit
 	{ 'RELATIVE',  'relative' },  --relative size, in ratio
 }
+
+
