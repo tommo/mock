@@ -39,6 +39,18 @@ function _wrapAttrSetter(class,fieldname,attr,methodname)
 	class[methodname] = f()
 end
 
+function _wrapAttrSeeker(class,fieldname,attr,methodname)
+	local f=loadstring(
+		string.format(
+			[[return function( self, v, t, easeType )
+								return self.%s:seekAttr( %d, v, t, easeType )
+						end
+			]]
+			,fieldname,attr)
+	)
+	class[methodname] = f()
+end
+
 function _wrapAttrGetSet( class, fieldname, attr, propertyName)
 	_wrapAttrGetter( class, fieldname, attr, 'get'..propertyName )
 	_wrapAttrSetter( class, fieldname, attr, 'set'..propertyName )

@@ -358,6 +358,8 @@ function wrapWithMoaiPropMethods( clas, propName )
 
 	_wrapAttrGetter( clas, propName, MOAIProp.ATTR_A_COL, 'getAlpha' )
 	_wrapAttrSetter( clas, propName, MOAIProp.ATTR_A_COL, 'setAlpha' )
+	_wrapAttrSeeker( clas, propName, MOAIProp.ATTR_A_COL, 'seekAlpha' )
+	
 	_wrapAttrGetter( clas, propName, MOAIProp.ATTR_VISIBLE, 'isVisible' )
 
 	return clas
