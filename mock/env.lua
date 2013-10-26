@@ -48,6 +48,8 @@ require 'mock.core.enums'
 require 'mock.core.MOAIClass'
 require 'mock.core.MOAIHelpers'
 
+require 'mock.core.async'
+
 require 'mock.tools.DebugHelper'
 require 'mock.tools.LogHelper'
 

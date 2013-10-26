@@ -1,5 +1,42 @@
 module ('mock')
 
+TEXTURE_ASYNC_LOAD = false
+
+--------------------------------------------------------------------
+local texturePlaceHolder = false
+local texturePlaceHolderImage = false
+function getTexturePlaceHolderImage()
+	if not texturePlaceHolderImage then
+		texturePlaceHolderImage = MOAIImage.new()
+		texturePlaceHolderImage:init( w, h )
+		texturePlaceHolderImage:fillRect( 0,0, w, h, 0, 1, 0, 1 )
+	end
+	return texturePlaceHolderImage
+end
+
+function getTexturePlaceHolder()
+	if not texturePlaceHolder then
+		texturePlaceHolder = MOAITexture.new()
+		texturePlaceHolder:load( getTexturePlaceHolderImage() )		
+	end
+	return texturePlaceHolder
+end
+--------------------------------------------------------------------
+local function loadTextureAsync( texture, filePath, transform )
+	loadAsyncData( filePath, function( buffer )
+			texture:load (buffer)
+			if texture:getSize() <= 0 then
+				_warn( 'failed load texture file:', filePath )
+				-- return getTexturePlaceHolder()
+				texture:load( getTexturePlaceHolderImage() )
+			end
+		end
+	)
+	return true	
+end
+
+
+--------------------------------------------------------------------
 CLASS: TextureLibrary ()
 CLASS: TextureGroup ()
 CLASS: Texture ()
@@ -203,19 +240,6 @@ local defaultTextureConfig = {
 	premultiply_alpha  = true,
 }
 
---------------------------------------------------------------------
-local texturePlaceHolder = false
-function getTexturePlaceHolder()
-	if not texturePlaceHolder then
-		texturePlaceHolder = MOAIImageTexture.new()
-		local w, h = 64, 64
-		texturePlaceHolder:init( w, h )
-		texturePlaceHolder:fillRect( 0,0, w, h, 0, 1, 0, 1 )
-		texturePlaceHolder:invalidate()
-	end
-	return texturePlaceHolder
-end
-
 
 --------------------------------------------------------------------
 local function loadSingleTexture( pixmapPath, group )
@@ -247,12 +271,16 @@ local function loadSingleTexture( pixmapPath, group )
 	tex:setFilter( filter )
 	tex:setWrap( group.wrap )
 
-	tex:load( absProjectPath( pixmapPath ), transform )
-	if tex:getSize() <= 0 then
-		_warn( 'failed load texture file:', path )
-		return getTexturePlaceHolder()
+	local filePath = absProjectPath( pixmapPath )	
+	if TEXTURE_ASYNC_LOAD then
+		loadTextureAsync( tex, filePath, transform )
+	else
+		tex:load( filePath, transform )
+		if tex:getSize() <= 0 then
+			_warn( 'failed load texture file:', path )
+			tex:load( getTexturePlaceHolderImage() )
+		end
 	end
-
 	tex.type = 'texture'
 	return tex
 
@@ -276,24 +304,29 @@ local function loadTexPack( config )
 		error('atlas config file not parsable') --TODO: proper exception handle
 		return nil
 	end
-
 	local atlases  = {}
 	local textures = {}
-	for i, texpath in pairs( data[ 'atlases' ] ) do
+	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
+		local texpath = atlasInfo['name']
 		local tex = loadSingleTexture( base .. '/' .. texpath, config )
 		if not tex then
 			error( 'error loading texture:' .. texpath )
 		end
-		atlases[i] = tex
+		atlases[i] = {
+			path    = texpath,
+			size    = atlasInfo['size'],
+			texture = tex
+		}
 	end
 
 	for i,item in pairs( data[ 'items' ] ) do
 		local x, y, w, h = unpack( item.rect )
-		local tex  = atlases[ item.atlas + 1 ]
-		local name = item.name
-		local size = data['size']
-		if size then
-			tw, th = unpack( size )
+		local tw, th
+		local atlas = atlases[ item.atlas + 1 ]
+		local tex  = atlas.texture
+		local name = item.name		
+		if atlas.size then
+			tw, th = unpack( atlas.size )
 		else
 			tw,th = tex:getSize()
 		end
@@ -311,7 +344,6 @@ local function loadTexPack( config )
 			source = item.source
 		}
 	end
-	
 	local pack ={
 		atlases  = atlases,
 		textures = textures
