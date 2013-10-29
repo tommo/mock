@@ -40,7 +40,11 @@ local function loadFont( node )
 			local tex, node = loadAsset( path )
 			table.insert( textures, tex )
 		end
-		font:loadFromBMFont( node.objectFiles['font'], textures )
+		if #textures > 0 then
+			font:loadFromBMFont( node.objectFiles['font'], textures )
+		else
+			_warn('bmfont texture not load', node:getNodePath() )
+		end
 	elseif atype == 'font_ttf' then
 		local filename = node.objectFiles['font']
 		font:load( filename )

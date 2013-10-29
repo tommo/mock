@@ -157,7 +157,7 @@ local templateRenderScript = [[
 	sp.rot=ease(rot0,rot1)
 ]]
 
-local fps=60
+local fps = 60
 function pexToParticleScript( file ) --convert pex to 2 particle script
 	local timeScale = 1/fps
 	local accScale = timeScale * timeScale

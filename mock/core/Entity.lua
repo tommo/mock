@@ -9,16 +9,15 @@ local unpack = unpack
 CLASS: Entity ( Actor )
 	:MODEL{
 		Field '_priority' :int() :no_edit()  :set('setPriority');
-
 		Field 'name'     :string()  :getset('Name');
 		Field 'layer'    :type('layer')  :getset( 'Layer' ) :no_nil();
-
+		Field 'visible'  :boolean() :get('isLocalVisible') :set('setVisible');
+		'----';
 		Field 'loc'      :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'      :type('vec3') :getset('Rot') :label('Rot');
 		Field 'scl'      :type('vec3') :getset('Scl') :label('Scl');
 		Field 'piv'      :type('vec3') :getset('Piv') :label('Piv');
-		
-		Field 'visible'  :boolean() :get('isLocalVisible') :set('setVisible');
+		'----';
 		Field 'color'    :type('color')  :getset('Color') ;
 	}
 

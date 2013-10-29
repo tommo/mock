@@ -39,8 +39,11 @@ end
 
 function ParticleSystem:setConfig( configPath )
 	self.configPath = configPath
-
 	local config = mock.loadAsset( configPath )
+	self:setConfigData( config )
+end
+
+function ParticleSystem:setConfigData( config )
 	if self.config then
 		self:stop()
 	end	
@@ -51,7 +54,6 @@ function ParticleSystem:setConfig( configPath )
 			self._entity:_attachProp( self._system )
 		end
 	end
-	
 end
 
 --------------------------------------------------------------------
@@ -90,17 +92,10 @@ function ParticleSystem:addEmitter( emitterName )
 		emitters[ em ] = nil			
 	end
 
-	if not emitterName then
-		local em = MOAIParticleTimedEmitter.new()
-		self._entity:_attachTransform( em )
-		em:forceUpdate()
-		em:setSystem( self._system )		
-		em:start()
-		self.emitters[ em ] = true
-		return em
+	local em = emitterName and config:buildEmitter( emitterName )
+	if not em then
+		em = MOAIParticleTimedEmitter.new()
 	end
-
-	local em = config:buildEmitter( emitterName )
 	self._entity:_attachTransform( em )
 	em:forceUpdate()
 	em:setSystem( self._system )

@@ -31,6 +31,7 @@ local rawget, rawset = rawget, rawset
 -- CLASS
 --------------------------------------------------------------------
 local newclass
+local separatorField
 local globalClassRegistry = {}
 
 local reservedMembers = {
@@ -366,16 +367,21 @@ function Model:update( body )
 	-- self.__name = name
 	local fields = {}
 	local fieldN = {}
-	for i = 1, #body do
+	for i = 1, #body do		
 		local f = body[i]
-		if getmetatable( f ) ~= Field then 
-			error('Field expected in Model, given:'..type( f ), 3)
+		if f =='----' then --separator
+			fields[ i ] = separatorField
+			-- error ('field separator not supported yet')
+		else
+			if getmetatable( f ) ~= Field then 
+				error('Field expected in Model, given:'..type( f ), 3)
+			end
+			local id = f.__id
+			if fieldN[id] then error( 'duplicated Field:'..id, 3 ) end
+			fieldN[ id ] = f
+			fields[ i ] = f
+			f.__model = self
 		end
-		local id = f.__id
-		if fieldN[id] then error( 'duplicated Field:'..id, 3 ) end
-		fieldN[ id ] = f
-		fields[ i ] = f
-		f.__model = self
 	end
 	self.__fields = fields
 	self.__fieldNames = fieldN
@@ -415,7 +421,7 @@ local function _collectFields( model, includeSuperFields, list, dict )
 		for i, f in ipairs( fields ) do
 			local id = f.__id
 			local i0 = dict[id]
-			if i0 then --override
+			if i0 and f~=separatorField then --override
 				list[i0] = f
 			else
 				local n = #list
@@ -613,6 +619,11 @@ function Field:range( min, max )
 	return self
 end
 
+function Field:widget( name )
+	if name then self:meta{ widget = name } end
+	return self
+end
+
 function Field:get( getter )
 	if type(getter) == 'string' then
 		local getterName = getter
@@ -715,3 +726,5 @@ function MoaiModel:newinstance( ... )
 	return self.__class.new()
 end
 
+--------------------------------------------------------------------
+separatorField = Field('----') :no_save() :no_edit()

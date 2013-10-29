@@ -22,13 +22,12 @@ function getTexturePlaceHolder()
 	return texturePlaceHolder
 end
 --------------------------------------------------------------------
-local function loadTextureAsync( texture, filePath, transform )
+local function loadTextureAsync( texture, filePath, transform, debugName )
 	loadAsyncData( filePath, function( buffer )
-			texture:load (buffer)
+			texture:load ( buffer, transform, debugName )
 			if texture:getSize() <= 0 then
 				_warn( 'failed load texture file:', filePath )
-				-- return getTexturePlaceHolder()
-				texture:load( getTexturePlaceHolderImage() )
+				texture:load( getTexturePlaceHolderImage(), transform, debugName )
 			end
 		end
 	)
@@ -242,7 +241,7 @@ local defaultTextureConfig = {
 
 
 --------------------------------------------------------------------
-local function loadSingleTexture( pixmapPath, group )
+local function loadSingleTexture( pixmapPath, group, debugName )
 	_stat( 'loading texture from pixmap:' , pixmapPath )
 
 	local tex = MOAITexture.new()
@@ -273,7 +272,7 @@ local function loadSingleTexture( pixmapPath, group )
 
 	local filePath = absProjectPath( pixmapPath )	
 	if TEXTURE_ASYNC_LOAD then
-		loadTextureAsync( tex, filePath, transform )
+		loadTextureAsync( tex, filePath, transform, debugName or pixmapPath )
 	else
 		tex:load( filePath, transform )
 		if tex:getSize() <= 0 then
@@ -308,7 +307,7 @@ local function loadTexPack( config )
 	local textures = {}
 	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
 		local texpath = atlasInfo['name']
-		local tex = loadSingleTexture( base .. '/' .. texpath, config )
+		local tex = loadSingleTexture( base .. '/' .. texpath, config, texpath )
 		if not tex then
 			error( 'error loading texture:' .. texpath )
 		end
@@ -378,7 +377,7 @@ local function loadTexture( node )
 	local config = loadAssetDataTable( configPath ) or defaultTextureConfig
 	if not config[ 'atlas_mode' ] then
 		local pixmapPath = node.objectFiles[ 'pixmap' ]
-		return loadSingleTexture( pixmapPath, config )
+		return loadSingleTexture( pixmapPath, config, node:getNodePath() )
 	else
 		return loadSubTexture( node.path, config )
 	end

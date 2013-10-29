@@ -120,7 +120,7 @@ function _serializeObject( obj, objMap, noNewRef )
 	---
 	local data = {}
 
-	for _,f in ipairs( fields ) do
+	for _, f in ipairs( fields ) do
 		if not f:getMeta( 'no_save', false ) then
 			_serializeField( obj, f, data, objMap, noNewRef )
 		end

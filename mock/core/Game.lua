@@ -311,7 +311,7 @@ end
 
 function Game:saveConfigToString()
 	local data = self:saveConfigToTable()
-	return MOAIJsonParser.encode( data )	
+	return MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
 end
 
 function Game:saveConfigToFile( path )
@@ -321,7 +321,7 @@ end
 
 function Game:saveJSONData( data, path, dataInfo )
 	dataInfo = dataInfo or 'json'
-	local output = MOAIJsonParser.encode( data )
+	local output = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
 	local file = io.open( path, 'w' )
 	if file then
 		file:write(output)
@@ -631,7 +631,7 @@ function Game:getUserDataPath( path )
 end
 
 function Game:saveSettingData( filename, data )
-	local str  = MOAIJsonParser.encode( data )
+	local str  = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
 	local raw  = MOAIDataBuffer.deflate( str, 0 )
 	local file = io.open( self.userDataPath..'/'..filename, 'wb' )
 	file:write( raw )

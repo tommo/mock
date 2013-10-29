@@ -11,8 +11,8 @@ function GlobalObjectNode:__init()
 	self.object   = false
 end
 
-function GlobalObjectNode:addNode( name )
-	local child = GlobalObjectNode()
+function GlobalObjectNode:addNode( name, child )
+	local child = child or GlobalObjectNode()
 	child.parent   = self
 	child.library  = self.library
 	child:setName( name )
@@ -20,6 +20,7 @@ function GlobalObjectNode:addNode( name )
 end
 
 function GlobalObjectNode:setName( name )
+	--build fullpath for object
 	local parent = self.parent
 	if self.fullName then
 		self.library.index[ self.fullName ] = nil
@@ -48,7 +49,13 @@ function GlobalObjectNode:addObject( name, object )
 end
 
 function GlobalObjectNode:removeNode( name )
-	self.children[ name ] = nil
+	local n = self.children[ name ]
+	if n then
+		n.parent = false
+		self.children[ name ] = nil
+		return true
+	end
+	return false
 end
 
 ---------------------------------------------------------------------
@@ -109,7 +116,6 @@ local function saveGlobalObject( node )
 	end
 end
 
-
 function GlobalObjectLibrary:save()
 	return saveGlobalObject( self.root )	
 end
@@ -125,7 +131,7 @@ function GlobalObjectLibrary:getNode( path )
 end
 
 --------------------------------------------------------------------
-function registerGlobalObject( name, clas )
+function registerGlobalObject( name, clas ) --TODO:icon?
 	if GlobalObjectRegistry[ name ] then
 		_warn( 'global object class duplicated', clas )
 	end

@@ -121,7 +121,7 @@ CLASS: Camera ( Component )
 	Field 'nearPlane'        :number()  :getset('NearPlane');
 	Field 'farPlane'         :number()  :getset('FarPlane');
 	Field 'priority'         :int()     :getset('Priority');
-	Field 'FOV'              :number()  :getset('FOV')    :range( 0, 360 ) ;
+	Field 'FOV'              :number()  :getset('FOV')  :range( 0, 360 ) :widget( 'slider' );
 	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
 	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
 	Field 'framebuffer'      :asset('framebuffer')  :getset('FrameBufferPath');
