@@ -141,65 +141,6 @@ function CharacterActionTrack:toString()
 end
 
 
---------------------------------------------------------------------
-CLASS: CharacterActionState ()
-	:MODEL{}
-
-local function _actionStateEventListener( timer, key, timesExecuted, time, value )
-	local state  = timer.state
-	local action = state.action
-	local span   = action.spanList[ key ]
-	local target = state.target
-	for i, ev in ipairs( span ) do
-		target:processActionEvent( ev, timer:getTime() )
-	end
-end
-
-function CharacterActionState:__init( action, target )
-	self.action = action
-	self.target = target
-	local timer = MOAITimer.new()
-	self.timer  = timer
-	local curve = action:getKeyCurve() 
-	timer:setCurve( curve )
-	timer:setSpan( 100000 )
-	timer:setMode( MOAITimer.NORMAL )
-	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionStateEventListener )
-	timer.state = self
-	self.throttle = 1
-end
-
-function CharacterActionState:setThrottle( th )
-	th = th or 1
-	self.throttle = th
-	self.timer:throttle( th )
-end
-
-function CharacterActionState:start()
-	self.timer:start()
-	self.timer:throttle( self.throttle )
-end
-
-function CharacterActionState:stop()
-	self.timer:stop()
-end
-
-function CharacterActionState:pause( paused )
-	self.timer:pause( paused )
-end
-
-function CharacterActionState:getTime()
-	return self.timer:getTime()
-end
-
-function CharacterActionState:isDone()
-	return self.timer:isDone()
-end
-
-function CharacterActionState:isPaused()
-	return self.timer:isPaused()
-end
-
 
 
 --------------------------------------------------------------------
@@ -243,12 +184,6 @@ function CharacterAction:findTrackByType( trackType )
 		if t:getType() == trackType then return t end
 	end
 	return nil
-end
-
-
-function CharacterAction:createActionState( target )
-	local state = CharacterActionState( self, target )
-	return state
 end
 
 function CharacterAction:getKeyCurve()

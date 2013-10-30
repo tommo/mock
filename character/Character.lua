@@ -78,7 +78,7 @@ function Character:playAction( name )
 	end
 	self:stop()
 	self:setThrottle( 1 )
-	local actionState = action:createActionState( self )
+	local actionState = CharacterState( self, action )
 	self.activeState = actionState
 	actionState:start()
 	return actionState
