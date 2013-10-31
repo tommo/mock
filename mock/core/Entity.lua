@@ -17,6 +17,7 @@ CLASS: Entity ( Actor )
 		Field 'rot'      :type('vec3') :getset('Rot') :label('Rot');
 		Field 'scl'      :type('vec3') :getset('Scl') :label('Scl');
 		Field 'piv'      :type('vec3') :getset('Piv') :label('Piv');
+		Field 'resetTransform'  :action( 'resetTransform' );
 		'----';
 		Field 'color'    :type('color')  :getset('Color') ;
 	}
@@ -188,6 +189,11 @@ function Entity:attach( com )
 		if onStart then onStart( com, self ) end
 	end
 	return com
+end
+
+function Entity:attachInternal( com )
+	com.FLAG_INTERNAL = true
+	return self:attach( com )
 end
 
 function Entity:attachList( l )

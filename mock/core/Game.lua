@@ -26,7 +26,7 @@
 module 'mock'
 
 local gii = rawget( _G, 'gii' )
-
+local collectgarbage = collectgarbage
 local pairs,ipairs,setmetatable,unpack=pairs,ipairs,setmetatable,unpack
 
 --------------------------------------------------------------------

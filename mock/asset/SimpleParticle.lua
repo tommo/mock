@@ -125,33 +125,33 @@ local templateRenderScript = [[
 CLASS: SimpleParticleSystemConfig ()
 	:MODEL{
 		Field 'deck'          :asset('deck2d\\..*');
-		Field 'particles'     :int()     :range( 0, 2000 );
 		Field 'blend'         :enum( mock.EnumBlendModes );
+		Field 'particles'     :int()     :range( 0, 2000 );
 		'----';
 		Field 'life'           :number() :range( 0, 10 )    :widget('slider');
 		Field 'lifeVar'        :number() :range( 0, 10 )    :widget('slider')  :label( 'life.v' );
-		Field 'emission'       :number() :range( 0, 100 )   :widget('slider');
+		Field 'emission'       :int()    :range( 0, 100 )   :widget('slider');
 		Field 'frequency'      :number() :range( 0.1, 100 ) :widget('slider');
-		Field 'size'           :number() :range( 0, 10 )    :widget('slider');
-		Field 'size1'          :number() :range( 0, 10 )    :widget('slider');
-		Field 'sizeVar'        :number() :range( 0, 10 )    :widget('slider') :label('size.v');
-
-		'----';
-		Field 'rot0'           :number() :range( 0, 3600 )  :widget('slider');
-		Field 'rot0Var'        :number() :range( 0, 3600 )  :widget('slider') :label('rot0.v');
-		Field 'rot1'           :number() :range( 0, 3600 )  :widget('slider');
-		Field 'rot1Var'        :number() :range( 0, 3600 )  :widget('slider') :label('rot1.v');
 
 		Field 'speed'          :number() :range( 0, 2000 )  :widget('slider');
 		Field 'speedVar'       :number() :range( 0, 2000 )  :widget('slider') :label('speed.v');
 		Field 'angle'          :number() :range( 0, 360 )  :widget('slider');
-		Field 'angleVar'       :number() :range( 0, 360 )  :widget('slider') :label('angle.v');
+		Field 'angleVar'       :number() :range( 0, 180 )  :widget('slider') :label('angle.v');
+
+		'----';
+		Field 'size'           :number() :range( 0, 10 )    :widget('slider');
+		Field 'size1'          :number() :range( 0, 10 )    :widget('slider');
+		Field 'sizeVar'        :number() :range( 0, 10 )    :widget('slider') :label('size.v');
+		Field 'rot0'           :number() :range( 0, 3600 )  :widget('slider');
+		Field 'rot0Var'        :number() :range( 0, 3600 )  :widget('slider') :label('rot0.v');
+		Field 'rot1'           :number() :range( 0, 3600 )  :widget('slider');
+		Field 'rot1Var'        :number() :range( 0, 3600 )  :widget('slider') :label('rot1.v');
 		
 		'----';
 		Field 'gravity'       :type('vec2') :range( -5000, 5000 ) :getset('Gravity');
-		Field 'accRadial'     :number() :range( 0, 1000 )  :widget('slider');
+		Field 'accRadial'     :number() :range( -1000, 1000 )  :widget('slider');
 		Field 'accRadialVar'  :number() :range( 0, 1000 )  :widget('slider') :label('accRadial.v');
-		Field 'accTan'        :number() :range( 0, 1000 )  :widget('slider');
+		Field 'accTan'        :number() :range( -1000, 1000 )  :widget('slider');
 		Field 'accTanVar'     :number() :range( 0, 1000 )  :widget('slider') :label('accTan.v');
 		
 		'----';

@@ -5,9 +5,8 @@ local EVENT_SPINE_ANIMATION_END      = MOAISpineAnimationState.EVENT_SPINE_ANIMA
 local EVENT_SPINE_ANIMATION_COMPLETE = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_COMPLETE
 local EVENT_SPINE_ANIMATION_EVENT    = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_EVENT
 
-CLASS: SpineSprite ()
+CLASS: SpineSprite ( SpineSpriteBase )
 	:MODEL{
-		Field 'sprite' :asset('spine') :getset('Sprite') :label('Sprite');
 		Field 'defaultClip' :string() :label('Default');
 		Field 'autoPlay'    :boolean() :label('Auto Play');
 	}
@@ -15,8 +14,6 @@ CLASS: SpineSprite ()
 registerComponent( 'SpineSprite', SpineSprite )
 
 function SpineSprite:__init()
-	self.skeleton  = MOAISpineSkeleton.new()
-	self.propInserted  = false
 	self.animState     = false
 	self.defaultClip   = ''
 	self.autoPlay      = true
@@ -24,47 +21,19 @@ function SpineSprite:__init()
 	self.throttle      = 1
 end
 
-function SpineSprite:onAttach( entity )
-	entity:_attachProp( self.skeleton )
-end
-
-function SpineSprite:onDetach( entity )
-	entity:_detachProp( self.skeleton )
-end
-
 function SpineSprite:onStart( entity )
 	local default = self.defaultClip
 	if self.autoPlay and default and default ~= '' then
-		self:play( default )
+		self:play( default, MOAITimer.LOOP )
 	end
 end
 
-function SpineSprite:setSprite( path )
-	self.spritePath = path	
-	self.skeletonData = loadAsset( path )
-	if self.skeletonData  then
-		local entity = self._entity
-		if entity then
-			entity:_detachProp( self.skeleton )		
-			self.skeleton  = MOAISpineSkeleton.new()
-			self.skeleton:load( self.skeletonData, 0.001 )
-			entity:_attachProp( self.skeleton )
-		else
-			self.skeleton:load( self.skeletonData, 0.001 )
-		end
-	end
+local function _onSpineAnimationEvent( anim, trackId, name, varInt, varFloat, varString )
+	return anim.owner:onAnimationEvent( trackId, name, varInt, varFloat, varString )
 end
 
-function SpineSprite:getSprite()
-	return self.spritePath
-end
-
-local function _onSpineAnimationEvent( state, trackId, name, varInt, varFloat, varString )
-	return state.owner:onAnimationEvent( trackId, name, varInt, varFloat, varString )
-end
-
-local function _onSpineAnimationComplete( state, trackId, loopCount )
-	return state.owner:onAnimationComplete( trackId, loopCount )
+local function _onSpineAnimationComplete( anim, trackId, loopCount )
+	return anim.owner:onAnimationComplete( trackId, loopCount )
 end
 
 function SpineSprite:play( clipName, mode, resetPose )
@@ -72,11 +41,8 @@ function SpineSprite:play( clipName, mode, resetPose )
 		self.animState:stop( resetPose )
 	end
 	mode = mode or MOAITimer.NORMAL
-	local state = MOAISpineAnimationState.new()
-	state:init( self.skeletonData )
-	state:setSkeleton( self.skeleton )
-	state:setMode( mode )
-	state:throttle( self.throttle )
+	local anim = self:createState()
+	anim:setMode( mode )
 	if not self:affirmClip( clipName ) then
 		_traceback()
 		_warn( 'spine anim clip not found:', clipName )
@@ -86,15 +52,26 @@ function SpineSprite:play( clipName, mode, resetPose )
 	if resetPose ~= false then
 		self.skeleton:setToSetupPose()
 	end
+
 	local loop = mode == MOAITimer.LOOP
-	state:setAnimation( 0, clipName, loop )
-	state:setSpan( 1000000 )
-	state:start()
-	state.owner = self
-	state:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )
-	-- state:setListener( EVENT_SPINE_ANIMATION_COMPLETE, _onSpineAnimationComplete )
-	self.animState = state 
-	return state
+	local track = anim:addTrack()
+	track:addSpan( 0, clipName, loop, 10000 )
+	anim:setSpan( 10000 )
+	anim:start()
+	anim.owner = self
+	-- anim:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )
+	-- anim:setListener( EVENT_SPINE_ANIMATION_COMPLETE, _onSpineAnimationComplete )
+	self.animState = anim 
+	return anim
+end
+
+
+function SpineSprite:createState()
+	local anim = MOAISpineAnimation.new()
+	anim:init( self.skeletonData )
+	anim:setSkeleton( self.skeleton )
+	anim:throttle( self.throttle )
+	return anim
 end
 
 function SpineSprite:setThrottle( th )
@@ -102,16 +79,6 @@ function SpineSprite:setThrottle( th )
 	if self.animState then
 		self.animState:throttle( th )
 	end
-end
-
-function SpineSprite:affirmClip( name )
-	local t = self.skeletonData._animationTable
-	return t[ name ]
-end
-
-function SpineSprite:getClipLength( name )
-	--TODO
-	return 1
 end
 
 function SpineSprite:stop( resetPose )

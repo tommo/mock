@@ -571,6 +571,12 @@ function Field:int()
 	return self:type('int')
 end
 
+function Field:action( methodName )
+	self:type('@action')
+	self.__actionname = methodName
+	return self
+end
+
 function Field:no_nil()
 	return self:meta { no_nil = true } --will get validated against onStart
 end

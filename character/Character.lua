@@ -17,8 +17,14 @@ function Character:__init()
 	self.throttle    = 1
 
 	self.actionEventCallbacks = false
-
 end
+
+--------------------------------------------------------------------
+function Character:onAttach( entity )
+	entity:attachInternal( self.spineSprite )
+	entity:attachInternal( self.soundSource )
+end
+--------------------------------------------------------------------
 
 function Character:setConfig( configPath )
 	self.configPath = configPath
@@ -64,9 +70,18 @@ function Character:findTrackByType( actionName, trackType )
 	return action:findTrackByType( trackType )
 end
 
+
 --------------------------------------------------------------------
 --playback
 function Character:playAction( name )
+	local state = self:setAction( name )
+	if state then
+		state:start()
+	end
+	return state
+end
+
+function Character:setAction( name )
 	if not self.config then
 		_warn('character has no config')
 		return false
@@ -80,21 +95,18 @@ function Character:playAction( name )
 	self:setThrottle( 1 )
 	local actionState = CharacterState( self, action )
 	self.activeState = actionState
-	actionState:start()
 	return actionState
 end
 
+
 function Character:stop()
 	if not self.activeState then return end
-	self.activeState:stop()
-	self.activeState = false
-	self.spineSprite:stop( false )
+	self.activeState:stop()	
 end
 
 function Character:pause( paused )
 	if not self.activeState then return end
 	self.activeState:pause( paused )
-	self.spineSprite:pause( paused )
 end
 
 function Character:resume()
@@ -106,13 +118,10 @@ function Character:setThrottle( th )
 	if self.activeState then
 		self.activeState:setThrottle( th )
 	end
-	self.spineSprite:setThrottle( th )
 end
 
 -----
-function Character:onStart( ent )
-	ent:attach( self.spineSprite )
-	ent:attach( self.soundSource )
+function Character:onStart( ent )	
 	if self.autoPlay and self.default and self.config then
 		if self.default == '' then return end
 		self:playAction( self.default )
@@ -127,8 +136,7 @@ function Character:onDetach( ent )
 end
 
 --------------------------------------------------------------------
-function Character:processActionEvent( ev, time )
-	ev:start( self, time )
+function Character:processActionEvent( ev, time )	
 	if self.actionEventCallbacks then
 		for i, callback in ipairs( self.actionEventCallbacks ) do
 			callback( self, ev, time )
@@ -152,7 +160,6 @@ function Character:removeActionEventCallback( cb )
 		end
 	end
 end
-
 
 ------
 --EVENT ACTION:

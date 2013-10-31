@@ -10,7 +10,7 @@ function EventAlign:toString()
 	return self.name or '<nil>'
 end
 
-function EventAlign:onStart( target, pos )
+function EventAlign:start( target, pos )
 	local nextAlign = self:findNextEvent()
 	if not nextAlign then return end
 	local pos1 = nextAlign

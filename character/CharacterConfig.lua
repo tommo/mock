@@ -6,7 +6,6 @@ CLASS: CharacterActionTrack ()
 CLASS: CharacterAction ()
 CLASS: CharacterConfig ()
 
-
 --------------------------------------------------------------------
 CharacterActionEvent
 :MODEL{		
@@ -38,11 +37,7 @@ function CharacterActionEvent:findNextEvent()
 	return res
 end
 
-function CharacterActionEvent:start( target, pos )
-	return self:onStart( target, pos )
-end
-
-function CharacterActionEvent:onStart( pos )
+function CharacterActionEvent:start( state, pos )
 end
 
 function CharacterActionEvent:toString()
@@ -78,9 +73,7 @@ function CharacterActionEvent:getAction()
 end
 
 
-
 --------------------------------------------------------------------
-
 CharacterActionTrack
 :MODEL{
 		Field 'name' :string();		
@@ -97,19 +90,14 @@ function CharacterActionTrack:getType()
 	return 'track'
 end
 
+function CharacterActionTrack:toString()
+	return self.name
+end
+
 function CharacterActionTrack:getAction()
 	return self.parent
 end
-
---whether build keyframe using event from the track
-function CharacterActionTrack:hasKeyFrames() 
-	return true
-end
-
-function CharacterActionTrack:createEvent()
-	return CharacterActionEvent()
-end
-
+--------------------------------------------------------------------
 function CharacterActionTrack:addEvent( pos )
 	local ev = self:createEvent()
 	table.insert( self.events, ev )
@@ -136,12 +124,38 @@ function CharacterActionTrack:sortEvents()
 	table.sort( self.events, _sortEvent )
 end
 
-function CharacterActionTrack:toString()
-	return self.name
+
+--------------------------------------------------------------------
+--VIRTUAL Functions
+--whether build keyframe using event from the track
+function CharacterActionTrack:hasKeyFrames() 
+	return true
+end
+--Event Factory
+function CharacterActionTrack:createEvent()
+	return CharacterActionEvent()
+end
+--(pre)build
+function CharacterActionTrack:buildStateData( stateData ) 
+end
+--(clean)build
+function CharacterActionTrack:clearStateData( stateData ) 
 end
 
+function CharacterActionTrack:setThrottle( state, th )
+end
 
+function CharacterActionTrack:start( state )
+end
 
+function CharacterActionTrack:stop( state )
+end
+
+function CharacterActionTrack:pause( state, paused )
+end
+
+function CharacterActionTrack:apply( state, t )
+end
 
 --------------------------------------------------------------------
 CharacterAction	:MODEL{
@@ -151,12 +165,11 @@ CharacterAction	:MODEL{
 	}
 
 function CharacterAction:__init()
-	self.name = 'action'
-	self.tracks = {}
+	self.name      = 'action'
+	self.tracks    = {}
+	self.stateData = false
 end
 
-function CharacterAction:start()
-end
 
 function CharacterAction:addTrack( t )
 	local track = t or CharacterActionTrack()
@@ -186,8 +199,26 @@ function CharacterAction:findTrackByType( trackType )
 	return nil
 end
 
-function CharacterAction:getKeyCurve()
-	return self.keyCurve or self:_buildKeyCurve()
+--------------------------------------------------------------------
+function CharacterAction:getStateData()	
+	return self.stateData or self:buildStateData()
+end
+
+function CharacterAction:buildStateData()
+	stateData = {}
+	for i, track in ipairs( self.tracks ) do
+		track:buildStateData( stateData )
+	end
+	stateData.keyCurve = self:_buildKeyCurve()
+	self.stateData = stateData
+	return stateData
+end
+
+function CharacterAction:clearStateData()
+	for i, track in ipairs( self.tracks ) do
+		track:clearStateData( stateData )
+	end
+	self.stateData = false
 end
 
 function CharacterAction:_buildKeyCurve()
@@ -219,7 +250,6 @@ function CharacterAction:_buildKeyCurve()
 		spanList[ i ] = spanSet[ pos ]
 	end
 	self.spanList = spanList
-	self.keyCurve = curve
 	return curve
 end
 

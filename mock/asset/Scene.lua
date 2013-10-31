@@ -18,7 +18,7 @@ local function collectEntity( entity, objMap )
 
 	if entity:getClass() == Entity then
 		for com in pairs( entity.components ) do
-			if not com.FLAG_EDITOR_OBJECT then
+			if not com.FLAG_INTERNAL then
 				table.insert( coms, objMap:map( com ) )
 			end
 		end

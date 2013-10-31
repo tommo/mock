@@ -29,8 +29,9 @@ function EventFmodSound:resizable()
 	return false
 end
 
-function EventFmodSound:onStart( target, pos )
+function EventFmodSound:start( state, pos )
 	if self.sound then 
+		local target = state.target
 		if self.loop then
 			local evt = target.soundSource:loopEvent2D( self.sound )
 		else

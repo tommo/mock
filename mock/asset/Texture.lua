@@ -24,7 +24,9 @@ end
 --------------------------------------------------------------------
 local function loadTextureAsync( texture, filePath, transform, debugName )
 	loadAsyncData( filePath, function( buffer )
+			local t0 = os.clock()
 			texture:load ( buffer, transform, debugName )
+			print( '>>>>>loading texture cost:', debugName, ( os.clock() - t0 ) * 1000 )
 			if texture:getSize() <= 0 then
 				_warn( 'failed load texture file:', filePath )
 				texture:load( getTexturePlaceHolderImage(), transform, debugName )

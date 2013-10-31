@@ -259,6 +259,7 @@ function ParticleSystemConfig:buildSystem()
 	system.regCount = regCount + 1 
 	system:reserveSprites   ( system.spriteCount )
 	system:reserveParticles ( system.particleCount, system.regCount )
+	system:setReversedDrawOrder( true )
 	if self.surge then system:surge(self.surge) end
 	
 	setupMoaiProp( system, self )

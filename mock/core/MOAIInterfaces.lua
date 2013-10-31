@@ -1,3 +1,5 @@
+if MOAIThread then return end --interface loaded
+
 --==============================================================
 -- Copyright (c) 2010-2011 Zipline Games, Inc. 
 -- All Rights Reserved. 
@@ -134,22 +136,11 @@ local function initTransform2DInterface ( interface, superInterface )
 		local x, y = superInterface.worldToModel ( self, x, y, 0 )
 		return x, y
 	end
-	
 end
 
 --============================================================--
 -- moai2D.lua - version 1.0 Beta
 --============================================================--
-
---============================================================--
--- MOAIThread
---============================================================--
-MOAIThread = MOAICoroutine
-
---============================================================--
--- MOAILayerBridge2D
---============================================================--
-MOAILayerBridge2D = MOAILayerBridge
 
 --============================================================--
 -- MOAICamera
@@ -228,7 +219,7 @@ end
 --============================================================--
 -- MOAIHttpTask
 --============================================================--
-MOAIHttpTask = MOAIHttpTaskCurl or MOAIHttpNaCl
+MOAIHttpTask = MOAIHttpTaskNSURL or MOAIHttpTaskNaCl or MOAIHttpTaskCurl 
 
 --============================================================--
 -- MOAILayer
@@ -404,11 +395,11 @@ MOAISim.extend (
 )
 
 --============================================================--
--- MOAITextBox
+-- MOAITextLabel
 --============================================================--
-MOAITextBox.extend (
+MOAITextLabel.extend (
 
-	'MOAITextBox',
+	'MOAITextLabel',
 	
 	----------------------------------------------------------------
 	function ( interface, class, superInterface, superClass )
@@ -453,7 +444,38 @@ MOAITransform.extend (
 	end
 )
 
+--============================================================--
+-- MOAIGfxDevice
+--============================================================--
+MOAIGfxDevice.extend (
+
+	'MOAIGfxDevice',
+	
+	----------------------------------------------------------------
+	function ( class, superClass )
+		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
+		-- extend the class
+		function class.setClearColor ( r, g, b, a )
+			MOAIGfxDevice.getFrameBuffer():setClearColor ( r, g, b, a )
+		end
+	end
+)
+
+--============================================================--
+-- renames
+--============================================================--
+
+MOAIHashWriter	= MOAIHashWriterCrypto or MOAIHashWriter
+MOAITextBox		= MOAITextLabel
+MOAIThread		= MOAICoroutine
+
+--============================================================--
+-- Cross Platform
+--============================================================--
+
 MOAIApp = MOAIAppAndroid or MOAIAppIOS
+MOAIBrowser = MOAIBrowserAndroid or MOAIBrowserIOS
+MOAISafariIOS = MOAIBrowserIOS
 MOAIDialog = MOAIDialogAndroid or MOAIDialogIOS
 MOAIMoviePlayer = MOAIMoviePlayerAndroid or MOAIMoviePlayerIOS
 
@@ -469,3 +491,43 @@ MOAITapjoy = MOAITapjoyAndroid or MOAITapjoyIOS
 math.random=MOAIMath.randSFMT
 math.seedrandom=MOAIMath.seedSFMT
 MOAIMath.seedSFMT(1)
+
+MOAITwitter = MOAITwitterAndroid or MOAITwitterIOS
+
+-- Compatibility
+if MOAIAppAndroid then
+    MOAIAppAndroid.openURL = MOAIBrowserAndroid.openURL
+end
+
+if MOAITwitterIOS then
+    MOAITwitter.sendTweet = function(text, url) MOAITwitterIOS.composeTweet(text, url) end
+
+    MOAITwitter.setAccessToken = function()  end
+
+    MOAITwitter.init = function() end
+
+    MOAITwitter.isLoggedIn = function () return MOAITwitterIOS.canTweet() end
+
+    MOAITwitter.SESSION_DID_LOGIN = MOAITwitter.TWEET_SUCCESSFUL + 1
+    MOAITwitter.SESSION_DID_NOT_LOGIN = MOAITwitter.SESSION_DID_LOGIN + 1
+
+    MOAITwitter.login = function()
+        local listener = MOAITwitter.loginListeners[MOAITwitter.SESSION_DID_NOT_LOGIN] 
+        if MOAITwitter.isLoggedIn() then
+            listener = MOAITwitter.loginListeners[MOAITwitter.SESSION_DID_LOGIN] 
+        end
+        listener()
+    end
+
+    MOAITwitter._oldSetListener = MOAITwitter.setListener
+
+    MOAITwitter.setListener = function(event, listener)
+        if event == MOAITwitter.SESSION_DID_LOGIN or event == MOAITwitter.SESSION_DID_NOT_LOGIN then
+            MOAITwitter.loginListeners = MOAITwitter.loginListeners or {}
+            MOAITwitter.loginListeners[event] = listener
+        else
+            MOAITwitter._oldSetListener(event, listener)
+        end
+    end
+end
+

@@ -14,8 +14,8 @@ function EventMessage:isResizable()
 	return true
 end
 
-function EventMessage:onStart( target, pos )
-	target:tell( self.message, self )
+function EventMessage:start( state, pos )
+	state.target:tell( self.message, self )
 end
 
 function EventMessage:toString()
