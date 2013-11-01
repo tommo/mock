@@ -747,8 +747,10 @@ local function _cloneEntity( src, cloneComponents, cloneChildren )
 	dst.layer = src.layer
 	if cloneComponents ~= false then
 		for com in pairs( src.components ) do
-			local com1 = clone( com )
-			dst:attach( com1 )
+			if not com.FLAG_INTERNAL then
+				local com1 = clone( com )
+				dst:attach( com1 )
+			end
 		end
 	end
 	if cloneChildren ~= false then

@@ -60,7 +60,7 @@ end
 
 function SoundSource:onStart()
 	if self.autoPlay and self.defaultClipPath then
-		
+		self:playEvent2D( self.defaultClipPath )
 	end
 end
 

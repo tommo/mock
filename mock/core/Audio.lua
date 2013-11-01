@@ -19,8 +19,8 @@ function initFmodDesigner()
 			["enableDistantLowpass"]       =  false ;
 			["enableEnvironmentalReverb"]  =  false ;
 			["enableNear2DBlend"]          =  false ;
-			["enableAuditioning"]          =  false ;
-			["enableProfiling"]            =  false ;
+			["enableAuditioning"]          =  true ;
+			["enableProfiling"]            =  true ;
 			["enableFsCallbacks"]          =  false ;
 			["disableSound"]               =  false ;
 			["dopplerScale"]               =  0 ;

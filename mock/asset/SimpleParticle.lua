@@ -132,6 +132,7 @@ CLASS: SimpleParticleSystemConfig ()
 		Field 'lifeVar'        :number() :range( 0, 10 )    :widget('slider')  :label( 'life.v' );
 		Field 'emission'       :int()    :range( 0, 100 )   :widget('slider');
 		Field 'frequency'      :number() :range( 0.1, 100 ) :widget('slider');
+		Field 'emitSize'       :type('vec2') :range( 0 ) :getset('EmitSize');
 
 		Field 'speed'          :number() :range( 0, 2000 )  :widget('slider');
 		Field 'speedVar'       :number() :range( 0, 2000 )  :widget('slider') :label('speed.v');
@@ -174,6 +175,7 @@ function SimpleParticleSystemConfig:__init()
 	self.lifeVar   = 0
 	self.emission  = 1
 	self.frequency = 100
+	self.emitSize  = {0,0}
 
 	self.size    = 1
 	self.size1   = 1
@@ -225,6 +227,16 @@ end
 function SimpleParticleSystemConfig:setColor1( r,g,b,a )
 	self.color1 = {r,g,b,a}
 end
+
+--------------------------------------------------------------------
+function SimpleParticleSystemConfig:getEmitSize()
+	return unpack( self.emitSize )
+end
+
+function SimpleParticleSystemConfig:setEmitSize( w, h )
+	self.emitSize = {w,h}
+end
+
 
 --------------------------------------------------------------------
 function SimpleParticleSystemConfig:getGravity()
@@ -295,9 +307,9 @@ function SimpleParticleSystemConfig:buildStateScript()
 			hasTanAcc = tostring(hasTanAcc),
 
 			srcX         = 0,--t.sourcePosition.x,
-			srcXVariance = 0,
+			srcXVariance = t.emitSize[1],
 			srcY         = 0,--t.sourcePosition.y,
-			srcYVariance = 0,
+			srcYVariance = t.emitSize[2],
 
 			--RADIAL EMITTER
 			--TODO
@@ -386,6 +398,9 @@ function SimpleParticleSystemConfig:buildSystemConfig()
 	cfg.particles = self.particles
 	cfg.sprites   = self.particles
 	cfg.deck      = self.deck
+
+	local w, h = self:getEmitSize()
+	cfg.rect      = { -w/2, -h/2, w, h }
 
 	cfg:addStateConfig( st )
 	cfg:addEmitterConfig( em )

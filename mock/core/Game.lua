@@ -530,7 +530,7 @@ end
 
 function Game:onRootUpdate( delta )
 	self.time = self.time + delta
-	-- emitSignal('game.update', delta)
+	emitSignal('game.update', delta)
 end
 
 function Game:resetClock()
