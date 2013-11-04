@@ -75,9 +75,7 @@ end
 --playback
 function Character:playAction( name )
 	local state = self:setAction( name )
-	if state then
-		state:start()
-	end
+	if state then	state:start()	end
 	return state
 end
 
@@ -101,7 +99,7 @@ end
 
 function Character:stop()
 	if not self.activeState then return end
-	self.activeState:stop()	
+	self.activeState:stop()
 end
 
 function Character:pause( paused )
@@ -136,10 +134,10 @@ function Character:onDetach( ent )
 end
 
 --------------------------------------------------------------------
-function Character:processActionEvent( ev, time )	
+function Character:processActionEvent( evtype, ev, time )	
 	if self.actionEventCallbacks then
 		for i, callback in ipairs( self.actionEventCallbacks ) do
-			callback( self, ev, time )
+			callback( evtype, self, ev, time )
 		end
 	end
 end
@@ -161,7 +159,7 @@ function Character:removeActionEventCallback( cb )
 	end
 end
 
-------
+--------------------------------------------------------------------
 --EVENT ACTION:
 
 function Character:playAnim( clip, loop, resetPose )

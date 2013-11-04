@@ -60,6 +60,10 @@ local ATTR_LOCAL_VISIBLE= MOAIProp. ATTR_LOCAL_VISIBLE
 local ATTR_VISIBLE      = MOAIProp. ATTR_VISIBLE
 local INHERIT_VISIBLE   = MOAIProp. INHERIT_VISIBLE
 
+local ATTR_SHADER       = MOAIProp. ATTR_SHADER
+local ATTR_BLEND_MODE   = MOAIProp. ATTR_BLEND_MODE
+local ATTR_PARTITION    = MOAIProp. ATTR_PARTITION
+
 local ATTR_R_COL        = MOAIColor. ATTR_R_COL
 local ATTR_G_COL        = MOAIColor. ATTR_G_COL
 local ATTR_B_COL        = MOAIColor. ATTR_B_COL
@@ -115,6 +119,14 @@ function inheritTransformColorVisible( p1, p2 )
 	inheritTransformColor( p1, p2 )
 	return inheritVisible( p1, p2 )
 end
+
+function inheritAllPropAttributes( p1, p2 )
+	inheritTransformColorVisible( p1, p2 )
+	p1:setAttrLink ( ATTR_PARTITION, p2, ATTR_PARTITION )
+	p1:setAttrLink ( ATTR_SHADER, p2, ATTR_SHADER )
+	p1:setAttrLink ( ATTR_BLEND_MODE, p2, ATTR_BLEND_MODE )
+end
+
 
 function alignPropPivot(p, align)  --align prop's pivot against deck
 	local x,y,z,x1,y1,z1=p:getBounds()

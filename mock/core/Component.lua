@@ -68,19 +68,6 @@ function Component:tell( ... )
 	return self._entity:tell( ... )
 end
 
-function Component:pollMsg()
-	msg, arg = self._entity:pollMsg()
-	return msg,arg
-end
-
-function Component:peekMsg()
-	return self._entity:peekMsg()
-end
-
-function Component:pollFindMsg( ... )
-	return self._entity:pollFindMsg( ... )
-end
-
 function Component:getState()
 	return self._entity.state()
 end
@@ -96,7 +83,6 @@ end
 function Component:inStateGroup( ... )
 	return self._entity:inStateGroup( ... )
 end
-
 
 
 --------------------------------------------------------------------
@@ -157,10 +143,6 @@ function Component:wait( a )
 	return self._entity:wait( a )
 end
 
-function Component:waitMsg( ... )
-	return self._entity:waitMsg( ... )
-end
-
 --------------------------------------------------------------------
 ---------coroutine control
 --------------------------------------------------------------------
@@ -211,6 +193,9 @@ end
 local componentRegistry = {}
 function registerComponent( name, creator )
 	-- assert( not componentRegistry[ name ], 'duplicated component type:'..name )
+	if not creator then
+		_error( 'no component to register', name )
+	end
 	componentRegistry[ name ] = creator
 end
 

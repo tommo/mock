@@ -4,6 +4,7 @@ module 'mock'
 --------------------------------------------------------------------
 local stateCollectorMT
 local setmetatable=setmetatable
+local insert, remove = table.insert, table.remove
 local rawget,rawset=rawget,rawset
 local pairs=pairs
 
@@ -56,14 +57,41 @@ function FSMController:__initclass( subclass )
 	subclass.fsm = newStateMethodCollector( subclass )
 end
 
+function FSMController:__init()
+	self.msgBox = {}
+	self.msgBoxListener = function( msg, data, source )
+		return insert( self.msgBox, {msg,data,source} )
+	end
+end
+
+function FSMController:onAttach( entity )
+	Behaviour.onAttach( self, entity )
+	entity:addMsgListener( self.msgBoxListener )
+end
+
 function FSMController:onStart( entity )
 	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
 	Behaviour.onStart( self, entity )
 end
 
+function FSMController:onDetach( ent )
+	Behaviour.onDetach( self, ent )
+	ent:removeMsgListener( self.msgBoxListener )
+end
+
 function FSMController:getState()
 	local ent = self._entity
 	return ent and ent:getState()
+end
+
+function FSMController:clearMsgBox()
+	self.msgBox = {}
+end
+
+function FSMController:pollMsg()
+	local m = remove( self.msgBox, 1 )
+	if m then return m[1],m[2],m[3] end
+	return nil
 end
 
 function FSMController:updateFSM( dt )

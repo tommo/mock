@@ -53,17 +53,19 @@ local function insertEntity( scn, parent, edata, objMap )
 	local children   = edata['children']
 
 	local entity = objMap[ id ][ 1 ]
-	--components
-	for _, comId in ipairs( components ) do
-		local com = objMap[ comId ][ 1 ]
-		entity:attach( com )
-	end
+	
 	if scn then
 		scn:addEntity( entity )
 	elseif parent then
 		parent:addChild( entity )
 	end
 
+	--components
+	for _, comId in ipairs( components ) do
+		local com = objMap[ comId ][ 1 ]
+		entity:attach( com )
+	end
+	
 	--chilcren
 	for i, childData in ipairs( children ) do
 		insertEntity( nil, entity, childData, objMap )

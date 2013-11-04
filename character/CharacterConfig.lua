@@ -64,6 +64,10 @@ function CharacterActionEvent:getLength()
 	return self.length
 end
 
+function CharacterActionEvent:getEnd()
+	return self.pos + self.length
+end
+
 function CharacterActionEvent:getTrack()
 	return self.parent
 end
@@ -77,7 +81,7 @@ end
 CharacterActionTrack
 :MODEL{
 		Field 'name' :string();		
-		Field 'events' :array( CharacterActionEvent ) :no_edit();		
+		Field 'events' :array( CharacterActionEvent ) :no_edit() :sub();		
 		Field 'parent' :type( CharacterAction ) :no_edit();
 	}
 
@@ -124,6 +128,14 @@ function CharacterActionTrack:sortEvents()
 	table.sort( self.events, _sortEvent )
 end
 
+function CharacterActionTrack:calcLength()
+	local l = 0
+	for i, e in ipairs( self.events ) do
+		local l1 = e:getEnd()
+		if l1>l then l = l1 end
+	end
+	return l
+end
 
 --------------------------------------------------------------------
 --VIRTUAL Functions
@@ -160,7 +172,9 @@ end
 --------------------------------------------------------------------
 CharacterAction	:MODEL{
 		Field 'name' :string();		
-		Field 'tracks' :array( CharacterActionTrack ) :no_edit();		
+		Field 'loop' :boolean();
+		Field 'length' :int();
+		Field 'tracks' :array( CharacterActionTrack ) :no_edit() :sub();		
 		Field 'parent' :type( CharacterConfig ) :no_edit();
 	}
 
@@ -168,6 +182,8 @@ function CharacterAction:__init()
 	self.name      = 'action'
 	self.tracks    = {}
 	self.stateData = false
+	self.loop      = false
+	self.length    = -1
 end
 
 
@@ -206,9 +222,13 @@ end
 
 function CharacterAction:buildStateData()
 	stateData = {}
+	local length = 0
 	for i, track in ipairs( self.tracks ) do
 		track:buildStateData( stateData )
+		local l = track:calcLength()
+		if l>length then length = l end
 	end
+	stateData.length   = length
 	stateData.keyCurve = self:_buildKeyCurve()
 	self.stateData = stateData
 	return stateData

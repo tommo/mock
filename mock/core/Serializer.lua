@@ -81,16 +81,16 @@ function _serializeField( obj, f, data, objMap, noNewRef )
 	if ft == '@array' then --compound
 		local array = {}
 		if isAtomicValue( f.__itemtype ) then
-			for i, item in ipairs( fieldValue ) do
+			for i, item in pairs( fieldValue ) do
 				array[ i ] = item
 			end
 		elseif f.__objtype == 'sub' then
-			for i, item in ipairs( fieldValue ) do
+			for i, item in pairs( fieldValue ) do
 				local itemData = _serializeObject( item, objMap )
 				array[ i ] = itemData
 			end
 		else --ref
-			for i, item in ipairs( fieldValue ) do
+			for i, item in pairs( fieldValue ) do
 				array[ i ] = objMap:map( item, noNewRef )
 			end
 		end
@@ -193,13 +193,23 @@ function _deserializeField( obj, f, data, objMap )
 			end
 		elseif f.__objtype == 'sub' then
 			for i, itemData in ipairs( fieldData ) do
-				local item = _deserializeObject( nil, itemData, objMap )
-				array[ i ] = item
+				if type( itemData ) == 'string' then --need conversion?
+					local itemTarget = objMap[ itemData ]
+					array[ i ] = itemTarget[1]
+				else
+					local item = _deserializeObject( nil, itemData, objMap )
+					array[ i ] = item
+				end
 			end
 		else
 			for i, itemData in ipairs( fieldData ) do
-				local itemTarget = objMap[ itemData ]
-				array[ i ] = itemTarget[1]
+				if type( itemData ) == 'table' then --need conversion?
+					local item = _deserializeObject( nil, itemData, objMap )
+					array[ i ] = item
+				else
+					local itemTarget = objMap[ itemData ]
+					array[ i ] = itemTarget[1]
+				end
 			end
 		end
 		f:setValue( obj, array )
@@ -346,7 +356,7 @@ end
 
 local _cloneObject, _cloneField
 
-function _cloneField( obj, dst, f )
+function _cloneField( obj, dst, f, objMap )
 	local id = f:getId()
 
 	local ft = f:getType()
@@ -364,16 +374,16 @@ function _cloneField( obj, dst, f )
 	if ft == '@array' then --compound
 		local array = {}
 		if isAtomicValue( f.__itemtype ) then
-			for i, item in ipairs( fieldValue ) do
+			for i, item in pairs( fieldValue ) do
 				array[ i ] = item
 			end
 		elseif f.__objtype == 'sub' then
-			for i, item in ipairs( fieldValue ) do
-				array[ i ] = _cloneObject( item )
+			for i, item in pairs( fieldValue ) do
+				array[ i ] = _cloneObject( item, nil, objMap )
 			end
 		else --ref
-			for i, item in ipairs( fieldValue ) do
-				array[ i ] = item
+			for i, item in pairs( fieldValue ) do
+				array[ i ] = objMap[ item ] or item
 			end
 		end
 		f:setValue( dst, array )
@@ -381,15 +391,15 @@ function _cloneField( obj, dst, f )
 	end
 
 	if f.__objtype == 'sub' then
-		f:setValue( dst, _cloneObject( fieldValue ) )
+		f:setValue( dst, _cloneObject( fieldValue, nil, objMap ) )
 	else --ref					
-		f:setValue( dst, fieldValue )
+		f:setValue( dst, objMap[ fieldValue ] or fieldValue )
 	end
 
 end
 
 --------------------------------------------------------------------
-function _cloneObject( obj, dst )
+function _cloneObject( obj, dst, objMap )
 	local model = getModel( obj )
 	if not model then return nil end
 	if dst then
@@ -398,11 +408,13 @@ function _cloneObject( obj, dst )
 	else
 		dst = model:newInstance()
 	end
+	objMap = objMap or {}
+	objMap[ obj ] = dst
 	local fields = model:getFieldList( true )
 	---
 	for _, f in ipairs( fields ) do
 		if not f:getMeta( 'no_save', false ) then
-			_cloneField( obj, dst, f )
+			_cloneField( obj, dst, f, objMap )
 		end
 	end
 	----	

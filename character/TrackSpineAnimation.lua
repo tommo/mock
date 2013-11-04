@@ -33,7 +33,6 @@ function EventSpineAnimation:setClip( name )
 	self.clip = name
 end
 
-
 --------------------------------------------------------------------
 CLASS: TrackSpineAnimation ( CharacterActionTrack )
 	:MODEL{}
@@ -58,6 +57,7 @@ function TrackSpineAnimation:toString()
 	return '<spine>' .. tostring( self.name )
 end
 
+local _started = {}
 function TrackSpineAnimation:start( state )
 	--build MOAISpineAnimationTrack
 	local target      = state.target
@@ -69,13 +69,18 @@ function TrackSpineAnimation:start( state )
 	local spineState = target.spineState
 	if not spineState then
 		spineState = target.spineSprite:createState()
-		spineState:setSpan( 100000 )
 		target.spineState = spineState
 	end
-
+	
 	spineState:pause( false )
 	spineState:setTime( 0 )
 	spineState:apply( 0 )
+	spineState:setSpan( state.length )
+	if state.loop then
+		spineState:setMode( MOAITimer.LOOP )
+	else
+		spineState:setMode( MOAITimer.NORMAL )
+	end
 	spineState:start()
 	local animTrack = spineState:addTrack()
 	spineTracks[ self ] = animTrack
@@ -83,7 +88,6 @@ function TrackSpineAnimation:start( state )
 		local l = ev.length/1000
 		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, l>0 and l or nil )
 	end
-
 end
 
 function TrackSpineAnimation:stop( state )	

@@ -17,7 +17,7 @@ CLASS: Entity ( Actor )
 		Field 'rot'      :type('vec3') :getset('Rot') :label('Rot');
 		Field 'scl'      :type('vec3') :getset('Scl') :label('Scl');
 		Field 'piv'      :type('vec3') :getset('Piv') :label('Piv');
-		Field 'resetTransform'  :action( 'resetTransform' );
+		-- Field 'resetTransform'  :action( 'resetTransform' );
 		'----';
 		Field 'color'    :type('color')  :getset('Color') ;
 	}
@@ -63,10 +63,12 @@ function Entity:_insertIntoScene( scene, layer )
 	self.layer = layer
 	scene.entities[ self ] = true
 	
-	--TODO: edge case: component created inside onAttach may get initialized twice
 	for com in pairs( self.components ) do
-		local onAttach = com.onAttach
-		if onAttach then onAttach( com, self ) end
+		if not com._entity then
+			com._entity = self
+			local onAttach = com.onAttach
+			if onAttach then onAttach( com, self ) end
+		end
 	end
 
 	if self.onLoad then
@@ -180,13 +182,13 @@ function Entity:attach( com )
 	assert( not self.components[ com ], 'component already attached!!!!'  )
 	self.components[ com ] = com:getClass()
 	if self.scene then
+		com._entity = self		
 		local onAttach = com.onAttach
 		if onAttach then onAttach( com, self ) end
-	end		
-	com._entity = self
-	if self.started then
-		local onStart = com.onStart
-		if onStart then onStart( com, self ) end
+		if self.started then
+			local onStart = com.onStart
+			if onStart then onStart( com, self ) end
+		end
 	end
 	return com
 end
@@ -447,22 +449,24 @@ function Entity:start()
 		self:onStart()
 	end
 	self.started = true
+
 	local copy = {}
 	for com in pairs( self.components ) do
 		copy[ com ] = true
 	end
 	for com, clas in pairs( copy ) do
 		local onStart = com.onStart
-		if onStart then 
-			onStart( com, self )
-		end
+		if onStart then onStart( com, self ) end
 	end
+
 	for child in pairs( self.children ) do
 		child:start()
 	end
+
 	if self.onThread then
 		self:addCoroutine('onThread')		
 	end
+	
 end
 
 function Entity:setActive( active )	
@@ -714,13 +718,28 @@ function Entity:pick( x, y, z, pad )
 	
 	return nil
 end
+
+function Entity:resetTransform()
+	self:setLoc( 0, 0, 0 )
+	self:setRot( 0, 0, 0 )
+	self:setScl( 1, 1, 1 )
+	self:setPiv( 0, 0, 0 )
+end
+
 --------------------------------------------------------------------
 --- Registry
 --------------------------------------------------------------------
 
 local entityTypeRegistry = {}
 function registerEntity( name, creator )
-	assert( name and creator, 'nil name or entity creator' )
+	if not creator then
+		return _error( 'no entity to register', name )
+	end
+
+	if not name then
+		return _error( 'no entity name specified' )
+	end
+	-- assert( name and creator, 'nil name or entity creator' )
 	-- assert( not entityTypeRegistry[ name ], 'duplicated entity type:'..name )
 	_stat( 'register entity type', name )
 	entityTypeRegistry[ name ] = creator
@@ -742,20 +761,21 @@ registerEntity( 'Entity', Entity )
 --------------------------------------------------------------------
 --Serializer Related
 --------------------------------------------------------------------
-local function _cloneEntity( src, cloneComponents, cloneChildren )
-	local dst = clone( src )
+local function _cloneEntity( src, cloneComponents, cloneChildren, objMap )
+	local objMap = {}
+	local dst = clone( src, nil, objMap )
 	dst.layer = src.layer
 	if cloneComponents ~= false then
 		for com in pairs( src.components ) do
 			if not com.FLAG_INTERNAL then
-				local com1 = clone( com )
+				local com1 = clone( com, nil, objMap )
 				dst:attach( com1 )
 			end
 		end
 	end
 	if cloneChildren ~= false then
 		for child in pairs( src.children ) do
-			local child1 = _cloneEntity( child, cloneComponents, cloneChildren )
+			local child1 = _cloneEntity( child, cloneComponents, cloneChildren, objMap )
 			dst:addChild( child1 )
 		end
 	end

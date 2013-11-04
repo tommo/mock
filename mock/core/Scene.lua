@@ -283,8 +283,7 @@ function Scene:addEntity( entity, layer )
 		end 
 	end
 	assert( layer )
-
-	entity:_insertIntoScene( self, layer )	
+	entity:_insertIntoScene( self, layer )
 	
 	return entity
 end
