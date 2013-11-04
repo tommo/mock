@@ -73,6 +73,7 @@ end
 ---- msgbox?
 function Actor:addMsgListener( listener )
 	table.insert( self.msgListeners, listener )
+	return listener
 end
 
 function Actor:removeMsgListener( listener )
