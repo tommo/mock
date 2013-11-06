@@ -24,24 +24,28 @@ CLASS:  ParticleEmitterConfig()
 	:MODEL {
 		Field 'name'      :string();
 		Field 'type'      :enum( EnumParticleType );
-		Field 'distance'  :number()  :range(0);
-		Field 'frequency' :number()  :range(0);		
+		Field 'distance'  :number()  :range(0) ;
+		Field 'frequency' :type('vec2') :range(0)  :getset('Frequency');
+		Field 'emission'  :type('vec2') :range(0)  :getset('Emission');		
+		'----';
 		Field 'magnitude' :type('vec2') :range(0)  :getset('Magnitude');		
 		Field 'angle'     :type('vec2') :range(-360, 360) :getset('Angle');	
-		Field 'emission'  :int()     :range(0);		
-		Field 'radius'    :number()  :range(0);	
+		'----';
+		Field 'radius'    :type('vec2') :range(0) :getset('Radius');
+		Field 'rect'      :type('vec2') :range(0) :getset('Rect');
 	}
 
 function ParticleEmitterConfig:__init()
 	self.name      = 'emitter'
 	self.type      = 'timed'
 	self.distance  = 10
-	self.frequency = 0.02
+	self.frequency = { 10, 10 }
 	self.magnitude = { 10, 10 }
 	self.angle     = { 0, 0 }
-	self.emission  = 5
 	self.surge     = 0
-	self.radius    = 5
+	self.emission  = {1,1}
+	self.radius    = {5,5}
+	self.rect      = {0,0}
 end
 
 function ParticleEmitterConfig:build()
@@ -58,16 +62,20 @@ end
 function ParticleEmitterConfig:updateEmitter( em )
 
 	if self.distance and em.setDistance then em:setDistance( _unpack( self.distance ) ) end
-	if self.frequency and em.setFrequency then em:setFrequency( _unpack( self.frequency ) ) end
+	if self.frequency and em.setFrequency then 
+		local f1, f2 = _unpack( self.frequency )		
+		em:setFrequency( 1/f1, f2 and 1/f2 or 1/f1 )
+	end
 
 	em.name = self.name
 	if self.angle     then em:setAngle( _unpack(self.angle) ) end
 	if self.magnitude then em:setMagnitude( _unpack(self.magnitude) ) end
 
-	if self.radius then 
+	if self.radius[1] > 0 or self.radius[1] > 0 then 
 		em:setRadius( _unpack(self.radius) )
-	elseif self.rect then 
-		em:setRect( _unpack(self.rect) )
+	else
+		local w, h = unpack( self.rect )
+		em:setRect( -w/2, -h/2, w/2, h/2 )
 	end
 	if self.emission then em:setEmission(_unpack(self.emission)) end
 	if self.surge    then em:surge(self.surge) end
@@ -75,6 +83,22 @@ function ParticleEmitterConfig:updateEmitter( em )
 end
 
 --------------------------------------------------------------------
+function ParticleEmitterConfig:setFrequency( f1, f2 )
+	self.frequency = { f1 or 0 , f2 or 0 }
+end
+
+function ParticleEmitterConfig:getFrequency()
+	return unpack( self.frequency )
+end
+
+function ParticleEmitterConfig:setEmission( e1, e2 )
+	self.emission = { e1 or 0 , e2 or 0 }
+end
+
+function ParticleEmitterConfig:getEmission()
+	return unpack( self.emission )
+end
+
 function ParticleEmitterConfig:setMagnitude( min, max )
 	min = min or 0
 	self.magnitude = { min, max or min }
@@ -93,13 +117,28 @@ function ParticleEmitterConfig:getAngle()
 	return unpack( self.angle )
 end
 
+function ParticleEmitterConfig:setRadius( r1, r2 )
+	self.radius = { r1 or 0 , r2 or 0 }
+end
+
+function ParticleEmitterConfig:getRadius()
+	return unpack( self.radius )
+end
+
+function ParticleEmitterConfig:setRect( w, h )
+	self.rect = { w or 1, h or 1 }
+end
+
+function ParticleEmitterConfig:getRect()
+	return unpack( self.rect )
+end
 
 --------------------------------------------------------------------
 CLASS:  ParticleStateConfig()
 	:MODEL {
 		Field 'name'         :string() ;
 		Field 'active'       :boolean() ;
-		Field 'life'         :number() :range(0);
+		Field 'life'         :type('vec2') :range(0) :getset('Life');
 		Field 'initScript'   :string() :no_edit();
 		Field 'renderScript' :string() :no_edit();
 	}
@@ -110,7 +149,7 @@ function ParticleStateConfig:__init()
 	self.active       = true
 	self.initScript   = ''
 	self.renderScript = 'proc.p.moveAlong()\nsprite()\n'
-	self.life         = 1	
+	self.life         = { 1, 1 }
 end
 
 function ParticleStateConfig:build( regs )
@@ -162,6 +201,14 @@ function ParticleStateConfig:build( regs )
 	-- end
 
 	return state
+end
+
+function ParticleStateConfig:setLife( l1, l2 )
+	self.life         = { l1, l2 or l1 }
+end
+
+function ParticleStateConfig:getLife()
+	return unpack( self.life )
 end
 
 --------------------------------------------------------------------

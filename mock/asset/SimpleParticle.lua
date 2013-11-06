@@ -388,7 +388,7 @@ function SimpleParticleSystemConfig:buildSystemConfig()
 	local em = ParticleEmitterConfig() 
 	em.name = 'default'
 	em.type = 'timed'
-	em.frequency = 1/self.frequency
+	em.frequency = self.frequency
 	em.emission  = self.emission
 	em.magnitude = varianceRange( self.speed, self.speedVar )
 	em.angle     = varianceRange( self.angle, self.angleVar )

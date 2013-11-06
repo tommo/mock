@@ -309,7 +309,7 @@ local function loadPexParticleConfig( node )
 	local em = ParticleEmitterConfig() 
 	em.name = 'default'
 	em.type = 'timed'
-	em.frequency = 0 --FIXME
+	em.frequency = 60 --FIXME
 	em.magnitude = varianceRange( pexData.speed, pexData.speedVariance )
 	em.emission  = emission
 	em.angle     = varianceRange( pexData.angle, pexData.angleVariance )

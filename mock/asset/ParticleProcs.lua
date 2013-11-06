@@ -70,8 +70,11 @@ function proc.sp.simple()
 	
 end
 
-function proc.sp.align()
-	sp.rot=vecAngle(p.dy,p.dx)
+function proc.sp.align( offset )
+	sp.rot = vecAngle(p.dy,p.dx)
+	if offset then
+		sp.rot = sp.rot + offset
+	end
 end
 
 function proc.sp.transform(option)

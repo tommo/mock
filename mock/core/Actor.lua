@@ -363,3 +363,4 @@ function Actor:wait(a)
 	end
 end
 ----------MOAIAction control
+

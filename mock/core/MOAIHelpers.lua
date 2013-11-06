@@ -53,6 +53,7 @@ local deviceResolutions={
 	ipad    = {768,1024},
 	ipad2   = {768,1024},
 	ipad3   = {768*2,1024*2},
+	ipad4   = {768*2,1024*2},
 	android = {480,800},
 }
 
