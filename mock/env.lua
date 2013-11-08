@@ -45,7 +45,6 @@ require 'mock.core.Serializer'
 require 'mock.core.MOAIInterfaces'
 
 require 'mock.core.enums'
-require 'mock.core.MOAIClass'
 require 'mock.core.MOAIHelpers'
 
 require 'mock.core.async'

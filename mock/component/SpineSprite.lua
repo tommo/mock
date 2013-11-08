@@ -15,6 +15,7 @@ registerComponent( 'SpineSprite', SpineSprite )
 
 function SpineSprite:__init()
 	self.animState     = false
+	self.skeletonData  = false
 	self.defaultClip   = ''
 	self.autoPlay      = true
 	self._onAnimationEvent  = false
@@ -35,6 +36,15 @@ end
 local function _onSpineAnimationComplete( anim, trackId, loopCount )
 	return anim.owner:onAnimationComplete( trackId, loopCount )
 end
+
+function SpineSprite:getSkeleton()
+	return self.skeleton
+end
+
+function SpineSprite:getSkeletonData()
+	return self.skeletonData
+end
+
 
 function SpineSprite:play( clipName, mode, resetPose )
 	if self.animState then

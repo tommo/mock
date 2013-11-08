@@ -3,7 +3,7 @@ module 'mock'
 ---DEAD LOCK DEBUG HELPER
 local DEADLOCK_THRESHOLD = 100 
 local DEADLOCK_TRACK     = true
-local DEADLOCK_TRACK_ENABLED = false
+local DEADLOCK_TRACK_ENABLED = true
 --------------------------------------------------------------------
 local function buildFSMScheme( FSMData )
 	-- assert(targetClass,'Target Class required')

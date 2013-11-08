@@ -120,6 +120,14 @@ function inheritTransformColorVisible( p1, p2 )
 	return inheritVisible( p1, p2 )
 end
 
+function inheritPartition( p1, p2 )
+	p1:setAttrLink ( ATTR_PARTITION, p2, ATTR_PARTITION )
+end
+
+function inheritShader( p1, p2 )
+	p1:setAttrLink ( ATTR_SHADER, p2, ATTR_SHADER )
+end
+
 function inheritAllPropAttributes( p1, p2 )
 	inheritTransformColorVisible( p1, p2 )
 	p1:setAttrLink ( ATTR_PARTITION, p2, ATTR_PARTITION )

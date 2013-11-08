@@ -279,7 +279,7 @@ function Camera:updateLayers()
 				layer:setParallax( unpack(source.parallax) )
 			end
 			--TODO: should be moved to debug facility
-			layer:showDebugLines( true )
+			layer:showDebugLines( false )
 			local world = game:getBox2DWorld()
 			if world then layer:setBox2DWorld( world ) end
 

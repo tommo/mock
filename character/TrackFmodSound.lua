@@ -17,12 +17,14 @@ end
 --------------------------------------------------------------------
 CLASS: EventFmodSound ( CharacterActionEvent )
 	:MODEL{
-		Field 'sound' :asset( 'fmod_event' );
-		Field 'loop'  :boolean();
+		Field 'sound'  :asset( 'fmod_event' );
+		Field 'loop'   :boolean();
+		Field 'ahead'    :int();
 	}
 function EventFmodSound:__init()
 	self.length = 0
 	self.loop   = false
+	self.ahead  = 0
 end
 
 function EventFmodSound:resizable()
@@ -36,9 +38,12 @@ function EventFmodSound:start( state, pos )
 			local evt = target.soundSource:loopEvent2D( self.sound )
 		else
 			local evt = target.soundSource:playEvent2D( self.sound )
-			-- if evt then evt:setPitch( target.throttle ) end
 		end
 	end
+end
+
+function EventFmodSound:getKeyFramePos()
+	return self.pos - self.ahead
 end
 
 function EventFmodSound:toString()

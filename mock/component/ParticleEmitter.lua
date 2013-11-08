@@ -6,6 +6,8 @@ CLASS: ParticleEmitter ()
 		Field 'emitterName' :string() :getset('EmitterName');
 	}
 
+wrapWithMoaiTransformMethods( ParticleEmitter, 'emitter' )
+
 function ParticleEmitter:__init()
 	self.system      = false
 	self.emitter     = false
@@ -40,6 +42,12 @@ function ParticleEmitter:updateEmitter()
 	if emitter then
 		emitter:start()
 		self._entity:_attachTransform( emitter )
+	end
+end
+
+function ParticleEmitter:surge( count )
+	if self.emitter then
+		return self.emitter:surge( count )
 	end
 end
 

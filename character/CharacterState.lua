@@ -9,7 +9,7 @@ local function _actionStateEventListener( timer, key, timesExecuted, time, value
 	local action = state.action
 	local span   = action.spanList[ key ]
 	local target = state.target
-	local time1  = timer:getTime()
+	local time   = timer:getTime()
 	for i, ev in ipairs( span ) do
 		ev:start( state, time )
 		target:processActionEvent( 'event', ev, time )

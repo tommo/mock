@@ -129,7 +129,6 @@ function Scene:threadMain( dt )
 			end
 		--end of step update
 		end
-
 		--executeDestroyQueue()
 		local pendingDestroy = self.pendingDestroy
 		self.pendingDestroy = {}

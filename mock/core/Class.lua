@@ -98,14 +98,13 @@ function BaseClass:isInstance( clas )
 	return c:isSubclass( clas )
 end
 
--- function BaseClass:callSuperMethod( name, ... )
+-- function BaseClass:superCall( name, ... )
 -- 	local m = self[ name ]
 -- 	local super = self.__super
 -- 	while super do
 -- 		local m1 = super[ name ]
 -- 		if not m1 then break end
--- 		if m1 ~= m then 
--- 			return m1( self, ... ) end
+-- 		if m1 ~= m then return m1( self, ... ) end
 -- 		super = super.__super
 -- 	end
 -- 	error( 'no super method: '.. name, 2 )

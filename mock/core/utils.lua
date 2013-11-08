@@ -990,3 +990,7 @@ function table.show(t, name, indent)
    addtocart(t, name, indent)
    return cart .. autoref
 end
+
+function ___sleep(n)
+  os.execute("sleep " .. tonumber(n))
+end

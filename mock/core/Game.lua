@@ -202,14 +202,24 @@ function Game:init( option, fromEditor )
 	self.throttle = 1
 	self.isPaused = false
 
-	local actionRoot=MOAICoroutine.new()
+	local actionRoot=MOAICoroutine.new()	
 	actionRoot:run( function()
 			while true do
-				self:onRootUpdate( coroutine.yield() ) --delta time get passed in
+				coroutine.yield()
+				-- self:onRootUpdate( dt ) --delta time get passed in
 			end
 		end
 	)
+	
 	MOAIActionMgr.setRoot( actionRoot )
+	local actionRoot2=MOAICoroutine.new()	
+	actionRoot2:run( function()
+			while true do
+				local dt = coroutine.yield()
+				self:onRootUpdate( dt ) --delta time get passed in
+			end
+		end
+	)
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 
 			0
@@ -217,19 +227,15 @@ function Game:init( option, fromEditor )
 			+ MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
 			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
+			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
 			
-			-- + MOAISim.SIM_LOOP_FORCE_STEP
+			+ MOAISim.SIM_LOOP_FORCE_STEP
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
-			-- + MOAISim.SIM_LOOP_NO_SURPLUS
+			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)
 	-- MOAISim.setLongDelayThreshold( 100 )
-	-- MOAISim.clearLoopFlags(
-	-- 	MOAISim.LOOP_FLAGS_DEFAULT
-		-- )
-	-- MOAISim.setStepMultiplier( 2 )
-	-- MOAISim.setLoopFlags( 
-	-- 		MOAISim.SIM_LOOP_FORCE_STEP
-	-- 	)
+	-- MOAISim.setBoostThreshold( 3 )	
+	-- MOAISim.setStepMultiplier( 2 )	
 
 	self.actionRoot = actionRoot
 	self:setThrottle( 1 )
@@ -262,9 +268,7 @@ function Game:init( option, fromEditor )
 	initFmodDesigner()
 
 	----physics
-	self.b2world = MOAIBox2DWorld.new()
 	self:setupBox2DWorld()
-	self.b2world:start()
 	
 	----ask other systems to initialize
 	emitSignal( 'game.init' )
@@ -677,10 +681,10 @@ end
 --PHYSICS
 --------------------------------------------------------------------
 local defaultWorldSettings = {
-	gravity               = { 0, -100 },
-	unitsToMeters         = 1,
-	velocityIterations    = 4,
-	positionIterations    = 6,
+	gravity               = { 0, -10 },
+	unitsToMeters         = 0.01,
+	velocityIterations    = 6,
+	positionIterations    = 8,
 
 	angularSleepTolerance = 0,
 	linearSleepTolerance  = 0,
@@ -692,14 +696,15 @@ local defaultWorldSettings = {
 
 function Game:setupBox2DWorld( settings )
 	settings = settings or defaultWorldSettings 
-	local world = self.b2world
+
+	local world = MOAIBox2DWorld.new()
+
+	if settings.gravity then
+		world:setGravity ( unpack(settings.gravity) )
+	end
 	
 	if settings.unitsToMeters then
 		world:setUnitsToMeters ( settings.unitsToMeters )
-	end
-	
-	if settings.gravity then
-		world:setGravity ( unpack(settings.gravity) )
 	end
 	
 	local velocityIterations, positionIterations = settings.velocityIterations, settings.positionIterations
@@ -712,7 +717,11 @@ function Game:setupBox2DWorld( settings )
 	-- world:setTimeToSleep           ( settings.timeToSleep )
 	-- world:setAngularSleepTolerance ( settings.angularSleepTolerance )
 	-- world:setLinearSleepTolerance  ( settings.linearSleepTolerance )
-
+	world:start()
+	self.b2world = world
+	local ground = world:addBody( MOAIBox2DBody.STATIC )
+	self.b2ground = ground
+	return world
 end
 
 function Game:getBox2DWorld()

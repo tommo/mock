@@ -56,6 +56,10 @@ function CharacterActionEvent:getPos()
 	return self.pos
 end
 
+function CharacterActionEvent:getKeyFramePos()
+	return self.pos
+end
+
 function CharacterActionEvent:setLength( length )
 	self.length = length
 end
@@ -249,8 +253,8 @@ function CharacterAction:_buildKeyCurve()
 		track:sortEvents()
 		if track:hasKeyFrames() then
 			for i, event in ipairs( track.events ) do
-				local pos    = event.pos
-				local length = event.length
+				local pos = event:getKeyFramePos()
+				if pos<0 then pos = 0 end
 				local t = spanSet[ pos ]
 				if not t then 
 					t = {}

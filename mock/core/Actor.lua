@@ -155,14 +155,18 @@ function Actor:broadcast( msg, data, source )
 end
 
 ---------coroutine control
-local function coroutineFunc( coroutines, coro, func, ...)
+local function _coroutineWrapperFunc( coroutines, coro, func, ...)
 	func( ... )
 	coroutines[ coro ] = nil  --automatically remove self from thread list
 end
 
+function setActorCoroutineWrapper( f )
+	_coroutineWrapperFunc = f
+end
+
 function Actor:addCoroutine( func, ... )
 	
-	local coro=MOAICoroutine.new()
+	local coro = MOAICoroutine.new()
 	
 	local coroutines = self.coroutines
 	if not coroutines then
@@ -173,11 +177,11 @@ function Actor:addCoroutine( func, ... )
 	if tt == 'string' then --method name
 		local _func = self[ func ]
 		assert( type(_func) == 'function' , 'method not found:'..func )
-		coro:run( coroutineFunc,
+		coro:run( _coroutineWrapperFunc,
 			coroutines, coro, _func, self,
 			...)
 	elseif tt=='function' then --function
-		coro:run( coroutineFunc,
+		coro:run( _coroutineWrapperFunc,
 			coroutines, coro, func,
 			...)
 	else
