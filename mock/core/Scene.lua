@@ -312,6 +312,11 @@ function Scene:changeEntityName( entity, oldName, newName )
 end
 
 function Scene:clear( keepEditorEntity )
+	local entityListener = self.entityListener
+	if entityListener then
+		self.entityListener = false
+		entityListener( 'clear', keepEditorEntity )
+	end
 	for e in pairs( self.entities ) do
 		if not e.parent then
 			if not ( keepEditorEntity and e.FLAG_EDITOR_OBJECT ) then
@@ -328,4 +333,6 @@ function Scene:clear( keepEditorEntity )
 
 	-- self.updateListeners = {}
 	self.defaultCamera   = false
+	self.entityListener = entityListener
+
 end
