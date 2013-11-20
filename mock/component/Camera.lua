@@ -357,7 +357,7 @@ function Camera:getViewportRect()
 end
 
 function Camera:getViewportLocalRect()
-	local w, h = self:getViewportWorldSize()
+	local w, h = self:getViewportSize()
 	return -w/2, -h/2, w/2, h/2
 end
 
