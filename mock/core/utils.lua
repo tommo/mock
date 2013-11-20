@@ -321,14 +321,13 @@ function lerp( v1, v2, k )
 end
 
 local lerp=lerp
-function rangeMap(v,s0,e0,s1,e1)
-	local r1=e0-s0
-	local k=(v-s0)/r1
-	return lerp(s1,e1,k)
+function rangeMap( v, s0,e0, s1,e1 )
+	local r1 = e0 - s0
+	local k  = ( v - s0 ) / r1
+	return lerp( s1, e1, k )
 end
 
 local sin=math.sin
-
 function wave(freq,min,max,off)
 	off=off or 0
 	return (sin(os.clock()*freq*(2*3.141592653)+off)*(max-min)+(min+max))/2
@@ -355,8 +354,8 @@ function wrap(v,minv,maxv)
 	end
 end
 
-math.clamp=clamp
-math.wrap=wrap
+math.clamp = clamp
+math.wrap  = wrap
 
 
 function inRange(x,y,diff)
@@ -602,8 +601,6 @@ function gradColor(colors,k)
 	
 	local frac=(k-start*pitch)/pitch
 	
-
-
 	local r1,g1,b1,a1 = unpack(colors[start+1])
 	local r2,g2,b2,a2 = unpack(colors[math.min(start+2,count)])
 	

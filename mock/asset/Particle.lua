@@ -27,6 +27,8 @@ CLASS:  ParticleEmitterConfig()
 		Field 'distance'  :number()  :range(0) ;
 		Field 'frequency' :type('vec2') :range(0)  :getset('Frequency');
 		Field 'emission'  :type('vec2') :range(0)  :getset('Emission');		
+		Field 'duration'  :number();
+		Field 'surge'     :int();
 		'----';
 		Field 'magnitude' :type('vec2') :range(0)  :getset('Magnitude');		
 		Field 'angle'     :type('vec2') :range(-360, 360) :getset('Angle');	
@@ -46,6 +48,7 @@ function ParticleEmitterConfig:__init()
 	self.emission  = {1,1}
 	self.radius    = {5,5}
 	self.rect      = {0,0}
+	self.duration  = -1
 end
 
 function ParticleEmitterConfig:build()
@@ -79,6 +82,9 @@ function ParticleEmitterConfig:updateEmitter( em )
 	end
 	if self.emission then em:setEmission(_unpack(self.emission)) end
 	if self.surge    then em:surge(self.surge) end
+	if em.setDuration then 
+		em:setDuration( self.duration )
+	end
 
 end
 

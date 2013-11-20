@@ -7,112 +7,6 @@ local remove = table.remove
 		RenderTable 
 ]]
 
-local function prioritySortFunc( a, b )	
-	local pa = a.priority or 0
-	local pb = b.priority or 0
-	return pa < pb
-end
-
-local globalCameraList = {}
-
--- local function findMainCameraForScene( scene )
--- 	for _, cam in ipairs( globalCameraList ) do
--- 		if cam.scene == scene and cam.mainCamera then return cam end
--- 	end
--- 	return nil
--- end
-
-local function updateRenderStack()
-	--TODO: render order of framebuffers
-	local contextMap = {}
-
-	local renderTableMap = {}
-	local bufferTable    = {}
-	local deviceBuffer   = MOAIGfxDevice.getFrameBuffer()
-	local count = 0
-	table.sort( globalCameraList, prioritySortFunc )
-
-	for _, cam in ipairs( globalCameraList ) do
-		local context = cam.context
-		local renderData = contextMap[ context ]
-		if not renderData then
-			renderData = {
-				renderTableMap    = {},
-				bufferTable       = {},
-				deviceRenderTable = {}
-			}
-			contextMap[ context ] = renderData
-		end
-
-		local fb = cam:getMoaiFrameBuffer()
-		local rt
-		if fb ~= deviceBuffer then
-			rt = renderData.renderTableMap[ fb ]
-			if not rt then
-				rt = {}
-				renderData.renderTableMap[ fb ] = rt
-				if fb ~= deviceBuffer then --add framebuffer by camera order
-					insert( renderData.bufferTable, fb )
-				end
-			end
-		else
-			rt = renderData.deviceRenderTable
-		end
-		if not cam.FLAG_EDITOR_OBJECT then
-			for i, layer in ipairs( cam.moaiLayers ) do
-				count = count + 1
-				insert( rt, layer )
-			end
-		else
-			for i, layer in ipairs( cam.moaiLayers ) do
-				local src = layer.source
-				local visible = src.editorVisible and src.editorSolo~='hidden'
-				if visible then
-					count = count + 1
-					insert( rt, layer )
-				end
-			end
-		end
-	end
-
-	for context, renderData in pairs( contextMap ) do
-		game:setRenderStack( context, renderData.deviceRenderTable, renderData.bufferTable, renderData.renderTableMap )		
-	end
-
-end
-
-local function _onDeviceResize( w, h )
-	for _, cam in ipairs( globalCameraList ) do
-		if not cam.fixedViewport then
-			cam:updateViewport()
-		end
-	end
-end
-
-
-local function _onGameResize( w, h )
-	for _, cam in ipairs( globalCameraList ) do
-		if not cam.fixedViewport then
-			cam:updateViewport()
-		end
-	end
-end
-
-local function _onLayerUpdate( layer, var )
-	if var == 'priority' then
-		for _, cam in ipairs( globalCameraList ) do
-			cam:reorderLayers()
-		end
-		updateRenderStack()
-	elseif var == 'editor_visible' then
-		updateRenderStack()
-	end
-end
-
-connectSignalFunc( 'device.resize', _onDeviceResize )
-connectSignalFunc( 'gfx.resize', _onGameResize )
-connectSignalFunc( 'layer.update', _onLayerUpdate )
--------------
 CLASS: Camera ( Component )
 
 :MODEL{
@@ -124,11 +18,10 @@ CLASS: Camera ( Component )
 	Field 'FOV'              :number()  :getset('FOV')  :range( 0, 360 ) :widget( 'slider' );
 	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
 	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
-	Field 'framebuffer'      :asset('framebuffer')  :getset('FrameBufferPath');
+	Field 'framebuffer'      :asset('framebuffer')  :getset('OutputFrameBuffer');
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
-
 
 local function _cameraZoomControlNodeCallback( node )
 	return node.camera:updateViewport()
@@ -153,7 +46,7 @@ function Camera:__init( option )
 	self:setZoom( 1 )
 	self.zoomControlNode:setCallback( _cameraZoomControlNodeCallback )
 
-	self.moaiLayers = {}
+	self.renderLayers = {}
 	self.viewport   = MOAIViewport.new()
 	self.priority   = option.priority or 0
 	self.mainCamera = false
@@ -165,7 +58,7 @@ function Camera:__init( option )
 	self.includedLayers = option.included or 'all'
 	-- self.excludedLayers = option.excluded or ( option.included and 'all' or false )
 	self.excludedLayers = {}
-	self:setFrameBufferPath( false )
+	self:setOutputFrameBuffer( false )
 
 	self:setFOV( 90 )
 	local defaultNearPlane, defaultFarPlane = -10000, 10000
@@ -177,15 +70,17 @@ function Camera:__init( option )
 
 	self.parallaxEnabled = true
 
+	self.passes = {}
 end
 
 function Camera:onAttach( entity )
 	self.scene = entity.scene
-	table.insert( globalCameraList, self )
-	self:updateViewport()
-	self:updateLayers()
 	entity:_attachTransform( self._camera )
+	self:updateViewport()
+	self:loadPasses()
 	self:bindSceneLayers()
+	self:updateRenderLayers()
+	getCameraManager():register( self )
 	--use as main camera if no camera applied yet for current scene
 	-- if not findMainCameraForScene( self.scene ) then 
 	-- 	self:setMainCamera()
@@ -193,11 +88,7 @@ function Camera:onAttach( entity )
 end
 
 function Camera:onDetach( entity )
-	--remove from global camera list
-	for i, cam in ipairs( globalCameraList ) do
-		if cam == self then remove( globalCameraList, i ) break end
-	end
-	updateRenderStack()
+	getCameraManager():unregister( self )
 end
 
 --------------------------------------------------------------------
@@ -212,7 +103,7 @@ end
 
 function Camera:tryBindSceneLayer( layer )
 	local name = layer.name
-	if self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name )) then
+	if self:isLayerIncluded( name ) then
 		layer:setViewport( self.viewport )
 		layer:setCamera( self._camera )
 	end
@@ -229,12 +120,18 @@ end
 -- 	end	
 -- end
 
+function Camera:loadPasses()
+	self:addPass( SceneCameraPass() )
+end
+
+function Camera:addPass( pass )
+	pass.camera = self
+	table.insert( self.passes, pass )	
+end
+
 --------------------------------------------------------------------
 function Camera:isLayerIncluded( name )
-	for i, layer in ipairs( self.moaiLayers ) do
-		if layer.name == name then return true end
-	end
-	return false
+		return self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name ))
 end 
 
 --internal use
@@ -258,53 +155,38 @@ function Camera:_isLayerExcluded( name )
 	return false
 end
 
-function Camera:updateLayers()
-	local scene  = self.scene
-	local layers = {} 
-	self.moaiLayers = layers
-	--make a copy of layers from current scene
-	for id, sceneLayer in ipairs( scene.layers ) do
-		local name  = sceneLayer.name
-		if self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name )) then
-			local source   = sceneLayer.source
-			local layer    = MOAILayer.new()
-			layer.name     = name
-			layer.priority = -1
-			layer.source   = source
-			layer:setPartition( sceneLayer:getPartition() )
-
-			layer:setViewport( self.viewport )
-			layer:setCamera( self._camera )
-			if self.parallaxEnabled and source.parallax then
-				layer:setParallax( unpack(source.parallax) )
-			end
-			--TODO: should be moved to debug facility
-			layer:showDebugLines( false )
-			local world = game:getBox2DWorld()
-			if world then layer:setBox2DWorld( world ) end
-
-			if sceneLayer.sortMode then
-				layer:setSortMode( sceneLayer.sortMode )
-			end
-			inheritVisible( layer, sceneLayer )
-			insert( layers, layer )
-			layer._mock_camera = self
-		end
-	end
-	self:reorderLayers()
-	updateRenderStack()
+function Camera:updateRenderLayers()
+	-- local layers = {}
+	-- for i, pass in ipairs( self.passes ) do
+	-- 	local passLayers = pass:build()
+	-- 	if passLayers then
+	-- 		for i, l in ipairs( passLayers ) do
+	-- 			insert( layers, l )
+	-- 		end
+	-- 	end
+	-- end	
+	-- self.renderLayers = layers
+	-- self:reorderRenderLayers()
+	getCameraManager():update()
 end
 
-function Camera:reorderLayers()
-	local layers = self.moaiLayers 
+local function _prioritySortFunc( a, b )	
+	local pa = a.priority or 0
+	local pb = b.priority or 0
+	return pa < pb
+end
+
+function Camera:reorderRenderLayers()
+	local layers = self.renderLayers 
 	for i, layer in ipairs( layers ) do
-		layer.priority = layer.source.priority
+		local src = layer.source
+		layer.priority = src and src.priority
 	end
-	table.sort( layers, prioritySortFunc )
+	table.sort( layers, _prioritySortFunc )
 end
 
 function Camera:getRenderLayer( name )
-	for i, layer in ipairs( self.moaiLayers ) do
+	for i, layer in ipairs( self.renderLayers ) do
 		if layer.name == name then return layer end
 	end
 	return nil
@@ -316,7 +198,7 @@ end
 
 function Camera:setExcludedLayers( layers )
 	self.excludedLayers = layers
-	if self.scene then self:updateLayers() end
+	if self.scene then self:updateRenderLayers() end
 end
 
 --------------------------------------------------------------------
@@ -328,7 +210,7 @@ function Camera:setPriority( p )
 	local p = p or 0
 	if self.priority ~= p then
 		self.priority = p
-		updateRenderStack()	
+		getCameraManager():update()
 	end
 end
 
@@ -354,7 +236,7 @@ end
 function Camera:setParallaxEnabled( p )
 	self.parallaxEnabled = p~=false
 	if self.scene then
-		self:updateLayers()
+		self:updateRenderLayers()
 	end
 end
 
@@ -409,7 +291,7 @@ function Camera:getScreenScale()
 	return game:getViewportScale()
 end
 
-function Camera:updateViewport( updateRenderStack )
+function Camera:updateViewport()
 	local gx0, gy0, gx1, gy1
 	local fb = self.frameBuffer
 	if fb == MOAIGfxDevice.getFrameBuffer() then		
@@ -532,14 +414,14 @@ end
 
 function Camera:showAllLayers( layerName, shown )
 	shown = shown ~= false
-	for i, layer in ipairs( self.moaiLayers ) do
+	for i, layer in ipairs( self.renderLayers ) do
 		layer:setVisible( shown )
 	end
 end
 
 function Camera:showLayer( layerName, shown )
 	shown = shown ~= false
-	for i, layer in ipairs( self.moaiLayers ) do
+	for i, layer in ipairs( self.renderLayers ) do
 		if layer.name == layerName then
 			layer:setVisible( shown )
 		end
@@ -565,10 +447,10 @@ end
 
 function Camera:setPriority( p )
 	self.priority = p or 0
-	updateRenderStack()
+	getCameraManager():update()
 end
 
-function Camera:setFrameBufferPath( fb )
+function Camera:setOutputFrameBuffer( fb )
 	self.frameBufferPath = fb or false
 	if fb then 
 		fb = mock.loadAsset( fb )
@@ -577,11 +459,11 @@ function Camera:setFrameBufferPath( fb )
 	self.frameBuffer = fb or MOAIGfxDevice.getFrameBuffer()
 	if self.scene then
 		self:updateViewport()
-		self:updateLayers()
+		self:updateRenderLayers()
 	end	
 end
 
-function Camera:getFrameBufferPath()
+function Camera:getOutputFrameBuffer()
 	return self.frameBufferPath
 end
 

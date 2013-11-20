@@ -240,6 +240,14 @@ function findAssetNode( path, assetType )
 	return result or nil
 end	
 
+function affirmAsset( pattern, assetType )
+	local path = findAsset( pattern, assetType )
+	if not path then
+		_error( 'asset not found', pattern, assetType or '<?>' )
+	end
+	return path
+end
+
 function findAsset( path, assetType )
 	local node = findAssetNode( path, assetType )
 	return node and node.path or nil

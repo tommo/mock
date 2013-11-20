@@ -740,15 +740,15 @@ end
 --Context Related
 --------------------------------------------------------------------
 function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTableMap )
-	--render context helper for GII
+
 	if gii then
 		local renderContext = gii.getRenderContext( context )
 		assert( renderContext, 'render context not found:' .. context )
-		local renderTableMap1 = {}
-		for fb, rt in pairs( renderTableMap ) do
-			table.insert( renderTableMap1, { fb, rt } )
-		end
-		renderContext.renderTableMap    = renderTableMap1
+		-- local renderTableMap1 = {}
+		-- for fb, rt in pairs( renderTableMap ) do --copy
+		-- 	renderTableMap1[ fb ] = rt
+		-- end
+		renderContext.renderTableMap    = renderTableMap
 		renderContext.bufferTable       = bufferTable
 		renderContext.deviceRenderTable = deviceRenderTable
 	elseif context ~= 'game' then
@@ -759,8 +759,10 @@ function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTab
 		for framebuffer, renderTable in pairs( renderTableMap ) do
 			framebuffer:setRenderTable( renderTable )
 		end
-		MOAIGfxDevice.getFrameBuffer():setRenderTable( deviceRenderTable )	
-		MOAIRenderMgr.setBufferTable( bufferTable )
+		if deviceRenderTable then
+			MOAIGfxDevice.getFrameBuffer():setRenderTable( deviceRenderTable )	
+		end
+		MOAIRenderMgr.setBufferTable( bufferTable )		
 	end
 end
 

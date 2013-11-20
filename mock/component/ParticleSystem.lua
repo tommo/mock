@@ -94,6 +94,9 @@ function ParticleSystem:addEmitter( emitterName )
 
 	local em = emitterName and config:buildEmitter( emitterName )
 	if not em then
+		if emitterName then 
+			_warn( 'particle has no emitter named', emitterName )
+		end
 		em = MOAIParticleTimedEmitter.new()
 	end
 	self._entity:_attachTransform( em )

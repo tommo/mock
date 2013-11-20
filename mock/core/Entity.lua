@@ -613,8 +613,8 @@ end
 --------------------------------------------------------------------
 ----------Transform Conversion
 --------------------------------------------------------------------
-function Entity:wndToWorld( x, y )
-	return self.layer:wndToWorld( x, y )
+function Entity:wndToWorld( x, y, z )
+	return self.layer:wndToWorld( x, y, z )
 end
 
 function Entity:worldToWnd( x, y ,z )
@@ -629,8 +629,8 @@ function Entity:modelToWorld( x, y ,z )
 	return self._prop:modelToWorld( x, y ,z )
 end
 
-function Entity:wndToModel( x, y )
-	return self._prop:worldToModel( self.layer:wndToWorld( x, y ) )
+function Entity:wndToModel( x, y, z )
+	return self._prop:worldToModel( self.layer:wndToWorld( x, y, z ) )
 end
 
 function Entity:modelToWnd( x, y ,z )

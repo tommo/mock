@@ -9,6 +9,7 @@ require 'mock.component.InputListener'
 require 'mock.component.Behaviour'
 
 ---- Basic components
+require 'mock.component.CameraPass'
 require 'mock.component.Camera'
 
 ---- Graphics

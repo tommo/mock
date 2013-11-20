@@ -181,3 +181,10 @@ function createLinearAnimCurve( from, to, step, fps, startTime, easeType )
 	return curve
 end
 
+function createSmoothLoopAnimCurve( from, to, length )
+	local curve = MOAIAnimCurve.new()
+	curve:reserveKeys( 2 )
+	curve:setKey( 1, from, MOAIEaseType.SMOOTH )
+	curve:setKey( 2, from, MOAIEaseType.SMOOTH )
+	return curve
+end
