@@ -714,6 +714,8 @@ function Game:setupBox2DWorld( settings )
 
 	world:setAutoClearForces ( settings.autoClearForces )
 
+	world:setTimeToSleep           ( 10000 )
+
 	-- world:setTimeToSleep           ( settings.timeToSleep )
 	-- world:setAngularSleepTolerance ( settings.angularSleepTolerance )
 	-- world:setLinearSleepTolerance  ( settings.linearSleepTolerance )

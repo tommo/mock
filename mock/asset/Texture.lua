@@ -249,11 +249,11 @@ local function loadSingleTexture( pixmapPath, group, debugName )
 	local tex = MOAITexture.new()
 	tex.pixmapPath = pixmapPath
 
-	local transform = MOAIImage.TRUECOLOR
+	local transform = 0
 	if group['premultiply_alpha'] ~= false then
 		transform = transform + MOAIImage.PREMULTIPLY_ALPHA
 	end
-	
+	-- transform = transform + MOAIImage.QUANTIZE
 	local filter
 	if group.filter == 'linear' then
 		if group.mipmap then

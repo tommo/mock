@@ -132,7 +132,7 @@ end
 
 function Quad2D:update()
 	local deck = self:getMoaiDeck()
-	
+	if not self.texture then return end	
 	local tex, uv = getTextureUV( self.texture )
 	deck:setTexture( tex )
 	deck:setUVRect( unpack( uv ) )

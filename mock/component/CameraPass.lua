@@ -99,85 +99,88 @@ function CameraManager:_buildBufferTable( passQueue )
 	local bufferTable    = {}
 	local currentFB      = false
 	local currentOption  = false
-	local currentBatch   = {}
+	local currentBatch   = false
 	local bufferBatchMap = {}
 
-	--default buffer
-	table.insert( bufferTable, deviceBuffer )
-	bufferBatchMap[ deviceBuffer ] = {
-		batches    = { currentBatch },
-		options    = {}
-	}
+	local defaultOptions = { clearColor = {0,0,0,1}, clearDepth = true }
 
+	local bufferInfoTable = {}
+	
 	--collect batches
 	for i, entry in ipairs( passQueue ) do
 		local tag = entry.tag
 
 		if tag == 'buffer' then
 			local fb = entry.framebuffer or deviceBuffer
-			local option = entry.option or false
+			local option = entry.option or defaultOptions
 			if fb ~= currentFB  then				
 				currentBatch = {}
-				table.insert( bufferTable, fb )
-				local m = bufferBatchMap[ fb ] 
-				if not m then
-					m = { 
-						batches    = {},
-						options    = {}					
+				table.insert( bufferInfoTable,
+					{
+						buffer = fb,
+						option = option,
+						batch  = currentBatch						
 					}
-					bufferBatchMap[ fb ] = m
-				end
-				table.insert( m.batches, currentBatch )
-				table.insert( m.options, option )
+				)
 				currentFB     = fb
 				currentOption = option
 			end
 		elseif tag == 'layer' then
+			if not currentBatch then
+				currentBatch = {}
+				table.insert( bufferInfoTable,
+					{
+						buffer = deviceBuffer,
+						option = defaultOptions,
+						batch  = currentBatch						
+					}
+				)
+			end
 			local layer = entry.layer
 			if layer then	table.insert( currentBatch, layer ) end
 		end
 
 	end
 
-	--output
-	local resultRenderTableMap = {}
-	for fb, setting in pairs( bufferBatchMap ) do
-		local batches    = setting.batches
-		local options    = setting.options
-		local batchCount = #batches
+	--
+	local bufferTable    = {}
+	local innerContainer = {}
+	local batchCount  = #bufferInfoTable
+	local id = 0
 
-		if fb == deviceBuffer then batchCount = batchCount + 1 end
-		local innerContainer  = {}		
-		local id = 0
-		-- print('----')
-		-- table.foreach( batches[1], print )
-		local function switcher()
-			id = id + 1
-			if id > batchCount then id = 1 end
-			local rt = batches[ id ] or nil
-			innerContainer[1] = rt
-
-			local option = options[ id ]
-			--option
-			local clearColor = option and option.clearColor
-			if clearColor then
-				fb:setClearColor( unpack( clearColor ) )
-			else
-				fb:setClearColor()
-			end
-			fb:setClearDepth( option and option.clearDepth )
+	local function switchBatch()
+		if batchCount==0 then return end
+		id = id + 1
+		if id > batchCount then id = 1 end
+		local info = bufferInfoTable[ id ]
+		local fb   = info.buffer
+		--batch
+		innerContainer[1] = info.batch or nil
+		--option
+		local option = info.option
+		local clearColor = option and option.clearColor
+		if clearColor then
+			fb:setClearColor( unpack( clearColor ) )
+		else
+			fb:setClearColor()
 		end
-
-		local renderTable = {
-			--switcher,
-			buildCallbackLayer( switcher ),
-			--container,
-			innerContainer
-		}
-		resultRenderTableMap[ fb ] = renderTable		
-
+		fb:setClearDepth( option and option.clearDepth )
 	end
-	
+
+	local universalRenderTable = {
+		--container,
+		innerContainer,
+		--switcher,
+		buildCallbackLayer( switchBatch ),
+	}
+
+	local resultRenderTableMap = {}
+	for i, entry in ipairs( bufferInfoTable ) do
+		local buffer = entry.buffer		
+		table.insert( bufferTable, buffer )
+		resultRenderTableMap[ buffer ] = universalRenderTable
+	end
+	switchBatch() --set initial id
 	return bufferTable, resultRenderTableMap
 
 end
@@ -312,6 +315,23 @@ function CameraPass:buildFramebuffer()
 	return fb
 end
 
+function CameraPass:buildDebugLinesLayer()
+	local camera   = self.camera
+	local layer    = MOAILayer.new()
+	layer.priority = 100000
+
+	layer:setViewport  ( camera.viewport )
+	layer:setCamera    ( camera._camera )
+
+	layer._mock_camera = camera
+
+	layer:showDebugLines( true )
+	local world = game:getBox2DWorld()
+	if world then layer:setBox2DWorld( world ) end
+
+	return layer
+end
+
 function CameraPass:buildSceneLayerRenderLayer( sceneLayer )	
 	local camera   = self.camera
 	if not camera:isLayerIncluded( sceneLayer.name ) then return false end
@@ -322,6 +342,7 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer )
 	layer.priority = -1
 	layer.source   = source
 
+	layer:showDebugLines( false )
 	layer:setPartition ( sceneLayer:getPartition() )
 	layer:setViewport  ( camera.viewport )
 	layer:setCamera    ( camera._camera )
@@ -329,14 +350,11 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer )
 	if camera.parallaxEnabled and source.parallax then
 		layer:setParallax( unpack(source.parallax) )
 	end
-	--TODO: should be moved to debug facility
-	layer:showDebugLines( false )
-	local world = game:getBox2DWorld()
-	if world then layer:setBox2DWorld( world ) end
-
+	
 	if sceneLayer.sortMode then
 		layer:setSortMode( sceneLayer.sortMode )
 	end
+
 	inheritVisible( layer, sceneLayer )
 	layer._mock_camera = camera
 
@@ -416,6 +434,7 @@ CLASS: SceneCameraPass ( CameraPass )
 
 function SceneCameraPass:onBuild()
 	self:pushSceneRenderPass()
+	-- self:pushRenderLayer( self:buildDebugLinesLayer() )
 end
 
 --------------------------------------------------------------------
@@ -431,3 +450,4 @@ end
 
 function CallbackCameraPass:onDraw( ... )
 end
+--------------------------------------------------------------------
