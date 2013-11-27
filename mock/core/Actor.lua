@@ -319,6 +319,9 @@ end
 
 
 function Actor:waitTime(t)
+	if t > 1000 then
+		error('??? wrong wait time ???'..t)
+	end
 	local timer = MOAITimer.new()
 	timer:setSpan(t)
 	timer:start()

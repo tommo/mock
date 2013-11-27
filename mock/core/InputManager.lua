@@ -51,6 +51,23 @@ function TouchState:__init( id )
 
 end
 
+function TouchState:getLoc()
+	return self.x, self.y
+end
+
+function TouchState:getDelta()
+	return self.x-self.x0, self.y-self.y0
+end
+
+function TouchState:getDeltaDistance()
+	local dx, dy = self.x-self.x0, self.y-self.y0
+	return math.sqrt( dx*dx, dy*dy )
+end
+
+function TouchState:isDown()
+	return self.down
+end
+
 function TouchState:getDistance()
 	return distance( self.x, self.y, self.x0, self.y0 )
 end

@@ -3,11 +3,13 @@ module 'character'
 --------------------------------------------------------------------
 CLASS: EventMessage ( CharacterActionEvent )
 	:MODEL{
-		Field 'message' :string()
+		Field 'message' :string();
+		Field 'arg'     :string()
 	}
 function EventMessage:__init()
 	self.length = 0
 	self.name   = 'message'
+	self.arg    = false
 end
 
 function EventMessage:isResizable()
