@@ -2,6 +2,8 @@ module 'mock'
 
 require 'mock.asset.Common'
 
+require 'mock.asset.Data'
+
 require 'mock.asset.Scene'
 require 'mock.asset.Prefab'
 

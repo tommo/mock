@@ -69,6 +69,7 @@ function Camera:__init( option )
 	self.context = 'game'
 
 	self.parallaxEnabled = true
+	self.showDebugLines  = false
 
 	self.passes = {}
 end
@@ -242,6 +243,14 @@ end
 
 function Camera:isParallaxEnabled()
 	return self.parallaxEnabled
+end
+
+--------------------------------------------------------------------
+function Camera:setShowDebugLines( show )
+	self.showDebugLines = show ~= false
+	if self.scene then
+		self:updateRenderLayers()
+	end
 end
 --------------------------------------------------------------------
 

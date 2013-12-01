@@ -74,7 +74,7 @@ function ParticleSystem:stop()
 end
 
 --------------------------------------------------------------------
-function ParticleSystem:addEmitter( emitterName )
+function ParticleSystem:addEmitter( emitterName, start )
 	local config = self.config
 	if not config then
 		_error('particle has no config loaded')
@@ -100,10 +100,14 @@ function ParticleSystem:addEmitter( emitterName )
 		em = MOAIParticleTimedEmitter.new()
 	end
 	self._entity:_attachTransform( em )
-	em:forceUpdate()
 	em:setSystem( self._system )
-	em:start()
 	self.emitters[ em ] = true
+
+	if start~= false then
+		em:forceUpdate()
+		em:start()
+	end
+	
 	--TODO: attach as new component?
 	return em
 end

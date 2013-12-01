@@ -45,11 +45,14 @@ local function loadFont( node )
 		else
 			_warn('bmfont texture not load', node:getNodePath() )
 		end
+
 	elseif atype == 'font_ttf' then
 		local filename = node.objectFiles['font']
-		font:load( filename )
+		font:load( filename, 0 )
+
 	elseif atype == 'font_bdf' then
 		font:load( node.objectFiles['font'] )
+
 	else
 		_error( 'failed to load font:', node.path )
 		return getFontPlaceHolder()

@@ -240,6 +240,7 @@ function CameraPass:getCamera()
 end
 
 function CameraPass:pushRenderLayer( layer, framebuffer, option )
+	if not layer then return end
 	if framebuffer or option then
 		self:pushFrameBuffer( framebuffer, option )
 	end
@@ -317,6 +318,7 @@ end
 
 function CameraPass:buildDebugLinesLayer()
 	local camera   = self.camera
+	if not camera.showDebugLines then return nil end
 	local layer    = MOAILayer.new()
 	layer.priority = 100000
 
@@ -434,7 +436,10 @@ CLASS: SceneCameraPass ( CameraPass )
 
 function SceneCameraPass:onBuild()
 	self:pushSceneRenderPass()
-	-- self:pushRenderLayer( self:buildDebugLinesLayer() )
+	local debugLayer = self:buildDebugLinesLayer()
+	if debugLayer then
+		self:pushRenderLayer( debugLayer )
+	end
 end
 
 --------------------------------------------------------------------
