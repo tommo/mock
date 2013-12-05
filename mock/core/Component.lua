@@ -199,6 +199,19 @@ function registerComponent( name, creator )
 	componentRegistry[ name ] = creator
 end
 
+function registerEntityWithComponent( name, ... )
+	local comClasses = {...}
+	local creator = function( ... )
+		local e = Entity()
+		for i, comClass in ipairs( comClasses ) do
+			local com = comClass()
+			e:attach( com )
+		end
+		return e
+	end
+	return registerEntity( name, creator )
+end
+
 function getComponentRegistry()
 	return componentRegistry
 end

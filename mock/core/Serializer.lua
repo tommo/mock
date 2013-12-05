@@ -121,7 +121,7 @@ function _serializeObject( obj, objMap, noNewRef )
 	local data = {}
 
 	for _, f in ipairs( fields ) do
-		if not f:getMeta( 'no_save', false ) then
+		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
 			_serializeField( obj, f, data, objMap, noNewRef )
 		end
 	end
@@ -249,7 +249,7 @@ function _deserializeObject( obj, data, objMap )
 	local fields = model:getFieldList( true )
 	local body   = data.body
 	for _,f in ipairs( fields ) do
-		if not f:getMeta( 'no_save', false ) then
+		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
 			_deserializeField( obj, f, body, objMap )		
 		end
 	end
@@ -413,7 +413,7 @@ function _cloneObject( obj, dst, objMap )
 	local fields = model:getFieldList( true )
 	---
 	for _, f in ipairs( fields ) do
-		if not f:getMeta( 'no_save', false ) then
+		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
 			_cloneField( obj, dst, f, objMap )
 		end
 	end

@@ -571,7 +571,7 @@ function Field:int()
 end
 
 function Field:action( methodName )
-	self:type('@action')
+	self:type('@action')	
 	self.__actionname = methodName
 	return self
 end

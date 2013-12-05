@@ -44,4 +44,3 @@ function SimpleEntity( componentTable )
 	end
 	return e
 end
-
