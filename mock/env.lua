@@ -72,7 +72,6 @@ require 'mock.core.InputSignal'
 ----audio
 require 'mock.core.Audio'
 
-
 ----game
 require 'mock.core.Entity'
 require 'mock.core.Component'
@@ -86,6 +85,10 @@ require 'mock.core.EntityHelper'
 ----------------Asset Loaders
 require 'mock.asset.all'
 require 'mock.asset.resloader'  --FIXME: removed this when finished porting
+
+
+----------------GUI system
+require 'mock.gui'
 
 ----------------Builtin Components
 require 'mock.component.all'

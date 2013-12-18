@@ -214,6 +214,20 @@ function Entity:detach( com )
 	return com
 end
 
+function Entity:detachAll()
+	local components = self.components
+	if not components then return end
+	local scene = self.scene
+	for com in pairs( components )
+		components[ com ] = nil
+		if scene then
+			local onDetach = com.onDetach
+			if onDetach then onDetach( com, self ) end
+		end
+	end
+end
+
+
 function Entity:getComponents()
 	return self.components
 end
@@ -337,6 +351,18 @@ function Entity:addChild( entity, layerName )
 	return entity
 end
 
+function Entity:clearChildren()
+	for child in pairs( self.children ) do
+		child:destroy()
+	end	
+end
+
+function Entity:clearChildrenNow()
+	for child in pairs( self.children ) do
+		child:destroyWithChildrenNow()
+	end	
+end
+
 function Entity:getParent()
 	return self.parent
 end
@@ -350,13 +376,24 @@ function Entity:findEntityCom( entName, comId )
 	return ent and ent:com( comId )
 end
 
-function Entity:findChild( name )
+function Entity:findChild( name, deep )
 	for child in pairs( self.children ) do
 		if child.name == name then return child end
-		local c = child:findChild( name )
+		if deep then
+			local c = child:findChild( name )
+		end
 		if c then return c end
 	end
 	return nil
+end
+
+function Entity:findChildByPath( path )
+	local e = self
+	for part in string.gsplit( path ) do
+		e = e:findChild( part, false )
+		if not e then return nil end
+	end
+	return e
 end
 
 

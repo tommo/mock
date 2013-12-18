@@ -1,1 +1,1 @@
-require 'mock.gui.common'
+require 'mock.gui.GUIManager'

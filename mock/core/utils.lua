@@ -35,14 +35,17 @@ function printf(patt,...)
 	return print(string.format(patt,...))
 end
 
------USE this to find  forgotten log location
+--------------------------------------------------------------------
+-----!!!!! ENABLE this to find forgotten log location !!!!
+--------------------------------------------------------------------
 -- function print(...)
 -- 	_print(debug.traceback())
 -- 	return _print(...)
 -- end
 
-
---------Random number helpers
+--------------------------------------------------------------------
+--------Random number & Probablity helpers
+--------------------------------------------------------------------
 function randi(mi,ma)
 	mi,ma=floor(mi),floor(ma)
 	return floor(mi+random()*(ma-mi+1))
@@ -134,6 +137,9 @@ function randextract(t)
 	return table.remove(t,k)
 end
 
+--------------------------------------------------------------------
+----------Table Helpers
+--------------------------------------------------------------------
 function table.randremove(t)
 	local n=#t
 	if n>0 then
@@ -152,8 +158,6 @@ function table.extractvalues( t )
 	end
 	return r
 end
-
------------
 
 function table.print(t) 
 	return print( table.show( t ) )
@@ -195,58 +199,11 @@ function table.split(t,s)
 	return t1,t2
 end
 
-
-----------Some Geometry Helpers
+--------------------------------------------------------------------
+----MATH & Geometry
+--------------------------------------------------------------------
 local sqrt,atan2=math.sqrt,math.atan2
-function distance(x1,y1,x2,y2)
-	local dx=x1-x2
-	local dy=y1-y2
-	return sqrt(dx*dx+dy*dy)
-end
-
-function math.magnitude( dx, dy )
-	return sqrt( dx*dx + dy*dy )
-end
-
-function math.sign( v )
-	return v>0 and 1 or v<0 and -1 or 0
-end
-
-function normalize(x,y)
-	return sqrt(x*x+y*y)
-end
-
-function direction(x1,y1,x2,y2)
-	return atan2(y2-y1,x2-x1)
-end
-
-function vecDiff(x1,y1,x2,y2)
-	local dx=x1-x2
-	local dy=y1-y2
-	return atan2(dy,dx),sqrt(dx*dx+dy*dy)
-end
-
-function inRect(x,y,x0,y0,x1,y1)
-	return x>=x0 and x<=x1 and y>=y0 and y<=y1
-end
-
 local min,max=math.min,math.max
-function rect(x,y,w,h)
-	local x1,y1=x+w,y+h
-	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
-end
-
-function rectCenter(x,y,w,h)
-	x,y,x1,y1=x-w/2,y-h/2,x+w/2,y+h/2
-	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
-end
-
-function rectCenterTop(x,y,w,h)
-	x,y,x1,y1=x-w/2,y,x+w/2,y+h
-	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
-end
-
-
 local sin   = math.sin
 local cos   = math.cos
 local tan   = math.tan
@@ -279,13 +236,95 @@ function floors(...)
 	return unpack(t)
 end
 
+function math.magnitude( dx, dy )
+	return sqrt( dx*dx + dy*dy )
+end
+
+function math.sign( v )
+	return v>0 and 1 or v<0 and -1 or 0
+end
+
+function lerp( v1, v2, k )
+	return v1 * ( 1 - k ) + v2 * k
+end
+
+local lerp=lerp
+function rangeMap( v, s0,e0, s1,e1 )
+	local r1 = e0 - s0
+	local k  = ( v - s0 ) / r1
+	return lerp( s1, e1, k )
+end
+
+function between(a,min,max)
+	return a>=min and a<=max
+end
+
+function clamp(v,minv,maxv)
+	return v>maxv and maxv or v<minv and minv or v
+end
+
+function wrap(v,minv,maxv)
+	local r=maxv-minv
+	if r<=0 then return minv end
+	while true do
+		if v>=minv and v<maxv then return v end
+		if v>=maxv then
+			v=minv+v-maxv
+		elseif v<minv then
+			v=maxv+v-minv
+		end
+	end
+end
+
+math.clamp = clamp
+math.wrap  = wrap
+
+--Vector helpers
+function distance(x1,y1,x2,y2)
+	local dx=x1-x2
+	local dy=y1-y2
+	return sqrt(dx*dx+dy*dy)
+end
+
+function normalize(x,y)
+	local l = sqrt(x*x+y*y)
+	return x/l, y/l
+end
+
+function direction(x1,y1,x2,y2)
+	return atan2(y2-y1,x2-x1)
+end
+
+function vecDiff(x1,y1,x2,y2)
+	local dx=x1-x2
+	local dy=y1-y2
+	return atan2(dy,dx),sqrt(dx*dx+dy*dy)
+end
+
+function inRect(x,y,x0,y0,x1,y1)
+	return x>=x0 and x<=x1 and y>=y0 and y<=y1
+end
+
+function rect(x,y,w,h)
+	local x1,y1=x+w,y+h
+	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
+end
+
+function rectCenter(x,y,w,h)
+	x,y,x1,y1=x-w/2,y-h/2,x+w/2,y+h/2
+	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
+end
+
+function rectCenterTop(x,y,w,h)
+	x,y,x1,y1=x-w/2,y,x+w/2,y+h
+	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
+end
+
 function vecAngle( angle, length )
 	return length * cos( angle * piD ), length * sin( angle * piD )
 end
 
---------------------------------------------------------------------
 --gemometry related
---------------------------------------------------------------------
 
 -- Returns the distance from p to the closest point on line segment a-b.
 function distanceToLine( ax, ay, bx, by, px, py )
@@ -315,48 +354,11 @@ function projectPointToLine( ax, ay, bx, by, px, py )
 	return dx, dy 
 end
 
--------------General Math Helper
-function lerp( v1, v2, k )
-	return v1 * ( 1 - k ) + v2 * k
-end
-
-local lerp=lerp
-function rangeMap( v, s0,e0, s1,e1 )
-	local r1 = e0 - s0
-	local k  = ( v - s0 ) / r1
-	return lerp( s1, e1, k )
-end
-
 local sin=math.sin
 function wave(freq,min,max,off)
 	off=off or 0
 	return (sin(os.clock()*freq*(2*3.141592653)+off)*(max-min)+(min+max))/2
 end
-
-function between(a,min,max)
-	return a>=min and a<=max
-end
-
-function clamp(v,minv,maxv)
-	return v>maxv and maxv or v<minv and minv or v
-end
-
-function wrap(v,minv,maxv)
-	local r=maxv-minv
-	if r<=0 then return minv end
-	while true do
-		if v>=minv and v<maxv then return v end
-		if v>=maxv then
-			v=minv+v-maxv
-		elseif v<minv then
-			v=maxv+v-minv
-		end
-	end
-end
-
-math.clamp = clamp
-math.wrap  = wrap
-
 
 function inRange(x,y,diff)
 	local d=math.abs(x-y)
@@ -367,6 +369,10 @@ function centerRange(center,range)
 	return center-range/2,center+range/2
 end
 
+function checkDimension(x,y,w,h)
+	return (x==w and y==h) or (x==h and y==w)
+end
+
 function pow2(x)
 	local i=2
 	while x>i do
@@ -375,17 +381,17 @@ function pow2(x)
 	return i
 end
 
-function isFractal(v)
-	return not isInteger(v)
-end
-
 function isInteger(v)
-	return  (math.floor(v)-v)==0
+	return math.floor(v) == v
 end
 
+function isFractal(v)
+	return math.floor(v) ~= v
+end
 
-
+--------------------------------------------------------------------
 -------Table Helpers
+--------------------------------------------------------------------
 function vextend(t,data)
 	return setmetatable(data or {},{__index=t})
 end
@@ -439,6 +445,9 @@ function table.find( t, v )
 	return nil
 end
 
+--------------------------------------------------------------------
+--String Helpers
+--------------------------------------------------------------------
 
 function stringSet(t, v)
 	local res={}
@@ -449,11 +458,33 @@ function stringSet(t, v)
 	return res
 end
 
+
 local match = string.match
 function string.trim(s)
   return match(s,'^()%s*$') and '' or match(s,'^%s*(.*%S)')
 end
 
+function string.gsplit(s, sep, plain )
+	local start = 1
+	local done = false
+	local function pass(i, j, ...)
+		if i then
+			local seg = s:sub(start, i - 1)
+			start = j + 1
+			return seg, ...
+		else
+			done = true
+			return s:sub(start)
+		end
+	end
+	return function()
+		if done then return end
+		if sep == '' then done = true return s end
+		return pass(s:find(sep, start, plain))
+	end
+end
+
+--------------------------------------------------------------------
 local autotableMT={
 	__index=function(t,k)
 		local r={}
@@ -465,8 +496,6 @@ local autotableMT={
 function newAutoTable(t1)
 	return setmetatable(t1 or {},autotableMT)
 end
-
-
 
 -------------Strange Helpers
 function numWithCommas(n)
@@ -721,11 +750,10 @@ function string.endWith(s,s1)
 	return ss==s1
 end
 
-function checkDimension(x,y,w,h)
-	return (x==w and y==h) or (x==h and y==w)
-end
 
+--------------------------------------------------------------------
 -------Debug Helper?
+--------------------------------------------------------------------
 local nameCounters={} --setmetatable({},{__mode='k'})
 function nameCount(name,c)
 	local v=nameCounters[name] or 0
@@ -879,8 +907,15 @@ function newQueue()
 end
 
 
+--------------------------------------------------------------------
+--OS Related
+--------------------------------------------------------------------
+function ___sleep(n)
+  os.execute("sleep " .. tonumber(n))
+end
 
-
+--------------------------------------------------------------------
+--MISC
 --------------------------------------------------------------------
 --[[
    Author: Julio Manuel Fernandez-Diaz
@@ -988,6 +1023,3 @@ function table.show(t, name, indent)
    return cart .. autoref
 end
 
-function ___sleep(n)
-  os.execute("sleep " .. tonumber(n))
-end
