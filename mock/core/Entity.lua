@@ -218,7 +218,7 @@ function Entity:detachAll()
 	local components = self.components
 	if not components then return end
 	local scene = self.scene
-	for com in pairs( components )
+	for com in pairs( components ) do
 		components[ com ] = nil
 		if scene then
 			local onDetach = com.onDetach
@@ -251,6 +251,7 @@ function Entity:getComponentByName( name )
 end
 
 function Entity:com( id )
+	if not self.components then return nil end
 	local tt = type(id)
 	if tt == 'string' then
 		return self:getComponentByName( id )
@@ -317,6 +318,7 @@ end
 ------ Child Entity
 --------------------------------------------------------------------
 function Entity:addSibling( entity, layerName )
+	--TODO: sibling under same parent entity?????
 	local scene = self.scene
 	local layer = layerName and scene:getLayer(layerName) or self.layer
 	entity:_insertIntoScene( scene, layer )
@@ -472,6 +474,14 @@ end
 function Entity:setVisible( visible )
 	self._prop:setVisible( visible )
 	--TODO: inform compoenents
+end
+
+function Entity:show()
+	self:setVisible( true )
+end
+
+function Entity:hide()
+	self:setVisible( false )
 end
 
 
