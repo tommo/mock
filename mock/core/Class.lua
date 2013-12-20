@@ -657,6 +657,35 @@ function Field:getset( fieldName )
 	return self:get('get'..fieldName):set('set'..fieldName)
 end
 
+function Field:onset( methodName )	
+	local setter0 = self.__setter
+	if not setter0 then
+		error( 'attempt to add onSet for readonly field' )
+	end
+
+	if setter0 == true then --plain field setting
+		local id = self.__id
+		self.__setter = function( obj, v )
+			obj[ id ] = v
+			local onset = obj[ methodName ]
+			if not onset then
+				error( 'onset method not found:'..methodName )
+			end
+			return onset( obj, v )
+		end
+	else
+		self.__setter = function( obj, v )
+			setter0( obj, v )
+			local onset = obj[ methodName ]
+			if not onset then
+				error( 'onset method not found:'..methodName )
+			end
+			return onset( obj, v )
+		end
+	end
+	return self	
+end
+
 function Field:isset( fieldName )
 	return self:get('is'..fieldName):set('set'..fieldName)
 end

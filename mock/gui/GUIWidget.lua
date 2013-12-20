@@ -32,6 +32,21 @@ function GUIWidget:addChild( entity, layerName )
 	return Entity.addChild( self, entity, layerName )	
 end
 
+function GUIWidget:destroyNow()
+	local parent = self.parent
+	local childWidgets = parent and parent.childWidgets
+	if childWidgets then
+		for i, child in ipairs( self.childWidgets ) do
+			if child == self then
+				table.remove( i )
+				break
+			end
+		end
+	end
+	
+	Entity.destroyNow( self )
+end
+
 --geometry
 function GUIWidget:inside( x, y, z, pad )
 	x,y = self:worldToModel( x, y )
@@ -90,6 +105,8 @@ function GUIWidget:updateLayout()
 end
 
 
+
+
 --Virtual Interfaces
 
 function GUIWidget:onPress( pointer, x, y )
@@ -114,3 +131,20 @@ end
 
 function GUILayout:onLayout( widget )
 end
+
+--------------------------------------------------------------------
+CLASS: GUIWidgetGroup ( GUIWidget )
+	:MODEL{}
+
+function GUIWidgetGroup:inside()
+	return 'group'
+end
+
+
+--------------------------------------------------------------------
+function registerGUIWidget( name, class )
+	registerEntity( '[UI]'..name, class )
+end
+
+--------------------------------------------------------------------
+registerGUIWidget( 'Group', GUIWidgetGroup )

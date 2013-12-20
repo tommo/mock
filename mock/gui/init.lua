@@ -4,6 +4,8 @@
 require 'mock.gui.GUIWidget'
 require 'mock.gui.GUIRootWidget'
 
+mock.registerGUIWidget( 'RootWidget', mock.GUIRootWidget )
+
 --------------------------------------------------------------------
 --Widget Template
 --------------------------------------------------------------------
@@ -14,3 +16,5 @@ require 'mock.gui.GUIButtonBase'
 --Common Widget
 --------------------------------------------------------------------
 require 'mock.gui.widgets.Button'
+
+

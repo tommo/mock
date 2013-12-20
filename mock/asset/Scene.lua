@@ -16,26 +16,24 @@ local function collectEntity( entity, objMap )
 	local coms = {}
 	local children = {}
 
-	if entity:getClass() == Entity then
-		for com in pairs( entity.components ) do
-			if not com.FLAG_INTERNAL then
-				table.insert( coms, objMap:map( com ) )
-			end
+	for com in pairs( entity.components ) do
+		if not com.FLAG_INTERNAL then
+			table.insert( coms, objMap:map( com ) )
 		end
+	end
 
-		local childrenList = {}
-		local i = 1
-		for e in pairs( entity.children ) do
-			childrenList[i] = e
-			i = i + 1
-		end
-		table.sort( childrenList, entitySortFunc )
+	local childrenList = {}
+	local i = 1
+	for e in pairs( entity.children ) do
+		childrenList[i] = e
+		i = i + 1
+	end
+	table.sort( childrenList, entitySortFunc )
 
-		for i, child in ipairs( childrenList ) do
-			local childData = collectEntity( child, objMap )
-			if childData then
-				table.insert( children, childData )
-			end
+	for i, child in ipairs( childrenList ) do
+		local childData = collectEntity( child, objMap )
+		if childData then
+			table.insert( children, childData )
 		end
 	end
 
