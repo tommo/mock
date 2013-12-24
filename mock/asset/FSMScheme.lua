@@ -30,12 +30,12 @@ local function buildFSMScheme( FSMData )
 			local nextState
 			local transMsg, transMsgArg
 			--find triggering msg (pre phase)
-			while true do
-				transMsg, transMsgArg = self:pollMsg()
-				if not transMsg then break end
-				nextState = jump and jump[ transMsg ]
-				if nextState then break end
-			end
+			-- while true do
+			-- 	transMsg, transMsgArg = self:pollMsg()
+			-- 	if not transMsg then break end
+			-- 	nextState = jump and jump[ transMsg ]
+			-- 	if nextState then break end
+			-- end
 			--if not switching, run a step under current state
 			if not nextState then
 				---STEP
