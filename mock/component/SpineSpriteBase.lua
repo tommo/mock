@@ -39,6 +39,14 @@ function SpineSpriteBase:getSprite()
 end
 
 
+function SpineSpriteBase:setMixTable( t )
+	self.mixTable = t
+end
+
+function SpineSpriteBase:getMixTable()
+	return self.mixTable
+end
+
 function SpineSpriteBase:affirmClip( name )
 	local t = self.skeletonData._animationTable
 	return t[ name ]

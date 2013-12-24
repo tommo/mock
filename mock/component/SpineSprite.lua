@@ -20,6 +20,7 @@ function SpineSprite:__init()
 	self.autoPlay      = true
 	self._onAnimationEvent  = false
 	self.throttle      = 1
+	self.mixTable      = false
 end
 
 function SpineSprite:onStart( entity )
@@ -44,7 +45,6 @@ end
 function SpineSprite:getSkeletonData()
 	return self.skeletonData
 end
-
 
 function SpineSprite:play( clipName, mode, resetPose )
 	if self.animState then
@@ -84,6 +84,7 @@ function SpineSprite:createState()
 	local anim = MOAISpineAnimation.new()
 	anim:init( self.skeletonData )
 	anim:setSkeleton( self.skeleton )
+	if self.mixTable then anim:setMixTable( self.mixTable ) end
 	anim:throttle( self.throttle )
 	return anim
 end
