@@ -278,6 +278,13 @@ end
 local inheritTransformColor = inheritTransformColor
 local inheritTransform      = inheritTransform
 local inheritLoc            = inheritLoc
+local inheritAllPropAttributes = inheritAllPropAttributes
+
+function Entity:_linkSubProp( p )
+	inheritAllPropAttributes( p, self._prop )
+	if self.scissorRect then p:setScissorRect( self.scissorRect ) end
+	return p
+end
 
 function Entity:_attachProp( p )
 	local _prop = self._prop
@@ -285,11 +292,13 @@ function Entity:_attachProp( p )
 	self.layer:insertProp( p )
 	--TODO: better solution on scissor?
 	if self.scissorRect then p:setScissorRect( self.scissorRect ) end
+	return p
 end
 
 function Entity:_attachTransform( t )
 	local _prop = self._prop
-	return inheritTransform( t, _prop )
+	inheritTransform( t, _prop )
+	return t
 end
 
 -- function Entity:_detachTransform( t )
@@ -298,15 +307,18 @@ end
 
 function Entity:_attachLoc( t )
 	local _prop = self._prop
-	return inheritLoc( t, _prop )
+	inheritLoc( t, _prop )
+	return t
 end
 
 function Entity:_attachColor( t )
-	return inheritColor( t, self._prop )
+	inheritColor( t, self._prop )
+	return t
 end
 
 function Entity:_insertPropToLayer( p )
 	self.layer:insertProp( p )
+	return p
 end
 
 function Entity:_detachProp( p )
