@@ -43,6 +43,7 @@ function Deck2D:__init()
 	self.h = 0
 end
 
+
 function Deck2D:setTexture( path, autoResize )
 	local tex, node = mock.loadAsset( path )
 	if not tex then return end
@@ -75,6 +76,12 @@ function Deck2D:getTexture()
 	return self.texturePath
 end
 
+function Deck2D:getTextureData()
+	if self.texture then
+		return getTextureUV( self.texture )
+	end
+end
+	
 function Deck2D:setName( n )
 	self.name = n
 end
@@ -104,8 +111,8 @@ end
 --------------------------------------------------------------------
 CLASS: Quad2D ( Deck2D )
 	:MODEL{
-		Field 'ox' :number() :label('offset X') ;
-		Field 'oy' :number() :label('offset Y') ;
+		Field 'ox' :number() :label('origin X') ;
+		Field 'oy' :number() :label('origin Y') ;
 		Field 'w'  :number() :label('width')  ;
 		Field 'h'  :number() :label('height') ;
 	}
@@ -195,9 +202,98 @@ function Tileset:update()
 		ox/texW * du + u0, oy/texH * dv + v0,
 		tw/texW * du,      th/texH * dv
 		)
+	self.col = col
+	self.row = row
+end
+
+--------------------------------------------------------------------
+CLASS: QuadArray ( Deck2D )
+	:MODEL {
+		Field 'ox'       :int() :label('origin X') ;
+		Field 'oy'       :int() :label('origin Y') ;
+		Field 'count'    :int();
+		'----';
+		Field 'offx'     :int() :label('offset X') ;
+		Field 'offy'     :int() :label('offset Y') ;
+		Field 'tw'       :int() :label('tile width')  ;
+		Field 'th'       :int() :label('tile height') ;
+		Field 'spacing'  :int() :label('spacing')  ;
+	}
+
+function QuadArray:__init()
+	self.count      = -1
+	self.ox      = 0
+	self.oy      = 0
+	self.offx    = 0
+	self.offy    = 0
+	self.tw      = 32
+	self.th      = 32
+	self.col     = 1
+	self.row     = 1
+	self.spacing = 0
+end
+
+function QuadArray:createMoaiDeck()
+	local deck = MOAIGfxQuadDeck2D.new()
+	return deck
+end
+
+function QuadArray:update()
+	local deck = self:getMoaiDeck()
+	local tex, uv = getTextureUV( self.texture )
+	local u0,v0,u1,v1 = unpack( uv )
+	deck:setTexture( tex )
+
+	local texW, texH  = self.w, self.h
+	local tw,   th    = self.tw, self.th
+	local offx, offy  = self.offx, self.offy
+	local spacing     = self.spacing
+
+	if tw < 0 then tw = 1 end
+	if th < 0 then th = 1 end
+
+	self.tw = tw
+	self.th = th
+	local w1, h1   = tw + spacing, th + spacing
+	local col, row = math.floor(texW/w1), math.floor(texH/h1)	
 	
 	self.col = col
 	self.row = row
+
+	local du, dv = u1 - u0, v1 - v0
+	local uu, vv 
+	tileU  = tw/texW * du
+	tileV  = th/texH * dv
+	tileU1 = w1/texW * du
+	tileV1 = h1/texH * dv
+	offU = offx/texW * du + u0
+	offV = offy/texH * dv + v0
+	local count = self.count
+	if count<=0 then 
+		count = col*row		
+	end
+
+	deck:reserve( count )
+	local ox, oy  = self.ox, self.oy
+	for r = 1, row do
+		local done = false
+		for c = 1, col do
+			local i = c + ( r - 1 ) * col
+			if i>count then
+				done = true
+				break
+			end
+			local tu0 = ( c-1 ) * tileU1 + offU
+			local tv0 = ( r-1 ) * tileV1 + offV
+			local tu1 = tu0 + tileU
+			local tv1 = tv0 + tileV
+
+			deck:setRect   ( i, ox - tw/2, oy - th/2, ox + tw/2, oy + th/2 )
+			deck:setUVRect ( i, tu0, tv0, tu1, tv1 )
+
+		end
+		if done then break end
+	end
 
 end
 
@@ -360,6 +456,10 @@ function Deck2DPack:addDeck( name, dtype, src )
 		local patch = mock.StretchPatch()
 		patch:setTexture( src )
 		deck = patch
+	elseif dtype == 'quad_array' then
+		local qa = mock.QuadArray()
+		qa:setTexture( src )
+		deck = qa
 	elseif dtype == 'polygon' then
 		local poly = mock.PolygonDeck()
 		poly:setTexture( src )
@@ -402,4 +502,5 @@ registerAssetLoader ( 'deck2d', Deck2DPackLoader )
 registerAssetLoader ( 'deck2d.quad',         Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.tileset',      Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.stretchpatch', Deck2DItemLoader )
-registerAssetLoader ( 'deck2d.polygon', Deck2DItemLoader )
+registerAssetLoader ( 'deck2d.polygon',      Deck2DItemLoader )
+registerAssetLoader ( 'deck2d.quad_array',   Deck2DItemLoader )

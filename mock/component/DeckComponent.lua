@@ -7,6 +7,7 @@ CLASS: DeckComponent( RenderComponent )
 
 --------------------------------------------------------------------
 function DeckComponent:__init()
+	self._moaiDeck = false
 	self.prop = MOAIProp.new()
 	self:setBlend('normal')
 end
@@ -23,11 +24,16 @@ end
 function DeckComponent:setDeck( deckPath )
 	self.deckPath = deckPath
 	local deck = mock.loadAsset( deckPath )
+	self._moaiDeck = deck
 	self.prop:setDeck( deck )
 end
 
 function DeckComponent:getDeck( deckPath )
 	return self.deckPath	
+end
+
+function DeckComponent:getMoaiDeck()
+	return self._moaiDeck
 end
 
 function DeckComponent:setBlend( b )
