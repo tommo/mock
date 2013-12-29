@@ -112,12 +112,22 @@ function serializeScene( scene )
 		end
 	end
 
+	--prefab
+	local prefabIdMap = {}
+	for obj, id in pairs( objMap.objects ) do
+		local prefabId = obj.__prefabId
+		if prefabId then
+			prefabIdMap[ id ] = prefabId
+		end
+	end
+
 	return {
-		_assetType = 'scene',
-		meta       = scene.metaData or {},
-		map        = map,
-		entities   = entities,
-		guid       = guidMap
+		_assetType  = 'scene',
+		meta        = scene.metaData or {},
+		map         = map,
+		entities    = entities,
+		guid        = guidMap,
+		prefabId    = prefabIdMap
 	}
 end
 
@@ -141,6 +151,14 @@ function deserializeScene( data, scn )
 			obj.__guid = guid
 		end
 	end
+
+	if data['prefabId'] then
+		for id, prefabId in pairs( data['prefabId'] ) do
+			local obj = objMap[ id ][ 1 ]
+			obj.__prefabId = prefabId
+		end
+	end
+
 	emitSignal( 'scene.deserialize', scn )
 	return scn
 end

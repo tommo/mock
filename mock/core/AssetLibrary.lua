@@ -99,6 +99,8 @@ function loadAssetLibrary( indexPath )
 end
 
 --------------------------------------------------------------------
+-- Asset Node
+--------------------------------------------------------------------
 CLASS: AssetNode ()
 function AssetNode:getName()
 	return stripDir( self.path )
@@ -184,7 +186,6 @@ function unregisterAssetNode( path )
 	AssetLibrary[ path ] = nil
 end
 
-
 function getAssetNode( path )
 	return AssetLibrary[ path ]
 end
@@ -197,10 +198,12 @@ end
 --------------------------------------------------------------------
 --loader: func( assetType, filePath )
 function registerAssetLoader( assetType, loader )
+	assert( loader )
 	AssetLoaders[ assetType ]   = loader
 end
 
 function registerAssetUnloader( assetType, unloader )
+	assert( unloader )
 	AssetUnloaders[ assetType ] = unloader
 end
 --------------------------------------------------------------------

@@ -99,6 +99,16 @@ function proc.sp.color(r,g,b,a)
 	if a then sp.opacity = a end
 end
 
+local hexcolor = hexcolor
+function proc.sp.hexcolor( h, a )
+	assert( type(h) == 'string' )
+	local r,g,b = hexcolor( h )
+	sp.r = r
+	sp.g = g
+	sp.b = b
+	if a then sp.opacity = a end	
+end
+
 function proc.sp.tweenColor(c1,c2,easetype)
 	local r, g, b, a = c1[1] or 1, c1[2] or 1, c1[3] or 1, c1[4] or 1
 	local r1, g1, b1, a1 = c2[1], c2[2], c2[3], c2[4]

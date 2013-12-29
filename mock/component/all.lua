@@ -15,6 +15,7 @@ require 'mock.component.Camera'
 ---- Graphics
 require 'mock.component.Prop'
 require 'mock.component.Text'
+require 'mock.component.TextLabel'
 -- require 'mock.component.TileMap'
 require 'mock.component.PatchProp'
 require 'mock.component.ParticleSystem'
