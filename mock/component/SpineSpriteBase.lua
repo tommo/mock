@@ -16,6 +16,7 @@ end
 
 function SpineSpriteBase:onDetach( entity )
 	entity:_detachProp( self.skeleton )
+	self.skeleton:unload()
 end
 
 function SpineSpriteBase:setSprite( path )

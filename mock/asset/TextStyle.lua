@@ -5,6 +5,10 @@ local fallbackTextStyle = MOAITextStyle.new()
 fallbackTextStyle:setFont( getFontPlaceHolder() )
 fallbackTextStyle:setSize( 10 )
 
+function getFallbackTextStyle()
+	return fallbackTextStyle
+end
+
 --workaround rescaled bmfont rendering ( ?? )
 local globalTextScale = 1
 
@@ -35,6 +39,7 @@ function TextStyle:__init()
 	self.color = {1,1,1,1}
 	self.allowScale = true
 	self.moaiTextStyle = MOAITextStyle.new()
+	self.moaiTextStyle:setFont( getFontPlaceHolder() )
 end
 
 function TextStyle:getMoaiTextStyle()
@@ -134,7 +139,9 @@ end
 function StyleSheetLoader( node )
 	local data  = loadAssetDataTable( node:getObjectFile('def') )
 	local sheet = deserialize( nil, data )
-	sheet:updateStyles()
+	if sheet then
+		sheet:updateStyles()
+	end
 	return sheet	
 end
 

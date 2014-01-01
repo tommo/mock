@@ -12,7 +12,7 @@ end
 
 --------------------------------------------------------------------
 local function collectEntity( entity, objMap )
-	if entity.FLAG_EDITOR_OBJECT then return end
+	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
 	local coms = {}
 	local children = {}
 

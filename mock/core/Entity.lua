@@ -365,6 +365,11 @@ function Entity:addChild( entity, layerName )
 	return entity
 end
 
+function Entity:addInternalChild( e, layer )
+	e.FLAG_INTERNAL = true
+	return self:addChild( e )
+end
+
 function Entity:clearChildren()
 	for child in pairs( self.children ) do
 		child:destroy()
@@ -733,7 +738,7 @@ end
 
 function Entity:makeScissorRect( x1, y1, x2, y2, noFollow )
 	local rect = MOAIScissorRect.new()
-	rect:setRect( x1, y1, x2, y2 )
+	rect:setRect( x1, y2, x2, y1 )
 	if not noFollow then self:_attachTransform( rect ) end
 	return rect
 end
@@ -834,8 +839,10 @@ local function _cloneEntity( src, cloneComponents, cloneChildren, objMap )
 	end
 	if cloneChildren ~= false then
 		for child in pairs( src.children ) do
-			local child1 = _cloneEntity( child, cloneComponents, cloneChildren, objMap )
-			dst:addChild( child1 )
+			if not child.FLAG_INTERNAL then
+				local child1 = _cloneEntity( child, cloneComponents, cloneChildren, objMap )
+				dst:addChild( child1 )
+			end
 		end
 	end
 	return dst

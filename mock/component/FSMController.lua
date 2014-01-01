@@ -24,7 +24,10 @@ stateCollectorMT = {
 		local name  = t.__state
 		local id    = t.__id
 		local class = t.__class
-		if action~='step' and action~='enter' and action~='exit' then
+		if
+			action ~= 'jumpin' and action ~= 'jumpout'
+			and action~='step' and action~='enter' and action~='exit'
+		then
 			return error('unsupported state action:'..action)
 		end
 		--NOTE:validation will be done after setting scheme to controller

@@ -3,6 +3,7 @@ module 'mock'
 CLASS: DeckComponent( RenderComponent )
 	:MODEL{
 		Field 'deck'  :asset('deck2d\\..*')        :getset('Deck'),
+		Field 'index' :int() :range(0) :getset( 'Index' );
 	}
 
 --------------------------------------------------------------------
@@ -36,6 +37,14 @@ function DeckComponent:getMoaiDeck()
 	return self._moaiDeck
 end
 
+function DeckComponent:setIndex( i )
+	self.prop:setIndex( i )
+end
+
+function DeckComponent:getIndex()
+	return self.prop:getIndex()
+end
+
 function DeckComponent:setBlend( b )
 	self.blend = b
 	setPropBlend( self.prop, b )
@@ -51,6 +60,12 @@ end
 
 function DeckComponent:setLayer( layer )
 	layer:insertProp( self.prop )
+end
+
+--------------------------------------------------------------------
+
+function DeckComponent:setScissorRect( s )
+	self.prop:setScissorRect( s )
 end
 
 --------------------------------------------------------------------
