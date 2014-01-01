@@ -32,13 +32,13 @@ function GUIRootWidget:getPointer( touch, create )
 	return p
 end
 
-local function _findTopWidget( w, x, y )
+local function _findTopWidget( w, x, y, radius )
 	local childId = 0
 	local children = w.childWidgets
 	local count = #children
 	for k = count , 1, -1 do
 		child = children[ k ]
-		local i = child:inside(x,y)
+		local i = child:inside( x, y, radius )
 		if i == 'group' then
 			local found = _findTopWidget( child, x, y )
 			if found then	return found end
@@ -49,8 +49,8 @@ local function _findTopWidget( w, x, y )
 	return nil
 end
 
-function GUIRootWidget:findTopWidget( x, y )
-	return _findTopWidget( self, x, y )
+function GUIRootWidget:findTopWidget( x, y, radius )
+	return _findTopWidget( self, x, y, radius )
 end
 
 function GUIRootWidget:onTouchEvent( ev, touch, x, y )
