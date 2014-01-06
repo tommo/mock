@@ -21,6 +21,24 @@ function getGlobalTextScale()
 end
 
 --------------------------------------------------------------------
+local DEFAULT_STYLESHEET = nil
+
+function getDefaultStyleSheet()
+	if DEFAULT_STYLESHEET then
+		return DEFAULT_STYLESHEET
+	end
+	if DEFAULT_STYLESHEET == nil then
+		DEFAULT_STYLESHEET = findAsset( 'default.stylesheet' ) or false
+	end
+	return DEFAULT_STYLESHEET
+end
+
+function setDefaultStyleSheet( path )
+	DEFAULT_STYLESHEET = findAsset( path )
+end
+
+
+--------------------------------------------------------------------
 --STYLE 
 --------------------------------------------------------------------
 CLASS: TextStyle ()

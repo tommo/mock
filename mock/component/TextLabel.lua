@@ -23,10 +23,11 @@ function TextLabel:__init()
 	-- box:setYFlip ( true )
 	self.box  = box
 	self.text = ''
-	self.styleSheet = false
 	self.alignment = 'left'
-	self:setSize( 0, 0 )
+	self:setSize( 100, 100 )
 	self.defaultStyle = 'default'
+	self.styleSheet = false
+	self:setStyleSheet( getDefaultStyleSheet() )
 end
 
 function TextLabel:onAttach( entity )
@@ -115,9 +116,8 @@ function TextLabel:drawBounds()
 end
 
 
-function TextLabel:inside( x, y, z )
-	local x1,y1,z1, x2,y2,z2 = self.box:getWorldBounds()
-	return x>=x1 and y>=y1 and x<=x2 and y<=y2
+function TextLabel:inside( x, y, z, pad )
+	return self.box:inside( x,y,z, pad )	
 end
 
 function TextLabel:setScissorRect( s )

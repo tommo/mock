@@ -657,6 +657,19 @@ function Field:getset( fieldName )
 	return self:get('get'..fieldName):set('set'..fieldName)
 end
 
+--use a generic tuple value getter/setter
+function Field:tuple_getset( fieldId )
+	local id = fieldId or self.__id
+	self.__getter = function( obj )
+		local k = obj[ id ]
+		if k then return unpack( k ) end		
+	end
+	self.__setter = function( obj, ... )
+		obj[ id ] = { ... }		
+	end
+	return self
+end
+
 function Field:onset( methodName )	
 	local setter0 = self.__setter
 	if not setter0 then
@@ -665,22 +678,22 @@ function Field:onset( methodName )
 
 	if setter0 == true then --plain field setting
 		local id = self.__id
-		self.__setter = function( obj, v )
-			obj[ id ] = v
+		self.__setter = function( obj, ... )
+			obj[ id ] = ...
 			local onset = obj[ methodName ]
 			if not onset then
 				error( 'onset method not found:'..methodName )
 			end
-			return onset( obj, v )
+			return onset( obj, ... )
 		end
 	else
-		self.__setter = function( obj, v )
-			setter0( obj, v )
+		self.__setter = function( obj, ... )
+			setter0( obj, ... )
 			local onset = obj[ methodName ]
 			if not onset then
 				error( 'onset method not found:'..methodName )
 			end
-			return onset( obj, v )
+			return onset( obj, ... )
 		end
 	end
 	return self	

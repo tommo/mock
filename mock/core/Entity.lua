@@ -17,7 +17,6 @@ CLASS: Entity ( Actor )
 		Field 'rot'       :type('vec3') :getset('Rot') :label('Rot');
 		Field 'scl'       :type('vec3') :getset('Scl') :label('Scl');
 		Field 'piv'       :type('vec3') :getset('Piv') :label('Piv');
-		-- Field 'resetTransform'  :action( 'resetTransform' );
 		'----';
 		Field 'color'    :type('color')  :getset('Color') ;
 	}
@@ -79,10 +78,6 @@ function Entity:_insertIntoScene( scene, layer )
 		scene:addUpdateListener( self )
 	end
 	
-	--callback
-	local entityListener = scene.entityListener
-	if entityListener then entityListener( 'add', self, scene, layer ) end	
-
 	local name = self.name
 	if name then
 		scene:changeEntityName( self, false, name )
@@ -94,8 +89,11 @@ function Entity:_insertIntoScene( scene, layer )
 			child:_insertIntoScene( scene, child.layer or layer )
 		end
 	end
-
 	scene.pendingStart[ self ] = true
+	
+	--callback
+	local entityListener = scene.entityListener
+	if entityListener then entityListener( 'add', self, scene, layer ) end
 end
 
 --------------------------------------------------------------------

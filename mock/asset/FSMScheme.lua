@@ -5,9 +5,9 @@ local DEADLOCK_THRESHOLD = 100
 local DEADLOCK_TRACK     = true
 local DEADLOCK_TRACK_ENABLED = true
 --------------------------------------------------------------------
-local function buildFSMScheme( FSMData )
+local function buildFSMScheme( scheme )
 	-- assert(targetClass,'Target Class required')
-	assert( FSMData, 'FSM Data required' )
+	assert( scheme, 'FSM Data required' )
 	
 	--for deadlock detection
 	local trackedStates = {}
@@ -15,7 +15,7 @@ local function buildFSMScheme( FSMData )
 	--
 	local stateFuncs    = {}
 
-	for name, stateBody in pairs( FSMData ) do
+	for name, stateBody in pairs( scheme ) do
 		local id         = stateBody.id     --current state id
 		local jump       = stateBody.jump   --transition trigger by msg
 		local outStates  = stateBody.next   --transition trigger by state return value
@@ -104,7 +104,7 @@ local function buildFSMScheme( FSMData )
 			end
 
 			self:setState( nextStateName )
-			nextStateBody = FSMData[ nextStateName ]
+			nextStateBody = scheme[ nextStateName ]
 			if not nextStateBody then
 				error( 'state body not found:' .. nextStateName, 2 )
 			end
@@ -124,6 +124,15 @@ local function buildFSMScheme( FSMData )
 		stateBody.entername = entername
 		stateBody.exitname  = exitname
 
+	end
+	local startEnterName = scheme['start'].entername
+	local startFunc      = scheme['start'].func
+	scheme[0] = function( self, dt )
+		local f = self[ startEnterName ]
+		if f then
+			f( self ) --fsm.start:enter
+		end
+		return startFunc( self, dt, 0 )
 	end
 
 end

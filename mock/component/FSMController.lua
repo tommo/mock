@@ -109,7 +109,7 @@ function FSMController:setScheme( schemePath )
 	local scheme = loadAsset( schemePath )
 	self.scheme = scheme
 	if scheme then
-		self.currentStateFunc = scheme[ 'start' ].func
+		self.currentStateFunc = scheme[0]
 		self:validateStateMethods()
 	else
 		self.currentStateFunc = nil

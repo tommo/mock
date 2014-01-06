@@ -76,8 +76,6 @@ function DeckComponent:drawBounds()
 end
 
 --------------------------------------------------------------------
-function DeckComponent:inside( x, y, z )
-	local x1,y1,z1, x2,y2,z2 = self.prop:getWorldBounds()
-	if not x1 then return false end 
-	return x>=x1 and y>=y1 and x<=x2 and y<=y2
+function DeckComponent:inside( x, y, z, pad )
+	return self.prop:inside( x,y,z, pad )
 end

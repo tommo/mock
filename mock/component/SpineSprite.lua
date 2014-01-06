@@ -7,7 +7,7 @@ local EVENT_SPINE_ANIMATION_EVENT    = MOAISpineAnimationState.EVENT_SPINE_ANIMA
 
 CLASS: SpineSprite ( SpineSpriteBase )
 	:MODEL{
-		Field 'defaultClip' :string() :label('Default');
+		Field 'defaultClip' :string()  :label('Default') :selection( 'getAnimationNames' );
 		Field 'autoPlay'    :boolean() :label('Auto Play');
 	}
 
@@ -124,4 +124,8 @@ function SpineSprite:onAnimationEvent( trackId, evName, varInt, varFloat, varStr
 	if callback then
 		return callback( evName, varInt, varFloat, varString )
 	end
+end
+
+function SpineSprite:getAnimationNames()
+	return nil
 end
