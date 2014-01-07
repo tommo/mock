@@ -8,7 +8,10 @@ registerSignals{
 
 CLASS: GUIButtonBase ( GUIWidget )
 	:MODEL{
+		'----';
+		Field 'msg'  :string();
 		Field 'data' :string();
+		'----';
 	}
 
 function GUIButtonBase:onLoad()
@@ -24,7 +27,8 @@ end
 function GUIButtonBase:onRelease( touch, x, y )
 	self:setState 'normal'
 	self:emit( 'ui.button.release', self )
-	if self:inside(x,y) then
+	local px,py,pz = child:getWorldLoc()
+	if self:inside( x,y,pz, getDefaultTouchPadding() ) then
 		self:emit( 'ui.button.click', self )
 		local onClick=self.onClick
 		if onClick then onClick( self ) end		

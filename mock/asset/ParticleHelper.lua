@@ -156,6 +156,8 @@ local function solve(script,v,reg)
 		script:cycle(reg.idx, solve(script,v.a),solve(script,v.b),solve(script,v.c))
 	elseif vid=='wrap' then
 		script:wrap(reg.idx, solve(script,v.a),solve(script,v.b),solve(script,v.c))
+	elseif vid=='clamp' then
+		script:clamp(reg.idx, solve(script,v.a),solve(script,v.b),solve(script,v.c))
 	elseif vid=='time' then
 		script:time(reg.idx)
 		
@@ -264,6 +266,10 @@ local builtinSymbol={
 	wrap=function(a,b,c)
 		return newNode{id='wrap',a=a,b=b,c=c}
 	end,
+
+	clamp=function(a,b,c)
+		return newNode{id='clamp',a=a,b=b,c=c}
+	end,
 	
 	ease=function(a,b,c)
 		return newNode{id='ease',a=a,b=b,easeType=c or MOAIEaseType.LINEAR}
@@ -290,22 +296,35 @@ local builtinSymbol={
 	tan=function(a)
 		return newNode{id='tan',a=a}
 	end,
+
 	EaseType={
-		EASE_IN			=MOAIEaseType.EASE_IN,
-		EASE_OUT		=MOAIEaseType.EASE_OUT,
-		FLAT			=MOAIEaseType.FLAT,
-		LINEAR			=MOAIEaseType.LINEAR,
-		SHARP_EASE_IN	=MOAIEaseType.SHARP_EASE_IN,
-		SHARP_EASE_OUT	=MOAIEaseType.SHARP_EASE_OUT,
-		SHARP_SMOOTH	=MOAIEaseType.SHARP_SMOOTH,
-		SMOOTH			=MOAIEaseType.SMOOTH,
-		SOFT_EASE_IN	=MOAIEaseType.SOFT_EASE_IN,
-		SOFT_EASE_OUT	=MOAIEaseType.SOFT_EASE_OUT,
-		SOFT_SMOOTH		=MOAIEaseType.SOFT_SMOOTH
+		EASE_IN			    = MOAIEaseType. EASE_IN,
+		EASE_OUT		    = MOAIEaseType. EASE_OUT,
+		FLAT			      = MOAIEaseType. FLAT,
+		LINEAR			    = MOAIEaseType. LINEAR,
+		SHARP_EASE_IN	  = MOAIEaseType. SHARP_EASE_IN,
+		SHARP_EASE_OUT	= MOAIEaseType. SHARP_EASE_OUT,
+		SHARP_SMOOTH	  = MOAIEaseType. SHARP_SMOOTH,
+		SMOOTH			    = MOAIEaseType. SMOOTH,
+		SOFT_EASE_IN	  = MOAIEaseType. SOFT_EASE_IN,
+		SOFT_EASE_OUT	  = MOAIEaseType. SOFT_EASE_OUT,
+		SOFT_SMOOTH		  = MOAIEaseType. SOFT_SMOOTH,
+		BACK_IN	        = MOAIEaseType. BACK_IN,
+		BACK_OUT	      = MOAIEaseType. BACK_OUT,
+		BACK_SMOOTH		  = MOAIEaseType. BACK_SMOOTH,
+		ELASTIC_IN	    = MOAIEaseType. ELASTIC_IN,
+		ELASTIC_OUT	    = MOAIEaseType. ELASTIC_OUT,
+		ELASTIC_SMOOTH  = MOAIEaseType. ELASTIC_SMOOTH,
+		BOUNCE_IN	      = MOAIEaseType. BOUNCE_IN,
+		BOUNCE_OUT	    = MOAIEaseType. BOUNCE_OUT,
+		BOUNCE_SMOOTH	  = MOAIEaseType. BOUNCE_SMOOTH,
 	}
 
 }
 
+for k, v in pairs( builtinSymbol.EaseType ) do
+	builtinSymbol[ k ] = v
+end
 
 local scriptEnvMT={
 	__index=function(t,k)

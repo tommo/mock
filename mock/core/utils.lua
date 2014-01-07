@@ -509,15 +509,20 @@ local eachMT={
 		t.__methodToCall__=k
 		return t
 	end,
+	__newindex = function( t,k,v )
+		for i, o in ipairs(t.__objects__) do
+			o[k] = v			
+		end
+	end,
 	__call=function(t,t1,...)
 		local m={}
 		local methodname=t.__methodToCall__
 		if t==t1 then
-			for i, o in ipairs(t) do
+			for i, o in ipairs(t.__objects__) do
 				m[i]=o[methodname](o,...)
 			end
 		else
-			for i, o in ipairs(t) do
+			for i, o in ipairs(t.__objects__) do
 				m[i]=o[methodname](...)
 			end
 		end
@@ -527,7 +532,10 @@ local eachMT={
 
 
 function eachT(t)
-	return setmetatable(t,eachMT)
+	return setmetatable( { 
+		__objects__      = t or {},
+		__methodToCall__ = false
+		},eachMT)
 end
 
 function each(...)

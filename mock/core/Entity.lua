@@ -335,17 +335,20 @@ function Entity:addSibling( entity, layerName )
 	return entity
 end
 
+function Entity:_attachChildEntity( child )
+	local _prop = self._prop
+	local _p1   = child._prop
+	inheritTransformColorVisible( _p1, _prop )
+end
+
 function Entity:addChild( entity, layerName )
 	self.children[ entity ] = true
 	entity.parent = self
-	
-	--attach transform/color
-	local _prop = self._prop
-	local _p1   = entity._prop
-	inheritTransformColorVisible( _p1, _prop )
-
+		
 	--TODO: better solution on scissor?
 	if self.scissorRect then entity:_setScissorRect( self.scissorRect ) end
+	--attach transform/color
+	self:_attachChildEntity( entity )
 
 	local scene = self.scene
 
@@ -365,7 +368,7 @@ end
 
 function Entity:addInternalChild( e, layer )
 	e.FLAG_INTERNAL = true
-	return self:addChild( e )
+	return self:addChild( e, layer )
 end
 
 function Entity:clearChildren()
@@ -448,6 +451,17 @@ function Entity:getScene()
 	return self.scene
 end
 
+function Entity:getFullName()
+	if not self.name then return false end
+	local output = self.name
+	local n = self.parent
+	while n do
+		output = (n.name or '<noname>')..'/'..output
+		n = n.parent
+	end
+	return output
+end
+
 function Entity:getLayer()
 	if not self.layer then return nil end
 	if type( self.layer ) == 'string' then return self.layer end
@@ -478,7 +492,7 @@ end
 ---------Visibility Control
 --------------------------------------------------------------------
 function Entity:isVisible()
-	return self._prop:getAttr( MOAIProp.ATTR_VISIBLE )
+	return self._prop:getAttr( MOAIProp.ATTR_VISIBLE ) == 1
 end
 
 function Entity:isLocalVisible()
@@ -488,7 +502,6 @@ end
 
 function Entity:setVisible( visible )
 	self._prop:setVisible( visible )
-	--TODO: inform compoenents
 end
 
 function Entity:show()

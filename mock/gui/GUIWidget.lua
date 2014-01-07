@@ -64,7 +64,7 @@ function GUIWidget:setSize( w, h )
 	end
 	self.width, self.height = w, h
 	--todo: update layout in the root widget
-	-- self:updateLayout() 
+	-- self:updateLayout()
 end
 
 function GUIWidget:getDefaultSize()
@@ -107,8 +107,6 @@ function GUIWidget:updateLayout()
 		self.layout:onLayout( self )
 	end
 end
-
-
 
 
 --Virtual Interfaces

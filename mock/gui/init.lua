@@ -3,6 +3,7 @@
 --------------------------------------------------------------------
 require 'mock.gui.GUIWidget'
 require 'mock.gui.GUIRootWidget'
+require 'mock.gui.GUIScrollArea'
 
 mock.registerGUIWidget( 'RootWidget', mock.GUIRootWidget )
 

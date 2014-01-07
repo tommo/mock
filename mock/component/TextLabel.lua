@@ -20,7 +20,6 @@ function TextLabel:__init()
 	-- box:setShader( getBuiltinShader(FONT_SHADER) )
 	box:setStyle( getFallbackTextStyle() )
 	box:setScl( 1,-1,1 )
-	-- box:setYFlip ( true )
 	self.box  = box
 	self.text = ''
 	self.alignment = 'left'

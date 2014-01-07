@@ -24,3 +24,10 @@ function RenderComponent:getShader( s )
 	return self.shader
 end
 
+function RenderComponent:setVisible( f )
+end
+
+function RenderComponent:isVisible()
+	return true
+end
+

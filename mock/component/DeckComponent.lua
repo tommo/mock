@@ -22,6 +22,11 @@ function DeckComponent:onDetach( entity )
 end
 
 --------------------------------------------------------------------
+function DeckComponent:getMoaiProp()
+	return self.prop
+end
+
+--------------------------------------------------------------------
 function DeckComponent:setDeck( deckPath )
 	self.deckPath = deckPath
 	local deck = mock.loadAsset( deckPath )
@@ -79,3 +84,13 @@ end
 function DeckComponent:inside( x, y, z, pad )
 	return self.prop:inside( x,y,z, pad )
 end
+
+--------------------------------------------------------------------
+function DeckComponent:setVisible( f )
+	self.prop:setVisible( f )
+end
+
+function DeckComponent:isVisible()
+	return self.prop:getAttr( MOAIProp.ATTR_VISIBLE ) ~= 0
+end
+

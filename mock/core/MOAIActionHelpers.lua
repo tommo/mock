@@ -188,3 +188,70 @@ function createSmoothLoopAnimCurve( from, to, length )
 	curve:setKey( 2, from, MOAIEaseType.SMOOTH )
 	return curve
 end
+
+
+--------------------------------------------------------------------
+local easeNodePool = {}
+local runningNodes = {}
+local function _easeNodeCallback( node )
+	local f = node._func
+	if f then
+		local v = node:getAttr( 0 )
+		return f( v )
+	end
+end
+
+local function _easeNodeCallbackStepped( node )
+	local step    = node._step
+	local counter = node._stepCounter
+	if counter>0  then
+		counter=counter-1
+	else
+		counter = step
+		return _easeNodeCallback( node )
+	end	
+end
+
+
+local function checkRunningNodes()
+	local done = {}
+	for node, action in pairs( runningNodes ) do
+		if not action:isBusy() then done[ node ] = true end
+	end
+	for node in pairs( done ) do
+		node._func = false
+		runningNodes[ node ] = nil
+		easeNodePool[ node ] = true
+	end
+end
+
+local function getTmpEaseNode()
+	checkRunningNodes()
+	local node = next( easeNodePool )
+	if node then
+		easeNodePool[ node ] = nil
+	else
+		print( 'new node' )
+		node = MOAIScriptNode.new()
+		node:reserveAttrs( 1 )
+		node._func = false
+	end	
+	return node
+end
+
+function easeCall( func, v0, v1, t, easeType, step )
+	local node = getTmpEaseNode()
+	if step then
+		node._step = step
+		node._stepCounter = 0
+		node:setCallback( _easeNodeCallbackStepped )
+	elseif node._step then
+		node._step = false
+		node:setCallback( _easeNodeCallback )
+	end
+	node._func = func
+	node:setAttr( 0, v0 )
+	local action = node:seekAttr( 0, v1, t, easeType )
+	runningNodes[ node ] = action
+	return action
+end

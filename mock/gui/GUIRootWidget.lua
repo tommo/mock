@@ -2,9 +2,13 @@ module 'mock'
 
 local insert,remove=table.insert,table.remove
 
-local DEFAULT_TOUCH_RADIUS = 20
-function setDefaultTouchRadius( radius )
-	DEFAULT_TOUCH_RADIUS = radius or 20
+local DEFAULT_TOUCH_PADDING = 20
+function setDefaultTouchPadding( pad )
+	DEFAULT_TOUCH_PADDING = pad or 20
+end
+
+function getDefaultTouchPadding()
+	return DEFAULT_TOUCH_PADDING or 20
 end
 
 --------------------------------------------------------------------
@@ -22,9 +26,17 @@ end
 
 --------------------------------------------------------------------
 CLASS: GUIRootWidget ( GUIWidget )
+function GUIRootWidget:__init()
+	self.inputEnabled = true
+end
+
 function GUIRootWidget:onLoad()
-	self:attachInternal( mock.InputScript() )
+	self.inputScript = self:attachInternal( mock.InputScript() )
 	self.pointers = {}
+end
+
+function GUIRootWidget:setInputEnabled( inputEnabled )
+	self.inputEnabled = inputEnabled or true
 end
 
 function GUIRootWidget:getPointer( touch, create )
@@ -37,7 +49,7 @@ function GUIRootWidget:getPointer( touch, create )
 	return p
 end
 
-local function _findTopWidget( w, x, y, radius )
+local function _findTopWidget( w, x, y, pad )
 	local childId = 0
 	local children = w.childWidgets
 	local count = #children
@@ -45,31 +57,32 @@ local function _findTopWidget( w, x, y, radius )
 		child = children[ k ]
 		if child:isVisible() then 
 			local px,py,pz = child:getWorldLoc()
-			local i = child:inside( x, y, pz, radius )
+			local i = child:inside( x, y, pz, pad )
 			if i == 'group' then
-				local found = _findTopWidget( child, x, y, radius )
+				local found = _findTopWidget( child, x, y, pad )
 				if found then	return found end
 			elseif i then
-				return _findTopWidget( child, x, y, radius ) or child
+				return _findTopWidget( child, x, y, pad ) or child
 			end
 		end
 	end
 	return nil
 end
 
-function GUIRootWidget:findTopWidget( x, y, radius )
-	return _findTopWidget( self, x, y, radius or DEFAULT_TOUCH_RADIUS )
+function GUIRootWidget:findTopWidget( x, y, pad )
+	return _findTopWidget( self, x, y, pad or DEFAULT_TOUCH_PADDING )
 end
 
 function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 	if ev == 'down' then
+		if not self.inputEnabled then return end
 		local p = self:getPointer( touch, true )
 		p.state = 'down'
 		x, y    = self:wndToWorld( x, y )
 		local widget = self:findTopWidget( x, y )
 		if widget then 
 			p.activeWidget = widget
-			widget:onPress(touch,x,y)
+			widget:onPress( touch, x,y )
 			if not widget.__multiTouch then
 				if not widget.__activeTouch then widget.__activeTouch=touch end
 			end
