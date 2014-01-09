@@ -27,6 +27,18 @@ function _wrapAttrGetter(class,fieldname,attr,methodname)
 	class[methodname] = f()
 end
 
+function _wrapAttrGetterBoolean(class,fieldname,attr,methodname)
+	local f=loadstring(
+		string.format(
+			[[return function(self)
+								return self.%s:getAttr(%d) ~= 0
+						end
+			]]
+			,fieldname,attr)
+	)
+	class[methodname] = f()
+end
+
 function _wrapAttrSetter(class,fieldname,attr,methodname)
 	local f=loadstring(
 		string.format(

@@ -245,7 +245,7 @@ function easeCall( func, v0, v1, t, easeType, step )
 		node._step = step
 		node._stepCounter = 0
 		node:setCallback( _easeNodeCallbackStepped )
-	elseif node._step then
+	elseif node._step ~= false then
 		node._step = false
 		node:setCallback( _easeNodeCallback )
 	end

@@ -3,8 +3,12 @@ module 'mock'
 CLASS: GUIScrollArea ( GUIWidget )
 	:MODEL{
 		Field 'size'       :type('vec2') :getset('Size');
-		Field 'scroll'     :type('vec2') :getset('Scroll');	
 		Field 'scrollSize' :type('vec2') :getset('ScrollSize');	
+		'----';
+		Field 'scrollDamping';
+		Field 'maxScrollSpeed';
+		'----';
+		Field 'scroll'     :type('vec2') :getset('Scroll');
 	}
 
 registerGUIWidget( 'ScrollArea', GUIScrollArea )
@@ -14,6 +18,14 @@ function GUIScrollArea:__init()
 	inheritTransform( self.innerTransform, self._prop )
 	self.scrollW = -1
 	self.scrollH = -1
+	self.momentum      = true
+	self.targetScrollX = 0
+	self.targetScrollY = 0
+	self.speedScrollX = 0
+	self.speedScrollY = 0
+	self.scrollDamping = 0.9
+	self.maxScrollSpeed   = 50
+	self.grabbed   = false	
 end
 
 function GUIScrollArea:getDefaultSize()
@@ -29,8 +41,15 @@ function GUIScrollArea:_attachChildEntity( child )
 	inheritVisible( pchild, p )
 end
 
-function GUIScrollArea:setScroll( x, y )
+--------------------------------------------------------------------
+function GUIScrollArea:setScroll( x, y, updateTargetScroll )
 	self.innerTransform:setLoc( x, y )
+	if updateTargetScroll ~= false then
+		self.targetScrollX = x
+		self.targetScrollY = y
+		self.speedScrollX = 0
+		self.speedScrollY = 0
+	end
 end
 
 function GUIScrollArea:getScroll()
@@ -67,7 +86,6 @@ function GUIScrollArea:moveScrollX( dx, t, easeType )
 	return moveLocX( self.innerTransform, dx, t, easeType )
 end
 
-
 function GUIScrollArea:getScrollY()
 	return getLocY( self.innerTransform )
 end
@@ -88,7 +106,7 @@ function GUIScrollArea:moveScrollY( dy, t, easeType )
 	return moveLocY( self.innerTransform, dy, t, easeType )
 end
 
-
+--------------------------------------------------------------------
 function GUIScrollArea:setSize( w, h )
 	if not w then
 		w, h = self:getDefaultSize()
@@ -105,3 +123,103 @@ function GUIScrollArea:setScrollSize( w, h )
 	self.scrollW, self.scrollH = w, h
 end
 
+function GUIScrollArea:isScrolling()
+	local vx,vy = self.speedScrollX, self.speedScrollY
+	return vx*vx >= 1 or vy*vy >= 1
+end
+
+--------------------------------------------------------------------
+function GUIScrollArea:setTargetScrollX( x )
+	local x0,x1 = 0, -self.scrollH
+	if x0>x1 then x0,x1 = x1,x0 end
+	self.targetScrollX = math.clamp( x, x0,x1 )
+end
+
+function GUIScrollArea:setTargetScrollY( y )
+	local y0,y1 = 0, -self.scrollH
+	if y0>y1 then y0,y1 = y1,y0 end
+	self.targetScrollY = math.clamp( y, y0,y1 )
+end
+
+function GUIScrollArea:addTargetScrollX( dx )
+	self:setTargetScrollX( self.targetScrollX + dx )	
+end
+
+function GUIScrollArea:addTargetScrollY( dy )
+	self:setTargetScrollY( self.targetScrollY + dy )	
+end
+
+--------------------------------------------------------------------
+function GUIScrollArea:grabScroll( grabbed )
+	grabbed = grabbed ~= false
+	if self.grabbed == grabbed then return end
+	self.grabbed = grabbed
+	if grabbed then self.speedScrollY = 0 self.ty = self:getScrollY() end
+end
+
+function GUIScrollArea:isScrollGrabbed()
+	return self.grabbed
+end
+
+--------------------------------------------------------------------
+
+function GUIScrollArea:onUpdate( dt )	
+	self:updateTargetScrollX( dt )
+	self:updateTargetScrollY( dt )
+end
+
+function GUIScrollArea:updateTargetScrollX( dt ) 
+	local damping = self.scrollDamping
+	local ms = self.maxScrollSpeed
+	
+	local x  = self:getScrollX()
+	if self.grabbed then
+		local vx0 = self.speedScrollX
+		local vx1 = math.clamp( self.targetScrollX - x, -ms, ms )
+		local k = 0.7
+		self.speedScrollX =  vx0*(1-k) + vx1*k
+	end
+	local nx = x + self.speedScrollX
+	local x0,x1 = 0, -self.scrollH
+	if x0>x1 then
+		x0,x1 = x1,x0
+	end
+	if nx <= x0 then
+		nx = x0
+		self.speedScrollX = 0
+	elseif nx >= x1 then
+		nx = x1
+		self.speedScrollX = 0
+	else
+		self.speedScrollX = self.speedScrollX * damping
+	end
+	self:setScrollX( nx )
+end
+
+function GUIScrollArea:updateTargetScrollY( dt )
+	local damping = self.scrollDamping
+	local ms = self.maxScrollSpeed
+
+	local y  = self:getScrollY()
+	if self.grabbed then
+		local vy0 = self.speedScrollY
+		local vy1 = math.clamp( self.targetScrollY - y, -ms, ms )
+		local k = 0.7
+		self.speedScrollY =  vy0*(1-k) + vy1*k
+	end
+	local ny = y + self.speedScrollY
+	local y0,y1 = 0, -self.scrollH
+	if y0>y1 then
+		y0,y1 = y1,y0
+	end
+	if ny <= y0 then
+		ny = y0
+		self.speedScrollY = 0
+	elseif ny >= y1 then
+		ny = y1
+		self.speedScrollY = 0
+	else
+		self.speedScrollY = self.speedScrollY * damping
+	end
+	self:setScrollY( ny )
+end

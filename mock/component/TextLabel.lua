@@ -10,7 +10,8 @@ CLASS: TextLabel ()
 		Field 'text'          :string()  :set('setText');
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle');
-		Field 'alignment'     :enum( EnumTextAlignment ) :set('setAlignment');
+		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
+		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
 		Field 'size'          :type('vec2') :getset( 'Size' );
 	}
 
@@ -22,7 +23,8 @@ function TextLabel:__init()
 	box:setScl( 1,-1,1 )
 	self.box  = box
 	self.text = ''
-	self.alignment = 'left'
+	self.alignment  = 'left'
+	self.alignmentV = 'top'
 	self:setSize( 100, 100 )
 	self.defaultStyle = 'default'
 	self.styleSheet = false
@@ -79,6 +81,7 @@ function TextLabel:updateRect()
 	else --'right'
 		self.box:setRect( -w, 0, 0, h )
 	end
+	self.box:setString( self.text ) --trigger layout
 end
 	
 function TextLabel:setText( text )
@@ -92,15 +95,25 @@ end
 
 --------------------------------------------------------------------
 local textAlignments = {
-	center = MOAITextBox.CENTER_JUSTIFY,
-	left   = MOAITextBox.LEFT_JUSTIFY,
-	right  = MOAITextBox.RIGHT_JUSTIFY
+	center    = MOAITextLabel.CENTER_JUSTIFY,
+	left      = MOAITextLabel.LEFT_JUSTIFY,
+	right     = MOAITextLabel.RIGHT_JUSTIFY,
+	top       = MOAITextLabel.TOP_JUSTIFY,
+	bottom    = MOAITextLabel.BOTTOM_JUSTIFY,
+	baseline  = MOAITextLabel.BASELINE_JUSTIFY,
 }
 
 function TextLabel:setAlignment( align )
 	align = align or 'left'
 	self.alignment = align
 	self.box:setAlignment( textAlignments[ align ] )
+	self:updateRect()
+end
+
+function TextLabel:setAlignmentV( align )
+	align = align or 'top'	 
+	self.alignmentV = align
+	self.box:setAlignment( textAlignments[ self.alignment ], textAlignments[ align ] )
 	self:updateRect()
 end
 

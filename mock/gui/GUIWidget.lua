@@ -51,12 +51,16 @@ end
 function GUIWidget:inside( x, y, z, pad )
 	x,y = self:worldToModel( x, y )
 	local w, h = self:getSize()
+	local x0,y0,x1,y1 = 0,0,w,h
+	if x0 > x1 then x1,x0 = x0,x1 end
+	if y0 > y1 then y1,y0 = y0,y1 end
 	if pad then
-		return x >= 0-pad and x <= w+pad and y >= 0-pad and y<=h+pad
+		return x >= x0-pad and x <= x1+pad and y >= y0-pad and y<=y1+pad
 	else
-		return x>=0 and x<=w and y>=0 and y<=h
+		return x>=x0 and x<=x1 and y>=y0 and y<=y1
 	end
 end
+
 
 function GUIWidget:setSize( w, h )
 	if not w then

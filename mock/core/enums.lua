@@ -82,3 +82,11 @@ EnumTextAlignment = {
 	{ 'center' , 'center' },
 	{ 'right'  , 'right'  },
 }
+
+--------------------------------------------------------------------
+EnumTextAlignmentV = {
+	{ 'top'   , 'top'   },
+	{ 'center' , 'center' },
+	{ 'bottom'  , 'bottom'  },
+	{ 'baseline'  , 'baseline'  },
+}
