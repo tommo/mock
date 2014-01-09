@@ -8,10 +8,10 @@ local FONT_SHADER               = MOAIShaderMgr. FONT_SHADER
 CLASS: TextLabel ()
 	:MODEL{
 		Field 'text'          :string()  :set('setText');
-		'----'
+		'----';
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle');
-		'----'
+		'----';
 		Field 'size'          :type('vec2') :getset( 'Size' );
 		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
