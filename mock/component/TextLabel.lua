@@ -8,11 +8,13 @@ local FONT_SHADER               = MOAIShaderMgr. FONT_SHADER
 CLASS: TextLabel ()
 	:MODEL{
 		Field 'text'          :string()  :set('setText');
+		'----'
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle');
+		'----'
+		Field 'size'          :type('vec2') :getset( 'Size' );
 		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
-		Field 'size'          :type('vec2') :getset( 'Size' );
 	}
 
 function TextLabel:__init()
@@ -73,14 +75,24 @@ end
 
 function TextLabel:updateRect()
 	local w, h = self.w, self.h
-	local align = self.alignment
-	if align == 'left' then
-		self.box:setRect( 0, 0, w, h )
-	elseif align == 'center' then
-		self.box:setRect( -w/2, 0, w/2, h )
+	local alignH = self.alignment
+	local alignV = self.alignmentV
+	local x,y
+	if alignH == 'left' then
+		x = 0
+	elseif alignH == 'center' then
+		x = -w/2
 	else --'right'
-		self.box:setRect( -w, 0, 0, h )
+		x = -w
 	end
+	if alignV == 'top' then
+		y = 0
+	elseif alignV == 'center' then
+		y = -h/2
+	else --'right'
+		y = -h
+	end
+	self.box:setRect( x, y, x + w, y + h )
 	self.box:setString( self.text ) --trigger layout
 end
 	
@@ -138,3 +150,4 @@ end
 
 
 registerComponent( 'TextLabel', TextLabel )
+registerEntityWithComponent( 'TextLabel', TextLabel )

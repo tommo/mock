@@ -55,7 +55,7 @@ local function _findTopWidget( w, x, y, pad )
 	local count = #children
 	for k = count , 1, -1 do
 		child = children[ k ]
-		if child:isVisible() then 
+		if child:isVisible() and child:isActive() then 
 			local px,py,pz = child:getWorldLoc()
 			local i = child:inside( x, y, pz, pad )
 			if i == 'group' then

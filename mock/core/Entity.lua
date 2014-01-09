@@ -1,17 +1,21 @@
 module 'mock'
 
+--------------------------------------------------------------------
 local insert, remove = table.insert, table.remove
 local pairs, ipairs  = pairs, ipairs
 local unpack = unpack
 
-----------------------
--- CLASS: Entity ( Actor ) 
+--------------------------------------------------------------------
+----- ENTITY CLASS
+--------------------------------------------------------------------
 CLASS: Entity ( Actor )
 	:MODEL{
 		Field '_priority' :int() :no_edit()  :set('setPriority');
 		Field 'name'      :string()  :getset('Name');
-		Field 'layer'     :type('layer')  :getset( 'Layer' ) :no_nil();
+		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
+		Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
+		Field 'layer'     :type('layer')  :getset( 'Layer' ) :no_nil();
 		'----';
 		Field 'loc'       :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'       :type('vec3') :getset('Rot') :label('Rot');
@@ -23,6 +27,7 @@ CLASS: Entity ( Actor )
 
 wrapWithMoaiPropMethods( Entity, '_prop' )
 local setupMoaiTransform = setupMoaiTransform
+
 --------------------------------------------------------------------
 -------init
 --------------------------------------------------------------------
@@ -32,20 +37,22 @@ function Entity:_createEntityProp()
 	return newProp()
 end
 
-local k = 1
+local _PRIORITY = 1
 function Entity:__init( data )
 	local _prop = self:_createEntityProp()
 	self._prop       = _prop
-	k = k + 1
-	self._priority   = k
-	_prop:setPriority( k )
+
+	_PRIORITY = _PRIORITY + 1
+	self._priority   = _PRIORITY
+	_prop:setPriority( _PRIORITY )
+
 	self.scene       = false --not loaded yet
 	self.components  = {}
 	self.children    = {}
 	-- self.timers      = false
 	self.name        = false
 	self.active      = true
-	self.localActive = false
+	self.localActive = true
 	self.started     = false
 	if type(data) == 'table' then
 		local trans = data.transform
@@ -96,8 +103,12 @@ function Entity:_insertIntoScene( scene, layer )
 	if entityListener then entityListener( 'add', self, scene, layer ) end
 end
 
+function Entity:getProp()
+	return self._prop
+end
+
 --------------------------------------------------------------------
---Destructor
+------ Destructor
 --------------------------------------------------------------------
 function Entity:destroy()
 	assert( self.scene )
@@ -172,6 +183,8 @@ function Entity:destroyNow()
 end
 
 --------------------------------------------------------------------
+------- Component Attach/Detach
+--------------------------------------------------------------------
 function Entity:attach( com )
 	if not self.components then 
 		_error('attempt to attach component to a dead entity')
@@ -225,7 +238,6 @@ function Entity:detachAll()
 	end
 end
 
-
 function Entity:getComponents()
 	return self.components
 end
@@ -268,10 +280,8 @@ function Entity:hasComponent( clas )
 	return false
 end
 
-function Entity:_detachProp( p )
-	self.layer:removeProp( p )
-end
-
+--------------------------------------------------------------------
+------- Attributes Links
 --------------------------------------------------------------------
 local inheritTransformColor = inheritTransformColor
 local inheritTransform      = inheritTransform
@@ -300,7 +310,7 @@ function Entity:_attachTransform( t )
 end
 
 -- function Entity:_detachTransform( t )
-	
+--
 -- end
 
 function Entity:_attachLoc( t )
@@ -322,7 +332,6 @@ end
 function Entity:_detachProp( p )
 	self.layer:removeProp( p )
 end
-
 
 --------------------------------------------------------------------
 ------ Child Entity
@@ -484,10 +493,6 @@ function Entity:setLayer( layerName )
 	end
 end
 
-function Entity:getProp()
-	return self._prop
-end
-
 --------------------------------------------------------------------
 ---------Visibility Control
 --------------------------------------------------------------------
@@ -514,7 +519,7 @@ end
 
 
 --------------------------------------------------------------------
----------Active control
+------Active control
 --------------------------------------------------------------------
 function Entity:start()
 	if self.started then return end
@@ -548,10 +553,10 @@ function Entity:setActive( active )
 	active = active or false
 	if active == self.localActive then return end
 	self.localActive = active
-	self:updateGlobalActive()
+	self:_updateGlobalActive()
 end
 
-function Entity:updateGlobalActive()
+function Entity:_updateGlobalActive()
 	local active = self.localActive
 	local p = self.parent
 	if p then
@@ -563,24 +568,34 @@ function Entity:updateGlobalActive()
 
 	--inform components
 	for com in pairs(self.components) do
-		if com.setActive then
-			com:setActive( active )
+		local setActive = com.setActive
+		if setActive then
+			setActive( com, active )
 		end
 	end
 
 	--inform children
 	for o in pairs(self.children) do
-		o:updateGlobalActive()
+		o:_updateGlobalActive()
+	end
+
+	local onSetActive = self.onSetActive
+	if onSetActive then
+		return onSetActive( self, active )
 	end
 end
 
 function Entity:isActive()
 	return self.active
 end	
+
+function Entity:isLocalActive()
+	return self.localActive
+end
 	
 
 --------------------------------------------------------------------
------- Method invoker
+------ Child/Component Method invoker
 --------------------------------------------------------------------
 function Entity:createTimer()
 	local timers = self.timers
@@ -629,6 +644,9 @@ function Entity:invokeOneComponent( methodname, ... )
 	end
 end
 
+--------------------------------------------------------------------
+--Function caller
+--------------------------------------------------------------------
 function Entity:callNextFrame(f, ... )
 	if not self.scene then return end
 	local t = { func = f, object = self, ... }

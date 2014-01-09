@@ -231,7 +231,6 @@ local function getTmpEaseNode()
 	if node then
 		easeNodePool[ node ] = nil
 	else
-		print( 'new node' )
 		node = MOAIScriptNode.new()
 		node:reserveAttrs( 1 )
 		node._func = false

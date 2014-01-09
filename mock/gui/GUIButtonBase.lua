@@ -17,6 +17,10 @@ CLASS: GUIButtonBase ( GUIWidget )
 function GUIButtonBase:onLoad()
 end
 
+function GUIButtonBase:onSetActive( active )
+	self.state = active and 'normal' or 'disabled'
+	return self:updateState()
+end
 
 function GUIButtonBase:onPress	( touch, x, y )
 	self:setState 'press'
