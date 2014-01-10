@@ -11,6 +11,7 @@ mock.registerGUIWidget( 'RootWidget', mock.GUIRootWidget )
 --Widget Template
 --------------------------------------------------------------------
 require 'mock.gui.GUIButtonBase'
+require 'mock.gui.GUIListBase'
 
 
 --------------------------------------------------------------------

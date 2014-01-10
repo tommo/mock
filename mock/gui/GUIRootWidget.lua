@@ -49,20 +49,21 @@ function GUIRootWidget:getPointer( touch, create )
 	return p
 end
 
-local function _findTopWidget( w, x, y, pad )
+local function _findTopWidget( parent, x, y, pad )
 	local childId = 0
-	local children = w.childWidgets
+	local children = parent.childWidgets
 	local count = #children
 	for k = count , 1, -1 do
-		child = children[ k ]
-		if child:isVisible() and child:isActive() then 
+		local child = children[ k ]
+		if child:isVisible() and child:isActive() and child.inputEnabled then 
 			local px,py,pz = child:getWorldLoc()
-			local i = child:inside( x, y, pz, pad )
-			if i == 'group' then
+			local inside = child:inside( x, y, pz, pad )
+			if inside == 'group' then
 				local found = _findTopWidget( child, x, y, pad )
 				if found then	return found end
-			elseif i then
-				return _findTopWidget( child, x, y, pad ) or child
+			elseif inside then
+				local result = _findTopWidget( child, x, y, pad ) or child
+				return result
 			end
 		end
 	end
@@ -82,6 +83,7 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		local widget = self:findTopWidget( x, y )
 		if widget then 
 			p.activeWidget = widget
+			widget:setState( 'press' )
 			widget:onPress( touch, x,y )
 			if not widget.__multiTouch then
 				if not widget.__activeTouch then widget.__activeTouch=touch end
@@ -94,9 +96,10 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		p.state = 'up'
 		if p.activeWidget then
 			x, y = self:wndToWorld(x,y)
-			local w = p.activeWidget
-			w:onRelease( touch, x, y )
-			if not w.__multiTouch then	w.__activeTouch=false		end
+			local widget = p.activeWidget
+			widget:onRelease( touch, x, y )
+			widget:setState( 'normal' )
+			if not widget.__multiTouch then	widget.__activeTouch=false		end
 		end
 		p.activeWidget = false
 		p.touch = false

@@ -17,21 +17,20 @@ CLASS: GUIButtonBase ( GUIWidget )
 function GUIButtonBase:onLoad()
 end
 
-function GUIButtonBase:onSetActive( active )
-	self.state = active and 'normal' or 'disabled'
-	return self:updateState()
-end
-
 function GUIButtonBase:onPress	( touch, x, y )
 	self:setState 'press'
 	self:emit( 'ui.button.press', self )
 	self:updateState()
 end
 
+function GUIButtonBase:onStateChange()
+	return self:updateState()
+end
+
 function GUIButtonBase:onRelease( touch, x, y )
 	self:setState 'normal'
 	self:emit( 'ui.button.release', self )
-	local px,py,pz = child:getWorldLoc()
+	local px,py,pz = self:getWorldLoc()
 	if self:inside( x,y,pz, getDefaultTouchPadding() ) then
 		self:emit( 'ui.button.click', self )
 		local onClick=self.onClick

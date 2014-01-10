@@ -7,7 +7,7 @@ function GUIWidget:__init()
 	self.__WIDGET     = true
 	self.__rootWidget = false
 	self.childWidgets = {}
-
+	self.inputEnabled = true
 	self:setSize( self:getDefaultSize() ) --default
 
 end
@@ -128,6 +128,14 @@ function GUIWidget:onSizeHint()
 	return 0, 0
 end
 
+function GUIWidget:onSetActive( active )
+	self:setState( active and 'normal' or 'disabled' )	
+end
+
+function GUIWidget:setInputEnabled( enabled )
+	self.inputEnabled = enabled ~= false
+end
+
 --------------------------------------------------------------------
 CLASS: GUILayout ()
 	:MODEL{}
@@ -145,7 +153,6 @@ CLASS: GUIWidgetGroup ( GUIWidget )
 function GUIWidgetGroup:inside()
 	return 'group'
 end
-
 
 --------------------------------------------------------------------
 function registerGUIWidget( name, class )

@@ -125,7 +125,7 @@ local templateRenderScript = [[
 CLASS: SimpleParticleSystemConfig ()
 	:MODEL{
 		Field 'deck'          :asset('deck2d\\..*');
-		Field 'blend'         :enum( mock.EnumBlendModes );
+		Field 'blend'         :enum( mock.EnumBlendMode );
 		Field 'particles'     :int()     :range( 0, 2000 );
 		'----';
 		Field 'life'           :number() :range( 0, 10 )    :widget('slider');

@@ -28,7 +28,7 @@ EnumTextureAtlasMode = {
 }
 
 --------------------------------------------------------------------
-EnumBlendModes = {
+EnumBlendMode = {
 	{ 'Alpha',     'alpha'    },
 	{ 'Add',       'add'      },
 	{ 'Multiply',  'multiply' },

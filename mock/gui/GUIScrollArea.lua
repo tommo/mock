@@ -42,6 +42,25 @@ function GUIScrollArea:_attachChildEntity( child )
 end
 
 --------------------------------------------------------------------
+function GUIScrollArea:worldToScroll( x, y )
+	return self.innerTransform:worldToModel( x, y )
+end
+
+function GUIScrollArea:modelToScroll( x, y )
+	x,y = self:modelToWorld( x, y )
+	return self.innerTransform:worldToModel( x, y )
+end
+
+function GUIScrollArea:scrollToWorld( x, y )
+	return self.innerTransform:modelToWorld( x, y )
+end
+
+function GUIScrollArea:scrollToModel( x, y )
+	return self:worldToModel( self:scrollToWorld( x, y ) )
+end
+
+
+--------------------------------------------------------------------
 function GUIScrollArea:setScroll( x, y, updateTargetScroll )
 	self.innerTransform:setLoc( x, y )
 	if updateTargetScroll ~= false then
@@ -124,13 +143,13 @@ function GUIScrollArea:setScrollSize( w, h )
 end
 
 function GUIScrollArea:isScrolling()
-	local vx,vy = self.speedScrollX, self.speedScrollY
+	local vx, vy = self.speedScrollX, self.speedScrollY
 	return vx*vx >= 1 or vy*vy >= 1
 end
 
 --------------------------------------------------------------------
 function GUIScrollArea:setTargetScrollX( x )
-	local x0,x1 = 0, -self.scrollH
+	local x0,x1 = 0, self.scrollW
 	if x0>x1 then x0,x1 = x1,x0 end
 	self.targetScrollX = math.clamp( x, x0,x1 )
 end
@@ -154,7 +173,11 @@ function GUIScrollArea:grabScroll( grabbed )
 	grabbed = grabbed ~= false
 	if self.grabbed == grabbed then return end
 	self.grabbed = grabbed
-	if grabbed then self.speedScrollY = 0 self.ty = self:getScrollY() end
+	if grabbed then 
+		self.speedScrollX = 0
+		self.speedScrollY = 0
+		self.targetScrollX, self.targetScrollY = self:getScroll()	
+	end
 end
 
 function GUIScrollArea:isScrollGrabbed()
@@ -162,7 +185,6 @@ function GUIScrollArea:isScrollGrabbed()
 end
 
 --------------------------------------------------------------------
-
 function GUIScrollArea:onUpdate( dt )	
 	self:updateTargetScrollX( dt )
 	self:updateTargetScrollY( dt )
@@ -203,7 +225,8 @@ function GUIScrollArea:updateTargetScrollY( dt )
 	local y  = self:getScrollY()
 	if self.grabbed then
 		local vy0 = self.speedScrollY
-		local vy1 = math.clamp( self.targetScrollY - y, -ms, ms )
+		local dy = self.targetScrollY - y
+		local vy1 = math.clamp( dy, -ms, ms )
 		local k = 0.7
 		self.speedScrollY =  vy0*(1-k) + vy1*k
 	end
@@ -223,3 +246,30 @@ function GUIScrollArea:updateTargetScrollY( dt )
 	end
 	self:setScrollY( ny )
 end
+
+--------------------------------------------------------------------
+function GUIScrollArea:onPress( pointer, x,y )
+	self:grabScroll( true )
+	self.dragX0 = x
+	self.dragY0 = y
+end
+
+function GUIScrollArea:onDrag( pointer, x,y )
+	self:grabScroll( true )
+	local dx, dy = x-self.dragX0, y-self.dragY0
+	self:addTargetScrollX( dx )
+	self:addTargetScrollY( dy )
+	self.dragX0 = x
+	self.dragY0 = y
+end
+
+function GUIScrollArea:onRelease( pointer, x,y )
+	self:grabScroll( false )
+end
+
+--------------------------------------------------------------------
+function GUIScrollArea:drawBounds()
+	GIIHelper.setVertexTransform( self:getProp() )
+	MOAIDraw.drawRect( 0,0, self:getSize() )
+end
+
