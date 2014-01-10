@@ -334,5 +334,4 @@ function Scene:clear( keepEditorEntity )
 	-- self.updateListeners = {}
 	self.defaultCamera   = false
 	self.entityListener = entityListener
-
 end

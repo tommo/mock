@@ -94,7 +94,26 @@ function linkScl( p1, p2 )
 end
 
 function linkLoc( p1, p2 )
-	p1:setAttrLink( ATTR_TRANSLATE, p2, ATTR_TRANSLATE )
+	p1:setAttrLink( MOAIProp.ATTR_X_LOC, p2, MOAIProp.ATTR_X_LOC )
+	p1:setAttrLink( MOAIProp.ATTR_Y_LOC, p2, MOAIProp.ATTR_Y_LOC )
+	p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_Z_LOC )
+end
+
+function linkPiv( p1, p2 )
+	p1:setAttrLink( MOAIProp.ATTR_X_PIV, p2, MOAIProp.ATTR_X_PIV )
+	p1:setAttrLink( MOAIProp.ATTR_Y_PIV, p2, MOAIProp.ATTR_Y_PIV )
+	p1:setAttrLink( MOAIProp.ATTR_Z_PIV, p2, MOAIProp.ATTR_Z_PIV )
+end
+
+-- function linkLoc( p1, p2 )
+-- 	p1:setAttrLink( ATTR_TRANSLATE, p2, ATTR_TRANSLATE )
+-- end
+
+function linkTransform( p1, p2 )
+	linkLoc( p1, p2 )
+	linkScl( p1, p2 )
+	linkRot( p1, p2 )
+	linkPiv( p1, p2 )
 end
 
 function inheritTransform( p1, p2 )
@@ -134,7 +153,6 @@ function inheritAllPropAttributes( p1, p2 )
 	p1:setAttrLink ( ATTR_SHADER, p2, ATTR_SHADER )
 	p1:setAttrLink ( ATTR_BLEND_MODE, p2, ATTR_BLEND_MODE )
 end
-
 
 function alignPropPivot(p, align)  --align prop's pivot against deck
 	local x,y,z,x1,y1,z1=p:getBounds()
@@ -205,6 +223,46 @@ function setupMoaiTransform( prop, transform )
 	if piv then setPiv( prop, piv[1], piv[2], piv[3] ) end
 
 	return prop
+end
+
+-- function copyTransform( t1, t2 )
+-- 	t1:setLoc( t2:getLoc() )
+-- 	t1:setScl( t2:getScl() )
+-- 	t1:setRot( t2:getRot() )
+-- end
+
+----TODO: replace this with C++ functions!!!
+function syncWorldLoc( t1, t2 )
+	local x2,y2,z2 =  t2:getWorldLoc()
+	local x1,y1,z1 =  t1:getWorldLoc()
+	t1:addLoc( x2-x1, y2-y1, z2-z1 )
+end
+
+function syncWorldRot( t1, t2 )
+	-- local rx2,ry2,rz2 = t2:getWorldDir()
+	-- local rx1,ry1,rz1 = t1:getWorldDir()
+	-- print( rz1, rz2 )
+	-- t1:addRot( rx2-rx1, ry2-ry1, rz2-rz1 ) 
+	local rz2 = t2:getWorldRot()
+	local rz1 = t1:getWorldRot()
+	t1:addRot( 0,0, rz2-rz1 )
+end
+
+function syncWorldScl( t1, t2 )
+	local sx2,sy2,sz2 = t2:getWorldScl()
+	local sx1,sy1,sz1 = t1:getWorldScl()
+	local sx,sy,sz = t1:getScl()
+	local kx,ky,kz
+	kx = sx1 ~= 0 and sx2/sx1 or 1
+	ky = sy1 ~= 0 and sy2/sy1 or 1
+	kz = sz1 ~= 0 and sz2/sz1 or 1
+	t1:setScl( sx*kx, sy*ky, sz*kz )
+end
+
+function syncWorldTransform( t1, t2 )
+	syncWorldLoc( t1, t2 )
+	syncWorldRot( t1, t2 )
+	syncWorldScl( t1, t2 )
 end
 
 function setPropBlend( prop, blend )

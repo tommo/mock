@@ -11,6 +11,7 @@ local unpack = unpack
 CLASS: Entity ( Actor )
 	:MODEL{
 		Field '_priority' :int() :no_edit()  :set('setPriority');
+		----
 		Field 'name'      :string()  :getset('Name');
 		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
@@ -159,13 +160,24 @@ function Entity:destroyNow()
 
 	if onDestroy then onDestroy( self )	end
 
-	for com in pairs( self.components ) do
+	local components = self.components
+	-- while true do
+	-- 	local com = next( components )
+	-- 	if not com then break end
+	-- 	components[ com ] = nil
+	-- 	local onDetach = com.onDetach
+	-- 	if onDetach then
+	-- 		onDetach( com, self )
+	-- 	end
+	-- end
+	for com in pairs( components ) do
+		components[ com ] = nil
 		local onDetach = com.onDetach
 		if onDetach then
 			onDetach( com, self )
 		end
 	end
-
+	
 	if self.parent then
 		self.parent.children[self] = nil
 		self.parent = nil
@@ -216,8 +228,10 @@ function Entity:attachList( l )
 end
 
 function Entity:detach( com )
-	if not self.components then return end
-	self.components[ com ] = nil
+	-- if not self.components then return end
+	local components = self.components
+	if not components[ com ] then return end
+	components[ com ] = nil
 	if self.scene then
 		local onDetach = com.onDetach
 		if onDetach then onDetach( com, self ) end

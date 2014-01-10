@@ -21,6 +21,17 @@ function Prefab:createInstance()
 end
 
 --------------------------------------------------------------------
+function loadPrefab( path )
+	local prefab, node = loadAsset( path )
+	if prefab and node:getType() == 'prefab' then
+		return prefab:createInstance()
+	else
+		_warn( 'prefab not found:', path )
+		return nil
+	end
+end
+
+--------------------------------------------------------------------
 function PrefabLoader( node )
 	local path = node:getObjectFile( 'def' )
 	local data = loadAssetDataTable( path )
