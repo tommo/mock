@@ -161,22 +161,22 @@ function Entity:destroyNow()
 	if onDestroy then onDestroy( self )	end
 
 	local components = self.components
-	-- while true do
-	-- 	local com = next( components )
-	-- 	if not com then break end
-	-- 	components[ com ] = nil
-	-- 	local onDetach = com.onDetach
-	-- 	if onDetach then
-	-- 		onDetach( com, self )
-	-- 	end
-	-- end
-	for com in pairs( components ) do
+	while true do
+		local com = next( components )
+		if not com then break end
 		components[ com ] = nil
 		local onDetach = com.onDetach
 		if onDetach then
 			onDetach( com, self )
 		end
 	end
+	-- for com in pairs( components ) do
+	-- 	components[ com ] = nil
+	-- 	local onDetach = com.onDetach
+	-- 	if onDetach then
+	-- 		onDetach( com, self )
+	-- 	end
+	-- end
 	
 	if self.parent then
 		self.parent.children[self] = nil

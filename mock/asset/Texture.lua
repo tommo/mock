@@ -21,18 +21,37 @@ function getTexturePlaceHolder()
 	end
 	return texturePlaceHolder
 end
+
+
 --------------------------------------------------------------------
+local _imageLoadThread = MOAITaskThread.new()
 local function loadTextureAsync( texture, filePath, transform, debugName )
-	loadAsyncData( filePath, function( buffer )
-			local t0 = os.clock()
-			texture:load ( buffer, transform, debugName )
-			print( '>>>>>loading texture cost:', debugName, ( os.clock() - t0 ) * 1000 )
-			if texture:getSize() <= 0 then
+	local t0 = os.clock()
+	local imgTask = MOAIImageLoadTask.new()
+	imgTask:start(
+		_imageLoadThread,
+		filePath,
+		transform,
+		function( img )
+			-- print( '>>>>>loading texture cost:', debugName, ( os.clock() - t0 ) * 1000 )
+			if img:getSize() <= 0 then
 				_warn( 'failed load texture file:', filePath )
 				texture:load( getTexturePlaceHolderImage(), transform, debugName )
+			else
+				texture:load ( img, transform, debugName )
 			end
 		end
-	)
+	 )
+	-- loadAsyncData( filePath, function( buffer )
+	-- 		local t0 = os.clock()
+	-- 		texture:load ( buffer, transform, debugName )
+	-- 		print( '>>>>>loading texture cost:', debugName, ( os.clock() - t0 ) * 1000 )
+	-- 		if texture:getSize() <= 0 then
+	-- 			_warn( 'failed load texture file:', filePath )
+	-- 			texture:load( getTexturePlaceHolderImage(), transform, debugName )
+	-- 		end
+	-- 	end
+	-- )
 	return true	
 end
 

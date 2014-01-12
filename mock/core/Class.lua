@@ -775,3 +775,21 @@ end
 
 --------------------------------------------------------------------
 separatorField = Field('----') :no_save() :no_edit()
+--------------------------------------------------------------------
+
+--some utils
+function _ENUM_I( t )
+	local t1 = {}
+	for i, v in ipairs( t ) do
+		t1[ i ] = { v, i }
+	end
+	return t1
+end
+
+function _ENUM_V( t )
+	local t1 = {}
+	for i, v in ipairs( t ) do
+		t1[ i ] = { v, v }
+	end
+	return t1
+end
