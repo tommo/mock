@@ -1,6 +1,7 @@
 module ('mock')
 
-TEXTURE_ASYNC_LOAD = false
+TEXTURE_ASYNC_LOAD = true
+-- TEXTURE_ASYNC_LOAD = false
 
 --------------------------------------------------------------------
 local texturePlaceHolder = false
@@ -24,24 +25,33 @@ end
 
 
 --------------------------------------------------------------------
+CLASS: ThreadTextureLoadTask ( ThreadImageLoadTask )
+	:MODEL{}
+
+function ThreadTextureLoadTask:setTargetTexture( tex )
+	self.texture = tex
+end
+
+function ThreadTextureLoadTask:setDebugName( name )
+	self.debugName = name
+end
+
+function ThreadTextureLoadTask:onComplete( img )
+	self.texture:load ( img, self.imageTransform, self.debugName or self.filename )
+end
+
+function ThreadTextureLoadTask:onFail()
+	_warn( 'failed load texture file:', filePath )
+	self.texture:load( getTexturePlaceHolderImage(), self.imageTransform, self.debugName or self.filename )
+end
+
+--------------------------------------------------------------------
 local _imageLoadThread = MOAITaskThread.new()
 local function loadTextureAsync( texture, filePath, transform, debugName )
-	local t0 = os.clock()
-	local imgTask = MOAIImageLoadTask.new()
-	imgTask:start(
-		_imageLoadThread,
-		filePath,
-		transform,
-		function( img )
-			-- print( '>>>>>loading texture cost:', debugName, ( os.clock() - t0 ) * 1000 )
-			if img:getSize() <= 0 then
-				_warn( 'failed load texture file:', filePath )
-				texture:load( getTexturePlaceHolderImage(), transform, debugName )
-			else
-				texture:load ( img, transform, debugName )
-			end
-		end
-	 )
+	local task = ThreadTextureLoadTask( filePath, transform )
+	task:setTargetTexture( texture )
+	task:setDebugName( debugName )
+	task:start()
 	-- loadAsyncData( filePath, function( buffer )
 	-- 		local t0 = os.clock()
 	-- 		texture:load ( buffer, transform, debugName )

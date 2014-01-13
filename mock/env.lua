@@ -47,6 +47,7 @@ require 'mock.core.MOAIInterfaces'
 require 'mock.core.enums'
 require 'mock.core.MOAIHelpers'
 
+require 'mock.core.ThreadTask'
 require 'mock.core.async'
 
 require 'mock.tools.DebugHelper'
@@ -58,9 +59,12 @@ require 'mock.core.Actor'
 require 'mock.core.MOAIActionHelpers'
 require 'mock.core.MOAIPropHelpers'
 
+--------------------------------------------------------------------
+require 'mock.task.basic'
 
 ----------------Core Modules
 require 'mock.core.Misc'
+
 ----asset
 require 'mock.core.AssetLibrary'
 

@@ -35,10 +35,6 @@ function GUIRootWidget:onLoad()
 	self.pointers = {}
 end
 
-function GUIRootWidget:setInputEnabled( inputEnabled )
-	self.inputEnabled = inputEnabled or true
-end
-
 function GUIRootWidget:getPointer( touch, create )
 	local p = self.pointers[touch]
 	if (not p) and create then 

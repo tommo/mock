@@ -37,8 +37,8 @@ end
 
 --sender
 local defaultPort=3333
-local encodeJSON=MOAIJsonParser.encode
-local decodeJSON=MOAIJsonParser.decode
+local _encodeJSON=MOAIJsonParser.encode
+local _decodeJSON=MOAIJsonParser.decode
 
 function initSender(port)
 	local socket=require 'socket'
@@ -96,7 +96,7 @@ function initSender(port)
 				if line then print(line) end
 				if evqueue[1] then
 					for i,e in ipairs(evqueue) do
-						local t=encodeJSON(e)
+						local t=_encodeJSON(e)
 						-- print('sending',t)
 						client:send(t..'\n')
 					end
@@ -156,7 +156,7 @@ function	initReceiver(ip,port)
 			coroutine.yield()
 			local data=client:receive()
 			if data then
-				local t=decodeJSON(data)
+				local t=_decodeJSON(data)
 				local ev,id,x,y=unpack(t)
 				_sendTouchEvent(ev,id,x,y,true)
 			end

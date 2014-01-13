@@ -36,7 +36,6 @@ local function collectEntity( entity, objMap )
 			table.insert( children, childData )
 		end
 	end
-
 	return {
 		id = objMap:map( entity ),
 		components = coms,
@@ -165,7 +164,7 @@ end
 
 function serializeSceneToFile( scn, path )
 	local data = serializeScene( scn )
-	local str  = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
+	local str  = encodeJSON( data )
 	local file = io.open( path, 'wb' )
 	if file then
 		file:write( str )
@@ -182,7 +181,10 @@ end
 --------------------------------------------------------------------
 function serializeEntity( obj )
 	local objMap = SerializeObjectMap()
-	local data = collectEntity( obj, objMap )
+	for i, layer in ipairs( game:getLayers() ) do
+		objMap:map( layer.name )
+	end
+	local data = collectEntity( obj, objMap )	
 	local map = {}
 	while true do
 		local newObjects = objMap:flush()

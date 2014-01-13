@@ -319,7 +319,7 @@ end
 
 function Game:saveConfigToString()
 	local data = self:saveConfigToTable()
-	return MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
+	return encodeJSON( data )
 end
 
 function Game:saveConfigToFile( path )
@@ -329,7 +329,7 @@ end
 
 function Game:saveJSONData( data, path, dataInfo )
 	dataInfo = dataInfo or 'json'
-	local output = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
+	local output = encodeJSON( data )
 	local file = io.open( path, 'w' )
 	if file then
 		file:write(output)
@@ -451,15 +451,15 @@ function Game:openEntryScene()
 end
 
 
-function Game:openScene( id, additive )
+function Game:openScene( id, additive, arguments )
 	local scnPath = self.scenes[ id ]
 	if not scnPath then
 		return _error( 'scene not defined', id )
 	end
-	return self:openSceneByPath( scnPath, additive )
+	return self:openSceneByPath( scnPath, additive, arguments )
 end
 
-function Game:openSceneByPath( scnPath, additive )
+function Game:openSceneByPath( scnPath, additive, arguments )
 	local mainScene = self.mainScene
 	if not additive then
 		mainScene:clear( true )
@@ -474,7 +474,7 @@ function Game:openSceneByPath( scnPath, additive )
 		return _error('invalid type of entry scene:', tostring( node.type ), scnPath )
 	end
 	mainScene.running = runningState
-	emitSignal( 'mainscene.open', scn )
+	emitSignal( 'mainscene.open', scn, arguments )
 	return scn
 end
 
@@ -521,6 +521,10 @@ function Game:getLayer( name )
 		if l.name == name then return l end
 	end
 	return nil
+end
+
+function Game:getLayers()
+	return self.layers
 end
 
 --------------------------------------------------------------------
@@ -638,7 +642,7 @@ function Game:getUserDataPath( path )
 end
 
 function Game:saveSettingData( filename, data )
-	local str  = MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
+	local str  = encodeJSON( data )
 	local raw  = MOAIDataBuffer.deflate( str, 0 )
 	local file = io.open( self.userDataPath..'/'..filename, 'wb' )
 	file:write( raw )

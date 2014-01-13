@@ -1,17 +1,23 @@
 --------------------------------------------------------------------
+---- Base
+require 'mock.component.Behaviour'
 require 'mock.component.RenderComponent'
 require 'mock.component.DeckComponent'
 
 --------------------------------------------------------------------
+---- Prefab
+require 'mock.component.PrefabSpawner'
+
+--------------------------------------------------------------------
+---- Input
 require 'mock.component.InputListener'
 
 --------------------------------------------------------------------
-require 'mock.component.Behaviour'
-
 ---- Basic components
 require 'mock.component.CameraPass'
 require 'mock.component.Camera'
 
+--------------------------------------------------------------------
 ---- Graphics
 require 'mock.component.Prop'
 require 'mock.component.Text'
@@ -25,20 +31,25 @@ require 'mock.component.ParticleEmitter'
 require 'mock.component.DrawScript'
 require 'mock.component.InputScript'
 
+--------------------------------------------------------------------
 ---- Actor ?
 
+--------------------------------------------------------------------
 ---- Audio
 require 'mock.component.Audio'
 
 
+--------------------------------------------------------------------
 ---- Physics
 require 'mock.component.Box2DBody'
 
+--------------------------------------------------------------------
 ---- Extended
 require 'mock.component.AuroraSprite'
 require 'mock.component.SpineSpriteBase'
 require 'mock.component.SpineSprite'
 
+--------------------------------------------------------------------
 ---- AI
 require 'mock.component.FSMController'
 require 'mock.component.UpdateListener'

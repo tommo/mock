@@ -60,7 +60,6 @@ function Layer:isVisible()
 	return self.visible
 end
 
-
 function Layer:setEditorVisible( visible )
 	self.editorVisible = visible	
 	emitSignal( 'layer.update', self, 'editor_visible' )
@@ -69,7 +68,6 @@ end
 function Layer:isEditorVisible()
 	return self.editorVisible
 end
-
 
 function Layer:setEditorSolo( solo )
 	self.editorSolo = solo and 'solo' or false
