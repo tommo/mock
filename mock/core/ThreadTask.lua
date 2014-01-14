@@ -15,6 +15,18 @@ function isThreadTaskBusy( queueName )
 	return getThreadTaskManager():isBusy( queueName )
 end
 
+function getThreadTaskQueue( queueName )
+	queueName = queueName or getThreadTaskManager().defaultQueue
+	return getThreadTaskManager():getQueue( queueName )
+end
+
+function getThreadTaskProgress( queueName )
+	queueName = queueName or getThreadTaskManager().defaultQueue
+	local q = getThreadTaskManager():getQueue( queueName, false )
+	if not q then return 1 end
+	return q:getProgress()
+end
+
 function ThreadTaskManager:__init()
 	self.queues = {}
 	self.defaultQueue = 'main'
@@ -30,6 +42,10 @@ function ThreadTaskManager:getQueue( name, createIfNotExist )
 		q.manager = self
 	end
 	return q
+end
+
+function ThreadTaskManager:getDefaultQueue( createIfNotExist )
+	return self:getQueue( self.defaultQueue, createIfNotExist )
 end
 
 function ThreadTaskManager:setDefaultQueue( name )
@@ -128,7 +144,7 @@ function ThreadTaskQueue:processNext()
 end
 
 function ThreadTaskQueue:isBusy()
-	return ( not self.activeTask ) and ( not next( self.pending ) )
+	return self.activeTask or ( next( self.pending ) ~= nil )
 end
 
 function ThreadTaskQueue:notifyCompletion( task )

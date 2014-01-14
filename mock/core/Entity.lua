@@ -423,9 +423,9 @@ function Entity:findChild( name, deep )
 	for child in pairs( self.children ) do
 		if child.name == name then return child end
 		if deep then
-			local c = child:findChild( name )
+			local c = child:findChild( name, deep )
+			if c then return c end
 		end
-		if c then return c end
 	end
 	return nil
 end

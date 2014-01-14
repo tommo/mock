@@ -37,6 +37,7 @@ function Layer:__init( name )
 	self.moaiLayers = setmetatable( {}, { __mode='k' } )
 	self.locked   = false
 	self.parallax = {1,1}
+	self._moaiLayer = MOAILayer.new()
 end
 
 function Layer:setName( name )
@@ -122,9 +123,8 @@ function Layer:makeMoaiLayer( partition )
 	layer:setSortMode( moaiSortMode )
 	layer.sortMode = moaiSortMode
 	layer.source   = self
-
 	layer:setVisible( self.visible )
-
+	-- inheritVisible( layer, self._moaiLayer )
 	self.moaiLayers[ layer ] = true
 	return layer
 end

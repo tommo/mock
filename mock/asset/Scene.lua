@@ -225,6 +225,7 @@ local function sceneLoader( node, option )
 	local scn  = option.scene or Scene()
 	--configuration
 	scn:init()
+	scn.path = node:getNodePath()
 	--entities
 	deserializeScene( data, scn )
 	return scn, false --no cache

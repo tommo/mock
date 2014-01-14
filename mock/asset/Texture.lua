@@ -1,7 +1,7 @@
 module ('mock')
 
-TEXTURE_ASYNC_LOAD = true
--- TEXTURE_ASYNC_LOAD = false
+-- TEXTURE_ASYNC_LOAD = true
+TEXTURE_ASYNC_LOAD = false
 
 --------------------------------------------------------------------
 local texturePlaceHolder = false
@@ -38,6 +38,7 @@ end
 
 function ThreadTextureLoadTask:onComplete( img )
 	self.texture:load ( img, self.imageTransform, self.debugName or self.filename )
+	self.texture:affirm()
 end
 
 function ThreadTextureLoadTask:onFail()
