@@ -178,6 +178,7 @@ end
 
 function Scene:pause( paused )
 	self.timer:pause( paused~=false )
+	self.mainThread:pause( paused )
 end
 
 function Scene:resume( )
@@ -202,7 +203,8 @@ function Scene:start()
 	local onStart = self.onStart
 	if onStart then onStart( self ) end
 
-	self.mainThread=MOAICoroutine.new()
+	self.mainThread = MOAICoroutine.new()
+	self.mainThread:setDefaultParent( true )
 	self.mainThread:run(function()
 		return self:threadMain()
 	end
@@ -215,6 +217,7 @@ function Scene:start()
 	end
 	self.timer:start()
 end
+
 
 function Scene:stop()
 	if not self.running then return end

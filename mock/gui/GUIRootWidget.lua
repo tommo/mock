@@ -28,6 +28,8 @@ end
 CLASS: GUIRootWidget ( GUIWidget )
 function GUIRootWidget:__init()
 	self.inputEnabled = true
+	self.modalWidget  = false
+	self.__rootWidget = self
 end
 
 function GUIRootWidget:onLoad()
@@ -45,7 +47,21 @@ function GUIRootWidget:getPointer( touch, create )
 	return p
 end
 
-local function _findTopWidget( parent, x, y, pad )
+function GUIRootWidget:setModalWidget( w )
+	if self.modalWidget and self.modalWidget ~= w then
+		self.modalWidget.__modal = false
+	end
+	self.modalWidget = w
+	if w then
+		w.__modal = true
+	end
+end
+
+function GUIRootWidget:getModalWidget()
+	return self.modalWidget
+end
+
+local function _findTopWidget( parent, x, y, pad )	
 	local childId = 0
 	local children = parent.childWidgets
 	local count = #children
@@ -67,7 +83,8 @@ local function _findTopWidget( parent, x, y, pad )
 end
 
 function GUIRootWidget:findTopWidget( x, y, pad )
-	return _findTopWidget( self, x, y, pad or DEFAULT_TOUCH_PADDING )
+	local start = self.modalWidget or self 
+	return _findTopWidget( start, x, y, pad or DEFAULT_TOUCH_PADDING )
 end
 
 function GUIRootWidget:onTouchEvent( ev, touch, x, y )

@@ -71,6 +71,7 @@ registerSignals{
 
 	'mainscene.open',
 	'mainscene.close',
+	'mainscene.ready',
 
 	'scene.update',
 
@@ -231,7 +232,7 @@ function Game:init( option, fromEditor )
 			
 			-- + MOAISim.SIM_LOOP_FORCE_STEP
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
-			+ MOAISim.SIM_LOOP_NO_SURPLUS
+			-- + MOAISim.SIM_LOOP_NO_SURPLUS
 		)
 	-- MOAISim.setLongDelayThreshold( 100 )
 	-- MOAISim.setBoostThreshold( 3 )	
@@ -586,7 +587,6 @@ function Game:isPaused()
 	return self.paused
 end
 
-
 function Game:pushActionRoot( action )
 	action.prev = self.actionRoot
 	self.actionRoot = action
@@ -594,11 +594,13 @@ function Game:pushActionRoot( action )
 end
 
 function Game:popActionRoot()
-	local r=self.actionRoot.prev
+	local current = self.actionRoot
+	local r = self.actionRoot.prev
 	if r then 
-		self.actionRoot=r 
-		MOAIActionMgr.setRoot(self.actionRoot)
+		self.actionRoot = r 
+		MOAIActionMgr.setRoot( self.actionRoot )
 	end
+	return current
 end
 
 function Game:getActionRoot()

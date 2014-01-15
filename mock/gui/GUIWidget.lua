@@ -6,6 +6,8 @@ CLASS: GUIWidget ( Entity )
 function GUIWidget:__init()
 	self.__WIDGET     = true
 	self.__rootWidget = false
+	self.__modal      = false
+
 	self.childWidgets = {}
 	self.inputEnabled = true
 	self:setSize( self:getDefaultSize() ) --default
@@ -14,22 +16,36 @@ end
 
 function GUIWidget:_setRootWidget( root )
 	if self.__rootWidget == root then return end
-	self.__rootWidget = root
+	self.__rootWidget = root	
 	for i, child in ipairs( self.childWidgets ) do
 		child:_setRootWidget( root )
+	end
+	if self.__modal then
+		self.__rootWidget:setModalWidget( self )
 	end
 end
 
 ------Public API
 
 function GUIWidget:addChild( entity, layerName )
-	if entity.__WIDGET then
+	if entity.__WIDGET then		
 		table.insert( self.childWidgets, entity )
 		if self.__rootWidget then
 			entity:_setRootWidget( self.__rootWidget )
 		end
-	end
+		self:sortChildren()
+	end	
 	return Entity.addChild( self, entity, layerName )	
+end
+
+local function widgetZSortFunc( w1, w2 )
+	local z1 = w1:getLocZ()
+	local z2 = w1:getLocZ()
+	return  z1<z2
+end
+
+function GUIWidget:sortChildren()
+	return table.sort( self.childWidgets, widgetZSortFunc )
 end
 
 function GUIWidget:destroyNow()
@@ -43,8 +59,25 @@ function GUIWidget:destroyNow()
 			end
 		end
 	end
-	
+	if self.__modal then
+		self:setModal( false )		
+	end
 	Entity.destroyNow( self )
+end
+
+function GUIWidget:setModal( modal )
+	modal = modal~=false
+	if self.__modal == modal then return end
+	self.__modal = modal
+	if self.__rootWidget then
+		if modal then 
+			self.__rootWidget:setModalWidget( self )
+		else
+			if self.__rootWidget:getModalWidget() == self then
+				self.__rootWidget:setModalWidget( nil )
+			end
+		end
+	end
 end
 
 --geometry

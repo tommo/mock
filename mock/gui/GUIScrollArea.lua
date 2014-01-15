@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: GUIScrollArea ( GUIWidget )
+CLASS: GUIScrollArea ( GUIPlane )
 	:MODEL{
 		Field 'size'       :type('vec2') :getset('Size');
 		Field 'scrollSize' :type('vec2') :getset('ScrollSize');	
@@ -123,15 +123,6 @@ end
 
 function GUIScrollArea:moveScrollY( dy, t, easeType )
 	return moveLocY( self.innerTransform, dy, t, easeType )
-end
-
---------------------------------------------------------------------
-function GUIScrollArea:setSize( w, h )
-	if not w then
-		w, h = self:getDefaultSize()
-	end
-	self.width, self.height = w, h
-	self:setScissorRect( 0, 0, w, h )
 end
 
 function GUIScrollArea:getScrollSize()
@@ -265,11 +256,5 @@ end
 
 function GUIScrollArea:onRelease( pointer, x,y )
 	self:grabScroll( false )
-end
-
---------------------------------------------------------------------
-function GUIScrollArea:drawBounds()
-	GIIHelper.setVertexTransform( self:getProp() )
-	MOAIDraw.drawRect( 0,0, self:getSize() )
 end
 
