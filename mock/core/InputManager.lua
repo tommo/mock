@@ -42,6 +42,8 @@ function TouchState:__init( id )
 	self.down = false
 	self.x    = 0
 	self.y    = 0
+	self.x_b  = 0
+	self.y_b  = 0
 	self.x0   = 0
 	self.y0   = 0
 
@@ -53,6 +55,10 @@ end
 
 function TouchState:getLoc()
 	return self.x, self.y
+end
+
+function TouchState:getDeltaStep()
+	return self.x - self.x_b, self.y - self.y_b
 end
 
 function TouchState:getDelta()
@@ -209,15 +215,18 @@ function InputDevice:sendTouchEvent( evtype, idx, x, y, mockup )
 		touchState.t0   = t
 		touchState.x0   = x
 		touchState.y0   = y
+		touchState.x_b  = x
+		touchState.y_b  = y
 	elseif evtype == 'up' then
 		touchState.down = false
 		touchState.t1_b = touchState.t1
 	else
 		touchState.t1_b = touchState.t1
+		touchState.x_b  = touchState.x
+		touchState.y_b  = touchState.y
 	end
 	
 	touchState.t1 = t
-
 	touchState.x = x
 	touchState.y = y
 	for func in pairs( self.touchListeners ) do

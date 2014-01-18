@@ -104,6 +104,9 @@ function ThreadTaskQueue:__init()
 	self.taskCount = 0
 	self.totalTaskSize  = 0
 	self.totalTaskCount = 0
+
+	self.coro = MOAICoroutine.new()
+
 end
 
 function ThreadTaskQueue:getThread()
@@ -136,7 +139,7 @@ end
 function ThreadTaskQueue:processNext()
 	local t = table.remove( self.pending, 1 )
 	if t then
-		self.activeTask = t	
+		self.activeTask = t
 		t.execTime0 = os.clock()
 		t:onExec( self )
 		return t
