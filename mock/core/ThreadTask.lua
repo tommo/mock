@@ -97,19 +97,22 @@ end
 CLASS: ThreadTaskQueue ()
 	:MODEL{}
 function ThreadTaskQueue:__init()
-	self.thread = MOAITaskThread.new()
+	
 	self.pending = {}
 	self.activeTask = false
 	self.taskSize  = 0
 	self.taskCount = 0
 	self.totalTaskSize  = 0
 	self.totalTaskCount = 0
-
+	self.thread = false
 	self.coro = MOAICoroutine.new()
 
 end
 
 function ThreadTaskQueue:getThread()
+	if not self.thread then
+		self.thread = MOAITaskThread.new()
+	end
 	return self.thread
 end
 
@@ -143,6 +146,10 @@ function ThreadTaskQueue:processNext()
 		t.execTime0 = os.clock()
 		t:onExec( self )
 		return t
+	else
+		--no more task, stop the thread
+		self.thread:stop()
+		self.thread = nil
 	end
 end
 

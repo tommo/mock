@@ -59,13 +59,17 @@ function SoundSource:getDefaultClip()
 end
 
 function SoundSource:onStart()
-	if self.autoPlay and self.defaultClipPath then
-		self:playEvent2D( self.defaultClipPath )
-	end
+	if self.autoPlay then self:start() end	
 end
 
 function SoundSource:setEventPrefix( prefix )
 	self.eventNamePrefix = prefix or false
+end
+
+function SoundSource:start()
+	if self.defaultClipPath then
+		self:playEvent2D( self.defaultClipPath )
+	end
 end
 
 --------------------------------------------------------------------

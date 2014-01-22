@@ -18,12 +18,21 @@ function registerGameModule( name, m )
 	GameModules[ name ] = m
 end
 
-function findGameModule( name )
+function getGameModule( name )
 	return GameModules[ name ]
 end
 
 function hasGameModule( name )
 	return GameModules[ name ] ~= nil
+end
+
+function findGameModule( name )
+	for k, m in pairs( GameModules ) do
+		if k == name or k:endWith( name ) then
+			return m
+		end
+	end
+	return nil
 end
 
 --[[

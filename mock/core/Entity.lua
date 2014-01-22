@@ -419,6 +419,13 @@ function Entity:findEntityCom( entName, comId )
 	return ent and ent:com( comId )
 end
 
+-- function Entity:findSibling( name )
+-- 	if self.parent then
+-- 		return
+-- 	else
+-- 	end
+-- end
+
 function Entity:findChild( name, deep )
 	for child in pairs( self.children ) do
 		if child.name == name then return child end

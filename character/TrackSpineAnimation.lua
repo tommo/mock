@@ -6,6 +6,10 @@ CLASS: EventSpineAnimation ( CharacterActionEvent )
 		Field 'clip'  :string();
 		Field 'loop'  :boolean();
 		Field 'resetOnPlay'  :boolean();
+		'----';
+		Field 'offset' :range(0);
+		'----';
+		Field 'actResetLength' :action('resetLength') :label('Reset Length')
 	}
 
 function EventSpineAnimation:__init()
@@ -13,6 +17,7 @@ function EventSpineAnimation:__init()
 	self.clip   = ''
 	self.loop   = false
 	self.resetOnPlay = true
+	self.offset = 0
 end
 
 function EventSpineAnimation:isResizable()
@@ -31,6 +36,18 @@ end
 
 function EventSpineAnimation:setClip( name )
 	self.clip = name
+end
+
+function EventSpineAnimation:resetLength()
+	if not self.clip then return end
+	local root = self:getRootConfig()
+	local spinePath = root.spinePath
+	if not spinePath then return end
+	local data = mock.loadAsset( spinePath )
+	if not data then return end
+	local l = data:getAnimationDuration( self.clip )
+	if l > 0 then self.length = l*1000 end
+	print( 'length:', l )
 end
 
 --------------------------------------------------------------------
@@ -86,7 +103,7 @@ function TrackSpineAnimation:start( state )
 	spineTracks[ self ] = animTrack
 	for i, ev in ipairs( self.events ) do
 		local l = ev.length/1000
-		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, l>0 and l or nil )
+		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, ev.offset, l>0 and l or nil )
 	end
 end
 

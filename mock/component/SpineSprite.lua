@@ -68,6 +68,7 @@ function SpineSprite:play( clipName, mode, resetPose )
 		0, 
 		clipName, 
 		mode == MOAITimer.LOOP,
+		0,
 		10000
 	)
 	anim:setSpan( 10000 )

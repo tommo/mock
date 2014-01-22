@@ -80,7 +80,9 @@ function CharacterActionEvent:getAction()
 	return self.parent.parent
 end
 
-
+function CharacterActionEvent:getRootConfig()
+	return self.parent.parent.parent
+end
 --------------------------------------------------------------------
 CharacterActionTrack
 :MODEL{

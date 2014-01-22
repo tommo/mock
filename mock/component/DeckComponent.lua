@@ -94,3 +94,4 @@ function DeckComponent:isVisible()
 	return self.prop:getAttr( MOAIProp.ATTR_VISIBLE ) ~= 0
 end
 
+wrapWithMoaiPropMethods( DeckComponent, ':getMoaiProp()' )

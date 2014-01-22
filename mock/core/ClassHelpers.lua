@@ -1,8 +1,14 @@
 function _wrapMethod( class, fieldname, methodname, arg, ... )
+	local selfPart
+	if fieldname:startWith( ':' ) then
+		selfPart = 'self'..fieldname
+	else
+		selfPart = 'self.'..fieldname
+	end
 	local f = loadstring(
 			string.format(
-				"return function( self, ... ) return self.%s:%s( ... ) end",
-				fieldname,
+				"return function( self, ... ) return %s:%s( ... ) end",
+				selfPart,
 				methodname
 			)
 			)()
@@ -16,49 +22,73 @@ function _wrapMethods( class, fieldname, methodnames )
 end
 
 function _wrapAttrGetter(class,fieldname,attr,methodname)
+	local selfPart
+	if fieldname:startWith( ':' ) then
+		selfPart = 'self'..fieldname
+	else
+		selfPart = 'self.'..fieldname
+	end
 	local f=loadstring(
 		string.format(
 			[[return function(self)
-								return self.%s:getAttr(%d)
+								return %s:getAttr(%d)
 						end
 			]]
-			,fieldname,attr)
+			, selfPart, attr)
 	)
 	class[methodname] = f()
 end
 
 function _wrapAttrGetterBoolean(class,fieldname,attr,methodname)
+	local selfPart
+	if fieldname:startWith( ':' ) then
+		selfPart = 'self'..fieldname
+	else
+		selfPart = 'self.'..fieldname
+	end
 	local f=loadstring(
 		string.format(
 			[[return function(self)
-								return self.%s:getAttr(%d) ~= 0
+								return %s:getAttr(%d) ~= 0
 						end
 			]]
-			,fieldname,attr)
+			,selfPart, attr )
 	)
 	class[methodname] = f()
 end
 
 function _wrapAttrSetter(class,fieldname,attr,methodname)
+	local selfPart
+	if fieldname:startWith( ':' ) then
+		selfPart = 'self'..fieldname
+	else
+		selfPart = 'self.'..fieldname
+	end
 	local f=loadstring(
 		string.format(
 			[[return function(self, v )
-								return self.%s:setAttr(%d, v )
+								return %s:setAttr(%d, v )
 						end
 			]]
-			,fieldname,attr)
+			,selfPart, attr )
 		)
 	class[methodname] = f()
 end
 
 function _wrapAttrSeeker(class,fieldname,attr,methodname)
+	local selfPart
+	if fieldname:startWith( ':' ) then
+		selfPart = 'self'..fieldname
+	else
+		selfPart = 'self.'..fieldname
+	end
 	local f=loadstring(
 		string.format(
 			[[return function( self, v, t, easeType )
-								return self.%s:seekAttr( %d, v, t, easeType )
+								return %s:seekAttr( %d, v, t, easeType )
 						end
 			]]
-			,fieldname,attr)
+			,selfPart ,attr)
 	)
 	class[methodname] = f()
 end
