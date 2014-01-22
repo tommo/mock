@@ -490,6 +490,10 @@ function Game:onSceneExit( scn )
 	end
 end
 
+function Game:getMainScene()
+	return self.mainScene
+end
+
 --------------------------------------------------------------------
 ------Layer Control
 --------------------------------------------------------------------

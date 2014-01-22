@@ -158,6 +158,10 @@ function Scene:removeUpdateListener( obj )
 	self.updateListeners[ obj ] = nil
 end
 
+function Scene:getPath()
+	return self.path or false
+end
+
 --------------------------------------------------------------------
 --TIMER
 --------------------------------------------------------------------
@@ -193,6 +197,7 @@ end
 function Scene:getThrottle()
 	return self.throttle
 end
+
 --------------------------------------------------------------------
 --Flow Control
 --------------------------------------------------------------------

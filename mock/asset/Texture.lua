@@ -328,7 +328,11 @@ local function loadTexPack( config )
 	local textures = {}
 	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
 		local texpath = atlasInfo['name']
-		local tex = loadSingleTexture( base .. '/' .. texpath, config, texpath )
+		local tex = loadSingleTexture( 
+			base .. '/' .. texpath,
+			config,
+			config['name']..'/'..texpath
+		)
 		if not tex then
 			error( 'error loading texture:' .. texpath )
 		end

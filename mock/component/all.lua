@@ -33,6 +33,8 @@ require 'mock.component.InputScript'
 
 --------------------------------------------------------------------
 ---- Actor ?
+require 'mock.component.MsgEmitter'
+require 'mock.component.MsgRedirector'
 
 --------------------------------------------------------------------
 ---- Audio

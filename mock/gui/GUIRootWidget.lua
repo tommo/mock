@@ -65,8 +65,10 @@ local function _findTopWidget( parent, x, y, pad )
 	local childId = 0
 	local children = parent.childWidgets
 	local count = #children
+	-- print('---Widget>>')
 	for k = count , 1, -1 do
 		local child = children[ k ]
+		-- print( child.name, child:getLocZ() )
 		if child:isVisible() and child:isActive() and child.inputEnabled then 
 			local px,py,pz = child:getWorldLoc()
 			local inside = child:inside( x, y, pz, pad )

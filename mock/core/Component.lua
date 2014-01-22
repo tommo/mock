@@ -17,8 +17,8 @@ function Component:findEntity( name )
 	return self._entity:findEntity( name )
 end
 
-function Component:findChild( name )
-	return self._entity:findChild( name )
+function Component:findChild( name, deep )
+	return self._entity:findChild( name, deep )
 end
 
 function Component:getParent()

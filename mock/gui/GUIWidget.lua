@@ -40,12 +40,12 @@ end
 
 local function widgetZSortFunc( w1, w2 )
 	local z1 = w1:getLocZ()
-	local z2 = w1:getLocZ()
-	return  z1<z2
+	local z2 = w2:getLocZ()
+	return z1 < z2
 end
 
 function GUIWidget:sortChildren()
-	return table.sort( self.childWidgets, widgetZSortFunc )
+	table.sort( self.childWidgets, widgetZSortFunc )	
 end
 
 function GUIWidget:destroyNow()
