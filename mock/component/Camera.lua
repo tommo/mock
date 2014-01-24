@@ -525,3 +525,10 @@ registerEntity( 'Camera',
 		return SingleEntity( Camera() )
 	end
 	)
+
+function Camera:onBuildGizmo()
+	local giz = mock_edit.IconGizmo()
+	giz:setIcon( 'camera.png' )
+	giz:setTransform( self._camera )
+	return giz
+end

@@ -88,7 +88,7 @@ end
 local function _affirmFmodEvent( event )
 	if not event then return nil end
 	if type( event ) == 'string' then
-		event, node = loadAsset( event) 
+		event, node = loadAsset( event ) 
 		if node and node.type == 'fmod_event' then return event:getFullName() end
 	else
 		return event:getFullName()
@@ -165,6 +165,14 @@ function SoundSource:clearInstances()
 		end
 	end
 	self.eventInstances = t1
+end
+
+--------------------------------------------------------------------
+function SoundSource:onBuildGizmo()
+	local giz = mock_edit.IconGizmo()
+	giz:setIcon( 'sound.png' )
+	giz:setTransform( self._entity:getProp() )
+	return giz
 end
 
 

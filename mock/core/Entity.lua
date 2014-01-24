@@ -67,6 +67,8 @@ function Entity:_insertIntoScene( scene, layer )
 	if type(layer) == 'string' then
 		layer = scene:getLayer( layer )
 	end
+	local entityListener = scene.entityListener
+
 	self.layer = layer
 	scene.entities[ self ] = true
 	
@@ -75,6 +77,9 @@ function Entity:_insertIntoScene( scene, layer )
 			com._entity = self
 			local onAttach = com.onAttach
 			if onAttach then onAttach( com, self ) end
+			if entityListener then
+				entityListener( 'attach', self, com )
+			end
 		end
 	end
 
@@ -100,8 +105,7 @@ function Entity:_insertIntoScene( scene, layer )
 	scene.pendingStart[ self ] = true
 	
 	--callback
-	local entityListener = scene.entityListener
-	if entityListener then entityListener( 'add', self, scene, layer ) end
+	if entityListener then entityListener( 'add', self, nil ) end
 end
 
 function Entity:getProp()
@@ -149,6 +153,7 @@ function Entity:destroyNow()
 	self:unsubscribeAll()
 	self:disconnectAll()
 	self:clearCoroutines()
+	local entityListener = scene.entityListener
 	
 	--timers
 	local timers = self.timers
@@ -166,9 +171,12 @@ function Entity:destroyNow()
 		if not com then break end
 		components[ com ] = nil
 		local onDetach = com.onDetach
+		if entityListener then
+			entityListener( 'detach', self, com )
+		end
 		if onDetach then
 			onDetach( com, self )
-		end
+		end		
 	end
 	-- for com in pairs( components ) do
 	-- 	components[ com ] = nil
@@ -187,7 +195,6 @@ function Entity:destroyNow()
 	scene.entities[ self ] = nil
 	
 	--callback
-	local entityListener = scene.entityListener
 	if entityListener then entityListener( 'remove', self, scene, layer ) end
 
 	self.scene      = false
@@ -205,9 +212,13 @@ function Entity:attach( com )
 	assert( not self.components[ com ], 'component already attached!!!!'  )
 	self.components[ com ] = com:getClass()
 	if self.scene then
-		com._entity = self		
+		com._entity = self
 		local onAttach = com.onAttach
 		if onAttach then onAttach( com, self ) end
+		local entityListener = self.scene.entityListener
+		if entityListener then
+			entityListener( 'attach', self, com )
+		end
 		if self.started then
 			local onStart = com.onStart
 			if onStart then onStart( com, self ) end
@@ -228,11 +239,14 @@ function Entity:attachList( l )
 end
 
 function Entity:detach( com )
-	-- if not self.components then return end
 	local components = self.components
 	if not components[ com ] then return end
 	components[ com ] = nil
 	if self.scene then
+		local entityListener = self.scene.entityListener
+		if entityListener then
+			entityListener( 'detach', self, com )
+		end
 		local onDetach = com.onDetach
 		if onDetach then onDetach( com, self ) end
 	end
@@ -241,14 +255,10 @@ end
 
 function Entity:detachAll()
 	local components = self.components
-	if not components then return end
-	local scene = self.scene
-	for com in pairs( components ) do
-		components[ com ] = nil
-		if scene then
-			local onDetach = com.onDetach
-			if onDetach then onDetach( com, self ) end
-		end
+	while true do
+		local com = next( components )
+		if not com then break end
+		self:detach( com )
 	end
 end
 

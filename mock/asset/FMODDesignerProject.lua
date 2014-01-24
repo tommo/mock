@@ -1,5 +1,6 @@
 module 'mock'
 
+local loadedFMODProject = {}
 --------------------------------------------------------------------
 CLASS: FMODDesignerProject ()
 
@@ -16,6 +17,7 @@ function FMODDesignerProject:load( path, id )
 	self.projectId = id
 
 	if self.loaded then
+		loadedFMODProject[ id ] = self
 		_stat( 'loaded fmod project', self.projectId )
 	else
 		_error( 'failed loading fmod project:', path )
@@ -23,9 +25,16 @@ function FMODDesignerProject:load( path, id )
 	return self.loaded
 end
 
+function FMODDesignerProject:reload( path, id )
+	MOAIFmodEventMgr.unloadProject( self.projectId )
+	return self:load( path, id )
+end
+
 function FMODDesignerProject:unload()
 	if not self.loaded then return end
-
+	if loadedFMODProject[ id ] == self then
+		loadedFMODProject[ id ] = nil
+	end
 	if MOAIFmodEventMgr.unloadProject( self.projectId ) then
 		self.loaded = false
 		_stat( 'unloaded fmod project', self.projectId )
@@ -94,8 +103,14 @@ end
 
 --------------------------------------------------------------------
 function FMODProjectLoader( node )
-	local proj = FMODDesignerProject()
-	proj:load( node:getObjectFile('export'), node:getBaseName() )
+	local id = node:getBaseName()
+	local proj = loadedFMODProject[ id ]
+	if proj then
+		proj:reload( node:getObjectFile('export'), id )
+		return proj
+	end
+	proj = FMODDesignerProject()
+	proj:load( node:getObjectFile('export'), id )
 	return proj
 end
 

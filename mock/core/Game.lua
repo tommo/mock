@@ -70,6 +70,7 @@ registerSignals{
 	'device.resize',
 
 	'mainscene.open',
+	'mainscene.refresh',
 	'mainscene.close',
 	'mainscene.ready',
 

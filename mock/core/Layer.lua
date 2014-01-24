@@ -28,16 +28,16 @@ CLASS: Layer ()
 	}
 
 function Layer:__init( name )
-	self.name     = name or ''
-	self.visible  = true
+	self.name          = name or ''
+	self.visible       = true
 	self.editorVisible = true
-	self.editorSolo  = false
-	self.sortMode = 'priority_ascending'
-	self.default  = false
-	self.moaiLayers = setmetatable( {}, { __mode='k' } )
-	self.locked   = false
-	self.parallax = {1,1}
-	self._moaiLayer = MOAILayer.new()
+	self.editorSolo    = false
+	self.sortMode      = 'priority_ascending'
+	self.default       = false
+	self.moaiLayers    = setmetatable( {}, { __mode='k' } )
+	self.locked        = false
+	self.parallax      = {1,1}
+	self._moaiLayer    = MOAILayer.new()
 end
 
 function Layer:setName( name )

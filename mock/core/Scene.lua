@@ -220,7 +220,7 @@ function Scene:start()
 			ent:start()
 		end
 	end
-	self.timer:start()
+	self.timer:start()	
 end
 
 
@@ -325,13 +325,21 @@ function Scene:clear( keepEditorEntity )
 		self.entityListener = false
 		entityListener( 'clear', keepEditorEntity )
 	end
+	local toRemove = {}
+	_stat( 'pre clear', table.len( self.entities) )
 	for e in pairs( self.entities ) do
 		if not e.parent then
 			if not ( keepEditorEntity and e.FLAG_EDITOR_OBJECT ) then
-				e:destroyWithChildrenNow()	
+				toRemove[ e ] = true				
 			end
 		end
 	end
+
+	for e in pairs( toRemove ) do
+		e:destroyWithChildrenNow()
+	end
+	_stat( 'post clear', table.len( self.entities) )
+	
 	--layers in Scene is not in render stack, just let it go
 	self.laterDestroy    = {}
 	self.pendDestroy     = {}
@@ -339,7 +347,6 @@ function Scene:clear( keepEditorEntity )
 	self.entitiesByName  = {}
 	self.pendingStart    = {}
 
-	-- self.updateListeners = {}
 	self.defaultCamera   = false
 	self.entityListener = entityListener
 end
