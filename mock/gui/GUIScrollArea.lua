@@ -7,6 +7,8 @@ CLASS: GUIScrollArea ( GUIPlane )
 		'----';
 		Field 'scrollDamping';
 		Field 'maxScrollSpeed';
+		Field 'allowScrollX' :boolean();
+		Field 'allowScrollY' :boolean();
 		'----';
 		Field 'scroll'     :type('vec2') :getset('Scroll');
 	}
@@ -26,6 +28,9 @@ function GUIScrollArea:__init()
 	self.scrollDamping = 0.9
 	self.maxScrollSpeed   = 50
 	self.grabbed   = false	
+
+	self.allowScrollX = true
+	self.allowScrollY = true
 end
 
 function GUIScrollArea:getDefaultSize()
@@ -177,8 +182,12 @@ end
 
 --------------------------------------------------------------------
 function GUIScrollArea:onUpdate( dt )	
-	self:updateTargetScrollX( dt )
-	self:updateTargetScrollY( dt )
+	if self.allowScrollX then
+		self:updateTargetScrollX( dt )
+	end
+	if self.allowScrollY then
+		self:updateTargetScrollY( dt )
+	end
 end
 
 function GUIScrollArea:updateTargetScrollX( dt ) 
