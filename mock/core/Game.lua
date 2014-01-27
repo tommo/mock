@@ -225,13 +225,13 @@ function Game:init( option, fromEditor )
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 
 			0
-			+ MOAISim.LOOP_FLAGS_MULTISTEP
-			-- + MOAISim.LOOP_FLAGS_DEFAULT
+			-- + MOAISim.LOOP_FLAGS_MULTISTEP
+			+ MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
 			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
 			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
 			
-			+ MOAISim.SIM_LOOP_FORCE_STEP
+			-- + MOAISim.SIM_LOOP_FORCE_STEP
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
 			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)
