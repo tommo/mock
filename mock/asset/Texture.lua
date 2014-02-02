@@ -212,11 +212,18 @@ function TextureLibrary:addGroup()
 	return g
 end
 
-function TextureLibrary:removeGroup( g )
+function TextureLibrary:removeGroup( g, moveItemsToDefault )
 	for i, g1 in ipairs( self.groups ) do
 		if g1 == g then 
 			table.remove( self.groups, i )
 			g.parent = false
+			if moveItemsToDefault then
+				local default = self.defaultGroup
+				for i, t in ipairs( g.textures ) do
+					t.parent = false
+					default:addTexture( t )
+				end
+			end
 			return
 		end
 	end

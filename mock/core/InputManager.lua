@@ -33,6 +33,7 @@ function getInputDevice( name )
 	return _inputDevices[ name ]
 end
 
+
 --------------------------------------------------------------------
 CLASS: TouchState ()
 	:MODEL{}
@@ -92,6 +93,11 @@ function TouchState:getAverageSpeed()
 	return self:getDistance() / dt
 end
 
+
+--------------------------------------------------------------------
+CLASS: JoystickState ()
+	:MODEL{}
+
 --------------------------------------------------------------------
 CLASS: InputDevice()
 function InputDevice:__init( deviceName, virtual )
@@ -129,6 +135,9 @@ function InputDevice:__init( deviceName, virtual )
 		rightHit  = 0,
 		middleHit = 0,
 	}
+
+	--JOYSTICKS
+	self.joystickListeners = {}
 
 	--MOTION
 	self.motionAccuracy  = 1
@@ -174,6 +183,8 @@ function InputDevice:getTime()
 	return clock()
 end
 
+
+
 -----Common Control
 
 function InputDevice:disable()
@@ -187,6 +198,8 @@ end
 function InputDevice:isEnabled()
 	return self.enabled
 end
+
+
 
 -------Touch Event Listener
 function InputDevice:getTouchState( id )
@@ -263,6 +276,7 @@ function InputDevice:initTouchEventHandler()
 	sensor:setCallback( onTouchEvent )
 
 end
+
 
 -------Mouse Event Listener
 function InputDevice:isMouseDown( btn )
@@ -384,6 +398,7 @@ function InputDevice:initMouseEventHandler()
 end
 
 
+
 -------Keyboard Event Listener
 
 function InputDevice:isKeyDown(key)
@@ -448,13 +463,62 @@ function InputDevice:initKeyboardEventHandler()
 	sensor:setCallback( onKeyboardEvent )
 end
 
+
+
 -------JOYSTICK Event Listener
-function InputDevice:sendJoystickEvent( ev, x, y, z )
-	--TODO:
+
+function InputDevice:addJoystickListener( func )
+	self.joystickListeners[func] = true
+end
+
+function InputDevice:removeJoystickListener( func )
+	self.joystickListeners[func] = nil
+end
+
+local maxJoystickCount       = 4
+local maxJoystickAxisCount   = 6
+function InputDevice:sendJoystickEvent( evtype, joyId, btn, axisId, value, mockup )
+	for func in pairs( self.joystickListeners ) do
+		func( evtype, joyId, btn, axisId, value, mockup )
+	end
 end
 
 function InputDevice:initJoystickEventHandler()
-	--TODO:
+	--create listener for each set of joystick sensors( button + axis )
+	for joyId = 1, maxJoystickCount do
+
+		local joyName = 'joy-'..joyId
+		
+		--buttons
+		local buttonSensorName = joyName..'.button'
+		local joyButtonSensor = self:getSensor( buttonSensorName )
+		if joyButtonSensor then
+			local function onJoyButtonEvent( key, down )
+				if not self.enabled then return end
+				if down then
+					return self:sendJoystickEvent( 'down', joyId, key )
+				else
+					return self:sendJoystickEvent( 'up', joyId, key )
+				end
+			end
+			joyButtonSensor:setCallback( onJoyButtonEvent )
+		end
+		
+		--axis
+		for axisId = 1, maxJoystickAxisCount do
+			local axisSensorName = joyName .. '.axis-'..axisId
+			local joyAxisSensor = self:getSensor( axisSensorName )
+			if joyAxisSensor then
+				local function onJoyAxisEvent( value )
+					if not self.enabled then return end
+					return self:sendJoystickEvent( 'axis', joyId, nil, axisId, value )
+				end
+				joyAxisSensor:setCallback( onJoyAxisEvent )
+			end
+		end
+
+	end
+
 end
 
 -------Acceleratemeter Event Listener
@@ -495,6 +559,8 @@ function InputDevice:initMotionEventHandler()
 	--TODO
 end
 
+
+
 ---Gyrosopce
 function InputDevice:getLevelData()
 	if level then
@@ -509,6 +575,8 @@ function InputDevice:initLevelEventHandler()
 		level:setCallback( onMotionEvent )
 	end
 end
+
+
 
 ----Compass
 function InputDevice:addCompassListener( func )
@@ -538,6 +606,8 @@ function InputDevice:initCompassEventHandler()
 	end)
 end 
 
+
+
 ----Location
 function InputDevice:getLocation()
 	local sensor = self:getSensor('location')
@@ -553,12 +623,15 @@ function InputDevice:getLocation()
 	}
 end
 
+
+
 ------------Expose Event Sender for input mockup
-_sendTouchEvent  = sendTouchEvent
-_sendMouseEvent  = sendMouseEvent
-_sendKeyEvent    = sendKeyEvent
-_sendMotionEvent = sendMotionEvent
-_sendLevelEvent  = sendLevelEvent
+_sendTouchEvent     = sendTouchEvent
+_sendMouseEvent     = sendMouseEvent
+_sendKeyEvent       = sendKeyEvent
+_sendMotionEvent    = sendMotionEvent
+_sendJoystickEvent  = sendJoystickEvent
+_sendLevelEvent     = sendLevelEvent
 
 
 -----------ENTRY
@@ -578,6 +651,8 @@ function InputDevice:init()
 	self:initLevelEventHandler    ()
 	self:initCompassEventHandler  ()
 end
+
+
 
 --------------------------------------------------------------------
 ---default input manager
@@ -677,6 +752,7 @@ end
 --JOYSTICK
 
 --MOTION
+
 --GYROSCOPE
 
 --COMPASS

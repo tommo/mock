@@ -67,6 +67,7 @@ require 'mock.core.Misc'
 
 ----asset
 require 'mock.core.AssetLibrary'
+require 'mock.core.AssetScanner'
 
 ----input
 require 'mock.core.InputManager'

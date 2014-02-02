@@ -1,3 +1,12 @@
+module 'mock'
+
+local function getModel( obj )
+	local class = getClass( obj )
+	if not class then return nil end
+	return Model.fromClass( class )	
+end
+
+
 local function isAtomicValue( ft )
 	return
 		   ft == 'number' 
@@ -23,7 +32,7 @@ function _scanField( obj, f, data, assetSet, noNewRef )
 	local ft = f:getType()
 	if ft == '@asset' then
 		local v = f:getValue( obj )
-		assetSet[ v ] = true
+		if v then assetSet[ v ] = true end
 	elseif isAtomicValue( ft ) or isTupleValue( ft ) then
 		return
 	end
@@ -39,7 +48,9 @@ function _scanField( obj, f, data, assetSet, noNewRef )
 		local it = f.__itemtype
 		if it == '@asset' then
 			for i, item in pairs( fieldValue ) do
-				assetSet:map[ item ] = true
+				if item then
+					assetSet[ item ] = true
+				end
 			end
 		elseif f.__objtype == 'sub' then
 			for i, item in pairs( fieldValue ) do
@@ -82,8 +93,8 @@ function _scanObject( obj, assetSet, noNewRef )
 	return	
 end
 
-function scanAsset( entry )
-	local assetSet = {}
+function scanObjectAsset( entry, assetSet )
+	assetSet = assetSet or {}
 	_scanObject( entry, assetSet )
 	return assetSet
 end

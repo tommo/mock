@@ -219,6 +219,36 @@ function loadSceneData( path )
 	return data
 end
 
+function _scanEntity( e, assetSet )
+	scanObjectAsset( e, assetSet )
+	if e.children then
+		for child in pairs( e.children ) do
+			_scanEntity( child, assetSet )
+		end
+	end
+	if e.components then
+		for com in pairs( e.components ) do
+			scanObjectAsset( com, assetSet )
+		end
+	end
+end
+
+function scanEntityAsset( e )
+	local assetSet = {}
+	_scanEntity( e, assetSet )
+	return assetSet
+end
+
+function scanSceneAsset( scn )
+	local assetSet = {}
+	for e in pairs( scn.entities ) do
+		if not e.parent then
+			_scanEntity( e, assetSet )
+		end
+	end
+	return assetSet
+end
+
 -------------------------------------------------------------------
 local function sceneLoader( node, option )
 	local data = loadSceneData( node:getNodePath() )

@@ -93,7 +93,25 @@ function installInputListener( self, option )
 		end
 		inputDevice:addKeyboardListener( keyboardCallback )
 	end
-	
+
+	---JOYSTICK EVNET
+	local onJoyButtonDown = self.onJoyButtonDown
+	local onJoyButtonUp   = self.onJoyButtonUp
+	local onJoyAxisMove   = self.onJoyAxisMove
+	if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove then
+		joystickCallback = function( ev, joyId, btnId, axisId, value, mock )
+			if mock and refuseMockUpInput then return end
+			if ev == 'down' then
+				if onJoyButtonDown then onJoyButtonDown( self, joyId, btnId, mock ) end
+			elseif ev == 'up' then
+				if onJoyButtonUp then onJoyButtonUp( self, joyId, btnId, mock ) end
+			elseif ev == 'axis' then
+				if onJoyAxisMove then onJoyAxisMove( self, joyId, axisId, value ) end
+			end
+		end
+		inputDevice:addJoystickListener( joystickCallback )
+	end
+
 	self.__inputListenerData = {
 		mouseCallback    = mouseCallback,
 		keyboardCallback = keyboardCallback,
@@ -102,8 +120,7 @@ function installInputListener( self, option )
 		inputDevice      = inputDevice
 	}
 
-	---JOYSTICK EVNET
-	--TODO:...	
+	
 end
 
 function uninstallInputListener( self )

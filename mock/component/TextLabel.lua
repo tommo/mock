@@ -12,6 +12,7 @@ CLASS: TextLabel ()
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle');
 		'----';
+		Field 'rectLimit'     :boolean(); --TODO:update this
 		Field 'size'          :type('vec2') :getset( 'Size' );
 		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
@@ -31,6 +32,7 @@ function TextLabel:__init()
 	self.defaultStyle = 'default'
 	self.styleSheet = false
 	self:setStyleSheet( getDefaultStyleSheet() )
+	self.rectLimit = true
 end
 
 function TextLabel:onAttach( entity )
