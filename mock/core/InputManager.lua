@@ -166,7 +166,8 @@ function InputDevice:getSensor( name )
 	if dev then
 		local sensor = dev[name]
 		if not sensor then
-			_warn( 'no input sensor found:', self.inputDeviceName, name  )
+			_stat( 'no input sensor found:', self.inputDeviceName, name  )
+			-- _warn( 'no input sensor found:', self.inputDeviceName, name  )
 		end
 		return sensor
 	else

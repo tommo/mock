@@ -90,3 +90,10 @@ EnumTextAlignmentV = {
 	{ 'bottom'  , 'bottom'  },
 	{ 'baseline'  , 'baseline'  },
 }
+
+--------------------------------------------------------------------
+EnumParticleForceType = {
+	{ 'force',   MOAIParticleForce. FORCE   },
+	{ 'gravity', MOAIParticleForce. GRAVITY },
+	{ 'offset',  MOAIParticleForce. OFFSET  },
+}

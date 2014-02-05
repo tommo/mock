@@ -31,3 +31,8 @@ require 'mock.asset.FMODDesignerProject'
 --ANIMATIONS
 require 'mock.asset.Spine'
 require 'mock.asset.AuroraSprite'
+
+---Effect
+require 'mock.asset.EffectNode'
+require 'mock.asset.EffectPack'
+require 'mock.asset.EffectParticleSystem'

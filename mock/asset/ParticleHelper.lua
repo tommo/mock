@@ -223,25 +223,32 @@ namespaceMT={
 
 
 local builtinSymbol={
-	p=newNamespace{
-		x=newBNode{idx=M.PARTICLE_X},
-		y=newBNode{idx=M.PARTICLE_Y},
-		dx=newBNode{idx=M.PARTICLE_DX},
-		dy=newBNode{idx=M.PARTICLE_DY},
+	p = newNamespace{
+		x       = newBNode { idx = M.PARTICLE_X     },
+		y       = newBNode { idx = M.PARTICLE_Y     },
+		z       = newBNode { idx = M.PARTICLE_Z     },
+		dx      = newBNode { idx = M.PARTICLE_DX    },
+		dy      = newBNode { idx = M.PARTICLE_DY    },
+		dz      = newBNode { idx = M.PARTICLE_DZ    },
 	},
 	
-	sp=newNamespace{
-		x=newBNode{idx=M.SPRITE_X_LOC},
-		y=newBNode{idx=M.SPRITE_Y_LOC},
-		sx=newBNode{idx=M.SPRITE_X_SCL},
-		sy=newBNode{idx=M.SPRITE_Y_SCL},
-		r=newBNode{idx=M.SPRITE_RED},
-		g=newBNode{idx=M.SPRITE_GREEN},
-		b=newBNode{idx=M.SPRITE_BLUE},
-		glow=newBNode{idx=M.SPRITE_GLOW},
-		idx=newBNode{idx=M.SPRITE_IDX},
-		opacity=newBNode{idx=M.SPRITE_OPACITY},
-		rot=newBNode{idx=M.SPRITE_ROT},
+	sp = newNamespace{
+		x       = newBNode { idx = M.SPRITE_X_LOC   },
+		y       = newBNode { idx = M.SPRITE_Y_LOC   },
+		z       = newBNode { idx = M.SPRITE_Z_LOC   },
+		rx      = newBNode { idx = M.SPRITE_X_ROT   },
+		ry      = newBNode { idx = M.SPRITE_Y_ROT   },
+		rz      = newBNode { idx = M.SPRITE_Z_ROT   },
+		sx      = newBNode { idx = M.SPRITE_X_SCL   },
+		sy      = newBNode { idx = M.SPRITE_Y_SCL   },
+		sz      = newBNode { idx = M.SPRITE_Z_SCL   },
+		rot     = newBNode { idx = M.SPRITE_ROT     },
+		r       = newBNode { idx = M.SPRITE_RED     },
+		g       = newBNode { idx = M.SPRITE_GREEN   },
+		b       = newBNode { idx = M.SPRITE_BLUE    },
+		glow    = newBNode { idx = M.SPRITE_GLOW    },
+		idx     = newBNode { idx = M.SPRITE_IDX     },
+		opacity = newBNode { idx = M.SPRITE_OPACITY },
 	},
 	
 	time=newNode{id='time'},
