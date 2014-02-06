@@ -14,6 +14,7 @@ EffectNode :MODEL {
 	}
 
 function EffectNode:__init()
+	self._built   = false
 	self.parent   = false
 	self.children = {}
 	self.name     = self:getDefaultName()

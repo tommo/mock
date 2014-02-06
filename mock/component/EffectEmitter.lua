@@ -6,6 +6,9 @@ CLASS: EffectEmitter ( Component )
 		Field 'autoPlay' :boolean();
 }
 
+mock.registerComponent( 'EffectEmitter', EffectEmitter )
+--------------------------------------------------------------------
+
 function EffectEmitter:__init()
 	self.effect     = false
 	self.autoPlay   = true

@@ -54,21 +54,12 @@ function EffectNodeParticleSystem:postBuild()
 		local c = child:getClassName()
 		if child:isInstance( EffectNodeParticleState ) then
 			table.insert( states, child )
-			child:_buildState( regs )
+			child:_buildScript( regs )
 		elseif child:isInstance( EffectNodeParticleEmitter ) then
 			table.insert( emitters, child )
 		elseif child:isInstance( EffectNodeParticleForce ) then
 			table.insert( forces, child )
 		end
-	end
-	
-	local builtStates = {}
-	for i, s in ipairs( states ) do
-		local state = s.moaiParticleState
-		for j, f in ipairs( forces ) do
-			state:pushForce( f.moaiParticleForce )
-		end
-		builtStates[ i ] = state
 	end
 
 	local regCount = 0
@@ -80,33 +71,52 @@ function EffectNodeParticleSystem:postBuild()
 		end
 	end
 	self.regCount     = regCount
-	self.builtStates  = builtStates
 	self.emitterNodes = emitters
+	self.stateNodes   = states
+	self.forceNodes   = forces
+	self.stateCount   = #self.stateNodes
 	self._built = true	
 end
 
 function EffectNodeParticleSystem:buildSystem( system )
 	assert( self._built )
-	local states = self.builtStates
 	system = system or MOAIParticleSystem.new()
-	system:reserveStates( #states )
-	for i, s in ipairs( states ) do
-		system:setState( i, s )
-	end
+	system:reserveStates    ( self.stateCount )
 	system:reserveSprites   ( self.spriteLimit )
 	system:reserveParticles ( self.particleLimit, self.regCount )
 	system:setReversedDrawOrder( true )
 
 	system.config = self
 	setupMoaiProp( system, self )
-	--add emitters
+	
+	--build child nodes	
 	local emitters = {}
 	local forces   = {}
-	for _, node in pairs( self.emitterNodes ) do
+	
+	local stateNodes   = self.stateNodes
+	local forceNodes   = self.forceNodes
+	local emitterNodes = self.emitterNodes
+
+	--build forces
+	for i, f in ipairs( forceNodes ) do
+		forces[ i ] = f:buildForce()
+	end
+	
+	--build states
+	for i, s in ipairs( stateNodes ) do
+		local state = s:buildState()
+		for j, f in ipairs( forces ) do
+			state:pushForce( f )
+		end
+		system:setState( i, state )
+	end
+
+	--add emitters
+	for i, node in pairs( emitterNodes ) do
 		local em = node:buildEmitter()
 		em:setSystem( system )
 		em:start()
-		emitters[ em ] = true
+		emitters[ i ] = em
 	end
 	system:start()
 	return system, emitters, forces
@@ -120,10 +130,10 @@ function EffectNodeParticleSystem:onLoad( emitter )
 		inheritTransform( system, prop )
 	else --attach emitter/forces only
 		inheritPartition( system, prop )
-		for em in pairs( emitters ) do
+		for _,em in pairs( emitters ) do
 			inheritTransform( em, prop )
 		end
-		for f in pairs( forces ) do
+		for _,f in pairs( forces ) do
 			inheritLoc( f, prop )
 		end
 	end
@@ -248,8 +258,7 @@ function EffectNodeParticleState:setParamC( k, r,g,b,a )
 	par:set( r,g,b,a )
 end
 
-
-function EffectNodeParticleState:_buildState( regs )
+function EffectNodeParticleState:_buildScript( regs )
 	regs = regs or {}
 	self:updateScriptParams()
 	local script = self.script
@@ -262,24 +271,39 @@ function EffectNodeParticleState:_buildState( regs )
 		function(k) return self:getParamCStr( k ) end
 	)
 	
-	local chunk = loadstring( script1 )
+	local chunk, err = loadstring( script1 )
 	local env = {}
+	--error
+	
+	if not chunk then
+		print( 'failed compiling particle script' )
+		print( err )
+		return
+	end
+
 	setfenv( chunk, env )
-	pcall( chunk )
+	local res, err = pcall( chunk )
+	if not res then
+		print( 'failed building particle script' )
+		print( err )
+	end
+
 	local initFunc   = env['init']
 	local renderFunc = env['render']
 
 	local iscript = initFunc and makeParticleScript( initFunc, regs ) or false
 	local rscript = renderFunc and makeParticleScript( renderFunc, regs ) or false
-	builtScripts = { iscript, rscript }
-	
-	local state = self.moaiParticleState
+	self.builtScripts = { iscript, rscript }
+end
+
+function EffectNodeParticleState:buildState()
+	local state = MOAIParticleState.new()
 	state:clearForces()
 
 	if self.damping  then state:setDamping( self.damping ) end
 	if self.mass     then state:setMass( _unpack(self.mass) ) end
 	if self.life     then state:setTerm( _unpack(self.life) ) end
-
+	local iscript, rscript = unpack( self.builtScripts )
 	if iscript then state:setInitScript   ( iscript ) end
 	if rscript then state:setRenderScript ( rscript ) end
 	return state
@@ -348,6 +372,12 @@ end
 --CLASS: EffectNodeParticleEmitter
 --------------------------------------------------------------------
 EffectNodeParticleEmitter :MODEL {
+		'----';
+		Field 'loc'       :type('vec3') :tuple_getset() :label('Loc'); 
+		Field 'rot'       :type('vec3') :tuple_getset() :label('Rot');
+		Field 'scl'       :type('vec3') :tuple_getset() :label('Scl');
+		Field 'piv'       :type('vec3') :tuple_getset() :label('Piv');
+		'----';
 		Field 'emission'  :type('vec2') :range(0)  :getset('Emission');		
 		Field 'duration'  :number();
 		Field 'surge'     :int();
@@ -368,6 +398,10 @@ function EffectNodeParticleEmitter:__init()
 	self.radius    = {5,5}
 	self.rect      = {0,0}
 	self.duration  = -1
+	self.loc = {0,0,0}
+	self.rot = {0,0,0}
+	self.scl = {1,1,1}
+	self.piv = {0,0,0}
 end
 
 function EffectNodeParticleEmitter:updateEmitterCommon( em )
@@ -385,6 +419,10 @@ function EffectNodeParticleEmitter:updateEmitterCommon( em )
 	if em.setDuration then 
 		em:setDuration( self.duration )
 	end
+	em:setLoc( unpack( self.loc ) )
+	em:setRot( unpack( self.rot ) )
+	em:setScl( unpack( self.scl ) )
+	em:setPiv( unpack( self.piv ) )
 end
 
 function EffectNodeParticleEmitter:getDefaultName()
@@ -458,7 +496,7 @@ function EffectNodeParticleTimedEmitter:__init()
 end
 
 function EffectNodeParticleTimedEmitter:getTypeName()
-	return 'E.timed'
+	return 'emitter-timed'
 end
 
 function EffectNodeParticleTimedEmitter:buildEmitter()
@@ -490,7 +528,7 @@ function EffectNodeParticleDistanceEmitter:__init()
 end
 
 function EffectNodeParticleDistanceEmitter:getTypeName()
-	return 'E.distance'
+	return 'emitter-distance'
 end
 
 function EffectNodeParticleDistanceEmitter:buildEmitter()
@@ -504,13 +542,15 @@ end
 --CLASS: EffectNodeParticleForce
 --------------------------------------------------------------------
 EffectNodeParticleForce :MODEL{
-	Field 'loc'       :type('vec3') :getset('Loc') :label('Loc'); 
-	Field 'forceType' :enum( EnumParticleForceType ) :set( 'setForceType' );
+	Field 'forceType' :enum( EnumParticleForceType );
+	'----';
+	Field 'loc'       :type('vec3') :tuple_getset('loc') :label('Loc'); 
+	'----';
 }
 
 function EffectNodeParticleForce:__init()
-	self.moaiParticleForce = MOAIParticleForce.new()
 	self.forceType = MOAIParticleForce.OFFSET
+	self.loc = {0,0,0}
 end
 
 function EffectNodeParticleForce:getDefaultName()
@@ -521,17 +561,16 @@ function EffectNodeParticleForce:getTypeName()
 	return 'force'
 end
 
-function EffectNodeParticleForce:setForceType( t )
-	self.moaiParticleForce:setType( t )
+function EffectNodeParticleForce:buildForce()
+	local f = MOAIParticleForce.new()
+	f:setLoc( unpack( self.loc ) )
+	self:updateForce( f )
+	return f
 end
 
-function EffectNodeParticleForce:setLoc( x,y,z )
-	self.moaiParticleForce:setLoc( x,y,z )
+function EffectNodeParticleForce:updateForce( f )
 end
 
-function EffectNodeParticleForce:getLoc()
-	return self.moaiParticleForce:getLoc()
-end
 
 --------------------------------------------------------------------
 CLASS: EffectNodeForceAttractor ( EffectNodeParticleForce )
@@ -545,12 +584,12 @@ function EffectNodeForceAttractor:__init()
 	self.magnitude = 1	
 end
 
-function EffectNodeForceAttractor:onBuild()
-	self.moaiParticleForce:initAttractor( self.radius, self.magnitude )
+function EffectNodeForceAttractor:updateForce( f )
+	f:initAttractor( self.radius, self.magnitude )
 end
 
 function EffectNodeForceAttractor:getTypeName()
-	return 'F.attractor'
+	return 'force-attractor'
 end
 
 function EffectNodeForceAttractor:getDefaultName()
@@ -568,8 +607,8 @@ function EffectNodeForceBasin:__init()
 	self.magnitude = 1	
 end
 
-function EffectNodeForceBasin:onBuild()
-	self.moaiParticleForce:initBasin( self.radius, self.magnitude )
+function EffectNodeForceBasin:updateForce( f )
+	f:initBasin( self.radius, self.magnitude )
 end
 
 function EffectNodeForceBasin:getDefaultName()
@@ -577,13 +616,13 @@ function EffectNodeForceBasin:getDefaultName()
 end
 
 function EffectNodeForceBasin:getTypeName()
-	return 'F.basin'
+	return 'force-basin'
 end
 
 --------------------------------------------------------------------
 CLASS: EffectNodeForceLinear ( EffectNodeParticleForce )
 	:MODEL{
-		Field 'vector'       :type('vec3') :getset('Vector') :label('Loc'); 
+		Field 'vector'       :type('vec3') :getset('Vector') :label('Vector'); 
 }
 
 function EffectNodeForceLinear:__init()
@@ -592,19 +631,18 @@ end
 
 function EffectNodeForceLinear:setVector( x,y,z )
 	self.vector = {x,y,z}
-	self:update()	
 end
 
 function EffectNodeForceLinear:getVector()
 	return unpack( self.vector )
 end
 
-function EffectNodeForceLinear:onBuild()
-	self.moaiParticleForce:initLinear( unpack( self.vector ) )
+function EffectNodeForceLinear:updateForce( f )
+	f:initLinear( unpack( self.vector ) )
 end
 
 function EffectNodeForceLinear:getTypeName()
-	return 'F.linear'
+	return 'force-linear'
 end
 
 function EffectNodeForceLinear:getDefaultName()
@@ -622,12 +660,12 @@ function EffectNodeForceRadial:__init()
 	self.magnitude = 1	
 end
 
-function EffectNodeForceRadial:onBuild()
-	self.moaiParticleForce:initRadial( self.radius, self.magnitude )
+function EffectNodeForceRadial:updateForce( f )
+	f:initRadial( self.magnitude )
 end
 
 function EffectNodeForceRadial:getTypeName()
-	return 'F.radial'
+	return 'force-radial'
 end
 
 function EffectNodeForceRadial:getDefaultName()
