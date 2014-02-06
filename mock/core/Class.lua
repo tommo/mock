@@ -30,7 +30,7 @@ local rawget, rawset = rawget, rawset
 --------------------------------------------------------------------
 -- CLASS
 --------------------------------------------------------------------
-local newclass
+local newClass
 local separatorField
 local globalClassRegistry = {}
 
@@ -166,7 +166,7 @@ local function buildInstanceBuilder(class)
 end
 
 --------------------------------------------------------------------
-function newclass( b, superclass, name  )		
+function newClass( b, superclass, name  )		
 	b=b or {}
 	local index
 	superclass = superclass or BaseClass
@@ -271,7 +271,7 @@ local function affirmClass( t, id )
 			if superclass and not isClass( superclass ) then
 				error( 'Superclass expected, given:'..type( superclass ), 2)
 			end
-			local clas = newclass( {}, superclass, id )
+			local clas = newClass( {}, superclass, id )
 			local env = getfenv( 2 )
 			env[id] = clas
 			if env ~= _G then
@@ -293,8 +293,16 @@ local function affirmClass( t, id )
 end
 
 classBuilder = setmetatable( {}, { __index = affirmClass } )
-_G.CLASS  = classBuilder
 
+local function rawClass( superclass )	
+	local clas = newClass( {}, superclass, '(rawclass)' )
+	clas.__fullname = clas.__name
+	return clas
+end
+
+--------------------------------------------------------------------
+_G.CLASS     = classBuilder
+_G._rawClass = rawClass
 function findClass( term )
 	local l = #term
 	for n, clas in pairs( globalClassRegistry ) do		

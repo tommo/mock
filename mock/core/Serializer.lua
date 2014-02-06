@@ -135,6 +135,7 @@ end
 
 --------------------------------------------------------------------
 local function serialize( obj, objMap )
+	assert( obj )
 	objMap = objMap or SerializeObjectMap()
 	local rootId = objMap:map( obj )
 	local map = {}
@@ -188,11 +189,11 @@ function _deserializeField( obj, f, data, objMap )
 		local array = {}
 		local itemType = f.__itemtype
 		if isAtomicValue( itemType ) then
-			for i, itemData in ipairs( fieldData ) do
+			for i, itemData in pairs( fieldData ) do
 				array[ i ] = itemData
 			end
 		elseif f.__objtype == 'sub' then
-			for i, itemData in ipairs( fieldData ) do
+			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'string' then --need conversion?
 					local itemTarget = objMap[ itemData ]
 					array[ i ] = itemTarget[1]
@@ -202,7 +203,7 @@ function _deserializeField( obj, f, data, objMap )
 				end
 			end
 		else
-			for i, itemData in ipairs( fieldData ) do
+			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'table' then --need conversion?
 					local item = _deserializeObject( nil, itemData, objMap )
 					array[ i ] = item

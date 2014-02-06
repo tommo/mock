@@ -9,7 +9,7 @@ CLASS: EffectEmitter ( Component )
 function EffectEmitter:__init()
 	self.effect     = false
 	self.autoPlay   = true
-	self.effectNode = false
+	self.effectConfig = false
 	self.prop       = MOAIProp.new()
 end
 
@@ -17,9 +17,9 @@ function EffectEmitter:setEffect( e )
 	local tt = type( e )
 	if tt == 'string' then --path
 		self.effect = e
-		self.effectNode = mock.loadAsset( e )
+		self.effectConfig = mock.loadAsset( e )
 	else
-		self.effectNode = e
+		self.effectConfig = e
 	end
 end
 
@@ -38,7 +38,7 @@ function EffectEmitter:onStart()
 end
 
 function EffectEmitter:start()
-	if not self.effectNode then return end
-	self.effectNode:loadIntoEmitter( self )
+	if not self.effectConfig then return end
+	self.effectConfig:loadIntoEmitter( self )
 end
 

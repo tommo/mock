@@ -23,6 +23,10 @@ function EffectNode:getDefaultName()
 	return 'effect'
 end
 
+function EffectNode:getTypeName()
+	return 'node'
+end
+
 function EffectNode:setName( n )
 	self.name = n
 end
@@ -91,13 +95,23 @@ function EffectGroup:getDefaultName()
 	return 'group'
 end
 
+function EffectGroup:getTypeName()
+	return 'group'
+end
+
 function EffectGroup:build( state )
 	for i, child in pairs( self.children ) do
 		child:build( state )
 	end
 end
 
+function EffectGroup:loadIntoEmitter( em )
+	for i, child in pairs( self.children ) do
+		child:loadIntoEmitter( em )
+	end
+end
 
+updateAllSubClasses( EffectNode )
 --------------------------------------------------------------------
 CLASS: EffectConfig ()
 	:MODEL{
@@ -108,6 +122,13 @@ function EffectConfig:__init()
 	self._root = EffectGroup()
 end
 
+function EffectConfig:getRootNode()
+	return self._root
+end
+
+function EffectConfig:loadIntoEmitter( e )
+	self._root:loadIntoEmitter( e )
+end
 
 local effectNodeTypeRegistry = {}
 --------------------------------------------------------------------

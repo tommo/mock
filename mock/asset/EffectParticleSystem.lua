@@ -40,6 +40,10 @@ function EffectNodeParticleSystem:getDefaultName()
 	return 'particle'
 end
 
+function EffectNodeParticleSystem:getTypeName()
+	return 'system'
+end
+
 function EffectNodeParticleSystem:postBuild()
 	local states   = {}
 	local forces   = {}
@@ -201,6 +205,14 @@ end
 	self.moaiParticleState = MOAIParticleState.new()
 end
 
+function EffectNodeParticleState:getDefaultName()
+	return 'state'
+end
+
+function EffectNodeParticleState:getTypeName()
+	return 'state'
+end
+
 function EffectNodeParticleState:getParamN( k )	
 	local par = self.params[ k ]
 	if not par then return 0 end
@@ -236,26 +248,11 @@ function EffectNodeParticleState:setParamC( k, r,g,b,a )
 	par:set( r,g,b,a )
 end
 
+
 function EffectNodeParticleState:_buildState( regs )
 	regs = regs or {}
+	self:updateScriptParams()
 	local script = self.script
-
-	--find params
-	--find number params
-	local params = self.params
-	for n in string.gmatch( script, '${(%w+)}' ) do
-		if not params[ n ] then			
-			self:setParamN( n, 1 )
-		end
-	end
-
-	--find color params
-	for n in string.gmatch( script, '${{(%w+)}}' ) do
-		if not params[ n ] then
-			self:setParamC( n, 1,1,1,1 )
-		end
-	end
-	
 	local script1 = script:gsub(
 		'${(%w+)}', 
 		function(k) return self:getParamN( k ) end
@@ -294,6 +291,56 @@ end
 
 function EffectNodeParticleState:getLife()
 	return unpack( self.life )
+end
+
+function EffectNodeParticleState:updateScriptParams()
+	local script = self.script
+	--find number params
+	local params = self.params
+	local checked = {}
+	for n in string.gmatch( script, '${(%w+)}' ) do
+		if not params[ n ] then			
+			self:setParamN( n, 1 )
+		end
+		checked[ n ] = true
+	end
+
+	--find color params
+	for n in string.gmatch( script, '${{(%w+)}}' ) do
+		if not params[ n ] then
+			self:setParamC( n, 1,1,1,1 )
+		end
+		checked[ n ] = true
+	end
+
+	--remove unwanted param?
+	local toremove = {}
+	for k in pairs( self.params ) do
+		if not checked[ k ] then toremove[ k ] = true end
+	end
+	for k in pairs( toremove ) do
+		self.params[ k ] = nil
+	end
+
+end
+
+function EffectNodeParticleState:buildParamProxy()
+	self:updateScriptParams()
+	local proxyClass = _rawClass()
+	local modelTable = {}
+	for k, param in pairs( self.params ) do
+		local f = Field( k )
+		if param:isInstance( ParticleScriptParamColor ) then
+			f:type('color')
+		else
+			f:number()
+		end
+		f:set( function( obj, ... ) return param:set( ... ) end )
+		f:get( function( obj ) return param:get() end )
+		table.insert( modelTable, f )
+	end
+	proxyClass:MODEL( modelTable )
+	return proxyClass()
 end
 
 
@@ -341,6 +388,10 @@ function EffectNodeParticleEmitter:updateEmitterCommon( em )
 end
 
 function EffectNodeParticleEmitter:getDefaultName()
+	return 'emitter'
+end
+
+function EffectNodeParticleEmitter:getTypeName()
 	return 'emitter'
 end
 
@@ -406,6 +457,10 @@ function EffectNodeParticleTimedEmitter:__init()
 	self.frequency = { 10, 10 }
 end
 
+function EffectNodeParticleTimedEmitter:getTypeName()
+	return 'E.timed'
+end
+
 function EffectNodeParticleTimedEmitter:buildEmitter()
 	local emitter = MOAIParticleTimedEmitter.new()
 	self:updateEmitterCommon( emitter )
@@ -414,11 +469,11 @@ function EffectNodeParticleTimedEmitter:buildEmitter()
 	return emitter
 end
 
-function EffectNodeParticleEmitter:setFrequency( f1, f2 )
+function EffectNodeParticleTimedEmitter:setFrequency( f1, f2 )
 	self.frequency = { f1 or 0 , f2 or 0 }
 end
 
-function EffectNodeParticleEmitter:getFrequency()
+function EffectNodeParticleTimedEmitter:getFrequency()
 	return unpack( self.frequency )
 end
 
@@ -432,6 +487,10 @@ CLASS: EffectNodeParticleDistanceEmitter( EffectNodeParticleEmitter )
 
 function EffectNodeParticleDistanceEmitter:__init()
 	self.distance  = 10
+end
+
+function EffectNodeParticleDistanceEmitter:getTypeName()
+	return 'E.distance'
 end
 
 function EffectNodeParticleDistanceEmitter:buildEmitter()
@@ -451,9 +510,14 @@ EffectNodeParticleForce :MODEL{
 
 function EffectNodeParticleForce:__init()
 	self.moaiParticleForce = MOAIParticleForce.new()
+	self.forceType = MOAIParticleForce.OFFSET
 end
 
 function EffectNodeParticleForce:getDefaultName()
+	return 'force'
+end
+
+function EffectNodeParticleForce:getTypeName()
 	return 'force'
 end
 
@@ -485,20 +549,35 @@ function EffectNodeForceAttractor:onBuild()
 	self.moaiParticleForce:initAttractor( self.radius, self.magnitude )
 end
 
+function EffectNodeForceAttractor:getTypeName()
+	return 'F.attractor'
+end
+
+function EffectNodeForceAttractor:getDefaultName()
+	return 'attractor'
+end
 --------------------------------------------------------------------
-CLASS: EffectNodeBasinForce ( EffectNodeParticleForce )
+CLASS: EffectNodeForceBasin ( EffectNodeParticleForce )
 	:MODEL{
 		Field 'radius';
 		Field 'magnitude';
 }
 
-function EffectNodeBasinForce:__init()
+function EffectNodeForceBasin:__init()
 	self.radius = 100
 	self.magnitude = 1	
 end
 
-function EffectNodeBasinForce:onBuild()
+function EffectNodeForceBasin:onBuild()
 	self.moaiParticleForce:initBasin( self.radius, self.magnitude )
+end
+
+function EffectNodeForceBasin:getDefaultName()
+	return 'basin'
+end
+
+function EffectNodeForceBasin:getTypeName()
+	return 'F.basin'
 end
 
 --------------------------------------------------------------------
@@ -524,6 +603,14 @@ function EffectNodeForceLinear:onBuild()
 	self.moaiParticleForce:initLinear( unpack( self.vector ) )
 end
 
+function EffectNodeForceLinear:getTypeName()
+	return 'F.linear'
+end
+
+function EffectNodeForceLinear:getDefaultName()
+	return 'linear'
+end
+
 
 --------------------------------------------------------------------
 CLASS: EffectNodeForceRadial ( EffectNodeParticleForce )
@@ -539,3 +626,10 @@ function EffectNodeForceRadial:onBuild()
 	self.moaiParticleForce:initRadial( self.radius, self.magnitude )
 end
 
+function EffectNodeForceRadial:getTypeName()
+	return 'F.radial'
+end
+
+function EffectNodeForceRadial:getDefaultName()
+	return 'radial'
+end
