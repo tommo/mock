@@ -225,7 +225,15 @@ function findAssetNode( path, assetType )
 	local result = AssetSearchCache[ tag ]
 	if result == nil then
 		for k, node in pairs( AssetLibrary ) do
-			if not assetType or node.type == assetType then
+			local typeMatched = false
+			if not assetType then
+				typeMatched = true
+			else
+				if string.match( node:getType(), assetType ) then
+					typeMatched = true
+				end
+			end
+			if typeMatched then
 				if k == path then
 					result = node
 					break

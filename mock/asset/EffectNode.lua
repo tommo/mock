@@ -56,14 +56,29 @@ function EffectNode:removeChild( n )
 	end
 end
 
-function EffectNode:start( state )
-	self:onStart( state )
+function EffectNode:build( state )
+	-- print('building', self:getClassName() )
+	self:onBuild( state )
 	for i, child in pairs( self.children ) do
-		child:start( state )
+		child:build( state )
 	end
+	self:postBuild( state )
+	self._built = true
+	return true
 end
 
-function EffectNode:onStart( state )
+function EffectNode:onBuild( state )
+end
+
+function EffectNode:postBuild( state )
+end
+
+function EffectNode:loadIntoEmitter( emitter )
+	if not self._built then	self:build() end
+	self:onLoad( emitter )	
+end
+
+function EffectNode:onLoad( emitter )
 end
 
 ----------------------------------------------------------------------
@@ -76,9 +91,9 @@ function EffectGroup:getDefaultName()
 	return 'group'
 end
 
-function EffectGroup:start( state )
+function EffectGroup:build( state )
 	for i, child in pairs( self.children ) do
-		child:start( state )
+		child:build( state )
 	end
 end
 

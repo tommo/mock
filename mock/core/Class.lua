@@ -240,7 +240,7 @@ function isClassInstance( o )
 	return getClass( o ) ~= nil
 end
 
-function isInstanceOf( o, clas )
+function isInstance( o, clas )
 	return isClassInstance(o) and o:isInstance( clas )
 end
 

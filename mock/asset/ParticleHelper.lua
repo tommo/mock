@@ -160,7 +160,8 @@ local function solve(script,v,reg)
 		script:clamp(reg.idx, solve(script,v.a),solve(script,v.b),solve(script,v.c))
 	elseif vid=='time' then
 		script:time(reg.idx)
-		
+	elseif vid=='age' then
+		script:time(reg.idx)
 	elseif vid=='ease' then
 		-- print('ease')
 		script:ease(reg.idx,solve(script,v.a),solve(script,v.b),v.easeType)
@@ -252,6 +253,7 @@ local builtinSymbol={
 	},
 	
 	time=newNode{id='time'},
+	age =newNode{id='age'},
 	
 	rand=function(a,b)
 		return newNode{id='rand',a=a,b=b}

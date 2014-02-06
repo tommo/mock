@@ -2,7 +2,7 @@ module 'mock'
 
 CLASS: RenderComponent()
 	:MODEL{
-		Field 'blend'  :enum( mock.EnumBlendMode ) :getset('Blend');
+		Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');
 		Field 'shader' :asset( 'shader' ) :getset('Shader');
 	}
 
