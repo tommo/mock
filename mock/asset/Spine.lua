@@ -10,6 +10,7 @@ function SpineJSONLoader( node )
 	skeletonData._jsonData = assert( jsonData )
 	local animations = { skeletonData:getAnimationNames() }
 	local skins      = { skeletonData:getSkinNames() }
+	local slots      = { skeletonData:getSlotNames() }
 	local animationTable = {}	
 	for i, n in ipairs( animations ) do
 		animationTable[ n ] = i
@@ -18,7 +19,12 @@ function SpineJSONLoader( node )
 	for i, n in ipairs( skins ) do
 		skinTable[ n ] = i
 	end
+	local slotTable = {}
+	for i, n in ipairs( slots ) do
+		slotTable[ n ] = i
+	end
 	skeletonData._animationTable = animationTable
+	skeletonData._slotTable      = slotTable
 	skeletonData._skinTable      = skinTable
 	return skeletonData
 end

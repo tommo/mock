@@ -544,10 +544,8 @@ function Field:enum( t )
 end
 
 function Field:selection( s )
-	if s then
-		self:meta{ selection = s }
-	end
-	return self
+	if not s then return self end	
+	return self:meta{ selection = s }
 end
 
 function Field:table( ktype, vtype ) 

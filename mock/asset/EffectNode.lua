@@ -3,6 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: EffectNode  ()
 CLASS: EffectGroup ( EffectNode )
+CLASS: EffectRoot  ( EffectGroup )
 
 ----------------------------------------------------------------------
 --CLASS: EffectNode
@@ -112,15 +113,31 @@ function EffectGroup:loadIntoEmitter( em )
 	end
 end
 
+--------------------------------------------------------------------
+--CLASS: EffectRoot
+--------------------------------------------------------------------
+
+EffectRoot :MODEL {
+	Field 'duration' :range( 0 );
+	Field 'loop'     :boolean();
+}
+
+function EffectRoot:__init()
+	self.duration = 0
+end
+
+
+--------------------------------------------------------------------
 updateAllSubClasses( EffectNode )
 --------------------------------------------------------------------
+
 CLASS: EffectConfig ()
 	:MODEL{
-		Field '_root' :type( EffectNode ) :no_edit() :sub()
+		Field '_root' :type( EffectRoot ) :no_edit();
 	}
 
 function EffectConfig:__init()
-	self._root = EffectGroup()
+	self._root = EffectRoot()
 end
 
 function EffectConfig:getRootNode()

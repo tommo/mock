@@ -3,7 +3,7 @@ module 'character'
 --------------------------------------------------------------------
 CLASS: EventSpineAnimation ( CharacterActionEvent )
 	:MODEL{
-		Field 'clip'  :string();
+		Field 'clip'  :string() :selection( 'getSpineClipSelection' );
 		Field 'loop'  :boolean();
 		Field 'resetOnPlay'  :boolean();
 		'----';
@@ -18,6 +18,18 @@ function EventSpineAnimation:__init()
 	self.loop   = false
 	self.resetOnPlay = true
 	self.offset = 0
+end
+
+function EventSpineAnimation:getSpineClipSelection()
+	local config = self:getRootConfig()
+	local spinePath = config:getSpine()
+	local spineData = mock.loadAsset( spinePath )
+	if not spineData then return nil end
+	local result = {}
+	for k,i in pairs( spineData._animationTable ) do
+		table.insert( result, { k, k } )
+	end
+	return result
 end
 
 function EventSpineAnimation:isResizable()
@@ -41,6 +53,7 @@ end
 function EventSpineAnimation:resetLength()
 	if not self.clip then return end
 	local root = self:getRootConfig()
+	if not self.root then return end	
 	local spinePath = root.spinePath
 	if not spinePath then return end
 	local data = mock.loadAsset( spinePath )

@@ -32,6 +32,7 @@ end
 
 function EffectEmitter:onDetach( ent )
 	ent:_detachProp( self.prop )
+	self.prop:forceUpdate()
 end
 
 function EffectEmitter:onStart()

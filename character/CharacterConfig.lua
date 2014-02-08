@@ -76,12 +76,18 @@ function CharacterActionEvent:getTrack()
 	return self.parent
 end
 
-function CharacterActionEvent:getAction()
-	return self.parent.parent
+function CharacterActionEvent:getAction()	
+	local track = self.parent
+	return track and track.parent
 end
 
 function CharacterActionEvent:getRootConfig()
-	return self.parent.parent.parent
+	local track = self.parent
+	if track then
+		local action = track.parent
+		if action then return action.parent end
+	end
+	return nil
 end
 --------------------------------------------------------------------
 CharacterActionTrack
@@ -106,6 +112,11 @@ end
 
 function CharacterActionTrack:getAction()
 	return self.parent
+end
+
+function CharacterActionTrack:getRootConfig()
+	local action = self.parent
+	return action and action.parent
 end
 --------------------------------------------------------------------
 function CharacterActionTrack:addEvent( pos )

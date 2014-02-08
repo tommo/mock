@@ -271,12 +271,11 @@ function EffectNodeParticleState:_buildScript( regs )
 		function(k) return self:getParamCStr( k ) end
 	)
 	
-	local chunk, err = loadstring( script1 )
+	local chunk, err = loadstring( script1, 'PARTICLE SCRIPT' )
 	local env = {}
 	--error
 	
 	if not chunk then
-		print( 'failed compiling particle script' )
 		print( err )
 		return
 	end
@@ -284,7 +283,6 @@ function EffectNodeParticleState:_buildScript( regs )
 	setfenv( chunk, env )
 	local res, err = pcall( chunk )
 	if not res then
-		print( 'failed building particle script' )
 		print( err )
 	end
 
@@ -391,11 +389,11 @@ EffectNodeParticleEmitter :MODEL {
 
 function EffectNodeParticleEmitter:__init()
 	self.name      = 'emitter'
-	self.magnitude = { 10, 10 }
+	self.magnitude = { 0, 0 }
 	self.angle     = { 0, 0 }
 	self.surge     = 0
 	self.emission  = {1,1}
-	self.radius    = {5,5}
+	self.radius    = {0,0}
 	self.rect      = {0,0}
 	self.duration  = -1
 	self.loc = {0,0,0}

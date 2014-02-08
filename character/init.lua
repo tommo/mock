@@ -11,6 +11,7 @@ require 'character.TrackMessage'
 require 'character.TrackMark'
 require 'character.TrackSpineAnimation'
 require 'character.TrackFmodSound'
-require 'character.TrackParticle'
+-- require 'character.TrackParticle'
+require 'character.TrackEffect'
 
 require 'character.TrackTempo'
