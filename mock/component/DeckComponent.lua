@@ -26,6 +26,8 @@ function DeckComponent:getMoaiProp()
 	return self.prop
 end
 
+wrapWithMoaiPropMethods( DeckComponent, ':getMoaiProp()' )
+
 --------------------------------------------------------------------
 function DeckComponent:setDeck( deckPath )
 	self.deckPath = deckPath
@@ -82,7 +84,8 @@ end
 
 --------------------------------------------------------------------
 function DeckComponent:inside( x, y, z, pad )
-	return self.prop:inside( x,y,z, pad )
+	local _,_,z1 = self.prop:getWorldLoc()
+	return self.prop:inside( x,y,z1, pad )
 end
 
 --------------------------------------------------------------------
@@ -94,4 +97,3 @@ function DeckComponent:isVisible()
 	return self.prop:getAttr( MOAIProp.ATTR_VISIBLE ) ~= 0
 end
 
-wrapWithMoaiPropMethods( DeckComponent, ':getMoaiProp()' )
