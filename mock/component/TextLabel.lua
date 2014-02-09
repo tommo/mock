@@ -20,8 +20,6 @@ CLASS: TextLabel ()
 
 function TextLabel:__init()
 	local box = MOAITextBox.new()
-	box:setShader( getBuiltinShader(DECK2D_SHADER) )
-	-- box:setShader( getBuiltinShader(FONT_SHADER) )
 	box:setStyle( getFallbackTextStyle() )
 	box:setScl( 1,-1,1 )
 	self.box  = box
@@ -33,6 +31,7 @@ function TextLabel:__init()
 	self.styleSheet = false
 	self:setStyleSheet( getDefaultStyleSheet() )
 	self.rectLimit = true
+	self:useDeckShader()	
 end
 
 function TextLabel:onAttach( entity )
@@ -70,37 +69,49 @@ function TextLabel:getSize()
 end
 
 function TextLabel:setSize( w, h )
-	self.w = w or 100
-	self.h = h or 100
+	if w == false then
+		self.rectLimit = false
+	else
+		self.w = w or 100
+		self.h = h or 100
+	end
 	self:updateRect()
 end
 
 function TextLabel:updateRect()
-	local w, h = self.w, self.h
-	local alignH = self.alignment
-	local alignV = self.alignmentV
-	local x,y
-	if alignH == 'left' then
-		x = 0
-	elseif alignH == 'center' then
-		x = -w/2
-	else --'right'
-		x = -w
+	if not self.rectLimit then
+		self.box:setRectLimits( false, false )
+	else
+		local w, h = self.w, self.h
+		local alignH = self.alignment
+		local alignV = self.alignmentV
+		local x,y
+		if alignH == 'left' then
+			x = 0
+		elseif alignH == 'center' then
+			x = -w/2
+		else --'right'
+			x = -w
+		end
+		if alignV == 'top' then
+			y = 0
+		elseif alignV == 'center' then
+			y = -h/2
+		else --'right'
+			y = -h
+		end
+		self.box:setRect( x, y, x + w, y + h )
 	end
-	if alignV == 'top' then
-		y = 0
-	elseif alignV == 'center' then
-		y = -h/2
-	else --'right'
-		y = -h
-	end
-	self.box:setRect( x, y, x + w, y + h )
 	self.box:setString( self.text ) --trigger layout
 end
 	
 function TextLabel:setText( text )
-	self.text = text
+	self.text = text or ''
 	self.box:setString( text )
+end
+
+function TextLabel:setTextf( pattern, ... )
+	return self:setText( string.format( pattern, ... ) )
 end
 
 function TextLabel:getText( )
@@ -150,6 +161,14 @@ function TextLabel:setScissorRect( s )
 	self.box:setScissorRect( s )
 end
 
+function TextLabel:useFontShader()
+	self.box:setShader( getBuiltinShader(FONT_SHADER) )
+end
+
+function TextLabel:useDeckShader()
+	self.box:setShader( getBuiltinShader(DECK2D_SHADER) )
+end
 
 registerComponent( 'TextLabel', TextLabel )
 registerEntityWithComponent( 'TextLabel', TextLabel )
+wrapWithMoaiPropMethods( TextLabel, 'box' )

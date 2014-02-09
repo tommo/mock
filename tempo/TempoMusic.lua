@@ -2,9 +2,9 @@
 CLASS: TempoMusic ()
 	:MODEL{
 		Field 'music' :asset( 'fmod_event' );
-		Field 'BPM';
+		Field 'BPM' :meta{ step = 0.5 };
 		Field 'slice' :int();
-		Field 'offset';
+		Field 'offset' :meta{ step = 0.01 };
 		Field 'accentOffset' :int();
 		Field 'beatPoints': array( 'number' ) :no_edit();
 	}
