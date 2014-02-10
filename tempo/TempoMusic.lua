@@ -2,11 +2,12 @@
 CLASS: TempoMusic ()
 	:MODEL{
 		Field 'music' :asset( 'fmod_event' );
-		Field 'BPM' :meta{ step = 0.5 };
+		Field 'BPM' :meta{ step = 0.1 };
 		Field 'slice' :int();
 		Field 'offset' :meta{ step = 0.01 };
 		Field 'accentOffset' :int();
 		Field 'beatPoints': array( 'number' ) :no_edit();
+		Field 'syncPoints': array( 'number' ) :no_edit();
 	}
 
 function TempoMusic:__init()
