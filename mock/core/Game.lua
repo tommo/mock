@@ -283,6 +283,7 @@ function Game:init( option, fromEditor )
 	end
 	
 	self.entryScene = option['entry_scene']
+	self.previewingScene = option['previewing_scene']
 
 	self.mainScene:init()
 
@@ -313,7 +314,10 @@ function Game:saveConfigToTable()
 		asset_library  = self.assetLibraryIndex,
 		graphics       = self.graphicsOption,
 		layers         = layerConfigs,
-		global_objects = self.globalObjectLibrary:save()
+		global_objects = self.globalObjectLibrary:save(),
+		scenes         = self.scenes,
+		entry_scene    = self.entryScene,
+		previewing_scene  = self.previewingScene
 	}
 
 	return data
