@@ -13,7 +13,9 @@ function EffectEmitter:__init()
 	self.effect     = false
 	self.autoPlay   = true
 	self.effectConfig = false
+	self.started    = false
 	self.prop       = MOAIProp.new()
+	self.updatingEffects = {}
 end
 
 function EffectEmitter:setEffect( e )
@@ -26,23 +28,40 @@ function EffectEmitter:setEffect( e )
 	end
 end
 
-function EffectEmitter:onAttach( ent )
-	ent:_attachProp( self.prop )
+function EffectEmitter:onAttach( entity )
+	entity:_attachProp( self.prop )
 end
 
-function EffectEmitter:onDetach( ent )
-	ent:_detachProp( self.prop )
+function EffectEmitter:onDetach( entity )
+	entity:_detachProp( self.prop )
 	self.prop:forceUpdate()
+	entity.scene:removeUpdateListener( self )
 end
 
 function EffectEmitter:onStart()
 	if self.autoPlay then
 		self:start()
 	end
+	self._entity.scene:addUpdateListener( self )
 end
 
 function EffectEmitter:start()
+	if self.started then return end
+	self.started = true
 	if not self.effectConfig then return end
 	self.effectConfig:loadIntoEmitter( self )
 end
 
+function EffectEmitter:onUpdate( dt )	
+	for eff in pairs( self.updatingEffects ) do
+		eff:onUpdate( self, dt )
+	end
+end
+
+function EffectEmitter:addUpdatingEffect( e )
+	self.updatingEffects[ e ] = true
+end
+
+function EffectEmitter:removeUpdatingListener( e )
+	self.updatingEffects[ e ] = nil
+end

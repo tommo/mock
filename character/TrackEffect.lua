@@ -75,16 +75,21 @@ function EventEffect:start( state, pos )
 	if effect == '' then effect = nil end
 	if not self.effect then return end
 	local target = state.target
+	local emEnt = mock.Entity()
 	local em = mock.EffectEmitter()
-	state[ self ] = em
+	emEnt:attachInternal( em )
 	em:setEffect( self.effect )	
-	target:getEntity():attachInternal( em )
+	target:getEntity():addInternalChild( emEnt )
+	local transform = self.transform
+	emEnt:setLoc( transform:getLoc() )
+	emEnt:setRot( transform:getRot() )
+	state[ self ] = emEnt
 end
 
 function EventEffect:stop( state )
-	local em = state[ self ]
-	if not em then return end
-	state.target:getEntity():detach( em )
+	local emEnt = state[ self ]
+	if not emEnt then return end
+	emEnt:destroy()
 end
 
 function EventEffect:toString()

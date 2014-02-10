@@ -53,14 +53,13 @@ end
 function EventSpineAnimation:resetLength()
 	if not self.clip then return end
 	local root = self:getRootConfig()
-	if not self.root then return end	
+	if not root then return end	
 	local spinePath = root.spinePath
 	if not spinePath then return end
 	local data = mock.loadAsset( spinePath )
 	if not data then return end
 	local l = data:getAnimationDuration( self.clip )
 	if l > 0 then self.length = l*1000 end
-	print( 'length:', l )
 end
 
 --------------------------------------------------------------------

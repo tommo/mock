@@ -87,6 +87,10 @@ end
 function EffectNode:onLoad( emitter )
 end
 
+function EffectNode:getHandle( emitter )
+	return false
+end
+
 ----------------------------------------------------------------------
 --CLASS: EffectGroup
 --------------------------------------------------------------------

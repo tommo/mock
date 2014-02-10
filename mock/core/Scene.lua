@@ -83,13 +83,18 @@ function Scene:getActionRoot()
 	return game:getActionRoot()
 end
 
+function Scene:getTime()
+	return game:getTime()
+end
+
 function Scene:threadMain( dt )
-	local lastTime = game:getTime()
+	dt = 0
+	local lastTime = self:getTime()
 	while true do	
-		local nowTime = game:getTime()
+		local nowTime = self:getTime()
 
 		if self.active then
-			local dt = nowTime - lastTime
+			-- local dt = nowTime - lastTime
 			lastTime = nowTime
 			--start
 			local pendingStart = self.pendingStart
@@ -113,9 +118,10 @@ function Scene:threadMain( dt )
 			end
 
 			--onUpdate
-			for entity in pairs( self.updateListeners ) do
-				if entity:isActive() then
-					entity:onUpdate( dt )
+			for obj in pairs( self.updateListeners ) do
+				local isActive = obj.isActive
+				if not isActive or isActive( obj ) then
+					obj:onUpdate( dt )
 				end
 			end
 			
@@ -137,10 +143,10 @@ function Scene:threadMain( dt )
 				entity:destroyNow()
 			end
 		end
-		local dt = coroutine.yield()
+		dt = coroutine.yield()
 		if self.exiting then 
 			self:exitNow() 
-		elseif self.exitingTime and self.exitingTime <= game:getTime() then
+		elseif self.exitingTime and self.exitingTime <= self:getTime() then
 			self.exitingTime = false
 			self:exitNow()
 		end

@@ -1,5 +1,3 @@
-if MOAIThread then return end --interface loaded
-
 --==============================================================
 -- Copyright (c) 2010-2011 Zipline Games, Inc. 
 -- All Rights Reserved. 
@@ -139,6 +137,34 @@ local function initTransform2DInterface ( interface, superInterface )
 end
 
 --============================================================--
+-- initTextLabelInterface
+--============================================================--
+local function initTextLabelInterface ( interface, superInterface )
+
+	----------------------------------------------------------------
+	function interface.affirmStyle ( self )
+		local style = self:getStyle ()
+		if not style then
+			style = MOAITextStyle.new ()
+			self:setStyle ( style )
+		end
+		return style
+	end
+	
+	----------------------------------------------------------------
+	function interface.setFont ( self, font )
+		local style = self:affirmStyle ()
+		style:setFont ( font )
+	end
+	
+	----------------------------------------------------------------
+	function interface.setTextSize ( self, points, dpi )
+		local style = self:affirmStyle ()
+		style:setSize ( points, dpi )
+	end
+end
+
+--============================================================--
 -- moai2D.lua - version 1.0 Beta
 --============================================================--
 
@@ -260,11 +286,11 @@ MOAILayer.extend (
 )
 
 --============================================================--
--- MOAIProp
+-- MOAIGraphicsProp
 --============================================================--
-MOAIProp.extend (
+MOAIGraphicsProp.extend (
 
-	'MOAIProp2D',
+	'MOAIGraphicsProp2D',
 	
 	----------------------------------------------------------------
 	function ( interface, class, superInterface, superClass )
@@ -404,28 +430,10 @@ MOAITextLabel.extend (
 	----------------------------------------------------------------
 	function ( interface, class, superInterface, superClass )
 		
-		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
-		-- extend the interface
-		function interface.affirmStyle ( self )
-			local style = self:getStyle ()
-			if not style then
-				style = MOAITextStyle.new ()
-				self:setStyle ( style )
-			end
-			return style
-		end
+		initTextLabelInterface ( interface, superInterface )
 		
-		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
-		function interface.setFont ( self, font )
-			local style = self:affirmStyle ()
-			style:setFont ( font )
-		end
-		
-		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
-		function interface.setTextSize ( self, points, dpi )
-			local style = self:affirmStyle ()
-			style:setSize ( points, dpi )
-		end
+		interface.getStringBounds = superInterface.getTextBounds
+		interface.setString = superInterface.setText
 	end
 )
 
@@ -462,12 +470,51 @@ MOAIGfxDevice.extend (
 )
 
 --============================================================--
+-- MOAIXmlParser
+--============================================================--
+MOAIXmlParser.extend (
+
+	'MOAIXmlParser',
+	
+	----------------------------------------------------------------
+	function ( interface, class, superInterface, superClass )
+
+		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
+		-- extend the class
+		function class.events ( stream )
+		
+			local parser = MOAIXmlParser.new ()
+			parser:setStream ( stream )
+			local more = true
+	
+			local element = {
+				getAttribute	= function ( name ) return parser:getElementAttribute ( name ) end,
+				getAttributes	= function () return parser:getElementAttributes () end,
+				getName			= function () return parser:getElementName () end,
+				getText			= function () return parser:getElementText () end,
+			}
+	
+			return function ()
+				if more then
+					local event = parser:step ()
+					more = ( event ~= MOAIXmlParser.XML_ERROR ) and ( event ~= MOAIXmlParser.DONE )
+					return event, more and element
+				end
+			end
+		end
+	end
+)
+
+--============================================================--
 -- renames
 --============================================================--
 
 MOAIHashWriter	= MOAIHashWriterCrypto or MOAIHashWriter
 MOAITextBox		= MOAITextLabel
 MOAIThread		= MOAICoroutine
+
+MOAIProp		= MOAIGraphicsProp
+MOAIProp2D		= MOAIGraphicsProp2D
 
 --============================================================--
 -- Cross Platform

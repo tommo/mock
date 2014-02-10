@@ -15,14 +15,15 @@ function TempoMusic:__init()
 	self.BPM        = 120
 	self.offset     = 0
 	self.slice      = 4
-	self.beatPoints = {}
 	self.accentOffset = 0
+	self.beatPoints = {}
+	self.syncPoints = {}
 end
 
 --------------------------------------------------------------------
 local function loadTempoMusic( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('config') )
-	local config = mock.deserialize( nil, data )	
+	local config = mock.deserialize( nil, data )
 	return config
 end
 
