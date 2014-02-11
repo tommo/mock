@@ -130,6 +130,9 @@ function EffectRoot:__init()
 	self.duration = 0
 end
 
+function EffectRoot:getDefaultName()
+	return 'effect'
+end
 
 --------------------------------------------------------------------
 updateAllSubClasses( EffectNode )
