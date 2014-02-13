@@ -259,7 +259,7 @@ function syncWorldScl( t1, t2 )
 	t1:setScl( sx*kx, sy*ky, sz*kz )
 end
 
-function syncWorldTransform( t1, t2 )
+function syncWorldTransform( t1, t2 )	
 	syncWorldLoc( t1, t2 )
 	syncWorldRot( t1, t2 )
 	syncWorldScl( t1, t2 )
