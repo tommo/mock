@@ -328,8 +328,8 @@ function CameraPass:buildDebugLinesLayer()
 	layer._mock_camera = camera
 
 	layer:showDebugLines( true )
-	local world = game:getBox2DWorld()
-	if world then layer:setBox2DWorld( world ) end
+	-- local world = game:getBox2DWorld()
+	-- if world then layer:setBox2DWorld( world ) end
 
 	return layer
 end

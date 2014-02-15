@@ -36,59 +36,12 @@ end
 
 module( 'mock.env', package.seeall )
 
-require 'mock.core.utils'
-require 'mock.core.signal'
-require 'mock.core.Class'
-require 'mock.core.ClassHelpers'
-require 'mock.core.Serializer'
-
-require 'mock.core.MOAIInterfaces'
-
-require 'mock.core.enums'
-require 'mock.core.MOAIHelpers'
-
-require 'mock.core.ThreadTask'
-require 'mock.core.async'
-
-require 'mock.tools.DebugHelper'
-require 'mock.tools.LogHelper'
-
-require 'mock.core.BehaviorTree'
-require 'mock.core.Actor'
-
-require 'mock.core.MOAIActionHelpers'
-require 'mock.core.MOAIPropHelpers'
-
+require 'mock.core'
 --------------------------------------------------------------------
 require 'mock.task.basic'
 
-----------------Core Modules
-require 'mock.core.Misc'
-
-----asset
-require 'mock.core.AssetLibrary'
-require 'mock.core.AssetScanner'
-
-----input
-require 'mock.core.InputManager'
-require 'mock.core.InputRecorder'
-require 'mock.core.InputSignal'
-
-----audio
-require 'mock.core.Audio'
-
-----game
-require 'mock.core.Entity'
-require 'mock.core.Component'
-require 'mock.core.Layer'
-require 'mock.core.Scene'
-require 'mock.core.GlobalObject'
-require 'mock.core.Game'
-require 'mock.core.EntityHelper'
-
-
 ----------------Asset Loaders
-require 'mock.asset.all'
+require 'mock.asset'
 require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 
 
@@ -96,8 +49,10 @@ require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 require 'mock.gui'
 
 ----------------Builtin Components
-require 'mock.component.all'
+require 'mock.component'
 
+----Effects
+require 'mock.effect'
 
 ----tools
 require 'mock.tools.UserAction'

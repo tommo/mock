@@ -65,7 +65,7 @@ local function AuroraSpriteLoader( node )
 			deck:setPair(partId, uvId, partId)
 			partId = partId + 1
 		end
-		deck:setList( i, basePartId, partId-basePartId )
+		deck:setList( i, basePartId, partId - basePartId )
 	end
 	preloadIntoAssetNode( node:getChildPath('frames'), deck )
 
@@ -86,14 +86,16 @@ local function AuroraSpriteLoader( node )
 		offsetYCurve:reserveKeys( count + 1 )
 
 		--TODO: support flags? or just forbid it!!!!
-		local offsetEaseType = EaseFlat
+		local offsetEaseType = EaseLinear
 		local ftime = 0
 		for fid, frame in ipairs( animation.frames ) do			
 			local ox, oy = unpack( frame.offset )
 			offsetXCurve:setKey( fid, ftime, ox, offsetEaseType )
 			offsetYCurve:setKey( fid, ftime, -oy, offsetEaseType )
 			indexCurve  :setKey( fid, ftime, frame.id, EaseFlat )
-			ftime = ftime + frame.time  --will use anim:setSpeed to fit real playback FPS
+			local delay = frame.time
+			delay = math.max( delay, 1 )
+			ftime = ftime + delay  --will use anim:setSpeed to fit real playback FPS
 
 			if fid == count then --copy last frame to make loop smooth
 				offsetXCurve:setKey( fid + 1, ftime, ox, offsetEaseType )
