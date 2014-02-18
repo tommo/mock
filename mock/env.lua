@@ -56,6 +56,7 @@ require 'mock.effect'
 
 ----tools
 require 'mock.tools.UserAction'
+require 'mock.tools.DrawHelpers'
 
 
 ---prefabs

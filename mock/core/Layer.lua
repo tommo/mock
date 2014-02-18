@@ -32,7 +32,7 @@ function Layer:__init( name )
 	self.visible       = true
 	self.editorVisible = true
 	self.editorSolo    = false
-	self.sortMode      = 'priority_ascending'
+	self.sortMode      = 'z_ascending'
 	self.default       = false
 	self.moaiLayers    = setmetatable( {}, { __mode='k' } )
 	self.locked        = false

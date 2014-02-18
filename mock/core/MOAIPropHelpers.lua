@@ -198,6 +198,9 @@ getSclX,setSclX,seekSclX,moveSclX = genAttrFunctions(MOAITransform.ATTR_X_SCL)
 getSclY,setSclY,seekSclY,moveSclY = genAttrFunctions(MOAITransform.ATTR_Y_SCL)
 getSclZ,setSclZ,seekSclZ,moveSclZ = genAttrFunctions(MOAITransform.ATTR_Z_SCL)
 
+getPivX,setPivX,seekPivX,movePivX = genAttrFunctions(MOAITransform.ATTR_X_PIV)
+getPivY,setPivY,seekPivY,movePivY = genAttrFunctions(MOAITransform.ATTR_Y_PIV)
+getPivZ,setPivZ,seekPivZ,movePivZ = genAttrFunctions(MOAITransform.ATTR_Z_PIV)
 
 ------------Apply transform & other common settings
 local setScl, setRot, setLoc, setPiv = extractMoaiInstanceMethods(
@@ -404,21 +407,21 @@ function wrapWithMoaiTransformMethods( clas, propName )
 
 		})
 
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_X_LOC, 'LocX' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Y_LOC, 'LocY' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Z_LOC, 'LocZ' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_X_LOC, 'LocX' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Y_LOC, 'LocY' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Z_LOC, 'LocZ' )
 	
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_X_ROT, 'RotX' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Y_ROT, 'RotY' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Z_ROT, 'RotZ' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_X_ROT, 'RotX' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Y_ROT, 'RotY' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Z_ROT, 'RotZ' )
 
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_X_SCL, 'SclX' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Y_SCL, 'SclY' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Z_SCL, 'SclZ' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_X_SCL, 'SclX' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Y_SCL, 'SclY' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Z_SCL, 'SclZ' )
 
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_X_PIV, 'PivX' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Y_PIV, 'PivY' )
-	_wrapAttrGetSet( clas, propName, MOAIProp.ATTR_Z_PIV, 'PivZ' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_X_PIV, 'PivX' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Y_PIV, 'PivY' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Z_PIV, 'PivZ' )
 
 	return clas
 end
@@ -434,10 +437,7 @@ function wrapWithMoaiPropMethods( clas, propName )
 			'inside',
 		})
 
-	_wrapAttrGetter( clas, propName, MOAIProp.ATTR_A_COL, 'getAlpha' )
-	_wrapAttrSetter( clas, propName, MOAIProp.ATTR_A_COL, 'setAlpha' )
-	_wrapAttrSeeker( clas, propName, MOAIProp.ATTR_A_COL, 'seekAlpha' )
-	
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_A_COL, 'Alpha' )
 	_wrapAttrGetterBoolean( clas, propName, MOAIProp.ATTR_VISIBLE, 'isVisible' )
 
 	return clas

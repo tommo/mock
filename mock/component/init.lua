@@ -55,6 +55,7 @@ require 'mock.component.SpineSprite'
 ---- AI
 require 'mock.component.FSMController'
 require 'mock.component.UpdateListener'
+require 'mock.component.BehaviorTree'
 
 --------------------------------------------------------------------
 require 'mock.component.EffectEmitter'

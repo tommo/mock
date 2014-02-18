@@ -25,8 +25,18 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: AuroraSprite ()
+CLASS: AuroraSprite ( RenderComponent )
+	:MODEL {
+		Field 'sprite' :asset( 'aurora_sprite' );
+		Field 'default' :string();
+		Field 'autoPlay' :boolean();
+	}
+
 wrapWithMoaiPropMethods( AuroraSprite, 'prop' )
+
+mock.registerComponent( 'AuroraSprite', AuroraSprite )
+mock.registerEntityWithComponent( 'AuroraSprite', AuroraSprite )
+--------------------------------------------------------------------
 
 function AuroraSprite:__init( option )
 	self.prop        = MOAIProp.new()

@@ -1,5 +1,20 @@
 module 'mock'
+--------------------------------------------------------------------
+CLASS: EffectEmitterState ()
+	:MODEL{}
 
+function EffectEmitterState:__init()
+end
+
+function EffectEmitterState:start()
+end
+
+function EffectEmitterState:stop()
+end
+
+
+
+--------------------------------------------------------------------
 CLASS: EffectEmitter ( Component )
 	:MODEL{
 		Field 'effect' :asset('effect') :set('setEffect');
@@ -16,6 +31,7 @@ function EffectEmitter:__init()
 	self.started    = false
 	self.prop       = MOAIProp.new()
 	self.updatingEffects = {}
+	self.activeStates    = {}
 end
 
 function EffectEmitter:setEffect( e )
@@ -37,7 +53,7 @@ function EffectEmitter:onDetach( entity )
 	self.prop:forceUpdate()
 	entity.scene:removeUpdateListener( self )
 end
-
+ 
 function EffectEmitter:onStart()
 	if self.autoPlay then
 		self:start()
@@ -48,8 +64,12 @@ end
 function EffectEmitter:start()
 	if self.started then return end
 	self.started = true
-	if not self.effectConfig then return end
+	if not self.effectConfig then return end	
 	self.effectConfig:loadIntoEmitter( self )
+end
+
+function EffectEmitter:stop()
+	local state = self.effectConfig
 end
 
 function EffectEmitter:onUpdate( dt )	
@@ -65,3 +85,5 @@ end
 function EffectEmitter:removeUpdatingListener( e )
 	self.updatingEffects[ e ] = nil
 end
+
+

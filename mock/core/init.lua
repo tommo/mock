@@ -9,22 +9,15 @@ require 'mock.core.MOAIInterfaces'
 
 require 'mock.core.enums'
 require 'mock.core.MOAIHelpers'
-
-require 'mock.core.ThreadTask'
--- require 'mock.core.async'
-
-require 'mock.tools.DebugHelper'
-require 'mock.tools.LogHelper'
-
-require 'mock.core.BehaviorTree'
-require 'mock.core.Actor'
-
 require 'mock.core.MOAIActionHelpers'
 require 'mock.core.MOAIPropHelpers'
 
-----------------Core Modules
-require 'mock.core.Misc'
+require 'mock.core.ThreadTask'
+require 'mock.core.DebugHelper'
+require 'mock.core.LogHelper'
 
+----------------Core Modules
+require 'mock.core.Actor'
 ----asset
 require 'mock.core.AssetLibrary'
 require 'mock.core.AssetScanner'

@@ -96,7 +96,7 @@ function Game:__init()
 	self.currentRenderContext = 'game'    -- for editor integration
 
 	self.version = ""
-
+	self.editorMode = false
 	self.scenes        = {}
 	self.layers        = {}
 	self.gfx           = { w = 640, h = 480, viewportRect = {0,0,640,480} }
@@ -143,6 +143,7 @@ end
 
 
 function Game:init( option, fromEditor )
+	self.editorMode  = fromEditor or false
 	self.initialized = true
 	
 	self.assetLibraryIndex = option['asset_library']
@@ -789,6 +790,10 @@ end
 
 function Game:getCurrentRenderContext()
 	return self.currentRenderContext or 'game'
+end
+
+function Game:isEditorMode()
+	return self.editorMode
 end
 
 game = Game()

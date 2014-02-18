@@ -123,11 +123,14 @@ end
 
 EffectRoot :MODEL {
 	Field 'duration' :range( 0 );
-	Field 'loop'     :boolean();
+	Field 'loop'     :boolean();	
+	Field 'followEmitter' :boolean();
 }
 
 function EffectRoot:__init()
 	self.duration = 0
+	self.loop = false
+	self.followEmitter = false
 end
 
 function EffectRoot:getDefaultName()

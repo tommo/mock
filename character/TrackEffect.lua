@@ -87,7 +87,7 @@ function EventEffect:start( state, pos )
 end
 
 function EventEffect:stop( state )
-	local emEnt = state[ self ]
+	local emEnt = state[ self ]	
 	if not emEnt then return end
 	emEnt:destroy()
 end
@@ -98,6 +98,19 @@ function EventEffect:toString()
 	return self.loop and '<loop>'..name or name
 end
 
+--
+function EventEffect:onBuildGizmo()
+	local giz = mock_edit.SimpleBoundGizmo()
+	giz:setTarget( self )
+	linkLoc( giz:getProp(), self.transform )
+	linkRot( giz:getProp(), self.transform )
+	return giz
+end
+
+function EventEffect:drawBounds()
+	MOAIDraw.drawCircle( 0,0, 20 )
+	MOAIDraw.fillArrow( 0,0, 30,0, 5 )
+end
 
 --------------------------------------------------------------------
 CLASS: TrackEffect ( CharacterActionTrack )
@@ -124,3 +137,4 @@ end
 
 --------------------------------------------------------------------
 registerCharacterActionTrackType( 'Effect', TrackEffect )
+

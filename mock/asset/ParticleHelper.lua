@@ -114,13 +114,11 @@ local function solve(script,v,reg)
 	assert(vt=='table' or vt=='number')
 	
 	if vt=='number' then
-		-- print('const',v)
 		v = CONST(v)
 		if not reg then 
 			return v
 		else
 			local a,b=reg.idx,v
-			-- print('set',a,b)
 			script:set(a,b)
 			return reg.idx
 		end
@@ -136,11 +134,9 @@ local function solve(script,v,reg)
 	
 	if vid=='rand' then
 		local a,b,c=reg.idx, solve(script,v.a),solve(script,v.b)
-		-- print('rand',a,b,c)
 		script:rand(a,b,c)
 	elseif vid=='node' or vid=='reg' then --set
 		local a,b=reg.idx,solve(script,v)
-		-- print('set',a,b)
 		script:set(a,b)
 	elseif vid=='add' then
 		script:add(reg.idx, solve(script,v.a),solve(script,v.b))
@@ -163,10 +159,11 @@ local function solve(script,v,reg)
 	elseif vid=='age' then
 		script:time(reg.idx)
 	elseif vid=='ease' then
-		-- print('ease')
 		script:ease(reg.idx,solve(script,v.a),solve(script,v.b),v.easeType)
 	elseif vid=='easeDelta' then
 		script:easeDelta(reg.idx,solve(script,v.a),solve(script,v.b),v.easeType)
+	elseif vid=='sign' then
+		script:sign(reg.idx,solve(script,v.a))
 	elseif vid=='sin' then
 		script:sin(reg.idx,solve(script,v.a))
 	elseif vid=='cos' then
@@ -198,7 +195,7 @@ symbolMT={
 		return newNode{id='mul',a=a,b=b}
 	end,
 	__neg=function(a)
-		return newNode{id='sub',a=CONST(0),b=b}
+		return newNode{id='sub',a=CONST(0),b=a}
 	end
 }
 
@@ -304,6 +301,9 @@ local builtinSymbol={
 	end,
 	tan=function(a)
 		return newNode{id='tan',a=a}
+	end,
+	sign=function(a)
+		return newNode{id='sign',a=a}
 	end,
 
 	EaseType={

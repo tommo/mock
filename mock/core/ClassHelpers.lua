@@ -93,7 +93,33 @@ function _wrapAttrSeeker(class,fieldname,attr,methodname)
 	class[methodname] = f()
 end
 
+function _wrapAttrMover(class,fieldname,attr,methodname)
+	local selfPart
+	if fieldname:startWith( ':' ) then
+		selfPart = 'self'..fieldname
+	else
+		selfPart = 'self.'..fieldname
+	end
+	local f=loadstring(
+		string.format(
+			[[return function( self, v, t, easeType )
+								return %s:moveAttr( %d, v, t, easeType )
+						end
+			]]
+			,selfPart ,attr)
+	)
+	class[methodname] = f()
+end
+
+
 function _wrapAttrGetSet( class, fieldname, attr, propertyName)
 	_wrapAttrGetter( class, fieldname, attr, 'get'..propertyName )
 	_wrapAttrSetter( class, fieldname, attr, 'set'..propertyName )
+end
+
+function _wrapAttrGetSetSeekMove( class, fieldname, attr, propertyName)
+	_wrapAttrGetter( class, fieldname, attr, 'get'..propertyName )
+	_wrapAttrSetter( class, fieldname, attr, 'set'..propertyName )
+	_wrapAttrSeeker( class, fieldname, attr, 'seek'..propertyName )
+	_wrapAttrMover( class, fieldname, attr, 'move'..propertyName )
 end
