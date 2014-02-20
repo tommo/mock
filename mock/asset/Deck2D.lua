@@ -115,6 +115,8 @@ CLASS: Quad2D ( Deck2D )
 		Field 'oy' :number() :label('origin Y') ;
 		Field 'w'  :number() :label('width')  ;
 		Field 'h'  :number() :label('height') ;
+		'----';
+		Field 'reset' :action('reset');
 	}
 
 function Quad2D:__init()
@@ -148,6 +150,14 @@ function Quad2D:update()
 	deck:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 end
 
+function Quad2D:reset()
+	if not self.texture then return end	
+	local tex, uv = getTextureUV( self.texture )
+	local w, h = tex:getSize()
+	self.w = w
+	self.h = h
+	self:update()
+end
 
 
 --------------------------------------------------------------------

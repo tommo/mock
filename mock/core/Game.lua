@@ -262,7 +262,7 @@ function Game:init( option, fromEditor )
 
 	----extra
 	collectgarbage( 'setpause',   80  )
-	collectgarbage( 'setstepmul', 400 )	
+	collectgarbage( 'setstepmul', 150 )	
 
 	----make inputs work
 	initDefaultInputEventHandlers()
