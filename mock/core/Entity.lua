@@ -361,10 +361,12 @@ end
 ------ Child Entity
 --------------------------------------------------------------------
 function Entity:addSibling( entity, layerName )
-	--TODO: sibling under same parent entity?????
 	local scene = self.scene
 	local layer = layerName and scene:getLayer(layerName) or self.layer
 	entity:_insertIntoScene( scene, layer )
+	if self.parent then
+		return self.parent:addChild( entity )
+	end
 	return entity
 end
 

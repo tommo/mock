@@ -1,5 +1,11 @@
 module 'mock'
 
+local enumSpawnMethod = _ENUM_V {
+	'root',
+	'sibling',
+	'child',
+}
+
 CLASS: PrefabSpawner ()
 	:MODEL{
 		Field 'prefab' :asset('prefab');
@@ -10,7 +16,8 @@ CLASS: PrefabSpawner ()
 		'----';		
 		Field 'autoSpawn'      :boolean();
 		Field 'destroyOnSpawn' :boolean();
-		Field 'spawnAsChild'   :boolean();		
+		Field 'spawnMethod'    :enum( enumSpawnMethod )
+		-- Field 'spawnAsChild'   :boolean();
 	}
 
 registerComponent( 'PrefabSpawner', PrefabSpawner )
@@ -24,6 +31,7 @@ function PrefabSpawner:__init()
 	self.copyLoc        = true
 	self.copyScl        = false
 	self.copyRot        = false
+	self.spawnMethod    = 'child'
 end
 
 function PrefabSpawner:onStart( ent )
@@ -37,14 +45,20 @@ function PrefabSpawner:spawn()
 	if self.prefab then
 		local e = loadPrefab( self.prefab )
 		if e then
-			if self.spawnAsChild then
+			local spawnMethod = self.spawnMethod
+			if spawnMethod == 'child' then
 				ent:addChild( e )
 				if self.copyLoc then	e:setLoc( 0,0,0 )	end
 				if self.copyRot then	e:setRot( 0,0,0 )	end
 				if self.copyScl then	e:setScl( 1,1,1 )	end
-			else
+			elseif spawnMethod == 'sibling' then
 				ent:addSibling( e )
 				if self.copyLoc then	e:setLoc( ent:getLoc() ) end
+				if self.copyRot then	e:setRot( ent:getRot() ) end
+				if self.copyScl then	e:setScl( ent:getScl() ) end
+			elseif spawnMethod == 'root' then
+				ent:getScene():addEntity( e )				
+				if self.copyLoc then	e:setLoc( ent:getWorldLoc() ) end
 				if self.copyRot then	e:setRot( ent:getRot() ) end
 				if self.copyScl then	e:setScl( ent:getScl() ) end
 			end
