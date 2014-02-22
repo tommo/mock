@@ -7,7 +7,7 @@ local FONT_SHADER               = MOAIShaderMgr. FONT_SHADER
 
 CLASS: TextLabel ()
 	:MODEL{
-		Field 'text'          :string()  :set('setText');
+		Field 'text'          :string()  :set('setText') :widget('textbox');
 		'----';
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle');
