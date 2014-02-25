@@ -15,7 +15,6 @@ function RenderComponent:setBlend( b )
 	self.blend = b	
 end
 
-
 function RenderComponent:setShader( s )
 	self.shader = s
 end

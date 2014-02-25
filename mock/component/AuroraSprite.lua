@@ -201,4 +201,7 @@ function AuroraSprite:isPlaying()
 	return self.driver:isBusy()
 end
 
-
+function AuroraSprite:setBlend( b )
+	self.blend = b	
+	setPropBlend( self.prop, b )
+end

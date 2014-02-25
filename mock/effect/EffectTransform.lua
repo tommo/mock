@@ -97,3 +97,15 @@ end
 -- function EffectTransform:updateForce( f )
 -- end
 
+--------------------------------------------------------------------
+registerEffectNodeType(
+	'movement',
+	EffectMove,
+	'*'
+)
+
+registerEffectNodeType(
+	'rotation',
+	EffectRotate,
+	'*'
+)

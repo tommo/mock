@@ -536,6 +536,8 @@ function EffectNodeParticleDistanceEmitter:buildEmitter()
 	return emitter
 end
 
+
+
 ----------------------------------------------------------------------
 --CLASS: EffectNodeParticleForce
 --------------------------------------------------------------------
@@ -593,6 +595,8 @@ end
 function EffectNodeForceAttractor:getDefaultName()
 	return 'attractor'
 end
+
+
 --------------------------------------------------------------------
 CLASS: EffectNodeForceBasin ( EffectNodeParticleForce )
 	:MODEL{
@@ -669,3 +673,48 @@ end
 function EffectNodeForceRadial:getDefaultName()
 	return 'radial'
 end
+
+
+--TODO: need dependency ??
+registerEffectNodeType( 
+	'particle-system',
+	EffectNodeParticleSystem,
+	'root'
+)
+
+registerEffectNodeType( 
+	'particle-state',
+	EffectNodeParticleState,
+	'particle-system'
+)
+
+registerEffectNodeType( 
+	'particle-emitter-timed',
+	EffectNodeParticleTimedEmitter,
+	'particle-system'
+)
+
+registerEffectNodeType( 
+	'particle-emitter-distance',
+	EffectNodeParticleDistanceEmitter,
+	'particle-system'
+)
+
+registerEffectNodeType( 
+	'particle-force-radial',
+	EffectNodeForceRadial,
+	'particle-system'
+)
+
+registerEffectNodeType( 
+	'particle-force-attractor',
+	EffectNodeForceAttractor,
+	'particle-system'
+)
+
+registerEffectNodeType( 
+	'particle-force-basin',
+	EffectNodeForceBasin,
+	'particle-system'
+)
+

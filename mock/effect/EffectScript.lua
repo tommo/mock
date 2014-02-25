@@ -30,3 +30,8 @@ function EffectScript:onUpdate( emitter, dt )
 	end
 end
 
+registerEffectNodeType(
+	'script',
+	EffectScript,
+	'*'
+)

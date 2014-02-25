@@ -160,9 +160,62 @@ end
 
 local effectNodeTypeRegistry = {}
 --------------------------------------------------------------------
-function registerEffectNodeType( name, clas )
-	--TODO: reload on modification??
-	effectNodeTypeRegistry[ name ] = clas
+function registerEffectNodeType( name, clas, parentTypes )
+	--TODO: reload on modification??	
+	if type( parentTypes ) == 'string' then
+		parentTypes = { parentTypes }
+	end
+	if not parentTypes then
+		parentTypes = { 'root' }
+	end
+	local t1 = {}
+	local all = false
+	if parentTypes then
+		for i, k in ipairs( parentTypes ) do
+			if k == '*' then all = true break end
+			t1[ k ] = true
+		end
+		local _, c = next( parentTypes )
+		assert( type( c ) == 'string', 'parent types should be specified in strings.' )
+	end
+
+	effectNodeTypeRegistry[ name ] = {
+		clas = clas,
+		parentTypes = all and '*' or t1
+	}
+
+	clas.__effectName = name
+
+end
+
+function getAvailSubEffectNodeTypes( etypeName )
+	if not etypeName then etypeName = 'root' end
+	if etypeName ~= 'root' then
+		local r = effectNodeTypeRegistry[ etypeName ]
+		if not r then
+			_warn( 'no effect type defined', etypeName )
+			return 
+		end
+	end
+	local res = {}
+	for name, r1 in pairs( effectNodeTypeRegistry ) do
+		if r1 ~= r then
+			if r1.parentTypes == '*' or
+				 r1.parentTypes[ etypeName ] then
+				table.insert( res, name )
+			end
+		end
+	end
+	return res
+end
+
+function getEffectNodeType( name )
+	local entry = effectNodeTypeRegistry[ name ]
+	if not entry then
+		_warn( 'no effect type defined', name )
+		return 
+	end
+	return entry.clas
 end
 
 --------------------------------------------------------------------

@@ -16,6 +16,7 @@ require 'mock.component.InputListener'
 ---- Basic components
 require 'mock.component.CameraPass'
 require 'mock.component.Camera'
+require 'mock.component.ScreenAnchor'
 
 --------------------------------------------------------------------
 ---- Graphics

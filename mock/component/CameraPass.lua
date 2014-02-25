@@ -60,18 +60,20 @@ function CameraManager:update()
 	
 	--build context->cameraList map	
 	for _, cam in ipairs( self:getCameraList() ) do
-		local context    = cam.context
-		local renderData = contextMap[ context ]
-		if not renderData then
-			renderData = {
-				cameras           = {},
-				renderTableMap    = {},
-				bufferTable       = {},
-				deviceRenderTable = false
-			}
-			contextMap[ context ] = renderData
+		if cam._enabled then
+			local context    = cam.context
+			local renderData = contextMap[ context ]
+			if not renderData then
+				renderData = {
+					cameras           = {},
+					renderTableMap    = {},
+					bufferTable       = {},
+					deviceRenderTable = false
+				}
+				contextMap[ context ] = renderData
+			end
+			table.insert( renderData.cameras, cam )
 		end
-		table.insert( renderData.cameras, cam )
 	end
 
 	for context, renderData in pairs( contextMap ) do

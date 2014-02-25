@@ -360,12 +360,13 @@ end
 --------------------------------------------------------------------
 ------ Child Entity
 --------------------------------------------------------------------
-function Entity:addSibling( entity, layerName )
-	local scene = self.scene
-	local layer = layerName and scene:getLayer(layerName) or self.layer
-	entity:_insertIntoScene( scene, layer )
+function Entity:addSibling( entity, layerName )	
 	if self.parent then
 		return self.parent:addChild( entity )
+	else
+		local scene = self.scene
+		local layer = layerName and scene:getLayer(layerName) or self.layer
+		entity:_insertIntoScene( scene, layer )
 	end
 	return entity
 end
@@ -739,6 +740,14 @@ end
 --------------------------------------------------------------------
 ----------Transform Conversion
 --------------------------------------------------------------------
+function Entity:setWorldLoc( x,y,z )
+	if self.parent then
+		return self:setLoc( self.parent:worldToModel( x,y,z ) )
+	else
+		return self:setLoc( x,y,z )
+	end
+end
+
 function Entity:wndToWorld( x, y, z )
 	return self.layer:wndToWorld( x, y, z )
 end

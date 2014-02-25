@@ -42,29 +42,31 @@ end
 
 function PrefabSpawner:spawn()
 	local ent = self._entity
+	local instance
 	if self.prefab then
-		local e = loadPrefab( self.prefab )
-		if e then
+		instance = loadPrefab( self.prefab )
+		if instance then
 			local spawnMethod = self.spawnMethod
 			if spawnMethod == 'child' then
-				ent:addChild( e )
-				if self.copyLoc then	e:setLoc( 0,0,0 )	end
-				if self.copyRot then	e:setRot( 0,0,0 )	end
-				if self.copyScl then	e:setScl( 1,1,1 )	end
+				ent:addChild( instance )
+				if self.copyLoc then	instance:setLoc( 0,0,0 )	end
+				if self.copyRot then	instance:setRot( 0,0,0 )	end
+				if self.copyScl then	instance:setScl( 1,1,1 )	end
 			elseif spawnMethod == 'sibling' then
-				ent:addSibling( e )
-				if self.copyLoc then	e:setLoc( ent:getLoc() ) end
-				if self.copyRot then	e:setRot( ent:getRot() ) end
-				if self.copyScl then	e:setScl( ent:getScl() ) end
+				ent:addSibling( instance )
+				if self.copyLoc then	instance:setLoc( ent:getLoc() ) end
+				if self.copyRot then	instance:setRot( ent:getRot() ) end
+				if self.copyScl then	instance:setScl( ent:getScl() ) end
 			elseif spawnMethod == 'root' then
-				ent:getScene():addEntity( e )				
-				if self.copyLoc then	e:setLoc( ent:getWorldLoc() ) end
-				if self.copyRot then	e:setRot( ent:getRot() ) end
-				if self.copyScl then	e:setScl( ent:getScl() ) end
+				ent:getScene():addEntity( instance )				
+				if self.copyLoc then	instance:setLoc( ent:getWorldLoc() ) end
+				if self.copyRot then	instance:setRot( ent:getRot() ) end
+				if self.copyScl then	instance:setScl( ent:getScl() ) end
 			end
 		end
 	end
 	if self.destroyOnSpawn then
 		ent:destroy()
 	end
+	return instance
 end

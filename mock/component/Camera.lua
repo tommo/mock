@@ -11,13 +11,15 @@ CLASS: Camera ( Component )
 
 :MODEL{
 	Field 'zoom'             :number()  :getset('Zoom')   :range(0) ;
+	'----';
 	Field 'perspective'      :boolean() :isset('Perspective');
 	Field 'nearPlane'        :number()  :getset('NearPlane');
 	Field 'farPlane'         :number()  :getset('FarPlane');
-	Field 'priority'         :int()     :getset('Priority');
 	Field 'FOV'              :number()  :getset('FOV')  :range( 0, 360 ) :widget( 'slider' );
-	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
+	'----';
+	Field 'priority'         :int()     :getset('Priority');
 	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
+	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
 	Field 'framebuffer'      :asset('framebuffer')  :getset('OutputFrameBuffer');
 }
 
@@ -32,6 +34,7 @@ function Camera:__init( option )
 
 	local cam = MOAICamera.new()
 	self._camera  = cam
+	cam.source = self
 	self.frameBufferPath = false
 
 	self.relativeViewportSize = false
@@ -72,6 +75,7 @@ function Camera:__init( option )
 	self.showDebugLines  = false
 
 	self.passes = {}
+	self._enabled = true
 end
 
 function Camera:onAttach( entity )
@@ -92,8 +96,16 @@ function Camera:onDetach( entity )
 	getCameraManager():unregister( self )
 end
 
+function Camera:setActive( active )
+	self._enabled = active
+	self:updateRenderLayers()
+end
+
 --------------------------------------------------------------------
 --will affect Entity:wndToWorld
+
+--TODO: update camera bindings if camera changes
+
 function Camera:bindSceneLayers()
 	local scene = self.scene
 	if not scene then return end	
@@ -481,40 +493,40 @@ function Camera:getMoaiFrameBuffer()
 end
 
 --helpers
-function Camera:getPos( name, ox, oy ) 
-	--TODO: fix this
-	ox, oy = ox or 0, oy or 0
-	-- local x0, y0, x1, y1 = self:getViewportWorldRect()
-	if     name=='top' then
-		return gfx.h/2+oy
-	elseif name=='bottom' then
-		return -gfx.h/2+oy
-	elseif name=='left' then
-		return -gfx.w/2+ox
-	elseif name=='right' then
-		return gfx.w/2+ox
-	elseif name=='left-top' then
-		return -gfx.w/2+ox,gfx.h/2+oy
-	elseif name=='left-bottom' then
-		return -gfx.w/2+ox,-gfx.h/2+oy
-	elseif name=='right-top' then
-		return gfx.w/2+ox,gfx.h/2+oy
-	elseif name=='right-bottom' then
-		return gfx.w/2+ox,-gfx.h/2+oy
-	elseif name=='center' then
-		return ox,oy
-	elseif name=='center-top' then
-		return ox,gfx.h/2+oy
-	elseif name=='center-bottom' then
-		return ox,-gfx.h/2+oy
-	elseif name=='left-center' then
-		return -gfx.w/2+ox,oy
-	elseif name=='right-center' then
-		return gfx.w/2+ox,oy
-	else
-		return error('what position?'..name)
-	end
-end
+-- function Camera:getPos( name, ox, oy ) 
+-- 	--TODO: fix this
+-- 	ox, oy = ox or 0, oy or 0
+-- 	-- local x0, y0, x1, y1 = self:getViewportWorldRect()
+-- 	if     name=='top' then
+-- 		return gfx.h/2+oy
+-- 	elseif name=='bottom' then
+-- 		return -gfx.h/2+oy
+-- 	elseif name=='left' then
+-- 		return -gfx.w/2+ox
+-- 	elseif name=='right' then
+-- 		return gfx.w/2+ox
+-- 	elseif name=='left-top' then
+-- 		return -gfx.w/2+ox,gfx.h/2+oy
+-- 	elseif name=='left-bottom' then
+-- 		return -gfx.w/2+ox,-gfx.h/2+oy
+-- 	elseif name=='right-top' then
+-- 		return gfx.w/2+ox,gfx.h/2+oy
+-- 	elseif name=='right-bottom' then
+-- 		return gfx.w/2+ox,-gfx.h/2+oy
+-- 	elseif name=='center' then
+-- 		return ox,oy
+-- 	elseif name=='center-top' then
+-- 		return ox,gfx.h/2+oy
+-- 	elseif name=='center-bottom' then
+-- 		return ox,-gfx.h/2+oy
+-- 	elseif name=='left-center' then
+-- 		return -gfx.w/2+ox,oy
+-- 	elseif name=='right-center' then
+-- 		return gfx.w/2+ox,oy
+-- 	else
+-- 		return error('what position?'..name)
+-- 	end
+-- end
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
