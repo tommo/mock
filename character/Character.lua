@@ -134,10 +134,10 @@ function Character:onDetach( ent )
 end
 
 --------------------------------------------------------------------
-function Character:processActionEvent( evtype, ev, time )	
+function Character:processActionEvent( evtype, ev, time, state )	
 	if self.actionEventCallbacks then
 		for i, callback in ipairs( self.actionEventCallbacks ) do
-			callback( evtype, self, ev, time )
+			callback( self, evtype, ev, time, state )
 		end
 	end
 end

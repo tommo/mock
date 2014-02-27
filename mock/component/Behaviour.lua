@@ -3,8 +3,8 @@ CLASS: Behaviour ( Component )
  	:MODEL{}
 
 --------------------------------------------------------------------
-function Behaviour:installInputListener()
-	return installInputListener( self )
+function Behaviour:installInputListener( option )
+	return installInputListener( self, option )
 end
 
 function Behaviour:uninstallInputListener()

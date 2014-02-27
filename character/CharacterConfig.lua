@@ -19,8 +19,10 @@ function CharacterActionEvent:__init()
 	self.length = 10
 end
 
-function CharacterActionEvent:findNextEvent()
+function CharacterActionEvent:findNextEvent( allowWrap )
 	-- self.parent:sortEvents()
+	local action = self:getAction()	
+	local wrap = allowWrap ~= false and action.loop
 	local events = self.parent.events
 	local pos0 = self.pos
 	local pos = false
@@ -32,9 +34,14 @@ function CharacterActionEvent:findNextEvent()
 				res = e
 				pos = pos1
 			end
-		end		
+		end
 	end
-	return res
+	if res then
+		return res
+	elseif wrap then
+		return events[1]
+	end
+	return nil
 end
 
 function CharacterActionEvent:start( state, pos )
@@ -154,6 +161,18 @@ function CharacterActionTrack:calcLength()
 	return l
 end
 
+function CharacterActionTrack:getHeadEvent()
+	return self.events[ 1 ]
+end
+
+function CharacterActionTrack:getTailEvent()
+	local l = #self.events
+	if l > 0 then
+		return self.events[ l ]
+	end
+	return nil
+end
+
 --------------------------------------------------------------------
 --VIRTUAL Functions
 --whether build keyframe using event from the track
@@ -184,6 +203,9 @@ function CharacterActionTrack:pause( state, paused )
 end
 
 function CharacterActionTrack:apply( state, t )
+end
+
+function CharacterActionTrack:apply2( state, t0, t1 )
 end
 
 --------------------------------------------------------------------
@@ -333,6 +355,14 @@ function CharacterConfig:getAction( name )
 		if act.name == name then return act end
 	end
 	return nil
+end
+
+function CharacterConfig:sortEvents() --pre-serialization
+	for i, action in ipairs( self.actions ) do
+		for _, track in ipairs( action.tracks ) do
+			track:sortEvents()
+		end
+	end
 end
 
 --------------------------------------------------------------------

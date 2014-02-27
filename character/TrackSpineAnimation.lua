@@ -110,7 +110,8 @@ function TrackSpineAnimation:start( state )
 	else
 		spineState:setMode( MOAITimer.NORMAL )
 	end
-	spineState:start()
+	spineState:attach( state:getTimer() )
+	-- spineState:start()
 	local animTrack = spineState:addTrack()
 	spineTracks[ self ] = animTrack
 	for i, ev in ipairs( self.events ) do
@@ -129,7 +130,6 @@ function TrackSpineAnimation:stop( state )
 	spineTracks[ self ] = nil
 end
 
-
 function TrackSpineAnimation:pause( state, paused )
 	local spineState = state.target.spineState
 	spineState:pause( paused )
@@ -138,14 +138,14 @@ end
 function TrackSpineAnimation:setThrottle( state, t )
 	local spineState = state.target.spineState
 	if spineState then
-		spineState:throttle( t )
+		-- spineState:throttle( t )
 	end
 end
 
-function TrackSpineAnimation:apply( state, t )
+function TrackSpineAnimation:apply( state, t, t1 )
 	local spineState = state.target.spineState
 	if spineState then
-		spineState:apply( t )
+		spineState:apply( t, t1 )
 	end
 end
 

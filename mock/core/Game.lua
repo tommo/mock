@@ -410,10 +410,9 @@ function Game:getViewportScale()
 end
 
 function Game:setDeviceSize( w, h )
-	-- if self.deviceWidth == w and self.deviceHeight == h then return end
 	self.deviceWidth  = w
 	self.deviceHeight = h
-	-- _stat( 'device.resize', w, h )
+	_stat( 'device.resize', w, h )
 	emitSignal( 'device.resize', self.width, self.height )
 end
 

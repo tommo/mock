@@ -362,7 +362,7 @@ end
 --------------------------------------------------------------------
 function Entity:addSibling( entity, layerName )	
 	if self.parent then
-		return self.parent:addChild( entity )
+		return self.parent:addChild( entity, layerName )
 	else
 		local scene = self.scene
 		local layer = layerName and scene:getLayer(layerName) or self.layer

@@ -14,104 +14,113 @@ function installInputListener( self, option )
 	local touchCallback    = false
 	local joystickCallback = false
 	
-	----MouseEvent
-	local onMouseEvent = self.onMouseEvent
-	local onMouseDown  = self.onMouseDown
-	local onMouseUp    = self.onMouseUp
-	local onMouseMove  = self.onMouseMove
-	local onMouseEnter = self.onMouseEnter
-	local onMouseLeave = self.onMouseLeave
-	local onScroll     = self.onScroll
+	local sensors = option['sensors'] or false
+	if not sensors or table.find( sensors, 'mouse' ) then
+		----MouseEvent
+		local onMouseEvent = self.onMouseEvent
+		local onMouseDown  = self.onMouseDown
+		local onMouseUp    = self.onMouseUp
+		local onMouseMove  = self.onMouseMove
+		local onMouseEnter = self.onMouseEnter
+		local onMouseLeave = self.onMouseLeave
+		local onScroll     = self.onScroll
 
-	if 
-		onMouseDown or onMouseUp or onMouseMove or onScroll or
-		onMouseLeave or onMouseEnter or
-		onMouseEvent
-	then
-		mouseCallback = function( ev, x, y, btn, mock )
-			if mock and refuseMockUpInput then return end
-			if ev == 'move' then
-				if onMouseMove then onMouseMove( self, x, y, mock ) end
-			elseif ev == 'down' then
-				if onMouseDown then onMouseDown( self, btn, x, y, mock ) end
-			elseif ev == 'up'   then
-				if onMouseUp  then onMouseUp  ( self, btn, x, y, mock ) end
-			elseif ev == 'scroll' then
-				if onScroll   then onScroll ( self, x, y, mock ) end
-			elseif ev == 'enter'  then
-				if onMouseEnter   then onMouseEnter ( self, mock ) end
-			elseif ev == 'leave'  then
-				if onMouseLeave   then onMouseLeave ( self, mock ) end
+		if 
+			onMouseDown or onMouseUp or onMouseMove or onScroll or
+			onMouseLeave or onMouseEnter or
+			onMouseEvent
+		then
+			mouseCallback = function( ev, x, y, btn, mock )
+				if mock and refuseMockUpInput then return end
+				if ev == 'move' then
+					if onMouseMove then onMouseMove( self, x, y, mock ) end
+				elseif ev == 'down' then
+					if onMouseDown then onMouseDown( self, btn, x, y, mock ) end
+				elseif ev == 'up'   then
+					if onMouseUp  then onMouseUp  ( self, btn, x, y, mock ) end
+				elseif ev == 'scroll' then
+					if onScroll   then onScroll ( self, x, y, mock ) end
+				elseif ev == 'enter'  then
+					if onMouseEnter   then onMouseEnter ( self, mock ) end
+				elseif ev == 'leave'  then
+					if onMouseLeave   then onMouseLeave ( self, mock ) end
+				end
+				if onMouseEvent then
+					return onMouseEvent( self, ev, x, y, btn, mock )
+				end
 			end
-			if onMouseEvent then
-				return onMouseEvent( self, ev, x, y, btn, mock )
-			end
+			inputDevice:addMouseListener( mouseCallback )
 		end
-		inputDevice:addMouseListener( mouseCallback )
 	end
 
-	----TouchEvent
-	local onTouchEvent  = self.onTouchEvent  
-	local onTouchDown   = self.onTouchDown
-	local onTouchUp     = self.onTouchUp
-	local onTouchMove   = self.onTouchMove
-	local onTouchCancel = self.onTouchCancel
-	if onTouchDown or onTouchUp or onTouchMove or onTouchEvent then
-		touchCallback = function( ev, id, x, y, mock )
-			if mock and refuseMockUpInput then return end
-			if ev == 'move' then
-				if onTouchMove   then onTouchMove( self, id, x, y, mock ) end
-			elseif ev == 'down' then
-				if onTouchDown   then onTouchDown( self, id, x, y, mock ) end
-			elseif ev == 'up' then
-				if onTouchUp     then onTouchUp  ( self, id, x, y, mock ) end
-			elseif ev == 'cancel' then
-				if onTouchCancel then onTouchCancel( self ) end
+	if not sensors or table.find( sensors, 'touch' ) then
+		----TouchEvent
+		local onTouchEvent  = self.onTouchEvent  
+		local onTouchDown   = self.onTouchDown
+		local onTouchUp     = self.onTouchUp
+		local onTouchMove   = self.onTouchMove
+		local onTouchCancel = self.onTouchCancel
+		if onTouchDown or onTouchUp or onTouchMove or onTouchEvent then
+			touchCallback = function( ev, id, x, y, mock )
+				if mock and refuseMockUpInput then return end
+				if ev == 'move' then
+					if onTouchMove   then onTouchMove( self, id, x, y, mock ) end
+				elseif ev == 'down' then
+					if onTouchDown   then onTouchDown( self, id, x, y, mock ) end
+				elseif ev == 'up' then
+					if onTouchUp     then onTouchUp  ( self, id, x, y, mock ) end
+				elseif ev == 'cancel' then
+					if onTouchCancel then onTouchCancel( self ) end
+				end
+				if onTouchEvent then
+					return onTouchEvent( self, ev, id, x, y, mock )
+				end
 			end
-			if onTouchEvent then
-				return onTouchEvent( self, ev, id, x, y, mock )
-			end
+			inputDevice:addTouchListener( touchCallback )
 		end
-		inputDevice:addTouchListener( touchCallback )
 	end
 
 	----KeyEvent
-	local onKeyEvent = self.onKeyEvent
-	local onKeyDown  = self.onKeyDown
-	local onKeyUp    = self.onKeyUp
-	if onKeyDown or onKeyUp or onKeyEvent then
-		keyboardCallback = function( key, down, mock )
-			if mock and refuseMockUpInput then return end
-			if down then
-				if onKeyDown then onKeyDown( self, key, mock ) end
-			else
-				if onKeyUp   then onKeyUp  ( self, key, mock ) end
+	if not sensors or table.find( sensors, 'keyboard' ) then
+		local onKeyEvent = self.onKeyEvent
+		local onKeyDown  = self.onKeyDown
+		local onKeyUp    = self.onKeyUp
+		if onKeyDown or onKeyUp or onKeyEvent then
+			keyboardCallback = function( key, down, mock )
+				if mock and refuseMockUpInput then return end
+				if down then
+					if onKeyDown then onKeyDown( self, key, mock ) end
+				else
+					if onKeyUp   then onKeyUp  ( self, key, mock ) end
+				end
+				if onKeyEvent then
+					return onKeyEvent( self, key, down, mock )
+				end
 			end
-			if onKeyEvent then
-				return onKeyEvent( self, key, down, mock )
-			end
+			inputDevice:addKeyboardListener( keyboardCallback )
 		end
-		inputDevice:addKeyboardListener( keyboardCallback )
 	end
 
 	---JOYSTICK EVNET
-	local onJoyButtonDown = self.onJoyButtonDown
-	local onJoyButtonUp   = self.onJoyButtonUp
-	local onJoyAxisMove   = self.onJoyAxisMove
-	if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove then
-		joystickCallback = function( ev, joyId, btnId, axisId, value, mock )
-			if mock and refuseMockUpInput then return end
-			if ev == 'down' then
-				if onJoyButtonDown then onJoyButtonDown( self, joyId, btnId, mock ) end
-			elseif ev == 'up' then
-				if onJoyButtonUp then onJoyButtonUp( self, joyId, btnId, mock ) end
-			elseif ev == 'axis' then
-				if onJoyAxisMove then onJoyAxisMove( self, joyId, axisId, value ) end
+	if not sensors or table.find( sensors, 'joystick' ) then
+		local onJoyButtonDown = self.onJoyButtonDown
+		local onJoyButtonUp   = self.onJoyButtonUp
+		local onJoyAxisMove   = self.onJoyAxisMove
+		if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove then
+			joystickCallback = function( ev, joyId, btnId, axisId, value, mock )
+				if mock and refuseMockUpInput then return end
+				if ev == 'down' then
+					if onJoyButtonDown then onJoyButtonDown( self, joyId, btnId, mock ) end
+				elseif ev == 'up' then
+					if onJoyButtonUp then onJoyButtonUp( self, joyId, btnId, mock ) end
+				elseif ev == 'axis' then
+					if onJoyAxisMove then onJoyAxisMove( self, joyId, axisId, value ) end
+				end
 			end
+			inputDevice:addJoystickListener( joystickCallback )
 		end
-		inputDevice:addJoystickListener( joystickCallback )
 	end
-
+	
 	self.__inputListenerData = {
 		mouseCallback    = mouseCallback,
 		keyboardCallback = keyboardCallback,

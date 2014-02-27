@@ -60,3 +60,6 @@ require 'mock.component.BehaviorTree'
 
 --------------------------------------------------------------------
 require 'mock.component.EffectEmitter'
+
+--------------------------------------------------------------------
+require 'mock.component.Layout'

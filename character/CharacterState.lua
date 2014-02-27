@@ -12,7 +12,7 @@ local function _actionStateEventListener( timer, key, timesExecuted, time, value
 	local time   = timer:getTime()
 	for i, ev in ipairs( span ) do
 		ev:start( state, time )
-		target:processActionEvent( 'event', ev, time )
+		target:processActionEvent( 'event', ev, time, state )
 	end
 end
 
@@ -23,7 +23,7 @@ function CharacterState:__init( target, action )
 	
 	local stateData = action:getStateData()
 
-	local timer = MOAITimer.new()
+	local timer = MOAIManualTimer.new()
 	self.timer  = timer
 	timer:setCurve( stateData.keyCurve )
 	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionStateEventListener )
@@ -55,7 +55,17 @@ function CharacterState:start()
 	end	
 	self.timer:start()
 	self.timer:throttle( self.throttle )
-	self.target:processActionEvent( 'start' )
+	self.target:processActionEvent( 'start', nil, 0, self )
+end
+
+function CharacterState:doStep( step )
+	self.timer:doStep( step )
+	local t1 = self.timer:getTime()
+	local action = self.action
+	if not action then return end
+	for i, track in ipairs( action.tracks ) do
+		track:apply( self, t1 )
+	end	
 end
 
 function CharacterState:stop()
@@ -63,7 +73,7 @@ function CharacterState:stop()
 	if not action then return end
 	if not self.active then return end
 	self.active = false
-	self.target:processActionEvent( 'stop' )
+	self.target:processActionEvent( 'stop', nil, self:getTime(), self )
 	for i, t in ipairs( action.tracks ) do
 		t:stop( self )
 	end	
@@ -80,13 +90,28 @@ function CharacterState:pause( paused )
 	end	
 end
 
-function CharacterState:apply( t )
-	self.timer:setTime( t )
-	local action = self.action
-	if not action then return end
-	for i, track in ipairs( action.tracks ) do
-		track:apply( self, t )
+function CharacterState:apply( a, b )
+	if b then
+		local t0, t1 = a, b
+		-- self.timer:setTime( t1 )
+		-- self.timer:apply( t0, t1 )
+		local action = self.action
+		if not action then return end
+		for i, track in ipairs( action.tracks ) do
+			track:apply2( self, t0, t1 )
+		end
+	else
+		local t0, t1 = a, a
+		-- self.timer:setTime( t1 )
+		-- self.timer:apply( t1 )
+		t1 = self.timer:getTime()
+		local action = self.action
+		if not action then return end
+		for i, track in ipairs( action.tracks ) do
+			track:apply( self, t1 )
+		end
 	end	
+	self.timer:forceUpdate()
 end
 
 function CharacterState:isDone()
@@ -99,6 +124,10 @@ end
 
 function CharacterState:getTime()
 	return self.timer:getTime()
+end
+
+function CharacterState:getTimer()
+	return self.timer
 end
 
 function CharacterState:setThrottle( th )
@@ -116,4 +145,10 @@ end
 --------------------------------------------------------------------
 function CharacterState:setTrackActive( track )
 	--todo
+end
+
+--------------------------------------------------------------------
+function CharacterState:findTrack( typeName )
+	local action = self.action
+	return action and  action:findTrack( typeName )
 end

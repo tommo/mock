@@ -36,6 +36,8 @@ require 'mock.core.Component'
 require 'mock.core.Layer'
 require 'mock.core.Scene'
 require 'mock.core.GlobalObject'
+require 'mock.core.ScreenProfile'
 require 'mock.core.Game'
-require 'mock.core.EntityHelper'
 
+----Helpers
+require 'mock.core.EntityHelper'
