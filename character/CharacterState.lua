@@ -93,8 +93,7 @@ end
 function CharacterState:apply( a, b )
 	if b then
 		local t0, t1 = a, b
-		-- self.timer:setTime( t1 )
-		-- self.timer:apply( t0, t1 )
+		self.timer:setTime( t1 )
 		local action = self.action
 		if not action then return end
 		for i, track in ipairs( action.tracks ) do
@@ -102,8 +101,7 @@ function CharacterState:apply( a, b )
 		end
 	else
 		local t0, t1 = a, a
-		-- self.timer:setTime( t1 )
-		-- self.timer:apply( t1 )
+		self.timer:setTime( t1 )
 		t1 = self.timer:getTime()
 		local action = self.action
 		if not action then return end

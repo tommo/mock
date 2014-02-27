@@ -111,6 +111,7 @@ function TrackSpineAnimation:start( state )
 		spineState:setMode( MOAITimer.NORMAL )
 	end
 	spineState:attach( state:getTimer() )
+	spineState:apply( 0 )
 	-- spineState:start()
 	local animTrack = spineState:addTrack()
 	spineTracks[ self ] = animTrack
