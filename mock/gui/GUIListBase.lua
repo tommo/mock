@@ -1,4 +1,9 @@
 module 'mock'
+
+registerSignals{
+	'ui.list.select',	
+}
+
 --------------------------------------------------------------------
 CLASS: GUIListBase     ( GUIScrollArea )
 CLASS: GUIListItemBase ( GUIButtonBase )
@@ -79,6 +84,7 @@ function GUIListItemBase:onRelease( pointer, x, y )
 	if self.parent:isScrollGrabbed() then
 		self.parent:grabScroll( false )
 	else
+		self:emit( 'ui.list.select', self.parent, self )
 		self.parent:selectItem( self )
 	end
 end

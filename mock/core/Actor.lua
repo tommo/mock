@@ -41,21 +41,34 @@ function Actor:__init()
 end
 
 --------SIGNAL
-function Actor:connect( sig, methodName )
-	return self:connectForObject( self, sig, methodName )
+function Actor:connect( sig, slot )
+	return self:connectForObject( self, sig, slot )
 end
 
-function Actor:connectForObject( obj, sig, methodName )
+function Actor:connectForObject( obj, sig, slot )
 	local connectedSignals = self.connectedSignals
 	if not connectedSignals then
 		connectedSignals = {}
 		self.connectedSignals = connectedSignals
 	end
-	if type( obj[methodName] )~='function' then
-		error( 'Method not found:'..methodName, 2 )
+	
+	local tt = type( slot )
+	if tt == 'function' then
+		local func = slot
+		local signal = connectSignalFunc( sig, func )
+		connectedSignals[ signal ] = func
+		
+	elseif tt == 'string' then
+		local methodName = slot
+		if type( obj[methodName] )~='function' then
+			error( 'Method not found:'..methodName, 2 )
+		end
+		local signal = connectSignalMethod( sig, obj, methodName )
+		connectedSignals[ signal ] = obj
+
+	else
+		error( 'invalid slot type:' .. tt )
 	end
-	local signal = connectSignalMethod( sig, obj, methodName )
-	connectedSignals[ signal ] = obj
 end
 
 function Actor:emit( sig, ... )
