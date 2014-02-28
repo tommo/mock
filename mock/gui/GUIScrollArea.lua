@@ -115,7 +115,11 @@ function GUIScrollArea:getScrollY()
 end
 
 function GUIScrollArea:setScrollY( y )
-	return setLocY( self.innerTransform, y )
+	setLocY( self.innerTransform, y )
+	-- local y0,y1 = 0, self.scrollH
+	-- if y0>y1 then y0,y1 = y1,y0 end
+	-- if y < y0
+		
 end
 
 function GUIScrollArea:addScrollY( dy )
