@@ -24,12 +24,13 @@
 ]]
 
 local pairs,ipairs,setmetatable,unpack=pairs,ipairs,setmetatable,unpack
-local insert,remove=table.insert, table.remove
-local yield=coroutine.yield
+local insert,remove = table.insert, table.remove
+local yield = coroutine.yield
 local select = select
-local block=MOAICoroutine.blockOnAction
+local block = MOAICoroutine.blockOnAction
 
 module 'mock'
+
 
 CLASS: Actor ()
 
@@ -56,7 +57,7 @@ function Actor:connectForObject( obj, sig, slot )
 	if tt == 'function' then
 		local func = slot
 		local signal = connectSignalFunc( sig, func )
-		connectedSignals[ signal ] = func
+		table.insert( connectedSignals, { obj, signal, func } )
 		
 	elseif tt == 'string' then
 		local methodName = slot
@@ -64,7 +65,7 @@ function Actor:connectForObject( obj, sig, slot )
 			error( 'Method not found:'..methodName, 2 )
 		end
 		local signal = connectSignalMethod( sig, obj, methodName )
-		connectedSignals[ signal ] = obj
+		table.insert( connectedSignals, { obj, signal, obj } )
 
 	else
 		error( 'invalid slot type:' .. tt )
@@ -78,9 +79,26 @@ end
 function Actor:disconnectAll()
 	local connectedSignals = self.connectedSignals
 	if not connectedSignals then return end
-	for sig, obj in pairs(connectedSignals) do
+	for i, entry in ipairs( connectedSignals ) do
+		local sig, obj = entry[ 2 ], entry[ 3 ]
 		sig[ obj ]=nil
 	end
+	self.connectedSignals = false
+end
+
+function Actor:disconnectAllForObject( owner )
+	local connectedSignals = self.connectedSignals
+	if not connectedSignals then return end
+	local signals1 = {}
+	for i, entry in ipairs(connectedSignals) do
+		local owner1, sig, obj = unpack( entry )
+		if owner == owner1 then
+			sig[ obj ] = nil
+		else
+			table.insert( signals1, entry )
+		end		
+	end
+	self.connectedSignals = signals1
 end
 
 ---- msgbox?
@@ -111,73 +129,76 @@ function Actor:tell( msg, data, source )
 	end
 end
 
----- Subscribe & Broadcast
-function Actor:subscribe(target, msgTransform)
-	local subs = target._subscribers
-	if not subs then
-		subs = {}
-		target._subscribers=subs
-	end
-	subs[self]=msgTransform or false
-	local subed=self._subscribed
-	if not subed then
-		subed = {}
-		self._subscribed = subed
-	end
-	subed[target]=true
-end
+-- ---- Subscribe & Broadcast
+-- function Actor:subscribe(target, msgTransform)
+-- 	local subs = target._subscribers
+-- 	if not subs then
+-- 		subs = {}
+-- 		target._subscribers=subs
+-- 	end
+-- 	subs[self]=msgTransform or false
+-- 	local subed=self._subscribed
+-- 	if not subed then
+-- 		subed = {}
+-- 		self._subscribed = subed
+-- 	end
+-- 	subed[target]=true
+-- end
 
-function Actor:unsubscribe(target)
-	local subs=target._subscribers
-	if subs then 
-		subs[self]=nil
-		if self._subscribed then
-			self._subscribed[target]=nil
-		end
-	end
-end
+-- function Actor:unsubscribe(target)
+-- 	local subs=target._subscribers
+-- 	if subs then 
+-- 		subs[self]=nil
+-- 		if self._subscribed then
+-- 			self._subscribed[target]=nil
+-- 		end
+-- 	end
+-- end
 
-function Actor:unsubscribeAll()
-	local subed = self._subscribed
-	if subed then
-		for t in pairs(subed) do
-			local subs = t._subscribers
-			if subs then t[self] = nil end
-		end
-	end
-	self._subscribed = nil
-end
+-- function Actor:unsubscribeAll()
+-- 	local subed = self._subscribed
+-- 	if subed then
+-- 		for t in pairs(subed) do
+-- 			local subs = t._subscribers
+-- 			if subs then t[self] = nil end
+-- 		end
+-- 	end
+-- 	self._subscribed = nil
+-- end
 
-function Actor:broadcast( msg, data, source )
-	local subs = self._subscribers
-	if not subs then return end
-	for obj, transform in pairs( subs ) do
-		if transform then
-			local m1 = transform[msg]			
-			local tt=type(m1)
-			if tt == 'function' then
-				m1( obj, msg, data, source or self )
-			elseif tt == 'string' then
-				obj:tell( m1, data, source or self )
-			elseif tt ~= false then
-				obj:tell( msg, data, source or self )
-			end
-		else
-			obj:tell( msg, data, source or self )
-		end
-	end
-end
+-- function Actor:broadcast( msg, data, source )
+-- 	local subs = self._subscribers
+-- 	if not subs then return end
+-- 	for obj, transform in pairs( subs ) do
+-- 		if transform then
+-- 			local m1 = transform[msg]			
+-- 			local tt=type(m1)
+-- 			if tt == 'function' then
+-- 				m1( obj, msg, data, source or self )
+-- 			elseif tt == 'string' then
+-- 				obj:tell( m1, data, source or self )
+-- 			elseif tt ~= false then
+-- 				obj:tell( msg, data, source or self )
+-- 			end
+-- 		else
+-- 			obj:tell( msg, data, source or self )
+-- 		end
+-- 	end
+-- end
 
 ---------coroutine control
 local function _coroutineWrapperFunc( coroutines, coro, func, ...)
 	func( ... )
 	coroutines[ coro ] = nil  --automatically remove self from thread list
+	--TODO: push to cache
+	-- coroutineCache:push( coro )
 end
 
 function setActorCoroutineWrapper( f )
 	_coroutineWrapperFunc = f
 end
 
+--------------------------------------------------------------------
 function Actor:addCoroutine( func, ... )
 	
 	local coro = MOAICoroutine.new()

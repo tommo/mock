@@ -150,7 +150,7 @@ end
 --------------------------------------------------------------------
 function GUIScrollArea:setTargetScrollX( x )
 	local x0,x1 = 0, self.scrollW
-	if x0>x1 then x0,x1 = x1,x0 end
+	if x0 > x1 then x0, x1 = x1, x0 end
 	self.targetScrollX = math.clamp( x, x0,x1 )
 end
 
@@ -177,7 +177,11 @@ function GUIScrollArea:grabScroll( grabbed )
 		self.speedScrollX = 0
 		self.speedScrollY = 0
 		self.targetScrollX, self.targetScrollY = self:getScroll()	
+		self:onGrabStart()
+	else
+		self:onGrabStop()
 	end
+
 end
 
 function GUIScrollArea:isScrollGrabbed()
@@ -195,9 +199,12 @@ function GUIScrollArea:onUpdate( dt )
 end
 
 function GUIScrollArea:updateTargetScrollX( dt ) 
+	if not self.grabbed and math.abs( self.speedScrollX ) < 0.01 then
+		self.speedScrollX = 0
+		return
+	end
 	local damping = self.scrollDamping
 	local ms = self.maxScrollSpeed
-	
 	local x  = self:getScrollX()
 	if self.grabbed then
 		local vx0 = self.speedScrollX
@@ -205,8 +212,9 @@ function GUIScrollArea:updateTargetScrollX( dt )
 		local k = 0.7
 		self.speedScrollX =  vx0*(1-k) + vx1*k
 	end
+	
 	local nx = x + self.speedScrollX
-	local x0,x1 = 0, -self.scrollH
+	local x0,x1 = 0, self.scrollW
 	if x0>x1 then
 		x0,x1 = x1,x0
 	end
@@ -223,17 +231,21 @@ function GUIScrollArea:updateTargetScrollX( dt )
 end
 
 function GUIScrollArea:updateTargetScrollY( dt )
+	if not self.grabbed and math.abs( self.speedScrollY ) < 0.01 then
+		self.speedScrollY = 0
+		return
+	end
 	local damping = self.scrollDamping
-	local ms = self.maxScrollSpeed
-
+	local ms = self.maxScrollSpeed	
 	local y  = self:getScrollY()
 	if self.grabbed then
 		local vy0 = self.speedScrollY
 		local dy = self.targetScrollY - y
 		local vy1 = math.clamp( dy, -ms, ms )
 		local k = 0.7
-		self.speedScrollY =  vy0*(1-k) + vy1*k
+		self.speedScrollY = vy0*(1-k) + vy1*k
 	end
+	
 	local ny = y + self.speedScrollY
 	local y0,y1 = 0, -self.scrollH
 	if y0>y1 then
@@ -271,3 +283,8 @@ function GUIScrollArea:onRelease( pointer, x,y )
 	self:grabScroll( false )
 end
 
+function GUIScrollArea:onGrabStop()
+end
+
+function GUIScrollArea:onGrabStart()
+end

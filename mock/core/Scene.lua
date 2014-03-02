@@ -88,6 +88,7 @@ function Scene:getTime()
 end
 
 function Scene:threadMain( dt )
+	-- runProfiler( 5 )
 	dt = 0
 	local lastTime = self:getTime()
 	while true do	

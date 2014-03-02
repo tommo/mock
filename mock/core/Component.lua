@@ -88,9 +88,11 @@ end
 --------------------------------------------------------------------
 --signals
 --------------------------------------------------------------------
-function Component:connect( sig, methodName )
+function Component:connect( sig, methodName )	
 	return self._entity:connectForObject( self, sig, methodName )
 end
+
+-- function Component:disconnectAll()  ---DONE by entity
 
 --------------------------------------------------------------------
 -- Wait wrapping

@@ -57,6 +57,7 @@ function disconnectSignal( sig, id )
 end
 
 function registerSignal(sig)
+	--TODO: add module info for unregistration
 	assert( type(sig) == 'string', 'signal name should be string' )
 	local s = signalTable[sig]
 	if s then 
@@ -71,6 +72,7 @@ end
 function registerSignals(sigtable)
 	for i,k in ipairs(sigtable) do
 		registerSignal(k)
+		--TODO: add module info for unregistration
 	end	
 end
 

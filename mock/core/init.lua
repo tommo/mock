@@ -41,3 +41,4 @@ require 'mock.core.Game'
 
 ----Helpers
 require 'mock.core.EntityHelper'
+require 'mock.core.AnimCurve'

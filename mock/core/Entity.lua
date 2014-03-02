@@ -150,7 +150,6 @@ function Entity:destroyNow()
 	local onDestroy = self.onDestroy
 	if not scene then return end
 
-	self:unsubscribeAll()
 	self:disconnectAll()
 	self:clearCoroutines()
 	local entityListener = scene.entityListener
@@ -238,7 +237,7 @@ function Entity:attachList( l )
 	end
 end
 
-function Entity:detach( com )
+function Entity:detach( com, fromAll )
 	local components = self.components
 	if not components[ com ] then return end
 	components[ com ] = nil
@@ -248,6 +247,9 @@ function Entity:detach( com )
 			entityListener( 'detach', self, com )
 		end
 		local onDetach = com.onDetach
+		if not fromAll then
+			self:disconnectAllForObject( com )
+		end
 		if onDetach then onDetach( com, self ) end
 	end
 	return com
@@ -258,7 +260,7 @@ function Entity:detachAll()
 	while true do
 		local com = next( components )
 		if not com then break end
-		self:detach( com )
+		self:detach( com, true )
 	end
 end
 

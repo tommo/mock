@@ -83,8 +83,7 @@ end
 --geometry
 function GUIWidget:inside( x, y, z, pad )
 	x,y = self:worldToModel( x, y )
-	local w, h = self:getSize()
-	local x0,y0,x1,y1 = 0,0,w,h
+	local x0,y0,x1,y1 = self:getRect()
 	if x0 > x1 then x1,x0 = x0,x1 end
 	if y0 > y1 then y1,y0 = y0,y1 end
 	if pad then
