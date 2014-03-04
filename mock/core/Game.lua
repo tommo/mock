@@ -412,7 +412,7 @@ end
 function Game:setDeviceSize( w, h )
 	self.deviceWidth  = w
 	self.deviceHeight = h
-	_stat( 'device.resize', w, h )
+	-- _stat( 'device.resize', w, h )
 	emitSignal( 'device.resize', self.width, self.height )
 end
 

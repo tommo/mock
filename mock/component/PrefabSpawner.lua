@@ -8,7 +8,8 @@ local enumSpawnMethod = _ENUM_V {
 
 CLASS: PrefabSpawner ()
 	:MODEL{
-		Field 'prefab' :asset('prefab');
+		Field 'prefab'         :asset('prefab');
+		-- Field 'spanwName'         :string();
 		'----';		
 		Field 'copyLoc'        :boolean();
 		Field 'copyRot'        :boolean();

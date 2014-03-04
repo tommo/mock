@@ -289,6 +289,7 @@ function loadAsset( path, option )
 	if loadPolicy ~= 'force' then
 		local asset  = node.cached.asset
 		if asset then
+			-- _stat( 'get asset from cache:', path, node )
 			return asset, node
 		end
 	end
@@ -320,9 +321,22 @@ function loadAsset( path, option )
 	end
 end
 
+function getCachedAsset( path )
+	if path == '' then return nil end
+	if not path   then return nil end
+	option = option or {}
+	loadPolicy   = option.loadPolicy or 'auto'
+	local node   = getAssetNode( path )
+	if not node then 
+		_warn ( 'no asset found', path or '???' )
+		return nil
+	end
+	return node.cached.asset
+end
+
+
 --------------------------------------------------------------------
 function releaseAsset( path )
-	-- 	
 	node = getAssetNode( path )
 	if node then
 		local atype  = node.type
@@ -331,8 +345,7 @@ function releaseAsset( path )
 			unloader( asset, node )
 		end
 		node.cached = {}
-		_stat( 'released node asset', path )
+		_stat( 'released node asset', path, node )
 	end
-
 end
 
