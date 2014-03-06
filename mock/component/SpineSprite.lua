@@ -130,3 +130,5 @@ end
 function SpineSprite:getAnimationNames()
 	return nil
 end
+
+wrapWithMoaiPropMethods( SpineSprite, ':getSkeleton()' )
