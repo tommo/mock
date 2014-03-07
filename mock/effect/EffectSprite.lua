@@ -1,16 +1,19 @@
 module 'mock'
 
--- --------------------------------------------------------------------
--- CLASS: EffectSprite ( EffectNode )
--- 	:MODEL{
--- 		Field 'deck'  :asset('deck2d\\..*');
--- 		Field 'index' :int() :range(0);
--- 		Field 'blend' :enum( EnumBlendMode );
--- 	}
+--------------------------------------------------------------------
+--Static Sprite
+--------------------------------------------------------------------
+CLASS: EffectSprite ( EffectNode )
+	:MODEL{
+		Field 'deck'  :asset('deck2d\\..*');
+		Field 'index' :int() :range(0);
+		Field 'blend' :enum( EnumBlendMode );
+	}
 
 
 --------------------------------------------------------------------
-
+--Aurora Sprite
+--------------------------------------------------------------------
 CLASS: EffectAuroraSprite ( EffectNode )
 	:MODEL{
 		Field 'spriteData' :asset( 'aurora_sprite' ) :onset( 'refresh' );
@@ -28,9 +31,12 @@ function EffectAuroraSprite:refresh()
 	self.sprite.sprite = self.spriteData
 end
 
+function EffectAuroraSprite:onLoad( fxState )
+	
+end
+
 --------------------------------------------------------------------
 registerEffectNodeType(
 	'sprite-aurora',
-	EffectAuroraSprite,
-	'root'
+	EffectAuroraSprite	
 )

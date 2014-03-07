@@ -2,12 +2,12 @@ module 'mock'
 
 CLASS: EffectScript ( EffectNode )
 	:MODEL{
-		Field 'script' :string();
+		Field 'script' :string() :widget('textbox');
 	}
 
 function EffectScript:__init()
 	self.script = [[
-function onUpdate( emitter, dt )
+function onUpdate( fxState, dt )
 	--update script
 end
 	]]
@@ -21,17 +21,24 @@ function EffectScript:onBuild()
 		setfenv( chunk, env )
 		chunk()
 		self._onUpdate = env.onUpdate
+		self._onLoad   = env.onLoad
 	end
 end
 
-function EffectScript:onUpdate( emitter, dt )
-	if self._onUpdate then
-		return self._onUpdate( emitter, dt )
+function EffectState:onLoad( fxState )
+	if self._onLoad then
+		self._onLoad( fxState )
 	end
+	if self._onUpdate then
+		fxState:addUpdateListener( self )
+	end
+end
+
+function EffectScript:onUpdate( fxState, dt ) --only run when callback exists
+	return self._onUpdate( fxState, dt )
 end
 
 registerEffectNodeType(
 	'script',
-	EffectScript,
-	'*'
+	EffectScript
 )

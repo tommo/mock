@@ -42,7 +42,7 @@ function Shader:setAttrLink( name, v )
 end
 
 function Shader:update()
-	local vsh,fsh=option.vsh,option.fsh
+	local vsh,fsh = option.vsh,option.fsh
 
 	local shader= self.shader
 	shader:load(vsh,fsh)
@@ -60,12 +60,12 @@ function Shader:update()
 	local uniforms=option.uniforms
 	local uniformTable = {}
 	if uniforms then
-		local count=#uniforms
+		local count = #uniforms
 		shader:reserveUniforms(count)
 		for i, u in ipairs(uniforms) do
-			local utype=u.type
-			local uvalue=u.value
-			local name=u.name
+			local utype  = u.type
+			local uvalue = u.value
+			local name   = u.name
 
 			if utype=='float' then
 				shader:declareUniformFloat(i, name, uvalue or 0)

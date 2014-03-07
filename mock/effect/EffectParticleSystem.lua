@@ -78,7 +78,7 @@ function EffectNodeParticleSystem:postBuild()
 	self._built = true	
 end
 
-function EffectNodeParticleSystem:buildSystem( system )
+function EffectNodeParticleSystem:buildSystem( system, fxState )
 	assert( self._built )
 	system = system or MOAIParticleSystem.new()
 	system:reserveStates    ( self.stateCount )
@@ -98,8 +98,10 @@ function EffectNodeParticleSystem:buildSystem( system )
 	local emitterNodes = self.emitterNodes
 
 	--build forces
-	for i, f in ipairs( forceNodes ) do
-		forces[ i ] = f:buildForce()
+	for i, node in ipairs( forceNodes ) do
+		local force = node:buildForce()
+		forces[ i ] = force
+		fxState[ node ] = force
 	end
 	
 	--build states
@@ -117,14 +119,17 @@ function EffectNodeParticleSystem:buildSystem( system )
 		em:setSystem( system )
 		em:start()
 		emitters[ i ] = em
+		fxState[ node ] = em
 	end
+
+	fxState[ self ] = system
 	system:start()
 	return system, emitters, forces
 end
 
-function EffectNodeParticleSystem:onLoad( emitter )
-	local prop = emitter.prop
-	local system, emitters, forces = self:buildSystem()	
+function EffectNodeParticleSystem:onLoad( fxState )
+	local prop = fxState:getProp()
+	local system, emitters, forces = self:buildSystem( nil, fxState )	
 	if self.syncTransform then --attach system only
 		inheritPartition( system, prop )
 		inheritTransform( system, prop )
@@ -138,6 +143,7 @@ function EffectNodeParticleSystem:onLoad( emitter )
 		end
 	end
 end
+
 --------------------------------------------------------------------
 --CLASS:  EffectNodeParticleState
 --------------------------------------------------------------------
@@ -437,6 +443,20 @@ function EffectNodeParticleEmitter:buildEmitter()
 	return emitter
 end
 
+function EffectNodeParticleEmitter:getTransformNode( state )
+	return state[ self ]
+end
+
+function EffectNodeParticleEmitter:setActive( state, active )
+	local em = state[ self ]
+	if not em then return end
+	if active then
+		em:start()
+	else
+		em:stop()
+	end
+end
+
 --------------------------------------------------------------------
 function EffectNodeParticleEmitter:setEmission( e1, e2 )
 	self.emission = { e1 or 0 , e2 or 0 }
@@ -537,7 +557,6 @@ function EffectNodeParticleDistanceEmitter:buildEmitter()
 end
 
 
-
 ----------------------------------------------------------------------
 --CLASS: EffectNodeParticleForce
 --------------------------------------------------------------------
@@ -571,6 +590,9 @@ end
 function EffectNodeParticleForce:updateForce( f )
 end
 
+function EffectNodeParticleForce:getTransformNode( state )
+	return state[ self ]
+end
 
 --------------------------------------------------------------------
 CLASS: EffectNodeForceAttractor ( EffectNodeParticleForce )
@@ -675,46 +697,51 @@ function EffectNodeForceRadial:getDefaultName()
 end
 
 
---TODO: need dependency ??
-registerEffectNodeType( 
+registerTopEffectNodeType( 
 	'particle-system',
 	EffectNodeParticleSystem,
-	'root'
+	{ 
+		'particle-state'             ,
+		'particle-emitter-timed'     , 
+		'particle-emitter-distance'  ,
+		'particle-force-radial'      ,
+		'particle-force-attractor'   ,
+		'particle-force-basin'       ,
+	}
 )
 
 registerEffectNodeType( 
 	'particle-state',
-	EffectNodeParticleState,
-	'particle-system'
+	EffectNodeParticleState
 )
 
 registerEffectNodeType( 
 	'particle-emitter-timed',
 	EffectNodeParticleTimedEmitter,
-	'particle-system'
+	{'movement'}
 )
 
 registerEffectNodeType( 
 	'particle-emitter-distance',
 	EffectNodeParticleDistanceEmitter,
-	'particle-system'
+	{'movement'}
 )
 
 registerEffectNodeType( 
 	'particle-force-radial',
 	EffectNodeForceRadial,
-	'particle-system'
+	{'movement'}
 )
 
 registerEffectNodeType( 
 	'particle-force-attractor',
 	EffectNodeForceAttractor,
-	'particle-system'
+	{'movement'}
 )
 
 registerEffectNodeType( 
 	'particle-force-basin',
 	EffectNodeForceBasin,
-	'particle-system'
+	{'movement'}
 )
 

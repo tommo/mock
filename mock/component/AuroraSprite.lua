@@ -27,7 +27,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: AuroraSprite ( RenderComponent )
 	:MODEL {
-		Field 'sprite' :asset( 'aurora_sprite' );
+		Field 'sprite' :asset( 'aurora_sprite' ) :getset('Sprite');
 		Field 'default' :string();
 		Field 'autoPlay' :boolean();
 	}
@@ -41,7 +41,7 @@ mock.registerEntityWithComponent( 'AuroraSprite', AuroraSprite )
 function AuroraSprite:__init( option )
 	self.prop        = MOAIProp.new()
 	self.driver      = MOAIAnim.new()
-	self.spriteAsset = false
+	self.spriteData = false
 	self.currentClip = false
 	self.playFPS     = 60
 	self.playSpeed   = 1
@@ -63,13 +63,27 @@ function AuroraSprite:onDetach( entity )
 	return entity:_detachProp( self.prop )
 end
 
-function AuroraSprite:load( spriteAsset )
+function AuroraSprite:setSprite( path )
 	self:stop( true )
-	self.currentClip = false
-	self.spriteAsset = spriteAsset
-	self.prop:setDeck( spriteAsset.frameDeck )
-	self.prop:setIndex( 0 )
-	self.prop:forceUpdate()
+	self.spritePath = path 
+	local spriteData, node = loadAsset( path )
+	--TODO? assert asset node type
+	if spriteData then
+		self:stop( true )
+		self.currentClip = false
+		self.spriteData = spriteData
+		self.prop:setDeck( spriteData.frameDeck )
+		self.prop:setIndex( 0 )
+		self.prop:forceUpdate()
+	end
+end
+
+function AuroraSprite:getSprite()
+	return self.spritePath
+end
+
+function AuroraSprite:getSpriteData()
+	return self.spriteData
 end
 
 function AuroraSprite:setScissorRect( r )
@@ -77,21 +91,21 @@ function AuroraSprite:setScissorRect( r )
 end
 
 function AuroraSprite:getClipTable()
-	local asset = self.spriteAsset
-	if not asset then 
+	local data = self.spriteData
+	if not data then 
 		_error('animation not load', 2)
 		return nil
 	end
-	return asset.animations
+	return data.animations
 end
 
 function AuroraSprite:getClip( name )
-	local asset = self.spriteAsset
-	if not asset then 
+	local data = self.spriteData
+	if not data then 
 		_error('animation not load', 2)
 		return nil
 	end
-	return asset.animations[ name ]
+	return data.animations[ name ]
 end
 
 function AuroraSprite:getClipLength( name )
@@ -204,4 +218,12 @@ end
 function AuroraSprite:setBlend( b )
 	self.blend = b	
 	setPropBlend( self.prop, b )
+end
+
+function AuroraSprite:setVisible( f )
+	return self.prop:setVisible( f )
+end
+
+function AuroraSprite:isVisible()
+	return self.prop:isVisible()
 end

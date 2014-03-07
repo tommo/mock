@@ -282,9 +282,13 @@ local function affirmClass( t, id )
 			end
 			clas.__env = env
 
-			if globalClassRegistry[ clas.__fullname ] then
+			clas.__definetraceback = debug.traceback( 2 )
+			local clas0 = globalClassRegistry[ clas.__fullname ]
+			if clas0  then
 				_error( 'duplicated class:', clas.__fullname )
-				print( debug.traceback(2) )
+				print( '-->from:',clas.__definetraceback )
+				print( '-->first defined here:',clas0.__definetraceback )
+
 			end
 			globalClassRegistry[ clas.__fullname ] = clas
 			return clas

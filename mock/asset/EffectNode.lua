@@ -4,7 +4,7 @@ module 'mock'
 CLASS: EffectNode  ()
 CLASS: EffectGroup ( EffectNode )
 CLASS: EffectRoot  ( EffectGroup )
-
+CLASS: EffectState ()
 ----------------------------------------------------------------------
 --CLASS: EffectNode
 --------------------------------------------------------------------
@@ -62,6 +62,10 @@ function EffectNode:removeChild( n )
 	end
 end
 
+function EffectNode:getParent()
+	return self.parent
+end
+
 function EffectNode:build( state )
 	-- print('building', self:getClassName() )
 	self:onBuild( state )
@@ -79,17 +83,36 @@ end
 function EffectNode:postBuild( state )
 end
 
-function EffectNode:loadIntoEmitter( emitter )
+function EffectNode:loadIntoState( state )
 	if not self._built then	self:build() end
-	self:onLoad( emitter )	
+	self:onLoad( state )	
+	for i, child in pairs( self.children ) do
+		child:loadIntoState( state )
+	end
 end
 
-function EffectNode:onLoad( emitter )
+function EffectNode:onLoad( state )
 end
 
-function EffectNode:getHandle( emitter )
-	return false
+----effect node exposes transform/color for modifiers
+function EffectNode:getTransformNode( fxState )
+	return self:getProp( fxState )
 end
+
+function EffectNode:getColorNode( fxState )
+	return self:getProp( fxState )
+end
+
+function EffectNode:getProp( fxState )
+	return fxState[ self ]
+end
+
+function EffectNode:setActive( fxState, active )
+end
+
+function EffectNode:setVisible( fxState, visible )
+end
+
 
 ----------------------------------------------------------------------
 --CLASS: EffectGroup
@@ -111,9 +134,9 @@ function EffectGroup:build( state )
 	end
 end
 
-function EffectGroup:loadIntoEmitter( em )
+function EffectGroup:loadIntoState( state )
 	for i, child in pairs( self.children ) do
-		child:loadIntoEmitter( em )
+		child:loadIntoState( state )
 	end
 end
 
@@ -137,6 +160,10 @@ function EffectRoot:getDefaultName()
 	return 'effect'
 end
 
+function EffectRoot:getProp( fxState )
+	return fxState:getProp()
+end
+
 --------------------------------------------------------------------
 updateAllSubClasses( EffectNode )
 --------------------------------------------------------------------
@@ -154,59 +181,70 @@ function EffectConfig:getRootNode()
 	return self._root
 end
 
-function EffectConfig:loadIntoEmitter( e )
-	self._root:loadIntoEmitter( e )
+function EffectConfig:loadIntoState( state )
+	self._root:loadIntoState( state )
 end
 
 local effectNodeTypeRegistry = {}
 --------------------------------------------------------------------
-function registerEffectNodeType( name, clas, parentTypes )
+function registerEffectNodeType( name, clas, childTypes, topEffectNode )
 	--TODO: reload on modification??	
-	if type( parentTypes ) == 'string' then
-		parentTypes = { parentTypes }
-	end
-	if not parentTypes then
-		parentTypes = { 'root' }
-	end
+	if type( childTypes ) == 'string' then
+		childTypes = { childTypes }
+	end	
 	local t1 = {}
 	local all = false
-	if parentTypes then
-		for i, k in ipairs( parentTypes ) do
+	if childTypes then
+		for i, k in ipairs( childTypes ) do
 			if k == '*' then all = true break end
 			t1[ k ] = true
 		end
-		local _, c = next( parentTypes )
-		assert( type( c ) == 'string', 'parent types should be specified in strings.' )
+		local _, c = next( childTypes )
+		assert( type( c ) == 'string', 'child types should be specified in strings.' )
 	end
 
 	effectNodeTypeRegistry[ name ] = {
-		clas = clas,
-		parentTypes = all and '*' or t1
+		clas          = clas,
+		childTypes    = all and '*' or t1,
+		topEffectNode = topEffectNode and true or false
 	}
 
 	clas.__effectName = name
+end
 
+function registerTopEffectNodeType( name, clas, childTypes )
+	return registerEffectNodeType( name, clas, childTypes, true )
 end
 
 function getAvailSubEffectNodeTypes( etypeName )
-	if not etypeName then etypeName = 'root' end
-	if etypeName ~= 'root' then
+	if not etypeName then etypeName = 'root' end	
+	local res = { 'script' }
+	-- if etypeName == 'script' then --should script on script be supported?
+	-- end
+	if etypeName == 'root' then
+		for name, r1 in pairs( effectNodeTypeRegistry ) do
+			if name ~= 'script' then
+				if r1.topEffectNode then
+					table.insert( res, name )
+				end
+			end
+		end
+		return res
+	else --non root
 		local r = effectNodeTypeRegistry[ etypeName ]
 		if not r then
 			_warn( 'no effect type defined', etypeName )
 			return 
 		end
-	end
-	local res = {}
-	for name, r1 in pairs( effectNodeTypeRegistry ) do
-		if r1 ~= r then
-			if r1.parentTypes == '*' or
-				 r1.parentTypes[ etypeName ] then
-				table.insert( res, name )
+		for name, r1 in pairs( effectNodeTypeRegistry ) do
+			if name ~= 'script' then
+				if r.childTypes == '*' or r.childTypes[ name ] then
+					table.insert( res, name )
+				end
 			end
 		end
+		return res
 	end
-	return res
 end
 
 function getEffectNodeType( name )
@@ -219,6 +257,53 @@ function getEffectNodeType( name )
 end
 
 --------------------------------------------------------------------
+--Effect State
+--------------------------------------------------------------------
+EffectState	:MODEL{}
+
+function EffectState:__init( emitter, config )
+	--TODO: refactor this out...
+	self._emitter= emitter
+	self._prop   = emitter.prop
+	self._config = config
+	self._updateListeners = {}
+end
+
+function EffectState:getProp()
+	return self._prop
+end
+
+function EffectState:getEmitter()
+	return self._emitter
+end
+
+function EffectState:getEffectConfig()
+	return self._config
+end
+
+function EffectState:start()
+end
+
+function EffectState:stop()
+end
+
+function EffectState:addUpdateListener( node )
+	self._updateListeners[ node ] = true
+end
+
+function EffectState:removeUpdatingListener( node )
+	self._updateListeners[ node ] = nil
+end
+
+function EffectState:update( dt )
+	for k in pairs( self._updateListeners ) do
+		k:onUpdate( self, dt )
+	end
+end
+
+--------------------------------------------------------------------
+-- Asset Loader
+--------------------------------------------------------------------
 function loadEffectConfig( node )
 	local defData   = loadAssetDataTable( node:getObjectFile('def') )
 	local config = deserialize( nil, defData )
@@ -226,4 +311,3 @@ function loadEffectConfig( node )
 end
 
 registerAssetLoader( 'effect', loadEffectConfig )
-

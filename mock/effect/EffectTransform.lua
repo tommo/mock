@@ -17,14 +17,18 @@ function EffectMove:getTypeName()
 	return 'move'
 end
 
-function EffectMove:onLoad( emitter )
-	emitter:addUpdatingEffect( self )
+function EffectMove:onLoad( fxState )
+	local parent = self.parent
+	local trans = parent:getTransformNode( fxState )
+	fxState[ self ] = trans
+	--assert trans
+	fxState:addUpdateListener( self )
 end
 
-function EffectMove:onUpdate( emitter, dt )
-	local ent = emitter._entity
+function EffectMove:onUpdate( fxState, dt )
+	local trans = fxState[ self ]
 	local speed = self.speed
-	ent:addLoc( 
+	trans:addLoc( 
 		speed[1] * dt,
 		speed[2] * dt,
 		speed[3] * dt 
@@ -49,13 +53,19 @@ function EffectRotate:getTypeName()
 	return 'rotate'
 end
 
-function EffectRotate:onLoad( emitter )
-	emitter:addUpdatingEffect( self )
+function EffectRotate:onLoad( fxState )
+	local parent = self.parent
+	local trans = parent:getTransformNode( fxState )
+	fxState[ self ] = trans
+	--assert trans
+	fxState:addUpdateListener( self )
+
 end
 
-function EffectRotate:onUpdate( emitter, dt )
-	local ent = emitter._entity
+function EffectRotate:onUpdate( fxState, dt )
+	local trans = fxState[ self ]
 	local speed = self.speed
+	if not trans then return end
 	ent:addRot( 
 		speed[1] * dt,
 		speed[2] * dt,
@@ -98,14 +108,12 @@ end
 -- end
 
 --------------------------------------------------------------------
-registerEffectNodeType(
+registerTopEffectNodeType(
 	'movement',
-	EffectMove,
-	'*'
+	EffectMove	
 )
 
-registerEffectNodeType(
+registerTopEffectNodeType(
 	'rotation',
-	EffectRotate,
-	'*'
+	EffectRotate	
 )
