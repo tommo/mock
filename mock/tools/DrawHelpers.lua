@@ -41,7 +41,7 @@ function MOAIDraw.drawEmitter( x,y, size )
 	size =  size or 30
 	MOAIDraw.drawCircle( x,y, size )
 	MOAIDraw.drawCircle( x,y, size/6 )
-	MOAIDraw.fillArrow( x+size/6, y, x+size, y, size/3 )
+	return MOAIDraw.fillArrow( x+size/6, y, x+size, y, size/3 )
 end
 
 
@@ -65,7 +65,14 @@ function MOAIDraw.drawArc( x,y, r, a0,a1, step )
 		points[ i*2+2 ] = yy
 	end
 	points[ spans*2 + 3 ] = nil --end the array
-	MOAIDraw.drawLine( points )
+	return MOAIDraw.drawLine( points )
+end
+
+function MOAIDraw.drawRadialLine( x,y, angle, off0, off1 )
+	local c,s
+	c = cos( angle )
+	s = sin( angle )	
+	return MOAIDraw.drawLine( c * off0 + x, s * off0 + y, c * off1 + x, s * off1 + y )
 end
 
 -- function MOAIDraw.drawDottedLine( x,y, x1,y1, s1, s2 )

@@ -183,6 +183,12 @@ end
 function CharacterActionTrack:createEvent()
 	return CharacterActionEvent()
 end
+
+--for multiple event type support
+function CharacterActionTrack:getEventTypes()
+	return false
+end
+
 --(pre)build
 function CharacterActionTrack:buildStateData( stateData ) 
 end
@@ -405,4 +411,8 @@ end
 function getCharacterActionTrackType( name )
 	local entry = _TrackTypes[ name ]
 	return entry and entry.clas
+end
+
+function getCharacterActionTrackEventTypes( name )
+
 end
