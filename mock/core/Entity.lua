@@ -62,7 +62,7 @@ function Entity:__init( data )
 end
 
 function Entity:_insertIntoScene( scene, layer )
-	self.scene = scene
+	self.scene = assert( scene )
 	local layer = layer or self.layer
 	if type(layer) == 'string' then
 		layer = scene:getLayer( layer )
@@ -71,8 +71,12 @@ function Entity:_insertIntoScene( scene, layer )
 
 	self.layer = layer
 	scene.entities[ self ] = true
-	
+
+	local copy = {} --there might be new components attached inside component starting
 	for com in pairs( self.components ) do
+		copy[ com ] = true
+	end 
+	for com in pairs( copy ) do
 		if not com._entity then
 			com._entity = self
 			local onAttach = com.onAttach
@@ -119,6 +123,7 @@ function Entity:destroy()
 	assert( self.scene )
 	local scene = self.scene
 	scene.pendingDestroy[ self ] = true
+	scene.pendingStart[ self ] = nil
 	
 	for child in pairs( self.children ) do
 		child:destroy()
@@ -566,10 +571,10 @@ function Entity:start()
 	end
 	self.started = true
 
-	local copy = {}
+	local copy = {} --there might be new components attached inside component starting
 	for com in pairs( self.components ) do
 		copy[ com ] = true
-	end
+	end 
 	for com, clas in pairs( copy ) do
 		local onStart = com.onStart
 		if onStart then onStart( com, self ) end
