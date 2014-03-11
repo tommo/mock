@@ -1,5 +1,31 @@
 module 'mock'
 
+--------------------------------------------------------------------
+CLASS: EffectTransformNode ( EffectNode )
+	:MODEL{
+		'----';
+		Field 'loc'       :type('vec3') :tuple_getset() :label('Loc'); 
+		Field 'rot'       :type('vec3') :tuple_getset() :label('Rot');
+		Field 'scl'       :type('vec3') :tuple_getset() :label('Scl');
+		Field 'piv'       :type('vec3') :tuple_getset() :label('Piv');
+		'----'
+	}
+
+function EffectTransformNode:__init()
+	self.loc = {0,0,0}
+	self.rot = {0,0,0}
+	self.scl = {1,1,1}
+	self.piv = {0,0,0}
+end
+
+function EffectTransformNode:applyTransformToProp( p )
+	p:setLoc( unpack( self.loc ) )
+	p:setRot( unpack( self.rot ) )
+	p:setScl( unpack( self.scl ) )
+	p:setPiv( unpack( self.piv ) )
+end
+
+--------------------------------------------------------------------
 CLASS: EffectMove ( EffectNode )
 	:MODEL{
 		Field 'speed'  :type('vec3') :tuple_getset('speed') :label('speed.move');
@@ -19,7 +45,7 @@ end
 
 function EffectMove:onLoad( fxState )
 	local parent = self.parent
-	local trans = parent:getTransformNode( fxState )
+	local trans = assert( parent:getTransformNode( fxState ) )
 	fxState[ self ] = trans
 	--assert trans
 	fxState:addUpdateListener( self )
@@ -27,10 +53,11 @@ end
 
 function EffectMove:onUpdate( fxState, dt )
 	local trans = fxState[ self ]
+	local sx,sy = trans:getScl()
 	local speed = self.speed
-	trans:addLoc( 
-		speed[1] * dt,
-		speed[2] * dt,
+	trans:addLoc(
+		speed[1] * dt * sx,
+		speed[2] * dt * sy,
 		speed[3] * dt 
 	)
 end
@@ -59,14 +86,13 @@ function EffectRotate:onLoad( fxState )
 	fxState[ self ] = trans
 	--assert trans
 	fxState:addUpdateListener( self )
-
 end
 
 function EffectRotate:onUpdate( fxState, dt )
 	local trans = fxState[ self ]
 	local speed = self.speed
 	if not trans then return end
-	ent:addRot( 
+	trans:addRot( 
 		speed[1] * dt,
 		speed[2] * dt,
 		speed[3] * dt 
@@ -117,3 +143,8 @@ registerTopEffectNodeType(
 	'rotation',
 	EffectRotate	
 )
+
+EffectCategoryTransform = {
+	'movement',
+	'rotation',
+}

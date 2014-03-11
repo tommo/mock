@@ -120,6 +120,10 @@ function inheritTransform( p1, p2 )
 	return p1:setAttrLink ( INHERIT_TRANSFORM, p2, TRANSFORM_TRAIT )
 end
 
+function clearInheritTransform( p1 )
+	p1:clearAttrLink( INHERIT_TRANSFORM )
+end
+
 function inheritColor( p1, p2 )
 	return p1:setAttrLink ( INHERIT_COLOR, p2, COLOR_TRAIT )
 end

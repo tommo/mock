@@ -25,6 +25,7 @@ CLASS: EventEffect ( CharacterActionEvent )
 		'----';
 		Field 'loc' :type('vec3') :getset('Loc');
 		Field 'rot' :type('vec3') :getset('Rot');
+		Field 'scl' :type('vec3') :getset('Scl');
 	}
 
 function EventEffect:__init()
@@ -66,6 +67,14 @@ function EventEffect:getRot()
 	return self.transform:getRot()
 end
 
+function EventEffect:setScl( x,y,z )
+	return self.transform:setScl( x,y,z )
+end
+
+function EventEffect:getScl()
+	return self.transform:getScl()
+end
+
 function EventEffect:isResizable()
 	return true
 end
@@ -75,21 +84,30 @@ function EventEffect:start( state, pos )
 	if effect == '' then effect = nil end
 	if not self.effect then return end
 	local target = state.target
-	local emEnt = mock.Entity()
+	local ent = target:getEntity()	
 	local em = mock.EffectEmitter()
-	emEnt:attachInternal( em )
-	em:setEffect( self.effect )	
-	target:getEntity():addInternalChild( emEnt )
+	ent:attachInternal( em )	
 	local transform = self.transform
-	emEnt:setLoc( transform:getLoc() )
-	emEnt:setRot( transform:getRot() )
-	state[ self ] = emEnt
-end
-
-function EventEffect:stop( state )
-	local emEnt = state[ self ]	
-	if not emEnt then return end
-	emEnt:destroy()
+	em:setEffect( self.effect )
+	local x,y,z = transform:getLoc()
+	local rx,ry,rz = transform:getRot()
+	local sx,sy,sz = transform:getScl()
+	local kx = target.mirrorX and -1 or 1
+	local ky = target.mirrorY and -1 or 1
+	sx = sx * kx
+	sy = sy * ky
+	x = x * kx
+	y = y * ky
+	if kx * ky == -1 then
+		rz = - rz
+	end
+	em.prop:setLoc( target:modelToWorld ( x,y,z ) )
+	em.prop:setRot( rx,ry,rz )
+	em.prop:setScl( sx,sy,sz )	
+	em:start()
+	local length = self.length/1000
+	em:setDuration( length )
+	em:setDestroyOnStop( true )
 end
 
 function EventEffect:toString()
@@ -104,12 +122,12 @@ function EventEffect:onBuildGizmo()
 	giz:setTarget( self )
 	linkLoc( giz:getProp(), self.transform )
 	linkRot( giz:getProp(), self.transform )
+	linkScl( giz:getProp(), self.transform )
 	return giz
 end
 
 function EventEffect:drawBounds()
-	MOAIDraw.drawCircle( 0,0, 20 )
-	MOAIDraw.fillArrow( 0,0, 30,0, 5 )
+	MOAIDraw.drawEmitter( 0,0 )
 end
 
 --------------------------------------------------------------------
@@ -137,4 +155,3 @@ end
 
 --------------------------------------------------------------------
 registerCharacterActionTrackType( 'Effect', TrackEffect )
-

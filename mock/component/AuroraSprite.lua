@@ -28,7 +28,7 @@ module 'mock'
 CLASS: AuroraSprite ( RenderComponent )
 	:MODEL {
 		Field 'sprite' :asset( 'aurora_sprite' ) :getset('Sprite');
-		Field 'default' :string();
+		Field 'default' :string() :selection( 'getClipNames' );
 		Field 'autoPlay' :boolean();
 	}
 
@@ -38,20 +38,14 @@ mock.registerComponent( 'AuroraSprite', AuroraSprite )
 mock.registerEntityWithComponent( 'AuroraSprite', AuroraSprite )
 --------------------------------------------------------------------
 
-function AuroraSprite:__init( option )
+function AuroraSprite:__init()
 	self.prop        = MOAIProp.new()
 	self.driver      = MOAIAnim.new()
 	self.spriteData = false
 	self.currentClip = false
 	self.playFPS     = 60
 	self.playSpeed   = 1
-
-	self.driver:reserveLinks( 3 ) --offset x & offset y & frame index
-	if option then
-		if option.fps then self.playFPS = option.fps end
-		if option.sprite then	self:load( option.sprite ) end
-		setupMoaiProp( self.prop, option )
-	end
+	self.driver:reserveLinks( 3 ) --offset x & offset y & frame index	
 end
 
 function AuroraSprite:onAttach( entity )
@@ -84,6 +78,16 @@ end
 
 function AuroraSprite:getSpriteData()
 	return self.spriteData
+end
+
+function AuroraSprite:getClipNames()
+	local data = self.spriteData
+	if not data then return nil end
+	local result = {}
+	for k,i in pairs( data.animations ) do
+		table.insert( result, { k, k } )
+	end
+	return result
 end
 
 function AuroraSprite:setScissorRect( r )
@@ -131,8 +135,8 @@ function AuroraSprite:setClip( name, mode )
 
 	driver:reserveLinks( 3 )
 	driver:setLink( 1, indexCurve,   self.prop, MOAIProp.ATTR_INDEX )
-	driver:setLink( 2, offsetXCurve, self.prop, MOAIProp.ATTR_X_LOC )
-	driver:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )
+	-- driver:setLink( 2, offsetXCurve, self.prop, MOAIProp.ATTR_X_LOC )
+	-- driver:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )
 	driver:setMode( mode or clip.mode or MOAITimer.NORMAL )
 
 	self.driver = driver

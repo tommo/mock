@@ -3,6 +3,8 @@ module 'character'
 CLASS: Character ( mock.Behaviour )
 	:MODEL{
 		Field 'config'  :asset('character') :getset( 'Config' );
+		Field 'mirrorX'  :boolean() :set( 'setMirrorX' );
+		Field 'mirrorY'  :boolean() :set( 'setMirrorY' );
 		Field 'default' :string();
 		Field 'autoPlay' :boolean();
 		Field 'loop'     :boolean();
@@ -12,9 +14,11 @@ function Character:__init()
 	self.config      = false
 	self.default     = 'default'
 	self.activeState = false
-	self.spineSprite = mock.SpineSprite()
+	self.spineSprite = mock.SpineSprite()	
 	self.soundSource = mock.SoundSource()
 	self.throttle    = 1
+	self.mirrorX     = false
+	self.mirrorY     = false
 
 	self.actionEventCallbacks = false
 end
@@ -22,6 +26,7 @@ end
 --------------------------------------------------------------------
 function Character:onAttach( entity )
 	entity:attachInternal( self.spineSprite )
+
 	entity:attachInternal( self.soundSource )
 end
 --------------------------------------------------------------------
@@ -41,7 +46,27 @@ function Character:updateConfig()
 	if not config then return end
 	local path = config:getSpine()
 	self.spineSprite:setSprite( path )
-	--todo
+	local sk = self.spineSprite.skeleton
+	if sk then
+		setSclX( sk, self.mirrorX and -1 or 1 )
+		setSclY( sk, self.mirrorY and -1 or 1 )
+	end
+end
+
+function Character:setMirrorX( mirror )
+	self.mirrorX = mirror
+	local skeleton = self.spineSprite.skeleton
+	if skeleton then
+		setSclX( skeleton, mirror and -1 or 1 )
+	end
+end
+
+function Character:setMirrorY( mirror )
+	self.mirrorY = mirror
+	local skeleton = self.spineSprite.skeleton
+	if skeleton then
+		setSclY( skeleton, mirror and -1 or 1 )
+	end
 end
 
 --------------------------------------------------------------------

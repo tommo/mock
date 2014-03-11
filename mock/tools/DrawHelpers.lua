@@ -36,3 +36,39 @@ end
 --------------------------------------------------------------------
 --
 --------------------------------------------------------------------
+
+function MOAIDraw.drawEmitter( x,y, size )
+	size =  size or 30
+	MOAIDraw.drawCircle( x,y, size )
+	MOAIDraw.drawCircle( x,y, size/6 )
+	MOAIDraw.fillArrow( x+size/6, y, x+size, y, size/3 )
+end
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+local cos, sin = math.cosd, math.sind
+function MOAIDraw.drawArc( x,y, r, a0,a1, step )
+	a0 = a0 or 90
+	a1 = a1 or 0
+	step = step or 10
+	r = r or 100
+	local spans = math.abs( math.ceil( (a1-a0)/step ) )
+	if spans == 0 then return end
+	local astep = ( a1 - a0 )/spans
+	local points = {}
+	for i = 0, spans do
+		local a = a0 + astep * i 
+		local xx = cos( a ) * r + x
+		local yy = sin( a ) * r + y
+		points[ i*2+1 ] = xx
+		points[ i*2+2 ] = yy
+	end
+	points[ spans*2 + 3 ] = nil --end the array
+	MOAIDraw.drawLine( points )
+end
+
+-- function MOAIDraw.drawDottedLine( x,y, x1,y1, s1, s2 )
+-- 	s1 = s1 or 5
+-- 	s2 = s2 or 5	
+-- end

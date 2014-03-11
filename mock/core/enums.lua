@@ -16,6 +16,17 @@ EnumTextureSize = {
 }
 
 --------------------------------------------------------------------
+EnumTimerMode = {
+	{ 'normal'            , MOAITimer.NORMAL           } ,
+	{ 'reverse'           , MOAITimer.REVERSE          } ,
+	{ 'continue'          , MOAITimer.CONTINUE         } ,
+	{ 'continue_reverse'  , MOAITimer.CONTINUE_REVERSE } ,
+	{ 'loop'              , MOAITimer.LOOP             } ,
+	{ 'loop_reverse'      , MOAITimer.LOOP_REVERSE     } ,
+	{ 'ping_pong'         , MOAITimer.PING_PONG        } ,
+}
+
+--------------------------------------------------------------------
 EnumTextureFilter = {
 	{ 'Linear',    'linear'  },
 	{ 'Nearest',   'nearest' }
@@ -67,6 +78,12 @@ EnumEaseType={
 	{	'soft_ease_in'   , MOAIEaseType.SOFT_EASE_IN   },
 	{	'soft_ease_out'  , MOAIEaseType.SOFT_EASE_OUT  },
 	{	'soft_smooth'	   , MOAIEaseType.SOFT_SMOOT     },
+	{	'back_in'        , MOAIEaseType.BACK_IN        },
+	{	'back_out'       , MOAIEaseType.BACK_OUT       },
+	{	'back_smooth'	   , MOAIEaseType.BACK_SMOOT     },
+	{	'elastic_in'     , MOAIEaseType.ELASTIC_IN     },
+	{	'elastic_out'    , MOAIEaseType.ELASTIC_OUT    },
+	{	'elastic_smooth' , MOAIEaseType.ELASTIC_SMOOT  },
 }
 
 --------------------------------------------------------------------

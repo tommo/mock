@@ -126,8 +126,8 @@ function CharacterActionTrack:getRootConfig()
 	return action and action.parent
 end
 --------------------------------------------------------------------
-function CharacterActionTrack:addEvent( pos )
-	local ev = self:createEvent()
+function CharacterActionTrack:addEvent( pos, evType )
+	local ev = self:createEvent( evType )
 	table.insert( self.events, ev )
 	ev.parent = self
 	ev.pos = pos or 0
@@ -392,13 +392,17 @@ function getCharacterActionTrackTypeTable()
 	return _TrackTypes
 end
 
-function registerCharacterActionTrackType( name, trackClas )
+function registerCharacterActionTrackType( name, trackClas, eventTypes )
 	if _TrackTypes[ name ] then
 		_warn( 'duplicated action track type', name )
 	end
-	_TrackTypes[ name ] = trackClas
+	_TrackTypes[ name ] = {
+		clas = trackClas,
+		eventTypes = eventTypes
+	}
 end
 
 function getCharacterActionTrackType( name )
-	return _TrackTypes[ name ]
+	local entry = _TrackTypes[ name ]
+	return entry and entry.clas
 end

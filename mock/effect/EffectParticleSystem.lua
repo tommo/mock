@@ -12,8 +12,8 @@ end
 --------------------------------------------------------------------
 CLASS: EffectNodeParticleSystem  ( EffectNode )
 CLASS: EffectNodeParticleState   ( EffectNode )
-CLASS: EffectNodeParticleEmitter ( EffectNode )
-CLASS: EffectNodeParticleForce   ( EffectNode )
+CLASS: EffectNodeParticleEmitter ( EffectTransformNode )
+CLASS: EffectNodeParticleForce   ( EffectTransformNode )
 
 ----------------------------------------------------------------------
 --CLASS: EffectNodeParticleSystem
@@ -128,18 +128,16 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 end
 
 function EffectNodeParticleSystem:onLoad( fxState )
-	local prop = fxState:getProp()
 	local system, emitters, forces = self:buildSystem( nil, fxState )	
+	fxState:linkPartition( system )
 	if self.syncTransform then --attach system only
-		inheritPartition( system, prop )
-		inheritTransform( system, prop )
+		fxState:linkTransform( system )
 	else --attach emitter/forces only
-		inheritPartition( system, prop )
 		for _,em in pairs( emitters ) do
-			inheritTransform( em, prop )
+			fxState:linkTransform( em )
 		end
 		for _,f in pairs( forces ) do
-			inheritLoc( f, prop )
+			fxState:linkTransform( f )
 		end
 	end
 end
@@ -377,11 +375,6 @@ end
 --------------------------------------------------------------------
 EffectNodeParticleEmitter :MODEL {
 		'----';
-		Field 'loc'       :type('vec3') :tuple_getset() :label('Loc'); 
-		Field 'rot'       :type('vec3') :tuple_getset() :label('Rot');
-		Field 'scl'       :type('vec3') :tuple_getset() :label('Scl');
-		Field 'piv'       :type('vec3') :tuple_getset() :label('Piv');
-		'----';
 		Field 'emission'  :type('vec2') :range(0)  :getset('Emission');		
 		Field 'duration'  :number();
 		Field 'surge'     :int();
@@ -402,10 +395,6 @@ function EffectNodeParticleEmitter:__init()
 	self.radius    = {0,0}
 	self.rect      = {0,0}
 	self.duration  = -1
-	self.loc = {0,0,0}
-	self.rot = {0,0,0}
-	self.scl = {1,1,1}
-	self.piv = {0,0,0}
 end
 
 function EffectNodeParticleEmitter:updateEmitterCommon( em )
@@ -423,10 +412,7 @@ function EffectNodeParticleEmitter:updateEmitterCommon( em )
 	if em.setDuration then 
 		em:setDuration( self.duration )
 	end
-	em:setLoc( unpack( self.loc ) )
-	em:setRot( unpack( self.rot ) )
-	em:setScl( unpack( self.scl ) )
-	em:setPiv( unpack( self.piv ) )
+	self:applyTransformToProp( em )	
 end
 
 function EffectNodeParticleEmitter:getDefaultName()
@@ -718,30 +704,30 @@ registerEffectNodeType(
 registerEffectNodeType( 
 	'particle-emitter-timed',
 	EffectNodeParticleTimedEmitter,
-	{'movement'}
+	EffectCategoryTransform
 )
 
 registerEffectNodeType( 
 	'particle-emitter-distance',
 	EffectNodeParticleDistanceEmitter,
-	{'movement'}
+	EffectCategoryTransform
 )
 
 registerEffectNodeType( 
 	'particle-force-radial',
 	EffectNodeForceRadial,
-	{'movement'}
+	EffectCategoryTransform
 )
 
 registerEffectNodeType( 
 	'particle-force-attractor',
 	EffectNodeForceAttractor,
-	{'movement'}
+	EffectCategoryTransform
 )
 
 registerEffectNodeType( 
 	'particle-force-basin',
 	EffectNodeForceBasin,
-	{'movement'}
+	EffectCategoryTransform
 )
 

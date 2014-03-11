@@ -208,20 +208,21 @@ local sin   = math.sin
 local cos   = math.cos
 local tan   = math.tan
 local atan2 = math.atan2
-local pi=math.pi
-local piD=pi/180
+local pi    = math.pi
+local D2R   = pi/180
+local R2D   = 180/pi
 
-function math.cosd(d) return cos(piD*d) end
+function math.cosd(d) return cos(D2R*d) end
 
-function math.sind(d) return sin(piD*d) end
+function math.sind(d) return sin(D2R*d) end
 
-function math.tand(d) return tan(piD*d) end
+function math.tand(d) return tan(D2R*d) end
 
 function math.atan2d(dy,dx) return atan2(dy,dx)/pi*180 end
 
 function arc2d(a) return a/pi*180 end
 
-function d2arc(d) return d*piD end
+function d2arc(d) return d*D2R end
 
 function circle(x,y,r,a)
 	return x+cos(a)*r,y+sin(a)*r
@@ -321,7 +322,7 @@ function rectCenterTop(x,y,w,h)
 end
 
 function vecAngle( angle, length )
-	return length * cos( angle * piD ), length * sin( angle * piD )
+	return length * cos( angle * D2R ), length * sin( angle * D2R )
 end
 
 --gemometry related

@@ -128,7 +128,12 @@ function SpineSprite:onAnimationEvent( trackId, evName, varInt, varFloat, varStr
 end
 
 function SpineSprite:getAnimationNames()
-	return nil
+	if not self.skeletonData then return nil end
+	local result = {}
+	for k,i in pairs( self.skeletonData._animationTable ) do
+		table.insert( result, { k, k } )
+	end
+	return result
 end
 
 wrapWithMoaiPropMethods( SpineSprite, ':getSkeleton()' )

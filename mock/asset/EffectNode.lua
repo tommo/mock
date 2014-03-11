@@ -94,7 +94,6 @@ end
 function EffectNode:onLoad( state )
 end
 
-----effect node exposes transform/color for modifiers
 function EffectNode:getTransformNode( fxState )
 	return self:getProp( fxState )
 end
@@ -160,10 +159,17 @@ function EffectRoot:getDefaultName()
 	return 'effect'
 end
 
-function EffectRoot:getProp( fxState )
-	return fxState:getProp()
+function EffectRoot:getTransformNode( fxState )
+	return fxState:getTransformNode()
 end
 
+function EffectRoot:getColorNode( fxState )
+	return fxState:getColorNode( )
+end
+
+function EffectRoot:getProp( fxState )
+	return fxState:getProp( )
+end
 --------------------------------------------------------------------
 updateAllSubClasses( EffectNode )
 --------------------------------------------------------------------
@@ -263,18 +269,48 @@ EffectState	:MODEL{}
 
 function EffectState:__init( emitter, config )
 	--TODO: refactor this out...
-	self._emitter= emitter
-	self._prop   = emitter.prop
+	local trans = MOAITransform.new() 
+	local prop  = emitter.prop
+	self._emitter = emitter
+	self._emitterProp  = prop
+	self._trans  =  trans 
 	self._config = config
 	self._updateListeners = {}
+
+	local root = config:getRootNode()
+	self._followEmitter = root.followEmitter
+	if root.followEmitter then
+		inheritTransform( trans, prop )
+	else
+		prop:forceUpdate()
+		trans:setLoc( prop:getLoc() )
+		trans:setScl( prop:getScl() )
+		trans:setRot( prop:getRot() )
+	end
+end
+
+function EffectState:getTransformNode()
+	return self._trans
+end
+
+function EffectState:getColorNode()
+	return false
 end
 
 function EffectState:getProp()
-	return self._prop
+	return self._trans
 end
 
 function EffectState:getEmitter()
 	return self._emitter
+end
+
+function EffectState:linkTransform( trans )
+	inheritTransform( trans, self._trans )	
+end
+
+function EffectState:linkPartition( prop )
+	inheritPartition( prop, self._emitterProp )
 end
 
 function EffectState:getEffectConfig()
@@ -282,9 +318,11 @@ function EffectState:getEffectConfig()
 end
 
 function EffectState:start()
+	
 end
 
 function EffectState:stop()
+
 end
 
 function EffectState:addUpdateListener( node )
