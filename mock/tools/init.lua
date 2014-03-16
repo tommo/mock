@@ -1,13 +1,25 @@
-require 'tools.AchievementBase'
-require 'tools.HighscoreTable'
-require 'tools.FacebookHelper'
-require 'tools.RemoteInput'
-require 'tools.GameCenter'
-require 'tools.Newspage'
-require 'tools.DebugView'
-require 'tools.RemoteData'
+-- require 'tools.TMXTool'
+require 'mock.tools.DrawHelpers'
+require 'mock.tools.UserAction' --non coroutine action
 
-require 'tools.i18n'
-require 'tools.UserAction'
+require 'mock.tools.JoystickConfig'
 
-require 'tools.TMXTool'
+---------------------------------------------------------------------
+--Stat
+require 'mock.tools.Stat'
+-- require 'mock.tools.Analytic'
+-- require 'mock.tools.AchievementBase'
+-- require 'mock.tools.HighscoreTable'
+
+--------------------------------------------------------------------
+--Debug related
+require 'mock.tools.ProfilerHelper'
+-- require 'mock.tools.RemoteData'
+-- require 'mock.tools.DebugView'
+-- require 'tools.RemoteInput'
+
+--------------------------------------------------------------------
+--Platform related
+-- require 'tools.i18n'
+-- require 'mock.tools.GameCenter'
+-- require 'tools.FacebookHelper'

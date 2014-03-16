@@ -55,10 +55,7 @@ require 'mock.component'
 require 'mock.effect'
 
 ----tools
-require 'mock.tools.UserAction'
-require 'mock.tools.DrawHelpers'
-require 'mock.tools.ProfilerHelper'
-
+require 'mock.tools'
 
 ---prefabs
 require 'mock.prefabs.PlaceHolder'
