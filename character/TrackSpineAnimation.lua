@@ -64,9 +64,12 @@ end
 
 --------------------------------------------------------------------
 CLASS: TrackSpineAnimation ( CharacterActionTrack )
-	:MODEL{}
+	:MODEL{
+		Field 'startFix1' :boolean()
+}
 
 function TrackSpineAnimation:__init()
+	self.startFix1 = false
 	self.name = 'animation'
 end
 
@@ -111,14 +114,14 @@ function TrackSpineAnimation:start( state )
 		spineState:setMode( MOAITimer.NORMAL )
 	end
 	spineState:attach( state:getTimer() )
-	spineState:apply( 0 )
-	-- spineState:start()
 	local animTrack = spineState:addTrack()
 	spineTracks[ self ] = animTrack
 	for i, ev in ipairs( self.events ) do
 		local l = ev.length/1000
 		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, ev.offset, l>0 and l or nil )
 	end
+	spineState:apply( 0.0 )
+	target.spineSprite:getSkeleton():updateSlots()
 end
 
 function TrackSpineAnimation:stop( state )	
@@ -146,7 +149,11 @@ end
 function TrackSpineAnimation:apply( state, t, t1 )
 	local spineState = state.target.spineState
 	if spineState then
-		spineState:apply( t, t1 )
+		if self.startFix1 then
+			spineState:apply( t + 0.001, t1 and ( t1 + 0.001 ) )
+		else
+			spineState:apply( t, t1 )
+		end
 	end
 end
 
