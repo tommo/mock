@@ -415,15 +415,23 @@ function Entity:addInternalChild( e, layer )
 end
 
 function Entity:clearChildren()
-	for child in pairs( self.children ) do
+	local children = self.children
+	while true do
+		local child = next( children )
+		if not child then return end
+		children[ child ] = nil
 		child:destroy()
-	end	
+	end
 end
 
 function Entity:clearChildrenNow()
-	for child in pairs( self.children ) do
+	local children = self.children
+	while true do
+		local child = next( children )
+		if not child then return end
+		children[ child ] = nil
 		child:destroyWithChildrenNow()
-	end	
+	end
 end
 
 function Entity:getParent()

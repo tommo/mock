@@ -68,7 +68,6 @@ local function _findTopWidget( parent, x, y, pad )
 	-- print('---Widget>>')
 	for k = count , 1, -1 do
 		local child = children[ k ]
-		-- print( child.name, child:getLocZ() )
 		if child:isVisible() and child:isActive() and child.inputEnabled then 
 			local px,py,pz = child:getWorldLoc()
 			local inside = child:inside( x, y, pz, pad )
@@ -96,6 +95,7 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		p.state = 'down'
 		x, y    = self:wndToWorld( x, y )
 		local widget = self:findTopWidget( x, y )
+		-- print( 'found widget', widget )
 		if widget then 
 			p.activeWidget = widget
 			widget:setState( 'press' )

@@ -52,9 +52,9 @@ function GUIWidget:destroyNow()
 	local parent = self.parent
 	local childWidgets = parent and parent.childWidgets
 	if childWidgets then
-		for i, child in ipairs( self.childWidgets ) do
+		for i, child in ipairs( childWidgets ) do
 			if child == self then
-				table.remove( i )
+				table.remove( childWidgets, i )
 				break
 			end
 		end
