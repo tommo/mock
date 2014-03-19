@@ -414,6 +414,10 @@ function Entity:addInternalChild( e, layer )
 	return self:addChild( e, layer )
 end
 
+function Entity:getChildren()
+	return self.children
+end
+
 function Entity:clearChildren()
 	local children = self.children
 	while true do
@@ -566,6 +570,17 @@ function Entity:hide()
 	self:setVisible( false )
 end
 
+function Entity:hideChildren()
+	for child in pairs( self.children ) do
+		child:hide()
+	end
+end
+
+function Entity:showChildren()
+	for child in pairs( self.children ) do
+		child:show()
+	end
+end
 
 --------------------------------------------------------------------
 ------Active control
