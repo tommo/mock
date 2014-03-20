@@ -63,7 +63,7 @@ end
 function FSMController:__init()
 	self.msgBox = {}
 	self.msgBoxListener = function( msg, data, source )
-		return insert( self.msgBox, {msg,data,source} )
+		return insert( self.msgBox, { msg, data, source } )
 	end
 end
 
