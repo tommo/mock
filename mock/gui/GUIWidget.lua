@@ -148,9 +148,11 @@ end
 --Virtual Interfaces
 
 function GUIWidget:onPress( pointer, x, y )
+	self:setState( 'press' )
 end
 
 function GUIWidget:onRelease( pointer, x, y )
+	self:setState( 'normal' )
 end
 
 function GUIWidget:onDrag( pointer, x, y, dx, dy )

@@ -28,6 +28,7 @@ function GUIButtonBase:onStateChange()
 end
 
 function GUIButtonBase:onRelease( touch, x, y )
+	if self.state == 'disabled' then return end
 	self:setState 'normal'
 	self:emit( 'ui.button.release', self )
 	local px,py,pz = self:getWorldLoc()

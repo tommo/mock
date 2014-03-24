@@ -98,7 +98,6 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		-- print( 'found widget', widget )
 		if widget then 
 			p.activeWidget = widget
-			widget:setState( 'press' )
 			widget:onPress( touch, x,y )
 			if not widget.__multiTouch then
 				if not widget.__activeTouch then widget.__activeTouch=touch end
@@ -113,7 +112,6 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 			x, y = self:wndToWorld(x,y)
 			local widget = p.activeWidget
 			widget:onRelease( touch, x, y )
-			widget:setState( 'normal' )
 			if not widget.__multiTouch then	widget.__activeTouch=false		end
 		end
 		p.activeWidget = false
