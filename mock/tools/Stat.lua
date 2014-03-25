@@ -6,6 +6,8 @@ CLASS: Stat ()
 function Stat:__init( data )	
 	self.values = {}
 	self.changeListeners = {}
+	self.changeSignals   = {}
+	self.globalChangeSignal = false
 	if data then self:update( data ) end
 end
 
@@ -27,12 +29,18 @@ function Stat:clear()
 end
 
 function Stat:get( n, default )
-	return self.values and values[n] or default
+	local values = self.values
+	local v = values[n]
+	return v == nil and default or v
 end
 
 function Stat:add( n, v )
 	local values = self.values
-	values[n] = ( values[n] or 0 ) + ( v or 1 )
+	return self:set( n, ( values[n] or 0 ) + ( v or 1 ) )
+end
+
+function Stat:sub( n, v )
+	return self:add( n, -v )
 end
 
 function Stat:set( n, v )
@@ -45,6 +53,13 @@ function Stat:set( n, v )
 		for func in pairs( changeListenerList ) do
 			func( n, v, v0 )
 		end
+	end
+	local sig = self.changeSignals[ n ]
+	if sig then
+		emitSignal( sig, n , v, v0 )
+	end
+	if self.globalChangeSignal then
+		emitSignal( self.globalChangeSignal, n, v, v0 )
 	end
 end
 
@@ -81,4 +96,22 @@ function Stat:removeChangeListener( key, func )
 	local l = self.changeListeners[ key ]
 	if not l then return end
 	l[ func ] = nil
+end
+
+function Stat:setGlobalChangeSignal( sigName )
+	self.globalChangeSignal = sigName
+end
+
+function Stat:setChangeSignal( key, sigName )
+	if self.changeSignals[ key ] and sigName then
+		_warn( 'duplicated change singal for stat key:', key )
+	end
+	self.changeSignals[ key ] = sigName
+end
+
+function Stat:setChangeSignalList( t )
+	for i, entry in ipairs( t ) do
+		local key, sig = unpack( entry )
+		self:setChangeSignal( key, sig )
+	end
 end
