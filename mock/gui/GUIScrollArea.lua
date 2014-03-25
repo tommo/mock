@@ -25,6 +25,8 @@ function GUIScrollArea:__init()
 	self.targetScrollY = 0
 	self.speedScrollX = 0
 	self.speedScrollY = 0
+	self.reactionSpeedX = 0
+	self.reactionSpeedY = 0
 	self.scrollDamping = 0.9
 	self.maxScrollSpeed   = 50
 	self.grabbed   = false	
@@ -149,15 +151,17 @@ end
 
 --------------------------------------------------------------------
 function GUIScrollArea:setTargetScrollX( x )
-	local x0,x1 = 0, self.scrollW
-	if x0 > x1 then x0, x1 = x1, x0 end
-	self.targetScrollX = math.clamp( x, x0,x1 )
+	self.targetScrollX = x
+	-- local x0,x1 = 0, self.scrollW
+	-- if x0 > x1 then x0, x1 = x1, x0 end
+	-- self.targetScrollX = math.clamp( x, x0,x1 )
 end
 
 function GUIScrollArea:setTargetScrollY( y )
-	local y0,y1 = 0, -self.scrollH
-	if y0>y1 then y0,y1 = y1,y0 end
-	self.targetScrollY = math.clamp( y, y0,y1 )
+	self.targetScrollY = y
+	-- local y0,y1 = 0, -self.scrollH
+	-- if y0>y1 then y0,y1 = y1,y0 end
+	-- self.targetScrollY = math.clamp( y, y0,y1 )
 end
 
 function GUIScrollArea:addTargetScrollX( dx )
@@ -199,67 +203,86 @@ function GUIScrollArea:onUpdate( dt )
 end
 
 function GUIScrollArea:updateTargetScrollX( dt ) 
-	if not self.grabbed and math.abs( self.speedScrollX ) < 0.01 then
+	local overDrag = 50
+	if not self.grabbed 
+		and math.abs( self.speedScrollX ) < 0.01
+		and math.abs( self.reactionSpeedX ) < 0.01 then
 		self.speedScrollX = 0
+		self.reactionSpeedX = 0
 		return
 	end
-	local damping = self.scrollDamping
-	local ms = self.maxScrollSpeed
-	local x  = self:getScrollX()
-	if self.grabbed then
-		local vx0 = self.speedScrollX
-		local vx1 = math.clamp( self.targetScrollX - x, -ms, ms )
-		local k = 0.7
-		self.speedScrollX =  vx0*(1-k) + vx1*k
-	end
-	
-	local nx = x + self.speedScrollX
 	local x0,x1 = 0, self.scrollW
 	if x0>x1 then
 		x0,x1 = x1,x0
 	end
-	if nx <= x0 then
-		nx = x0
-		self.speedScrollX = 0
-	elseif nx >= x1 then
-		nx = x1
-		self.speedScrollX = 0
+
+	local damping = self.scrollDamping
+	local ms = self.maxScrollSpeed
+	local x  = self:getScrollX()
+	
+	if self.grabbed then
+		local vx0 = self.speedScrollX
+		local dx  = self.targetScrollX - x
+		local vx1 = math.clamp( dx, -ms, ms )
+		local k = 0.7
+		self.speedScrollX = vx0*(1-k) + vx1*k
 	else
 		self.speedScrollX = self.speedScrollX * damping
 	end
+
+	if x < x0 then
+		local k = ( x0 - x ) / overDrag
+		self.reactionSpeedX = lerp( self.reactionSpeedX, ( k * ms ), 0.5 )
+	elseif x >= x1 then
+		local k = ( x - x1 ) / overDrag
+		self.reactionSpeedX  = lerp( self.reactionSpeedX, - k * ms, 0.5 )
+	else
+		self.reactionSpeedX = 0
+	end
+
+	local nx = x + self.speedScrollX + self.reactionSpeedX
 	self:setScrollX( nx )
 end
 
 function GUIScrollArea:updateTargetScrollY( dt )
-	if not self.grabbed and math.abs( self.speedScrollY ) < 0.01 then
+	local overDrag = 50
+	if not self.grabbed 
+		and math.abs( self.speedScrollY ) < 0.01
+		and math.abs( self.reactionSpeedY ) < 0.01 then
 		self.speedScrollY = 0
+		self.reactionSpeedY = 0
 		return
 	end
-	local damping = self.scrollDamping
-	local ms = self.maxScrollSpeed	
-	local y  = self:getScrollY()
-	if self.grabbed then
-		local vy0 = self.speedScrollY
-		local dy = self.targetScrollY - y
-		local vy1 = math.clamp( dy, -ms, ms )
-		local k = 0.7
-		self.speedScrollY = vy0*(1-k) + vy1*k
-	end
-	
-	local ny = y + self.speedScrollY
 	local y0,y1 = 0, -self.scrollH
 	if y0>y1 then
 		y0,y1 = y1,y0
 	end
-	if ny <= y0 then
-		ny = y0
-		self.speedScrollY = 0
-	elseif ny >= y1 then
-		ny = y1
-		self.speedScrollY = 0
+
+	local damping = self.scrollDamping
+	local ms = self.maxScrollSpeed
+	local y  = self:getScrollY()
+	
+	if self.grabbed then
+		local vy0 = self.speedScrollY
+		local dy  = self.targetScrollY - y
+		local vy1 = math.clamp( dy, -ms, ms )
+		local k = 0.7
+		self.speedScrollY = vy0*(1-k) + vy1*k
 	else
 		self.speedScrollY = self.speedScrollY * damping
 	end
+
+	if y < y0 then
+		local k = ( y0 - y ) / overDrag
+		self.reactionSpeedY = lerp( self.reactionSpeedY, ( k * ms ), 0.5 )
+	elseif y >= y1 then
+		local k = ( y - y1 ) / overDrag
+		self.reactionSpeedY  = lerp( self.reactionSpeedY, - k * ms, 0.5 )
+	else
+		self.reactionSpeedY = 0
+	end
+
+	local ny = y + self.speedScrollY + self.reactionSpeedY
 	self:setScrollY( ny )
 end
 
