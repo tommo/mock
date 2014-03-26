@@ -564,7 +564,7 @@ function loadPack( file ,option, settings,half)
 		wildcardSettings={}
 		normalSettings={}
 		for k,v in pairs(settings) do
-			if string.endWith(k,'*') then --wildcard
+			if string.endwith(k,'*') then --wildcard
 				wildcardSettings[string.sub(k,1,-2)]=v
 			else
 				normalSettings[k]=v
@@ -619,7 +619,7 @@ function loadPack( file ,option, settings,half)
 			if not s then
 				local wildSize=0
 				for k,v in pairs(wildcardSettings) do
-					if string.startWith(nn,k) and #k>wildSize then
+					if string.startwith(nn,k) and #k>wildSize then
 						wildSize=#k
 						s=v
 						break

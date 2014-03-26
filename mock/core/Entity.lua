@@ -471,7 +471,7 @@ end
 
 function Entity:findChildByPath( path )
 	local e = self
-	for part in string.gsplit( path ) do
+	for part in string.gsplit( path, '/' ) do
 		e = e:findChild( part, false )
 		if not e then return nil end
 	end

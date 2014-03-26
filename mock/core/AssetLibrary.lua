@@ -237,10 +237,10 @@ function findAssetNode( path, assetType )
 				if k == path then
 					result = node
 					break
-				elseif k:endWith( path ) then
+				elseif k:endwith( path ) then
 					result = node
 					break
-				elseif stripExt( k ):endWith( path ) then
+				elseif stripExt( k ):endwith( path ) then
 					result = node
 					break
 				end

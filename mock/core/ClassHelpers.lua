@@ -1,6 +1,6 @@
 function _wrapMethod( class, fieldname, methodname, arg, ... )
 	local selfPart
-	if fieldname:startWith( ':' ) then
+	if fieldname:startwith( ':' ) then
 		selfPart = 'self'..fieldname
 	else
 		selfPart = 'self.'..fieldname
@@ -23,7 +23,7 @@ end
 
 function _wrapAttrGetter(class,fieldname,attr,methodname)
 	local selfPart
-	if fieldname:startWith( ':' ) then
+	if fieldname:startwith( ':' ) then
 		selfPart = 'self'..fieldname
 	else
 		selfPart = 'self.'..fieldname
@@ -41,7 +41,7 @@ end
 
 function _wrapAttrGetterBoolean(class,fieldname,attr,methodname)
 	local selfPart
-	if fieldname:startWith( ':' ) then
+	if fieldname:startwith( ':' ) then
 		selfPart = 'self'..fieldname
 	else
 		selfPart = 'self.'..fieldname
@@ -59,7 +59,7 @@ end
 
 function _wrapAttrSetter(class,fieldname,attr,methodname)
 	local selfPart
-	if fieldname:startWith( ':' ) then
+	if fieldname:startwith( ':' ) then
 		selfPart = 'self'..fieldname
 	else
 		selfPart = 'self.'..fieldname
@@ -77,7 +77,7 @@ end
 
 function _wrapAttrSeeker(class,fieldname,attr,methodname)
 	local selfPart
-	if fieldname:startWith( ':' ) then
+	if fieldname:startwith( ':' ) then
 		selfPart = 'self'..fieldname
 	else
 		selfPart = 'self.'..fieldname
@@ -95,7 +95,7 @@ end
 
 function _wrapAttrMover(class,fieldname,attr,methodname)
 	local selfPart
-	if fieldname:startWith( ':' ) then
+	if fieldname:startwith( ':' ) then
 		selfPart = 'self'..fieldname
 	else
 		selfPart = 'self.'..fieldname

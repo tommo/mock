@@ -748,12 +748,12 @@ end
 
 ----String Helpers
 
-function string.startWith(s,s1)
+function string.startwith(s,s1)
 	local ss = string.sub(s,1,#s1)
 	return ss==s1
 end
 
-function string.endWith(s,s1)
+function string.endwith(s,s1)
 	local l  = #s1
 	local ss = string.sub(s,-l,-1)
 	return ss==s1

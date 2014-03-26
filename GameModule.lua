@@ -28,7 +28,7 @@ end
 
 function findGameModule( name )
 	for k, m in pairs( GameModules ) do
-		if k == name or k:endWith( name ) then
+		if k == name or k:endwith( name ) then
 			return m
 		end
 	end
@@ -119,7 +119,7 @@ function _createEmptyModule( path, fullpath )
 		local result = requireInModule( path, ... )
 		if result then
 			for k, v in pairs( result ) do
-				if type(k) == 'string' and not rawget( m, k ) and not k:startWith('_') then
+				if type(k) == 'string' and not rawget( m, k ) and not k:startwith('_') then
 					m[ k ] = v
 				end
 			end
