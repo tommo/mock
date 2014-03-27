@@ -28,6 +28,7 @@ require 'mock.component.PatchSprite'
 -- require 'mock.component.PatchProp'
 require 'mock.component.ParticleSystem'
 require 'mock.component.ParticleEmitter'
+require 'mock.component.TiledTextureRect'
 
 require 'mock.component.DrawScript'
 require 'mock.component.InputScript'
