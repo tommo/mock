@@ -234,7 +234,7 @@ function Game:init( option, fromEditor )
 			
 			-- + MOAISim.SIM_LOOP_FORCE_STEP
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
-			-- + MOAISim.SIM_LOOP_NO_SURPLUS
+			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)
 	-- MOAISim.setLongDelayThreshold( 100 )
 	-- MOAISim.setBoostThreshold( 3 )	
