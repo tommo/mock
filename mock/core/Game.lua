@@ -481,6 +481,7 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	end
 	mainScene.running = runningState
 	emitSignal( 'mainscene.open', scn, arguments )
+	scn.arguments = arguments
 	return scn
 end
 

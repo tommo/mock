@@ -153,7 +153,7 @@ end
 function Quad2D:reset()
 	if not self.texture then return end	
 	local tex, uv = getTextureUV( self.texture )
-	local w, h = tex:getSize()
+	local w, h = self.texture:getSize()
 	self.w = w
 	self.h = h
 	self:update()

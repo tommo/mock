@@ -14,7 +14,7 @@ function Scene:__init( option )
 	self.active = false
 	
 	self.running = false
-
+	self.arguments       = false
 	self.layers          = {}
 	self.entities        = {}
 	self.entitiesByName  = {}
@@ -167,6 +167,10 @@ end
 
 function Scene:getPath()
 	return self.path or false
+end
+
+function Scene:getArguments()
+	return self.arguments
 end
 
 --------------------------------------------------------------------

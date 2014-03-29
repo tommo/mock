@@ -50,6 +50,7 @@ require 'mock.gui'
 
 ----------------Builtin Components
 require 'mock.component'
+require 'mock.entity'
 
 ----Effects
 require 'mock.effect'
