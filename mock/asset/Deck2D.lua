@@ -514,3 +514,5 @@ registerAssetLoader ( 'deck2d.tileset',      Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.stretchpatch', Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.polygon',      Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.quad_array',   Deck2DItemLoader )
+
+-- _getTextureUV = getTextureUV

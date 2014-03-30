@@ -481,7 +481,15 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	end
 	mainScene.running = runningState
 	emitSignal( 'mainscene.open', scn, arguments )
-	scn.arguments = arguments
+	local args = scn.arguments or {}
+	if not additive then args = {} end
+	if arguments then
+		for k,v in pairs( arguments ) do
+			args[ k ] = v
+		end
+	end
+	--todo: previous scene
+	scn.arguments = args
 	return scn
 end
 
