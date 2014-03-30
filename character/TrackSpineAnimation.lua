@@ -5,6 +5,7 @@ CLASS: EventSpineAnimation ( CharacterActionEvent )
 	:MODEL{
 		Field 'clip'  :string() :selection( 'getSpineClipSelection' );
 		Field 'loop'  :boolean();
+		Field 'reversed'  :boolean();
 		Field 'resetOnPlay'  :boolean();
 		'----';
 		Field 'offset' :range(0);
@@ -18,6 +19,7 @@ function EventSpineAnimation:__init()
 	self.loop   = false
 	self.resetOnPlay = true
 	self.offset = 0
+	self.reversed = false
 end
 
 function EventSpineAnimation:getSpineClipSelection()
@@ -39,8 +41,15 @@ end
 function EventSpineAnimation:toString()
 	local clip = self.clip
 	if not clip or clip == '' then return '<nil>' end
+	local flags = ''
 	if self.loop then
-		return '<loop> '..clip
+		flags = flags .. 'L'
+	end
+	if self.reversed then
+		flags = flags .. 'R'
+	end
+	if flags~='' then
+		return string.format( '[%s]%s', flags, clip )
 	else
 		return clip
 	end
@@ -59,7 +68,7 @@ function EventSpineAnimation:resetLength()
 	local data = mock.loadAsset( spinePath )
 	if not data then return end
 	local l = data:getAnimationDuration( self.clip )
-	if l > 0 then self.length = l*1000 end
+	if l and l > 0 then self.length = l*1000 end
 end
 
 --------------------------------------------------------------------
@@ -118,7 +127,7 @@ function TrackSpineAnimation:start( state )
 	spineTracks[ self ] = animTrack
 	for i, ev in ipairs( self.events ) do
 		local l = ev.length/1000
-		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, ev.offset, l>0 and l or nil )
+		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, ev.offset, l>0 and l or nil, ev.reversed )
 	end
 	spineState:apply( 0.0 )
 	target.spineSprite:getSkeleton():updateSlots()
