@@ -8,6 +8,8 @@ CLASS: PrefabContainer ( mock.Entity )
 		Field 'resetLoc' :boolean();
 		Field 'resetScl' :boolean();
 		Field 'resetRot' :boolean();
+		'----';
+		Field 'autoSpawn' :boolean();
 		-- Field 'resetLayer' :boolean();
 	}
 
@@ -20,6 +22,7 @@ function PrefabContainer:__init()
 	self.resetLoc = true
 	self.resetScl = false
 	self.resetRot = false
+	self.autoSpawn = true
 	-- self.resetLayer = false
 end
 
@@ -41,5 +44,9 @@ end
 
 function PrefabContainer:setPrefab( path )
 	self.prefab = path
+	-- if self.autoSpawn
 	self:refreshPrefab()
 end
+
+-- function PrefabContainer:onLoad()
+-- end
