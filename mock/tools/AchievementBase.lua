@@ -45,7 +45,6 @@ function AchievementBase:__init()
 	assert(text,'no text found:'..self.name)
 	self.title=text[1]
 	self.desc=text[2]
-
 end
 
 
@@ -88,9 +87,11 @@ function AchievementBase:report(progress)
 end
 
 	
-	
-CLASS: AchievementCenter ( Entity )
 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+CLASS: AchievementCenter ( Entity )
+--------------------------------------------------------------------
 
 function AchievementCenter:__init(settings)
 	self.achievements={}
