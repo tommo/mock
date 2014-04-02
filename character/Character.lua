@@ -98,6 +98,13 @@ end
 
 --------------------------------------------------------------------
 --playback
+function Character:hasAction( name )
+	if not self.config then
+		return false
+	end
+	return self.config:getAction( name ) and true or false
+end
+
 function Character:playAction( name )
 	local state = self:setAction( name )
 	if state then	state:start()	end
