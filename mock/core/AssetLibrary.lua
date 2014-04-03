@@ -279,14 +279,14 @@ function loadAsset( path, option )
 	if path == '' then return nil end
 	if not path   then return nil end
 	option = option or {}
-	loadPolicy   = option.loadPolicy or 'auto'
+	local policy   = option.policy or 'auto'
 	local node   = getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )
 		return nil
 	end
 
-	if loadPolicy ~= 'force' then
+	if policy ~= 'force' then
 		local asset  = node.cached.asset
 		if asset then
 			-- _stat( 'get asset from cache:', path, node )
@@ -295,7 +295,7 @@ function loadAsset( path, option )
 	end
 
 	_stat( 'loading asset from:', path )
-	if loadPolicy ~= 'auto' and loadPolicy ~='force' then return nil end
+	if policy ~= 'auto' and policy ~='force' then return nil end
 
 	if node.parent then
 		loadAsset( node.parent )
@@ -321,11 +321,16 @@ function loadAsset( path, option )
 	end
 end
 
+function forceLoadAsset( path ) --no cache
+	return loadAsset( path, { policy = 'force' } )
+end
+
+
 function getCachedAsset( path )
 	if path == '' then return nil end
 	if not path   then return nil end
 	option = option or {}
-	loadPolicy   = option.loadPolicy or 'auto'
+	policy   = option.policy or 'auto'
 	local node   = getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )

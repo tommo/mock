@@ -64,9 +64,9 @@ function noisei(n)
 end
 
 function prob(n)
-	if n<=0 then return false end
-	if n>=100 then return true end
-	local r=n
+	if n <= 0   then return false end
+	if n >= 100 then return true  end
+	local r = n
 	
 	return random()*100<=n 
 end

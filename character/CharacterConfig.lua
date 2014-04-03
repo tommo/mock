@@ -231,7 +231,6 @@ function CharacterAction:__init()
 	self.length    = -1
 end
 
-
 function CharacterAction:addTrack( t )
 	local track = t or CharacterActionTrack()
 	table.insert( self.tracks, track )
