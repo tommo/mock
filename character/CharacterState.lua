@@ -39,6 +39,7 @@ function CharacterState:__init( target, action )
 	end
 	length = length/1000
 	timer:setSpan( length )
+	
 	self.loop   = action.loop
 	self.length = length	
 	self.throttle = 1

@@ -221,6 +221,8 @@ CharacterAction	:MODEL{
 		Field 'length' :int();
 		Field 'tracks' :array( CharacterActionTrack ) :no_edit() :sub();		
 		Field 'parent' :type( CharacterConfig ) :no_edit();
+		'----';
+		Field 'comment' :string();
 	}
 
 function CharacterAction:__init()
