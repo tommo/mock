@@ -37,4 +37,29 @@ function ScreenProfile:getDimString()
 end
 
 --------------------------------------------------------------------
+--registery
+--------------------------------------------------------------------
+local _screenProfileRegistry = {}
+function getScreenProfileRegistry()
+	return _screenProfileRegistry
+end
 
+function registerScreenProfile( p )	
+	table.insert( _screenProfileRegistry, p )
+end
+
+function unregisterScreenProfile( p )
+	local idx = table.find( _screenProfileRegistry, p )
+	if idx then table.remove( _screenProfileRegistry, idx ) end
+end
+
+--------------------------------------------------------------------
+--Builtin profiles
+--------------------------------------------------------------------
+registerScreenProfile( ScreenProfile:rawInstance{
+		name   = 'iPhone',
+		width  = 640;
+		height = 960;
+		dpi    = 120;
+		orientation = 'portrait'
+	} )

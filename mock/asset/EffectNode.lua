@@ -318,11 +318,9 @@ function EffectState:getEffectConfig()
 end
 
 function EffectState:start()
-	
 end
 
 function EffectState:stop()
-
 end
 
 function EffectState:addUpdateListener( node )

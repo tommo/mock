@@ -141,7 +141,6 @@ function Game:loadConfig( path, fromEditor )
 	return self:init( data, fromEditor )
 end
 
-
 function Game:init( option, fromEditor )
 	self.editorMode  = fromEditor or false
 	self.initialized = true
@@ -287,9 +286,7 @@ function Game:init( option, fromEditor )
 	self.previewingScene = option['previewing_scene']
 
 	self.mainScene:init()
-
 end
-
 
 function Game:saveConfigToTable()
 	local layerConfigs = {}
@@ -598,7 +595,6 @@ function Game:start()
 	else
 		emitSignal( 'game.start', self )
 	end
-
 end
 
 function Game:isPaused()
@@ -629,6 +625,8 @@ function Game:setThrottle(v)
 	self.throttle=v
 	return self.actionRoot:throttle(v*1)
 end
+
+
 --------------------------------------------------------------------
 ---------Global object( config? )
 --------------------------------------------------------------------
@@ -636,7 +634,6 @@ end
 function Game:getGlobalObjectLibrary()
 	return self.globalObjectLibrary
 end
-
 
 function Game:getGlobalObject( path )
 	return self.globalObjectLibrary:get( path )
