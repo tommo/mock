@@ -261,6 +261,16 @@ function CharacterAction:findTrackByType( trackType )
 	return nil
 end
 
+function CharacterAction:calcLength()
+	local length = 0
+	for i, track in ipairs( self.tracks ) do
+		track:buildStateData( stateData )
+		local l = track:calcLength()
+		if l>length then length = l end
+	end
+	return length
+end
+
 --------------------------------------------------------------------
 function CharacterAction:getStateData()	
 	return self.stateData or self:buildStateData()
@@ -268,13 +278,7 @@ end
 
 function CharacterAction:buildStateData()
 	stateData = {}
-	local length = 0
-	for i, track in ipairs( self.tracks ) do
-		track:buildStateData( stateData )
-		local l = track:calcLength()
-		if l>length then length = l end
-	end
-	stateData.length   = length
+	stateData.length   = self:calcLength()
 	stateData.keyCurve = self:_buildKeyCurve()
 	self.stateData = stateData
 	return stateData

@@ -309,10 +309,22 @@ _G.CLASS     = classBuilder
 _G._rawClass = rawClass
 function findClass( term )
 	local l = #term
+	local candidates = {}
 	for n, clas in pairs( globalClassRegistry ) do		
-		if string.find( n, term, -l ) then return clas end
+		if clas.__name == term then
+			table.insert( candidates, clas )
+		end
+		-- if string.find( n, term, -l ) then 
+	-- end
 	end
-	return nil
+	local count = #candidates
+	if count > 1 then
+		_warn( 'more than one class found for name', term )
+	elseif count == 0 then
+		return nil
+	else
+		return candidates[ 1 ]
+	end
 end
 
 --------------------------------------------------------------------
