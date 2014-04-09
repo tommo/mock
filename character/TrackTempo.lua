@@ -11,12 +11,15 @@ CLASS: EventTempo ( CharacterActionEvent )
 		Field 'type'  :enum( EnumEventTempoType );
 		Field 'value' :number() :range( 0, 4 ) :widget('slider') :meta{ step = 0.25 };
 		Field 'wait'  :number() :range( 0, 4 ) :widget('slider') :meta{ step = 0.25 };
+		'----';
+		Field 'strict' :boolean()
 	}
 
 function EventTempo:__init()
 	self.type  = 'beat'
 	self.value = 0
 	self.wait  = 0
+	self.strict = false
 end
 
 function EventTempo:toString()
