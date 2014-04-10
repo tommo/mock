@@ -379,7 +379,7 @@ EffectNodeParticleEmitter :MODEL {
 		Field 'duration'  :number();
 		Field 'surge'     :int();
 		'----';
-		Field 'magnitude' :type('vec2') :range(0)  :getset('Magnitude');		
+		Field 'magnitude' :type('vec2') :getset('Magnitude');		
 		Field 'angle'     :type('vec2') :range(-360, 360) :getset('Angle');	
 		'----';
 		Field 'radius'    :type('vec2') :range(0) :getset('Radius');

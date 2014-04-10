@@ -47,16 +47,16 @@ end
 --------Random number & Probablity helpers
 --------------------------------------------------------------------
 function randi(mi,ma)
-	mi,ma=floor(mi),floor(ma)
-	return floor(mi+random()*(ma-mi+1))
+	mi,ma = floor(mi), floor(ma)
+	return floor( mi + random() * ( ma-mi+1) )
 end
 
 function rand(mi,ma)
-	return mi+random()*(ma-mi)
+	return mi + random() * ( ma - mi )
 end
 
-function noise(n)
-	return (random()*2-1)*n
+function noise( n )
+	return ( random()*2 - 1 ) * n
 end
 
 function noisei(n)
@@ -101,8 +101,8 @@ function probselect2(t)
 		c=c+1
 	end
 	
-	local k=random()*total
-	local kk=0
+	local k  = random() * total
+	local kk = 0
 
 	for i, s in ipairs(t1) do
 		local p=s[1]
@@ -113,9 +113,9 @@ function probselect2(t)
 end
 
 function randselect(t)
-	local i=#t
-	local k=(math.floor(random()*100*i) % i)+1
-	return t[k]
+	local i = #t
+	local k = ( math.floor( random() * 100 * i ) % i )+1
+	return t[ k ]
 end
 
 
