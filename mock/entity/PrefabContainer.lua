@@ -48,5 +48,10 @@ function PrefabContainer:setPrefab( path )
 	self:refreshPrefab()
 end
 
+
+function PrefabContainer:getInstance()
+	return self.instance
+end
+
 -- function PrefabContainer:onLoad()
 -- end

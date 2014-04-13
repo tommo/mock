@@ -360,6 +360,7 @@ function Scene:clear( keepEditorEntity )
 
 	self.defaultCamera   = false
 	self.entityListener = entityListener
+	self.arguments = false
 end
 
 Scene.add = Scene.addEntity
