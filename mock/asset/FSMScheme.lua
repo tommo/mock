@@ -132,6 +132,7 @@ local function buildFSMScheme( scheme )
 		if f then
 			f( self ) --fsm.start:enter
 		end
+		self.currentStateFunc = startFunc
 		return startFunc( self, dt, 0 )
 	end
 
