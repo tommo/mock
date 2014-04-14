@@ -481,7 +481,7 @@ function string.gsplit(s, sep, plain )
 	return function()
 		if done then return end
 		if sep == '' then done = true return s end
-		return pass(s:find(sep, start, plain))
+		return pass( s:find(sep, start, plain) )
 	end
 end
 
