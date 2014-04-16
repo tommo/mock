@@ -83,6 +83,16 @@ function FMODEventGroup:getEvent( id )
 	return event
 end
 
+function FMODEventGroup:unload()
+	if self.loaded then
+		MOAIFmodEventMgr.unloadGroup( self.fullName )
+	end
+end
+
+function FMODEventGroup:unloadPendingUnloads()
+	MOAIFmodEventMgr.unloadPendingUnloads( self.fullName )
+end
+
 --------------------------------------------------------------------
 CLASS: FMODEvent ()
 	:MODEL{}

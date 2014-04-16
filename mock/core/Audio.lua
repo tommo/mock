@@ -17,7 +17,7 @@ function initFmodDesigner()
 			["nMaxInputChannels"]          =  6 ;
 			["enableSoundSystem"]          =  true ;
 			["enableDistantLowpass"]       =  false ;
-			["enableEnvironmentalReverb"]  =  false ;
+			["enableEnvironmentalReverb"]  =  true ;
 			["enableNear2DBlend"]          =  false ;
 			["enableAuditioning"]          =  false ;
 			["enableProfiling"]            =  false ;

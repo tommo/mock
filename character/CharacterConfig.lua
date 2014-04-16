@@ -126,7 +126,9 @@ function CharacterActionTrack:getRootConfig()
 	return action and action.parent
 end
 --------------------------------------------------------------------
+
 function CharacterActionTrack:addEvent( pos, evType )
+	evType = evType or self:getDefaultEventType()
 	local ev = self:createEvent( evType )
 	table.insert( self.events, ev )
 	ev.parent = self
@@ -142,6 +144,14 @@ function CharacterActionTrack:removeEvent( ev )
 		 end
 	end	
 	return false
+end
+
+function CharacterActionTrack:cloneEvent( ev )
+	local newEv = mock.clone( ev )
+	table.insert( self.events, newEv )
+	newEv.parent = self
+	newEv.pos = ev.pos + ev.length
+	return newEv	
 end
 
 local function _sortEvent( o1, o2 )
@@ -186,6 +196,10 @@ end
 
 --for multiple event type support
 function CharacterActionTrack:getEventTypes()
+	return false
+end
+
+function CharacterActionTrack:getDefaultEventType()
 	return false
 end
 

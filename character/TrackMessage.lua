@@ -22,6 +22,10 @@ function TrackMessage:getType()
 	return 'message'
 end
 
+function TrackMessage:getDefaultEventType()
+	return 'simple'
+end
+
 function TrackMessage:getEventTypes()
 	local names = {}
 	for k,clas in pairs( _messageEventTypes ) do

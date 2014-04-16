@@ -9,17 +9,37 @@ module 'mock'
 -- 	local anim = MOAIAnim.new()
 -- end
 
-function buildSimpleRotationAnim( prop, from, to, easeMode, duration, animMode, nostart )
-	easeMode = easeMode or MOAIEaseType.LINEAR
-	duration = duration or 1
+function buildAnimCurve( keys )
 	local curve = MOAIAnimCurve.new()
-	curve:reserveKeys( 2 )
-	curve:setKey( 1, 0, from, easeMode )
-	curve:setKey( 2, duration, to, easeMode )
+	local count = #keys
+	curve:reserveKeys( count )
+	for i, entry in ipairs( keys ) do
+		local t, value, ease, weight = unpack( entry )
+		curve:setKey( i, t, value, ease or MOAIEaseType.LINEAR, weight or 1 )
+	end
+	return curve
+end
+
+function buildAttrAnim( prop, attr, keys, mode, asDelta )
+	local curve = buildAnimCurve( keys )	
 	local anim = MOAIAnim.new()
 	anim:reserveLinks( 1 )
-	anim:setLink( 1, curve, prop, MOAIProp.ATTR_Z_ROT )
+	anim:setLink( 1, curve, prop, attr, asDelta )
 	anim:setMode( animMode or MOAITimer.NORMAL )	
-	if not nostart then anim:start() end
-	return anim
+	return anim, curve
 end
+
+function buildSimpleRotationAnim( prop, from, to, duration, easeMode, animMode, asDelta )
+	easeMode = easeMode or MOAIEaseType.LINEAR
+	return buildAttrAnim(
+			prop,
+			MOAIProp.ATTR_Z_ROT,
+			{
+				{ 0, from },
+				{ duration, to, easeMode },
+			},
+			animMode,
+			asDelta
+		)
+end
+
