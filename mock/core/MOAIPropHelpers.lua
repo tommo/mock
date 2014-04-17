@@ -105,15 +105,43 @@ function linkPiv( p1, p2 )
 	p1:setAttrLink( MOAIProp.ATTR_Z_PIV, p2, MOAIProp.ATTR_Z_PIV )
 end
 
--- function linkLoc( p1, p2 )
--- 	p1:setAttrLink( ATTR_TRANSLATE, p2, ATTR_TRANSLATE )
--- end
+function clearLinkRot( p1 )
+	p1:clearAttrLink( MOAIProp.ATTR_X_ROT )
+	p1:clearAttrLink( MOAIProp.ATTR_Y_ROT )
+	p1:clearAttrLink( MOAIProp.ATTR_Z_ROT )
+end
+
+function clearLinkScl( p1 )
+	p1:clearAttrLink( MOAIProp.ATTR_X_SCL )
+	p1:clearAttrLink( MOAIProp.ATTR_Y_SCL )
+	p1:clearAttrLink( MOAIProp.ATTR_Z_SCL )
+end
+
+function clearLinkLoc( p1 )
+	p1:clearAttrLink( MOAIProp.ATTR_X_LOC )
+	p1:clearAttrLink( MOAIProp.ATTR_Y_LOC )
+	p1:clearAttrLink( MOAIProp.ATTR_Z_LOC )
+end
+
+function clearLinkPiv( p1 )
+	p1:clearAttrLink( MOAIProp.ATTR_X_PIV )
+	p1:clearAttrLink( MOAIProp.ATTR_Y_PIV )
+	p1:clearAttrLink( MOAIProp.ATTR_Z_PIV )
+end
+
 
 function linkTransform( p1, p2 )
 	linkLoc( p1, p2 )
 	linkScl( p1, p2 )
 	linkRot( p1, p2 )
 	linkPiv( p1, p2 )
+end
+
+function clearLinkTransform( p1 )
+	clearLinkLoc( p1 )
+	clearLinkScl( p1 )
+	clearLinkRot( p1 )
+	clearLinkPiv( p1 )
 end
 
 function inheritTransform( p1, p2 )
