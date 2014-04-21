@@ -682,6 +682,7 @@ end
 
 --use a generic tuple value getter/setter
 function Field:tuple_getset( fieldId )
+	self.__is_tuple = true
 	local id = fieldId or self.__id
 	self.__getter = function( obj )
 		local k = obj[ id ]
@@ -692,6 +693,38 @@ function Field:tuple_getset( fieldId )
 	end
 	return self
 end
+
+
+--generic multiple fields getter/setter
+function Field:fields_getset( ... )	
+	self.__is_tuple = true
+	local fieldList = ''
+	local argList = ''
+	local ids = {...}
+	for i, id in ipairs( ids ) do
+		assert( type( id ) == 'string' )
+		if i > 1 then
+			fieldList = fieldList..','
+			argList    = argList..','
+		end
+		fieldList = fieldList..string.format( 'obj[%q]', id )		
+		argList    = argList..('arg'..i)
+	end
+	---setter
+	local getterCode = 'return function( obj ) return '..fieldList..'end'
+	local getterFunc = loadstring( getterCode )()
+	---setter	
+	local setterCode = string.format(
+		'return function( obj, %s ) %s = %s end',
+		argList, fieldList, argList
+	)
+	local setterFunc = loadstring( setterCode )()
+	---
+	self.__getter = getterFunc
+	self.__setter = setterFunc
+	return self	
+end
+
 
 function Field:onset( methodName )	
 	local setter0 = self.__setter

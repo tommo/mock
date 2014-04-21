@@ -26,7 +26,7 @@ local function isTupleValue( ft )
 	return
 		   ft == 'vec2' 
 		or ft == 'vec3' 
-		or ft == 'color'		
+		or ft == 'color'
 end
 
 --------------------------------------------------------------------
@@ -61,14 +61,15 @@ function _serializeField( obj, f, data, objMap, noNewRef )
 	local id = f:getId()
 
 	local ft = f:getType()
-	if isAtomicValue( ft ) then
-		data[ id ] = f:getValue( obj )
+	
+	if f.__is_tuple or isTupleValue( ft ) then
+		local v = { f:getValue( obj ) }
+		data[ id ] = v
 		return
 	end
 
-	if isTupleValue( ft ) then
-		local v = { f:getValue( obj ) }
-		data[ id ] = v
+	if isAtomicValue( ft ) then
+		data[ id ] = f:getValue( obj )
 		return
 	end
 
@@ -173,7 +174,7 @@ function _deserializeField( obj, f, data, objMap )
 		return
 	end
 
-	if isTupleValue( ft ) then --compound
+	if f.__is_tuple or isTupleValue( ft ) then --compound
 		if fieldData then
 			f:setValue( obj, unpack( fieldData ) )
 		end

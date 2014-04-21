@@ -87,26 +87,26 @@ EnumEaseType={
 }
 
 --------------------------------------------------------------------
-EnumCameraViewportMode = {
-	{ 'EXPANDING', 'expanding' }, --expand to full screen
-	{ 'FIXED',     'fixed' },     --fixed size, in device unit
-	{ 'RELATIVE',  'relative' },  --relative size, in ratio
+EnumCameraViewportMode = _ENUM_V{
+	'expanding', --expand to full screen
+	'fixed',     --fixed size, in device unit
+	'relative',  --relative size, in ratio
 }
 
 
 --------------------------------------------------------------------
-EnumTextAlignment = {
-	{ 'left'   , 'left'   },
-	{ 'center' , 'center' },
-	{ 'right'  , 'right'  },
+EnumTextAlignment = _ENUM_V{
+	'left',
+	'center',
+	'right',
 }
 
 --------------------------------------------------------------------
-EnumTextAlignmentV = {
-	{ 'top'   , 'top'   },
-	{ 'center' , 'center' },
-	{ 'bottom'  , 'bottom'  },
-	{ 'baseline'  , 'baseline'  },
+EnumTextAlignmentV = _ENUM_V{
+	'top',
+	'center',
+	'bottom',
+	'baseline',
 }
 
 --------------------------------------------------------------------
@@ -115,3 +115,25 @@ EnumParticleForceType = {
 	{ 'gravity', MOAIParticleForce. GRAVITY },
 	{ 'offset',  MOAIParticleForce. OFFSET  },
 }
+
+--------------------------------------------------------------------
+EnumOSTypes = _ENUM_V{
+	'iOS',
+	'android',
+	'windows',
+	'osx',
+	'linux',
+	'test',
+	'unknown'
+}
+
+EnumDeviceType = _ENUM_V {
+	'desktop',
+	'mobile',
+	'console',
+	'web',
+	'test',
+	'unknown',
+}
+
+--------------------------------------------------------------------
