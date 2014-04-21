@@ -52,7 +52,9 @@ function CharacterState:start()
 	if self.active then return end
 	self.active = true
 	for i, t in ipairs( action.tracks ) do
-		t:start( self )
+		if t.enabled then
+			t:start( self )
+		end
 	end	
 	self.timer:start()
 	self.timer:throttle( self.throttle )
@@ -65,7 +67,9 @@ function CharacterState:doStep( step )
 	local action = self.action
 	if not action then return end
 	for i, track in ipairs( action.tracks ) do
-		track:apply( self, t1 )
+		if track.enabled then
+			track:apply( self, t1 )
+		end
 	end	
 end
 
@@ -76,7 +80,9 @@ function CharacterState:stop()
 	self.active = false
 	self.target:processActionEvent( 'stop', nil, self:getTime(), self )
 	for i, t in ipairs( action.tracks ) do
-		t:stop( self )
+		if t.enabled then
+			t:stop( self )
+		end
 	end	
 	self.timer:stop()
 end
@@ -87,7 +93,9 @@ function CharacterState:pause( paused )
 	if not self.active then return end
 	self.timer:pause( paused )
 	for i, t in ipairs( action.tracks ) do
-		t:pause( self, paused )
+		if t.enabled then
+			t:pause( self, paused )
+		end
 	end	
 end
 
@@ -98,7 +106,9 @@ function CharacterState:apply( a, b )
 		local action = self.action
 		if not action then return end
 		for i, track in ipairs( action.tracks ) do
-			track:apply2( self, t0, t1 )
+			if track.enabled then
+				track:apply2( self, t0, t1 )
+			end
 		end
 	else
 		local t0, t1 = a, a
@@ -107,7 +117,9 @@ function CharacterState:apply( a, b )
 		local action = self.action
 		if not action then return end
 		for i, track in ipairs( action.tracks ) do
-			track:apply( self, t1 )
+			if track.enabled then
+				track:apply( self, t1 )
+			end
 		end
 	end	
 	self.timer:forceUpdate()

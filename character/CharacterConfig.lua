@@ -102,11 +102,13 @@ CharacterActionTrack
 		Field 'name' :string();		
 		Field 'events' :array( CharacterActionEvent ) :no_edit() :sub();		
 		Field 'parent' :type( CharacterAction ) :no_edit();
+		Field 'enabled' :boolean();
 	}
 
 function CharacterActionTrack:__init()
 	self.name = 'track'
 	self.events = {}
+	self.enabled = true
 end
 
 function CharacterActionTrack:getType()

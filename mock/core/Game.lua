@@ -142,6 +142,7 @@ function Game:loadConfig( path, fromEditor )
 end
 
 function Game:init( option, fromEditor )
+	_stat( '...init game' )
 	self.editorMode  = fromEditor or false
 	self.initialized = true
 	
@@ -155,11 +156,15 @@ function Game:init( option, fromEditor )
 
 	self:initGraphics( fromEditor )
 	
-
+	_stat( '...loading asset library' )
 	loadAssetLibrary( self.assetLibraryIndex )
+	
+	_stat( '...loading game modules' )
 	loadAllGameModules( option['script_library'] or false )
 
+	
 	--load layers
+	_stat( '...setting up layers' )
 	for i, data  in ipairs( option['layers'] or {} ) do
 		local layer 
 
@@ -183,22 +188,25 @@ function Game:init( option, fromEditor )
 			local pb = b.priority or 0
 			return pa < pb
 		end )
-
 	
 	if fromEditor then
 		local layer = self:addLayer( '_GII_EDITOR_LAYER' )
 		layer.priority = 1000000
 	end
+
 	----- Global Objects
+	_stat( '...loading global game objects' )
 	self.globalObjectLibrary = GlobalObjectLibrary()
 	self.globalObjectLibrary:load( option['global_objects'] )
 
 	--load setting data
+	_stat( '...loading setting data' )
 	self.settingFileName = option['setting_file'] or 'setting'
 	self.userDataPath    = MOAIEnvironment.documentDirectory or '.'
 	local settingData = self:loadSettingData( self.settingFileName )
 	self.settingData  = settingData or {}
 
+	_stat( '...setting up action root' )
 	-------Setup Action Root
 	self.time     = 0
 	self.throttle = 1
@@ -243,6 +251,7 @@ function Game:init( option, fromEditor )
 	self:setThrottle( 1 )
 
 	-------Setup Callbacks
+	_stat( '...setting up session callbacks' )
 	if rawget( _G, 'MOAIApp' ) then
 		MOAIApp.setListener(
 			MOAIApp.SESSION_END, 
@@ -259,18 +268,22 @@ function Game:init( option, fromEditor )
 		function( width, height )	return self:onResize( width, height )	end
 		)
 
-	----extra
-	collectgarbage( 'setpause',   70  )
-	collectgarbage( 'setstepmul', 150 )	
-
 	----make inputs work
+	_stat( 'init input handlers' )
 	initDefaultInputEventHandlers()
 
 	----audio
+	_stat( 'init audio' )
 	initFmodDesigner()
 
 	----physics
+	_stat( 'init physics' )
 	self:setupBox2DWorld()
+
+	----extra
+	_stat( '...extra init' )
+	collectgarbage( 'setpause',   70  )
+	collectgarbage( 'setstepmul', 150 )	
 	
 	----ask other systems to initialize
 	emitSignal( 'game.init' )
@@ -286,6 +299,7 @@ function Game:init( option, fromEditor )
 	self.previewingScene = option['previewing_scene']
 
 	self.mainScene:init()
+	_stat( '...init game done!' )
 end
 
 function Game:saveConfigToTable()
@@ -463,6 +477,7 @@ function Game:openScene( id, additive, arguments )
 end
 
 function Game:openSceneByPath( scnPath, additive, arguments )
+	_stat( 'openning scene:', scnPath )
 	local mainScene = self.mainScene
 	if not additive then
 		mainScene:clear( true )
@@ -586,6 +601,7 @@ function Game:stop()
 end
 
 function Game:start()
+	_stat( 'game start' )
 	self.paused = false
 	-- self.actionRoot:start()
 	self.mainScene:start()
@@ -669,7 +685,8 @@ function Game:saveSettingData( filename, data )
 end
 
 function Game:loadSettingData(filename)
-	local file=io.open( self.userDataPath..'/'..filename, 'rb' )
+	_stat( '...reading setting data from:', filename )
+	local file = io.open( self.userDataPath..'/'..filename, 'rb' )
 	if file then
 		local raw = file:read('*a')
 		local str = MOAIDataBuffer.inflate( raw )
