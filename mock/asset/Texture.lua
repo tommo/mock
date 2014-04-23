@@ -109,19 +109,20 @@ CLASS: SubTexture ( Texture )
 --------------------------------------------------------------------
 TextureGroup :MODEL{
 		Field 'name'           :string()  :no_edit();
-		
 		Field 'default'        :boolean() :no_edit();
 
 		Field 'filter'         :enum( EnumTextureFilter );
 		Field 'mipmap'         :boolean();
 		Field 'wrap'           :boolean();
+		Field 'compression'   :enum( EnumTextureCompression );
+		'----';
 		Field 'atlasMode'      :enum( EnumTextureAtlasMode );
 		Field 'maxAtlasWidth'  :enum( EnumTextureSize );
 		Field 'maxAtlasHeight' :enum( EnumTextureSize );
+		'----';
 		Field 'processor'      :asset('texture_processor');
 
 		Field 'cache'          :string() :no_edit();
-
 		Field 'textures'       :array( Texture ) :no_edit();
 		Field 'parent'         :type( TextureLibrary ) :no_edit();
 		Field 'expanded'       :boolean() :no_edit();
@@ -138,6 +139,7 @@ function TextureGroup:__init()
 	self.default        = false
 	self.expanded       = true
 	self.cache          = false
+	self.compression    = false
 	self.textures  = {}
 end
 

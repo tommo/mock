@@ -228,6 +228,8 @@ CLASS: QuadArray ( Deck2D )
 		Field 'tw'       :int() :label('tile width')  ;
 		Field 'th'       :int() :label('tile height') ;
 		Field 'spacing'  :int() :label('spacing')  ;
+		'----';
+		Field 'inverseOrder' :boolean();
 	}
 
 function QuadArray:__init()
@@ -241,6 +243,7 @@ function QuadArray:__init()
 	self.col     = 1
 	self.row     = 1
 	self.spacing = 0
+	self.inverseOrder = false
 end
 
 function QuadArray:createMoaiDeck()
@@ -289,18 +292,17 @@ function QuadArray:update()
 		local done = false
 		for c = 1, col do
 			local i = c + ( r - 1 ) * col
-			if i>count then
-				done = true
-				break
+			if i<=count then
+				-- done = true
+				-- break
+				local tu0 = ( c-1 ) * tileU1 + offU
+				local tv0 = ( row - r ) * tileV1 + offV
+				local tu1 = tu0 + tileU
+				local tv1 = tv0 + tileV
+
+				deck:setRect   ( i, ox - tw/2, oy - th/2, ox + tw/2, oy + th/2 )
+				deck:setUVRect ( i, tu0, tv0, tu1, tv1 )
 			end
-			local tu0 = ( c-1 ) * tileU1 + offU
-			local tv0 = ( r-1 ) * tileV1 + offV
-			local tu1 = tu0 + tileU
-			local tv1 = tv0 + tileV
-
-			deck:setRect   ( i, ox - tw/2, oy - th/2, ox + tw/2, oy + th/2 )
-			deck:setUVRect ( i, tu0, tv0, tu1, tv1 )
-
 		end
 		if done then break end
 	end

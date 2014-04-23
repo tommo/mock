@@ -15,6 +15,12 @@ EnumTextureSize = {
 	{ '8192', 8192 }
 }
 
+EnumTextureCompression = {
+	{ 'none',  false },
+	{ 'auto',  'auto' },
+	{ 'PVRTC', 'pvrtc' },
+}
+
 --------------------------------------------------------------------
 EnumTimerMode = {
 	{ 'normal'            , MOAITimer.NORMAL           } ,
