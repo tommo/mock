@@ -420,12 +420,12 @@ function PolygonDeck:update()
 	end
 	vbo:bless ()
 
-	local ibo = MOAIIndexBuffer.new ()
-	ibo:reserve ( indexCount )
-	for i = 1, indexCount, 2 do
-		local a, b = indexList[ i ], indexList[ i + 1 ]
-		ibo:setIndex( i, a, b )
-	end
+	-- local ibo = MOAIIndexBuffer.new ()
+	-- ibo:reserve ( indexCount )
+	-- for i = 1, indexCount, 2 do
+	-- 	local a, b = indexList[ i ], indexList[ i + 1 ]
+	-- 	ibo:setIndex( i, a, b )
+	-- end
 
 	mesh:setVertexBuffer ( vbo )
 	-- mesh:setIndexBuffer ( ibo )
