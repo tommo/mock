@@ -45,20 +45,47 @@ end
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-
+local function _getOrigin( origin, x0,y0,x1,y1 )
+	if y0>y1 then y0,y1 = y1,y0 end
+	if x0>x1 then x0,x1 = x1,x0 end
+	local xc = (x0+x1)/2
+	local yc = (y0+y1)/2
+	if origin=='center' then 
+		return xc, yc
+	elseif origin=='top-left' then
+		return x0, y1
+	elseif origin=='top-right' then
+		return x1, y1
+	elseif origin=='top-center' then
+		return xc, y1
+	elseif origin=='bottom-left' then
+		return x0, y0	
+	elseif origin=='bottom-right' then
+		return x1, y0
+	elseif origin=='bottom-center' then
+		return xc, y0
+	elseif origin=='middle-left' then
+		return x0, yc
+	elseif origin=='middle-right' then
+		return x1, yc
+	end
+	return xc,0
+end
 ---------------------------------------------------------------------
 CLASS: LayoutItem ( mock.Component )
 	:MODEL{
 		Field 'order' :int();
 		'----';
-		Field 'size' :type('vec2') :getset( 'Size' );
+		Field 'offset' :type('vec2') :getset( 'Offset' );
+		Field 'size'   :type('vec2') :getset( 'Size' );
 		Field 'margin' ;
 		Field 'policyH' :enum( EnumSizePolicy );
 		Field 'policyV' :enum( EnumSizePolicy );
 	}
 
 function LayoutItem:__init()
-	self.w, self.h = 100, 100
+	self.w,  self.h  = 100, 100
+	self.ox, self.oy = 0, 0
 	self.order   = 1
 	self.margin  = 5
 	self.policyH = 'normal'
@@ -73,24 +100,76 @@ function LayoutItem:setSize( w, h )
 	self.w, self.h = w, h
 end
 
+function LayoutItem:getOffset()
+	return self.ox, self.oy
+end
+
+function LayoutItem:onStart()
+	self:updateLayout()
+end
+
+function LayoutItem:setOffset( ox, oy )
+	self.ox, self.oy = ox, oy
+end
+
 function LayoutItem:getLayoutSize()
 	local w,h = self:getSize()
 	return w + self.margin*2, h + self.margin*2
 end
 
+-- function LayoutItem:getLayoutRect()
+-- 	local w,h = self:getLayoutSize()
+-- 	return self.ox, self.oy, w, h
+-- end
+
 function LayoutItem:setLayoutLoc( x, y )
 	local ent = self._entity
-	ent:setLocX( x )
-	ent:setLocY( y )
+	ent:setLocX( x + self.ox + self.margin )
+	ent:setLocY( y + self.oy + self.margin )
+end
+
+function LayoutItem:getChildrenList()
+	local l = {}
+	local i = 1 	
+	local ent = self._entity
+	for c in pairs( ent.children ) do
+		local item = c:getComponent( LayoutItem )
+		if item then
+			l[i] = item
+			i = i + 1
+		end
+	end
+	table.sort( l, _sortLayoutItem )
+	return l
+end
+
+function LayoutItem:updateLayoutTree()
+	for i, ch in ipairs( self:getChildrenList() ) do
+		ch:updateLayoutTree()
+	end
+	self:updateLayout()
 end
 
 function LayoutItem:updateLayout()
 end
 
+function LayoutItem:_updateLayoutParent()
+	local p  = self:getEntity()
+	local li = self
+	while true do
+		local p1 = p.parent
+		if not p1 then break end
+		local li1 = p1:getComponent( LayoutItem )
+		if not li1 then break end		
+		p = p1
+		li = li1
+	end
+	return li:updateLayoutTree()
+end
+
 --------------------------------------------------------------------
 CLASS: LayoutFloatPin ( LayoutItem )
 	:MODEL {
-		Field 'offset' :type('vec2') :getset( 'Offset' );
 		Field 'relative' :enum( EnumLayoutRelativeOrigin );
 }
 
@@ -100,14 +179,6 @@ function LayoutFloatPin:__init()
 	self.oy = 0
 end
 
-function LayoutFloatPin:getOffset()
-	return self.ox, self.oy
-end
-
-function LayoutFloatPin:setOffset( ox, oy )
-	self.ox, self.oy = ox, oy
-end
-
 function LayoutFloatPin:getLayoutSize() --not in layout calculation
 	return false
 end
@@ -115,14 +186,44 @@ end
 function LayoutFloatPin:updateLayout()
 end
 
+function LayoutFloatPin:setRelativeTo( relative )
+	self.relative = relative
+end
+
 --------------------------------------------------------------------
-CLASS: LayoutScreenPin ( LayoutItem )
+CLASS: LayoutScreenPin ( LayoutFloatPin )
 	:MODEL{
 		Field 'refCamera' :type( Camera );
 	}
 
 function LayoutScreenPin:__init()
 	self.refCamera = false	
+end
+
+function LayoutScreenPin:onAttach( ent )
+	self:connect( 'camera.viewport_update', 'onViewportUpdate' )
+end
+
+function LayoutScreenPin:onViewportUpdate( camera )
+	if camera == self.refCamera then
+		self:updateLayout()
+	end
+end
+
+function LayoutScreenPin:setRefCamera( cam )
+	self.refCamera = cam
+end
+
+function LayoutScreenPin:updateLayout()
+	if not self.refCamera then return end
+	local vx0,vy0,vx1,vy1 = self.refCamera:getViewportRect()
+	local w, h = vx1-vx0, vy1-vy0
+	local x, y = _getOrigin( self.relative, vx0, vy0, vx1, vy1 )
+	local parent = self:getParent()
+	if parent then
+		x, y = parent:worldToModel( x, y )
+	end
+	self:setLayoutLoc( x, y )
 end
 
 
@@ -140,20 +241,6 @@ function LayoutGroup:__init()
 	self.policyV = 'expand'
 end
 
-function LayoutGroup:getChildrenList()
-	local l = {}
-	local i = 1 	
-	local ent = self._entity
-	for c in pairs( ent.children ) do
-		local item = c:getComponent( LayoutItem )
-		if item then
-			l[i] = item
-			i = i + 1
-		end
-	end
-	table.sort( l, _sortLayoutItem )
-	return l
-end
 
 function LayoutGroup:refreshLayout()
 	self:updateLayout()
@@ -162,7 +249,7 @@ end
 --------------------------------------------------------------------
 CLASS: LayoutHorizontalGroup ( LayoutGroup )
 	:MODEL{
-		Field 'alignment' :enum( EnumLayoutAlignment );
+		Field 'alignment' :enum( EnumLayoutAlignmentV );
 }
 
 function LayoutHorizontalGroup:updateLayout()

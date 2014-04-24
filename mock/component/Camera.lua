@@ -1,4 +1,9 @@
 module 'mock'
+
+registerSignals{
+	'camera.viewport_update'
+}
+
 local insert = table.insert
 local remove = table.remove
 
@@ -344,6 +349,7 @@ function Camera:updateViewport()
 	self.viewport:setSize( vx0, vy0, vx1, vy1 )
 
 	self:updateZoom()
+	emitSignal( 'camera.viewport_update', self )
 end
 
 function Camera:updateZoom()
@@ -371,7 +377,7 @@ end
 
 function Camera:getViewportRect()
 	local x0, y0, x1, y1 = self:getViewportLocalRect()
-	local cam = self._cam
+	local cam = self._camera
 	local wx0, wy0 = cam:modelToWorld( x0, y0 )
 	local wx1, wy1 = cam:modelToWorld( x1, y1 )
 	return wx0, wy0, wx1, wy1
@@ -492,51 +498,10 @@ function Camera:getMoaiFrameBuffer()
 	return self.frameBuffer
 end
 
---helpers
--- function Camera:getPos( name, ox, oy ) 
--- 	--TODO: fix this
--- 	ox, oy = ox or 0, oy or 0
--- 	-- local x0, y0, x1, y1 = self:getViewportWorldRect()
--- 	if     name=='top' then
--- 		return gfx.h/2+oy
--- 	elseif name=='bottom' then
--- 		return -gfx.h/2+oy
--- 	elseif name=='left' then
--- 		return -gfx.w/2+ox
--- 	elseif name=='right' then
--- 		return gfx.w/2+ox
--- 	elseif name=='left-top' then
--- 		return -gfx.w/2+ox,gfx.h/2+oy
--- 	elseif name=='left-bottom' then
--- 		return -gfx.w/2+ox,-gfx.h/2+oy
--- 	elseif name=='right-top' then
--- 		return gfx.w/2+ox,gfx.h/2+oy
--- 	elseif name=='right-bottom' then
--- 		return gfx.w/2+ox,-gfx.h/2+oy
--- 	elseif name=='center' then
--- 		return ox,oy
--- 	elseif name=='center-top' then
--- 		return ox,gfx.h/2+oy
--- 	elseif name=='center-bottom' then
--- 		return ox,-gfx.h/2+oy
--- 	elseif name=='left-center' then
--- 		return -gfx.w/2+ox,oy
--- 	elseif name=='right-center' then
--- 		return gfx.w/2+ox,oy
--- 	else
--- 		return error('what position?'..name)
--- 	end
--- end
-
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
 registerComponent( 'Camera', Camera)
-
-registerEntity( 'Camera', 
-	function()
-		return SingleEntity( Camera() )
-	end
-	)
+registerEntityWithComponent( 'Camera', Camera )
 
 function Camera:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()

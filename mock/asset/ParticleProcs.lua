@@ -48,13 +48,10 @@ function proc.p.slowDown(rate)
 	p.dy=p.dy*rate
 end
 
-
 function proc.p.moveBack()
 	p.x=p.x-p.dx
 	p.y=p.y-p.dy
-	
 end
-
 
 function proc.p.shake(v)
 	p.x=p.x+rand(0-v,v)
@@ -136,6 +133,11 @@ function proc.wave(freq,min,max)
 	else
 		return ((sin(time*3.141593*freq/2)*0.5+0.5)*(max-min)+min)
 	end
+end
+
+function proc.sp.flipbook( from, to, fps )
+	fps = fps or 30
+	sp.idx = wrap( age * fps, from, to )
 end
 
 addParticleScriptBuiltinSymbol('proc',proc)
