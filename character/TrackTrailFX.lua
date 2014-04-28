@@ -48,8 +48,8 @@ CLASS: EventTrailFXArc ( EventTrailFX )
 	:MODEL {
 		Field 'radius' ;
 		Field 'trailLength' ;
-		Field 'angle0' :range( 0, 360 ) :widget( 'slider' );
-		Field 'angle1' :range( 0, 360 ) :widget( 'slider' );
+		Field 'angle0' ;
+		Field 'angle1' ;
 	}
 function EventTrailFXArc:__init()
 	self.radius      = 100
@@ -103,7 +103,8 @@ function EventTrailFXArc:start( state, pos )
 	local a0, a1 = self.angle0, self.angle1
 	deck:setSection( a0, a0, 10 )
 	local delay = ( 1 - self.trailSpeed/10 ) * 4 + 1
-	local action = deck:seekAngle0( a1, duration * delay, MOAIEaseType.SOFT_EASE_IN )
+	prop:seekColor( 0,0,0,0, duration*.7*delay, MOAIEaseType.SHARP_EASE_OUT )
+	local action = deck:seekAngle0( a0+(a1-a0)*.7, duration * delay, MOAIEaseType.SOFT_EASE_IN )
 	deck:seekAngle1( a1, duration, MOAIEaseType.EASE_IN )	
 	action:setListener( MOAIAction.EVENT_STOP, function()
 		ent:_detachProp( prop )
@@ -140,6 +141,31 @@ function EventTrailFXArc:drawBounds()
 	local x,y = self:getLoc()
 	drawSectionDeckGizmo( x,y, self.radius, self.trailLength, self.angle0, self.angle1 )
 end
+
+--------------------------------------------------------------------
+CLASS: EventTrailFXBasic (CharacterActionEvent)
+	:MODEL{
+		Field 'size'    :type('vec2') :getset('Size');
+}
+function EventTrailFXBasic:__init()
+	self.size = 1
+end
+
+function EventTrailFXBasic:start( start, pos )
+end
+
+function EventTrailFXBasic:getSize()
+	return self.w, self.h
+end
+
+function EventTrailFXBasic:setSize( w, h )
+	self.w = w
+	self.h = h
+	self.deck:setSize( w, h )
+	self.deck:update()
+	self.prop:forceUpdate()
+end
+
 --------------------------------------------------------------------
 CLASS: TrackTrailFX ( CharacterActionTrack )
 	:MODEL{}
