@@ -143,28 +143,92 @@ function EventTrailFXArc:drawBounds()
 end
 
 --------------------------------------------------------------------
-CLASS: EventTrailFXBasic (CharacterActionEvent)
+CLASS: EventTrailFXRay ( EventTrailFX )
 	:MODEL{
-		Field 'size'    :type('vec2') :getset('Size');
+		Field 'trailWidth';
+		Field 'trailLength';
+		Field 'direction' :range( 0, 360 ) :widget( 'slider' ) :set('setDirection');
 }
-function EventTrailFXBasic:__init()
-	self.size = 1
+function EventTrailFXRay:__init()
+	self.trailWidth     = 100
+	self.trailLength    = 100
+	self.direction = 0
 end
 
-function EventTrailFXBasic:start( start, pos )
+function EventTrailFXRay:setDirection( direction )
+	self.transform:setRot( 0,0,direction - 90 )
+	self.direction = direction
 end
 
-function EventTrailFXBasic:getSize()
-	return self.w, self.h
+function EventTrailFXRay:start( state, pos )
+	local duration = self.length/1000 / state.throttle
+	if duration == 0 then return end
+	local tex = mock.loadAsset( self.texture )
+	if not tex then return end
+	local target = state.target
+	local ent = target:getEntity()	
+	--todo: cache this
+	local deck = MOAIGfxQuad2D.new()	
+	local moaiTex, uv = getTextureUV( tex )
+	deck:setTexture( moaiTex )
+	deck:setUVRect( unpack( uv ) )
+	local w = self.trailWidth
+	local h = self.trailLength
+	deck:setRect( -w/2, 0, w/2, -h )
+	local prop = MOAIProp.new()
+	prop:setDeck( deck )
+	setPropBlend( prop, self.blend )
+	ent:_attachProp( prop )
+	prop:setColor( unpack( self.color ) )
+	local dir = self.direction - 90
+	local delay = ( 1 - self.trailSpeed/10 ) * 4 + 1
+	prop:seekColor( 0,0,0,0, duration * delay*0.9, MOAIEaseType.SHARP_EASE_OUT )
+	local x1, y1 = self.transform:getLoc()
+	local dx, dy = vecAngle( dir + 90 - 180, self.trailLength )
+	local x0, y0 = x1 + dx, y1 + dy
+	prop:setLoc( x0, y0, 5 )
+	prop:setRot( 0,0, dir )
+	local action = prop:seekAttr(
+		MOAIProp.ATTR_Y_SCL, 0.5, duration * delay * 1.1, MOAIEaseType.SOFT_EASE_IN
+	)
+	prop:seekLoc( x1,y1, 5, duration * delay, MOAIEaseType.SOFT_EASE_IN )
+	action:setListener( MOAIAction.EVENT_STOP, function()
+		ent:_detachProp( prop )
+	end
+	)
 end
 
-function EventTrailFXBasic:setSize( w, h )
-	self.w = w
-	self.h = h
-	self.deck:setSize( w, h )
-	self.deck:update()
-	self.prop:forceUpdate()
+
+function EventTrailFXRay:onBuildGizmo()
+	local giz = mock_edit.SimpleBoundGizmo()
+	giz:setTarget( self )
+	linkLoc( giz:getProp(), self.transform )
+	linkScl( giz:getProp(), self.transform )
+	linkRot( giz:getProp(), self.transform )
+	return giz
 end
+
+local setColor = MOAIGfxDevice.setPenColor
+local setWidth = MOAIGfxDevice.setPenWidth
+local function drawRayTrailGizmo( x,y, width, length, direction )
+	setWidth( 1 )
+	setColor( 1,0,1 )
+	MOAIDraw.drawArrow( 0,-length, 0,0 )
+	MOAIDraw.drawRect( -width/2, -length, width/2, 0 )
+end
+
+function EventTrailFXRay:drawBounds()
+	local x,y = self:getLoc()
+	drawRayTrailGizmo( x,y, self.trailWidth, self.trailLength, self.direction )
+end
+
+--------------------------------------------------------------------
+-- CLASS: EventTrailFXSlotTrail (CharacterActionEvent)
+-- 	:MODEL {
+-- 		Field 'targetSlot' :string();
+-- 		Field 'width';		
+-- }
+
 
 --------------------------------------------------------------------
 CLASS: TrackTrailFX ( CharacterActionTrack )
@@ -179,14 +243,17 @@ function TrackTrailFX:getType()
 end
 
 function TrackTrailFX:getEventTypes()
-	return { 'arc', 'trail' }
+	return { 'arc', 'ray' }
 end
 
 function TrackTrailFX:createEvent( evType )
 	if evType == 'arc' then
 		return EventTrailFXArc()
+	elseif evType == 'ray' then
+		return EventTrailFXRay()
 	else
-		return EventTrailFXCurve()
+		return false
+		-- return EventTrailFXSlot()
 	end
 end
 

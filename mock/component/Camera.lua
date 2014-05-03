@@ -378,6 +378,7 @@ end
 function Camera:getViewportRect()
 	local x0, y0, x1, y1 = self:getViewportLocalRect()
 	local cam = self._camera
+	cam:forceUpdate()
 	local wx0, wy0 = cam:modelToWorld( x0, y0 )
 	local wx1, wy1 = cam:modelToWorld( x1, y1 )
 	return wx0, wy0, wx1, wy1

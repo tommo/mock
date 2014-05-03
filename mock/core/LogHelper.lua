@@ -49,15 +49,31 @@ local logLevelNames = {
 	['none']    =  MOAILogMgr.LOG_NONE,
 }
 
-local logLevel = MOAILogMgr.LOG_WARNING
+local _logLevel = MOAILogMgr.LOG_WARNING
+local _logFile  = false
 function setLogLevel( level )
 	if type(level) == 'string' then
 		level = logLevelNames[level] or MOAILogMgr.LOG_STATUS
 	end
 	MOAILogMgr.setLogLevel( level )
-	logLevel = level
+	_logLevel = level
 end
 
+function openLogFile( path )
+	_logFile = path
+	MOAILogMgr.openFile( path )
+end
+
+function closeLogFile()
+	MOAILogMgr.closeFile()
+	_logFile = false
+end
+
+function getLogFile()
+	return _logFile
+end
+
+--------------------------------------------------------------------
 local MOAILog = MOAILogMgr.log
 function _log(...) 
 	for i = 1, select( '#', ... ) do
@@ -68,26 +84,29 @@ function _log(...)
 	MOAILog('\n')
 end
 
+local function _nilFunc() end
+
+
 function _logf( patt, ... )
 	return _log( string.format( patt, ... ) )
 end
 
 
 function _stat( ... )
-	if logLevel >= MOAILogMgr.LOG_STATUS then
+	if _logLevel >= MOAILogMgr.LOG_STATUS then
 		MOAILog('[STATUS:Lua]\t')
 		return _log( ... )
 	end
 end
 
 function _statf( patt, ... )
-	if logLevel >= MOAILogMgr.LOG_STATUS then
+	if _logLevel >= MOAILogMgr.LOG_STATUS then
 		return _stat( string.format( patt, ... ) )
 	end
 end
 
 function _error( ... )
-	if logLevel >= MOAILogMgr.LOG_ERROR then
+	if _logLevel >= MOAILogMgr.LOG_ERROR then
 		print( debug.traceback( 2 ) )
 		MOAILog('[ERROR:Lua]\t')
 		return _log( ... )
@@ -95,20 +114,20 @@ function _error( ... )
 end
 
 function _errorf( patt, ... )
-	if logLevel >= MOAILogMgr.LOG_ERROR then
+	if _logLevel >= MOAILogMgr.LOG_ERROR then
 		return _error( string.format( patt, ... ) )
 	end
 end
 
 function _warn( ... )
-	if logLevel >= MOAILogMgr.LOG_WARNING then
+	if _logLevel >= MOAILogMgr.LOG_WARNING then
 		MOAILog('[WARN:Lua]\t')
 		return _log( ... )
 	end
 end
 
 function _warnf( patt, ... )
-	if logLevel >= MOAILogMgr.LOG_WARNING then
+	if _logLevel >= MOAILogMgr.LOG_WARNING then
 		return _warn( string.format( patt, ... ) )
 	end
 end

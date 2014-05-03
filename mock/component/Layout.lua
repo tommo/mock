@@ -221,6 +221,7 @@ function LayoutScreenPin:updateLayout()
 	local x, y = _getOrigin( self.relative, vx0, vy0, vx1, vy1 )
 	local parent = self:getParent()
 	if parent then
+		parent:getProp():forceUpdate()
 		x, y = parent:worldToModel( x, y )
 	end
 	self:setLayoutLoc( x, y )

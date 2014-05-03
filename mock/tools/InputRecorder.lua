@@ -1,3 +1,4 @@
+module 'mock'
 local function hasItem(t, v)
 	for _, i in ipairs(t) do
 		if i==v then return true end

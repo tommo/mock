@@ -37,8 +37,6 @@ function GraphicsContext:setViewportSize( w, h )
 	self.viewportHeight = h
 end
 
-
-
 --------------------------------------------------------------------
 local _graphicsContextRegistry = {}
 local _contextCounter = 0

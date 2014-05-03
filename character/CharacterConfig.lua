@@ -1,5 +1,6 @@
 module 'character'
 
+local loadCharacterConfig
 
 CLASS: CharacterActionEvent ()
 CLASS: CharacterActionTrack ()
@@ -237,6 +238,7 @@ CharacterAction	:MODEL{
 		Field 'length' :int();
 		Field 'tracks' :array( CharacterActionTrack ) :no_edit() :sub();		
 		Field 'parent' :type( CharacterConfig ) :no_edit();
+		Field 'inherited' :boolean() :no_edit();
 		'----';
 		Field 'comment' :string();
 	}
@@ -247,6 +249,7 @@ function CharacterAction:__init()
 	self.stateData = false
 	self.loop      = false
 	self.length    = -1
+	self.inherited = false
 end
 
 function CharacterAction:addTrack( t )
@@ -344,10 +347,12 @@ CharacterConfig	:MODEL{
 		Field 'name'    :string();
 		Field 'spine'   :asset('spine') :getset('Spine');
 		Field 'actions' :array( CharacterAction ) :no_edit();		
+		Field 'baseCharacter' :asset( 'character' );
 	}
 
 function CharacterConfig:__init()
 	self.name    = 'character'
+	self.baseCharacter = false
 	self.actions = {}
 end
 
@@ -357,6 +362,36 @@ end
 
 function CharacterConfig:setSpine( path )
 	self.spinePath = path
+end
+
+function CharacterConfig:setBaseCharacter( baseCha )
+	self.baseCharacter = baseCha
+	--unload previous ref actions
+	local newActions = {}
+	for i, act in ipairs( self.actions ) do
+		if not act.inherited then
+			table.insert( newActions, act )
+		end
+	end
+	self.actions = newActions
+	self:loadBaseCharacter()
+end
+
+function CharacterConfig:loadBaseCharacter()
+	--TODO: cyclic refer detection!!!
+	local loadedConfig = { self }
+	if not self.baseCharacter then return end
+	local baseConfig = loadCharacterConfig( self.baseCharacter )
+	if not baseConfig then
+		_error( 'failed to load parent character config')
+		return
+	end
+	--clone track
+	for i, act in ipairs( baseConfig.actions ) do
+		local newAct = self:addAction()
+		mock.clone( act, newAct )
+		newAct.inherited = true
+	end
 end
 
 function CharacterConfig:addAction( name )
@@ -393,7 +428,7 @@ function CharacterConfig:sortEvents() --pre-serialization
 end
 
 --------------------------------------------------------------------
-local function loadCharacterConfig( node )
+function loadCharacterConfig( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('config') )
 	local config = mock.deserialize( nil, data )
 	if config then --set parent nodes
