@@ -130,7 +130,7 @@ function TrackSpineAnimation:start( state )
 		animTrack:addSpan( ev.pos/1000, ev.clip, ev.loop, ev.offset, l>0 and l or nil, ev.reversed )
 	end
 	spineState:apply( 0.0 )
-	target.spineSprite:getSkeleton():updateSlots()
+	target.spineSprite:getSkeleton():updateSpine()
 end
 
 function TrackSpineAnimation:stop( state )	

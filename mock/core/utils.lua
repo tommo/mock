@@ -199,6 +199,26 @@ function table.split(t,s)
 	return t1,t2
 end
 
+function table.keys( t )
+	local keys = {}
+	local i = 1
+	for k in pairs( t ) do
+		keys[ i ] = k
+		i = i + 1
+	end
+	return keys
+end
+
+function table.values( t )
+	local values = {}
+	local i = 1
+	for _, v in pairs( t ) do
+		values[ i ] = v
+		i = i + 1
+	end
+	return values
+end
+
 --------------------------------------------------------------------
 ----MATH & Geometry
 --------------------------------------------------------------------

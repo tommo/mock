@@ -1,6 +1,5 @@
 module 'mock'
 
-
 function SpineJSONLoader( node )
 	local jsonPath  = node:getAbsObjectFile( 'json'  )
 	local atlasPath = node:getAbsObjectFile( 'atlas' )
@@ -8,9 +7,10 @@ function SpineJSONLoader( node )
 	local skeletonData = MOAISpineSkeletonData.new()
 	skeletonData:load( jsonPath, atlasPath )
 	skeletonData._jsonData = assert( jsonData )
-	local animations = { skeletonData:getAnimationNames() }
-	local skins      = { skeletonData:getSkinNames() }
-	local slots      = { skeletonData:getSlotNames() }
+	local animations = table.keys( jsonData['animations'] )
+	local skins      = table.keys( jsonData['skins'] )
+	local slots      = table.keys( jsonData['slots'] )
+	local bones      = table.keys( jsonData['bones'] )
 	local animationTable = {}	
 	for i, n in ipairs( animations ) do
 		animationTable[ n ] = i
@@ -23,9 +23,14 @@ function SpineJSONLoader( node )
 	for i, n in ipairs( slots ) do
 		slotTable[ n ] = i
 	end
+	local boneTable = {}
+	for i, n in ipairs( bones ) do
+		boneTable[ n ] = i
+	end
 	skeletonData._animationTable = animationTable
 	skeletonData._slotTable      = slotTable
 	skeletonData._skinTable      = skinTable
+	skeletonData._boneTable      = boneTable
 	return skeletonData
 end
 

@@ -60,7 +60,7 @@ function SpineSprite:play( clipName, mode, resetPose )
 	end
 	
 	if resetPose ~= false then
-		self.skeleton:setToSetupPose()
+		-- self.skeleton:setToSetupPose()
 	end
 
 	local track = anim:addTrack()
@@ -102,7 +102,7 @@ function SpineSprite:stop( resetPose )
 		self.animState:stop()
 	end
 	if resetPose ~= false then
-		self.skeleton:setToSetupPose()
+		-- self.skeleton:setToSetupPose()
 	end
 end
 
