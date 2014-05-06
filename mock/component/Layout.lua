@@ -13,6 +13,18 @@ EnumLayoutAlignmentV = _ENUM_V{
 }
 
 
+EnumLayoutRelativeOriginH = _ENUM_V{
+	'left',
+	'right',
+	'center'
+}
+
+EnumLayoutRelativeOriginV = _ENUM_V{
+	'top',
+	'right',
+	'center'
+}
+
 EnumLayoutRelativeOrigin = _ENUM_V{
 	'center';
 	'top-left';
@@ -222,7 +234,8 @@ function LayoutScreenPin:updateLayout()
 	local parent = self:getParent()
 	if parent then
 		parent:getProp():forceUpdate()
-		x, y = parent:worldToModel( x, y )
+		local x1, y1 = parent:worldToModel( x, y )
+		x, y = x1, y1
 	end
 	self:setLayoutLoc( x, y )
 end
