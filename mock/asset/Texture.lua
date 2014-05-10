@@ -304,7 +304,7 @@ local function loadSingleTexture( pixmapPath, group, debugName )
 	if TEXTURE_ASYNC_LOAD then
 		loadTextureAsync( tex, filePath, transform, debugName or pixmapPath )
 	else
-		tex:load( filePath, transform )
+		tex:load( filePath, transform, debugName )
 		if tex:getSize() <= 0 then
 			_warn( 'failed load texture file:', path )
 			tex:load( getTexturePlaceHolderImage() )

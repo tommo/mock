@@ -7,10 +7,10 @@ function SpineJSONLoader( node )
 	local skeletonData = MOAISpineSkeletonData.new()
 	skeletonData:load( jsonPath, atlasPath )
 	skeletonData._jsonData = assert( jsonData )
-	local animations = table.keys( jsonData['animations'] )
-	local skins      = table.keys( jsonData['skins'] )
-	local slots      = table.keys( jsonData['slots'] )
-	local bones      = table.keys( jsonData['bones'] )
+	local animations = table.keys( jsonData['animations'] or {} )
+	local skins      = table.keys( jsonData['skins'] or {} )
+	local slots      = table.keys( jsonData['slots'] or {} )
+	local bones      = table.keys( jsonData['bones'] or {} )
 	local animationTable = {}	
 	for i, n in ipairs( animations ) do
 		animationTable[ n ] = i

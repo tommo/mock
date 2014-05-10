@@ -467,7 +467,6 @@ function Game:openEntryScene()
 	end
 end
 
-
 function Game:openScene( id, additive, arguments )
 	local scnPath = self.scenes[ id ]
 	if not scnPath then
@@ -479,9 +478,16 @@ end
 function Game:openSceneByPath( scnPath, additive, arguments )
 	_stat( 'openning scene:', scnPath )
 	local mainScene = self.mainScene
+	
 	if not additive then
+		print( 'clear scene' )
+		print( getTracingObjectCount()) 
 		mainScene:clear( true )
+		MOAISim.forceGC()
+		print( getTracingObjectCount()) 
+		print( 'collected' )
 	end
+	
 	local runningState = mainScene.running
 	mainScene.running = false --start entity in batch
 	local scn, node = loadAsset( scnPath, { scene = mainScene } )

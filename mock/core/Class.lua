@@ -33,6 +33,8 @@ local rawget, rawset = rawget, rawset
 local newClass
 local separatorField
 local globalClassRegistry = {}
+local tracingObjectAllocation = true
+local tracingObjectTable = setmetatable( {}, { __mode = 'k' } )
 
 local reservedMembers = {
 	['__init']  = true,
@@ -41,6 +43,19 @@ local reservedMembers = {
 	['__model'] = true,
 }
 
+function setTracingObjectAllocation( tracing )
+	tracingObjectAllocation = tracing ~= false
+end
+
+function getTracingObjectTable()
+	return tracingObjectTable
+end
+
+function getTracingObjectCount()
+	return table.len( tracingObjectTable )
+end
+
+--------------------------------------------------------------------
 local BaseClass = {
 	__subclasses={}
 }
@@ -149,11 +164,18 @@ local function buildInstanceBuilder(class)
 		newinstance=function (t,...)
 			local o=setmetatable({}, class)
 			init(o,...)
+			if tracingObjectAllocation then
+				tracingObjectTable[ o ] = true
+			end
 			return o
 		end
 	else
 		newinstance=function (t)
-			return setmetatable({}, class)
+			local o = setmetatable({}, class)
+			if tracingObjectAllocation then
+				tracingObjectTable[ o ] = true
+			end
+			return o
 		end
 	end
 
