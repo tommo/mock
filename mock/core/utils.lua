@@ -419,6 +419,15 @@ end
 
 table.vextend=vextend
 
+function table.extract( t, ... )
+	local res = {}
+	local keys = {}
+	for i, key in ipairs( keys ) do
+		res[ i ] = t[ key ]
+	end
+	return unapck( res )
+end
+
 function table.extend(t,t1)
 	for k,v in pairs(t1) do
 		t[k]=v

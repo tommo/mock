@@ -19,7 +19,7 @@ function SpineSpriteBase:onDetach( entity )
 	self.skeleton:forceUpdateSlots()
 end
 
-function SpineSpriteBase:setSprite( path )
+function SpineSpriteBase:setSprite( path, alphaBlend )
 	self.spritePath = path	
 	self.skeletonData = loadAsset( path )
 	if self.skeletonData  then
@@ -27,10 +27,10 @@ function SpineSpriteBase:setSprite( path )
 		if entity then
 			entity:_detachProp( self.skeleton )		
 			self.skeleton  = MOAISpineSkeleton.new()
-			self.skeleton:load( self.skeletonData, 0.001 )
+			self.skeleton:load( self.skeletonData, 0.001, alphaBlend )
 			entity:_attachProp( self.skeleton )
 		else
-			self.skeleton:load( self.skeletonData, 0.001 )
+			self.skeleton:load( self.skeletonData, 0.001, alphaBlend )
 		end
 	end
 end

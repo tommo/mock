@@ -284,12 +284,15 @@ function Camera:setFarPlane( far )
 end
 
 function Camera:getFOV()
-	return self.fov
+	return self._camera:getFieldOfView()
 end
 
-function Camera:setFOV( fov )
-	self.fov = fov
+function Camera:setFOV( fov )	
 	self._camera:setFieldOfView( fov )
+end
+
+function Camera:seekFOV( fov, duration, easeType )
+	return self._camera:seekFieldOfView( fov, duration, easeType )
 end
 
 function Camera:getNearPlane()

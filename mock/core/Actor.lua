@@ -199,15 +199,14 @@ function setActorCoroutineWrapper( f )
 end
 
 --------------------------------------------------------------------
-function Actor:addCoroutine( func, ... )
-	
+function Actor:_createCoroutine( defaultParent, func, ... )
 	local coro = MOAICoroutine.new()
-	
 	local coroutines = self.coroutines
 	if not coroutines then
 		coroutines = {}
 		self.coroutines = coroutines
 	end
+	if defaultParent then coro:setDefaultParent( defaultParent ) end
 	local tt = type( func )
 	if tt == 'string' then --method name
 		local _func = self[ func ]
@@ -225,6 +224,14 @@ function Actor:addCoroutine( func, ... )
 
 	coroutines[coro] = true
 	return coro
+end
+
+function Actor:addCoroutineP( func, ... )
+	return self:_createCoroutine( true, func, ... )
+end
+
+function Actor:addCoroutine( func, ... )
+	return self:_createCoroutine( false, func, ... )
 end
 
 function Actor:clearCoroutines()
