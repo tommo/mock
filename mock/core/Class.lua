@@ -114,6 +114,14 @@ function BaseClass:isInstance( clas )
 	return c:isSubclass( clas )
 end
 
+function BaseClass:assertInstance( superclass )
+	if self:isInstance( superclass ) then
+		return self 
+	else
+		return error( 'object is not instance of given class', 2 )
+	end
+end
+
 -- function BaseClass:superCall( name, ... )
 -- 	local m = self[ name ]
 -- 	local super = self.__super

@@ -313,6 +313,14 @@ function EffectState:linkPartition( prop )
 	inheritPartition( prop, self._emitterProp )
 end
 
+function EffectState:linkVisible( prop )
+	inheritVisible( prop, self._emitterProp )
+end
+
+function EffectState:linkColor( prop )
+	inheritColor( prop, self._emitterProp )
+end
+
 function EffectState:getEffectConfig()
 	return self._config
 end

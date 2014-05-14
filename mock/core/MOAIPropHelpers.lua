@@ -156,7 +156,6 @@ function inheritColor( p1, p2 )
 	return p1:setAttrLink ( INHERIT_COLOR, p2, COLOR_TRAIT )
 end
 
---TODO: convert to support offical MOAI visiblity control
 function inheritVisible( p1, p2 ) 
 	return p1:setAttrLink ( INHERIT_VISIBLE, p2, ATTR_VISIBLE )
 end

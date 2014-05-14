@@ -130,6 +130,7 @@ end
 function EffectNodeParticleSystem:onLoad( fxState )
 	local system, emitters, forces = self:buildSystem( nil, fxState )	
 	fxState:linkPartition( system )
+	fxState:linkVisible( system )
 	if self.syncTransform then --attach system only
 		fxState:linkTransform( system )
 	else --attach emitter/forces only
