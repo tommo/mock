@@ -14,7 +14,7 @@ CLASS: EventTrailFX ( CharacterActionEvent )
 function EventTrailFX:__init()
 	self.easeType = MOAIEaseType.EASE_IN
 	self.transform = MOAITransform.new()
-	self.texture = false
+	self.texture = mock.findAsset( 'trail', 'texture' )
 	self.color   = {1,1,.5,1}
 	self.blend = 'add'
 	self.trailSpeed = 5
@@ -50,12 +50,15 @@ CLASS: EventTrailFXArc ( EventTrailFX )
 		Field 'trailLength' ;
 		Field 'angle0' ;
 		Field 'angle1' ;
+		'----';
+		Field 'forHero' :boolean();
 	}
 function EventTrailFXArc:__init()
 	self.radius      = 100
 	self.trailLength = 70
-	self.angle0 = 0
-	self.angle1 = 90
+	self.angle0      = 0
+	self.angle1      = 90
+	self.forHero     = false
 end
 
 local function _onTrailStop( node )
@@ -95,7 +98,10 @@ function EventTrailFXArc:start( state, pos )
 	deck:setUVRect( unpack( uv ) )
 	local prop = MOAIProp.new()
 	prop:setDeck( deck )
-	prop:setLoc( self.transform:getLoc() )
+	local x,y,z = self.transform:getLoc()
+	prop:setPiv( -x, -y, 5 )
+	prop:setScl( target.mirrorX and -1 or 1, target.mirrorY and -1 or 1, 1 )
+
 	deck:setRadius( self.radius, self.trailLength )
 	setPropBlend( prop, self.blend )
 	ent:_attachProp( prop )
@@ -186,8 +192,9 @@ function EventTrailFXRay:start( state, pos )
 	local x1, y1 = self.transform:getLoc()
 	local dx, dy = vecAngle( dir + 90 - 180, self.trailLength )
 	local x0, y0 = x1 + dx, y1 + dy
-	prop:setLoc( x0, y0, 5 )
+	prop:setPiv( -x0, -y0, 5 )
 	prop:setRot( 0,0, dir )
+	prop:setScl( target.mirrorX and -1 or 1, target.mirrorY and -1 or 1, 1 )
 	local action = prop:seekAttr(
 		MOAIProp.ATTR_Y_SCL, 0.5, duration * delay * 1.1, MOAIEaseType.SOFT_EASE_IN
 	)
