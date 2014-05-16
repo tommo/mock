@@ -101,8 +101,15 @@ function EventTrailFXArc:start( state, pos )
 	local x,y,z = self.transform:getLoc()
 	prop:setPiv( -x, -y, 5 )
 	prop:setScl( target.mirrorX and -1 or 1, target.mirrorY and -1 or 1, 1 )
-
-	deck:setRadius( self.radius, self.trailLength )
+	if self.forHero then
+		local head   = target:getParam( 'hero-trail-head',   0 )
+		local length = target:getParam( 'hero-trail-length', self.trailLength )
+		local radius = head + length + self.radius - self.trailLength
+		print( head, length )
+		deck:setRadius( radius, length )
+	else
+		deck:setRadius( self.radius, self.trailLength )
+	end
 	setPropBlend( prop, self.blend )
 	ent:_attachProp( prop )
 	prop:setColor( unpack( self.color ) )

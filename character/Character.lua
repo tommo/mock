@@ -17,6 +17,7 @@ function Character:__init()
 	self.spineSprite = mock.SpineSprite()	
 	self.soundSource = mock.SoundSource()
 	self.throttle    = 1
+	self.params      = {}
 	self.mirrorX     = false
 	self.mirrorY     = false
 
@@ -67,6 +68,22 @@ function Character:setMirrorY( mirror )
 	if skeleton then
 		setSclY( skeleton, mirror and -1 or 1 )
 	end
+end
+
+--------------------------------------------------------------------
+--Parameters
+--------------------------------------------------------------------
+function Character:setParam( key, value )
+	self.params[ key ] = value
+end
+
+function Character:getParam( key, default )
+	local v = self.params[ key ]
+	return v ~= nil and v or default
+end
+
+function Character:hasParam( key )
+	return self.params[ key ] ~= nil
 end
 
 --------------------------------------------------------------------
