@@ -16,6 +16,14 @@ local function _actionStateEventListener( timer, key, timesExecuted, time, value
 	end
 end
 
+local function _actionStateStopListener( timer, timesExecuted )
+	target:processStateEvent( 'stop', timesExecuted )
+end
+
+local function _actionStateLoopListener( timer, timesExecuted )
+	target:processStateEvent( 'loop', timesExecuted )
+end
+
 function CharacterState:__init( target, action )
 	self.active = false
 	self.action = action
@@ -27,6 +35,7 @@ function CharacterState:__init( target, action )
 	self.timer  = timer
 	timer:setCurve( stateData.keyCurve )
 	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionStateEventListener )
+	timer:setListener( MOAITimer.EVENT_TIMER_LOOP, _actionStateEventListener )
 	timer.state = self
 	if action.loop then
 		timer:setMode( MOAITimer.LOOP )
@@ -163,3 +172,7 @@ function CharacterState:findTrack( typeName )
 	local action = self.action
 	return action and  action:findTrack( typeName )
 end
+
+-- --------------------------------------------------------------------
+-- function CharacterState:setListener( actionEvent, listener )
+-- end

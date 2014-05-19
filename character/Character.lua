@@ -209,6 +209,32 @@ function Character:removeActionEventCallback( cb )
 end
 
 --------------------------------------------------------------------
+function Character:processStateEvent( evtype, timesExecuted )	
+	if self.stateEventCallbacks then
+		for i, callback in ipairs( self.stateEventCallbacks ) do
+			callback( self, evtype, timesExecuted )
+		end
+	end
+end
+
+function Character:addStateEventCallback( cb )
+	local callbacks = self.stateEventCallbacks
+	if not callbacks then
+		callbacks = {}
+		self.stateEventCallbacks = callbacks
+	end
+	table.insert( callbacks, cb )
+end
+
+function Character:removeStateEventCallback( cb )
+	for i, v in ipairs( self.stateEventCallbacks ) do
+		if v == cb then
+			return table.remove( self.stateEventCallbacks, i )
+		end
+	end
+end
+
+--------------------------------------------------------------------
 --EVENT ACTION:
 
 function Character:playAnim( clip, loop, resetPose )
