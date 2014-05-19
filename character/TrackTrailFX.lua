@@ -199,7 +199,7 @@ function EventTrailFXRay:start( state, pos )
 	local x1, y1 = self.transform:getLoc()
 	local dx, dy = vecAngle( dir + 90 - 180, self.trailLength )
 	local x0, y0 = x1 + dx, y1 + dy
-	prop:setPiv( -x0, -y0, 5 )
+	prop:setLoc( x0, y0, 5 )
 	prop:setRot( 0,0, dir )
 	prop:setScl( target.mirrorX and -1 or 1, target.mirrorY and -1 or 1, 1 )
 	local action = prop:seekAttr(
