@@ -495,6 +495,7 @@ function string.trim(s)
 end
 
 function string.gsplit(s, sep, plain )
+	sep = sep or '\n'
 	local start = 1
 	local done = false
 	local function pass(i, j, ...)
