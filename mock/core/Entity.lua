@@ -10,6 +10,7 @@ local unpack = unpack
 --------------------------------------------------------------------
 CLASS: Entity ( Actor )
 	:MODEL{
+		Field '__prefabId':string() :no_edit();
 		Field '_priority' :int() :no_edit()  :set('setPriority');
 		----
 		Field 'name'      :string()  :getset('Name');

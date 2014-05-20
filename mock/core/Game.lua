@@ -506,6 +506,7 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 			args[ k ] = v
 		end
 	end
+	mainScene.assetPath = scnPath
 	--todo: previous scene
 	scn.arguments = args
 	return scn

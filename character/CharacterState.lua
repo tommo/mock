@@ -4,24 +4,24 @@ module 'character'
 CLASS: CharacterState ()
 	:MODEL{}
 
-local function _actionStateEventListener( timer, key, timesExecuted, time, value )
+local function _actionEventListener( timer, key, timesExecuted, time, value )
 	local state  = timer.state
 	local action = state.action
-	local span   = action.spanList[ key ]
+	local spans  = action.spanList[ key ]
 	local target = state.target
 	local time   = timer:getTime()
-	for i, ev in ipairs( span ) do
+	for i, ev in ipairs( spans ) do
 		ev:start( state, time )
 		target:processActionEvent( 'event', ev, time, state )
 	end
 end
 
-local function _actionStateStopListener( timer, timesExecuted )
-	target:processStateEvent( 'stop', timesExecuted )
+local function _StateStopListener( timer, timesExecuted )
+	timer.state.target:processStateEvent( 'stop', timesExecuted )
 end
 
-local function _actionStateLoopListener( timer, timesExecuted )
-	target:processStateEvent( 'loop', timesExecuted )
+local function _stateLoopListener( timer, timesExecuted )
+	timer.state.target:processStateEvent( 'loop', timesExecuted )
 end
 
 function CharacterState:__init( target, action )
@@ -34,8 +34,9 @@ function CharacterState:__init( target, action )
 	local timer = MOAIManualTimer.new()
 	self.timer  = timer
 	timer:setCurve( stateData.keyCurve )
-	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionStateEventListener )
-	timer:setListener( MOAITimer.EVENT_TIMER_LOOP, _actionStateEventListener )
+	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionEventListener )
+	timer:setListener( MOAITimer.EVENT_TIMER_LOOP, _stateLoopListener )
+	timer:setListener( MOAITimer.EVENT_TIMER_END_SPAN, _StateStopListener )
 	timer.state = self
 	if action.loop then
 		timer:setMode( MOAITimer.LOOP )

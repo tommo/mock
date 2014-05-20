@@ -14,7 +14,9 @@ function MsgParentRedirector:onAttach( ent )
 	self.msgListener = ent:addMsgListener( 
 		function( msg, data, source )
 			local p = ent.parent
-			if p then return p:tell( msg, data, source ) end			
+			if p then
+				return p:tell( msg, data, source )
+			end			
 		end
 	)
 end

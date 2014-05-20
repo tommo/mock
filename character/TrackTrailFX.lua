@@ -9,6 +9,8 @@ CLASS: EventTrailFX ( CharacterActionEvent )
 		Field 'loc' :type('vec3') :getset('Loc');
 		'----';
 		Field 'trailSpeed' :int() :range( 1, 10 ) :widget('slider');
+		'----';
+		Field 'forHero' :boolean();
 	}
 
 function EventTrailFX:__init()
@@ -18,6 +20,7 @@ function EventTrailFX:__init()
 	self.color   = {1,1,.5,1}
 	self.blend = 'add'
 	self.trailSpeed = 5
+	self.forHero     = false
 end
 
 function EventTrailFX:onStart( state )
@@ -50,15 +53,13 @@ CLASS: EventTrailFXArc ( EventTrailFX )
 		Field 'trailLength' ;
 		Field 'angle0' ;
 		Field 'angle1' ;
-		'----';
-		Field 'forHero' :boolean();
+		
 	}
 function EventTrailFXArc:__init()
 	self.radius      = 100
 	self.trailLength = 70
 	self.angle0      = 0
 	self.angle1      = 90
-	self.forHero     = false
 end
 
 local function _onTrailStop( node )
@@ -105,7 +106,6 @@ function EventTrailFXArc:start( state, pos )
 		local head   = target:getParam( 'hero-trail-head',   0 )
 		local length = target:getParam( 'hero-trail-length', self.trailLength )
 		local radius = head + length + self.radius - self.trailLength
-		print( head, length )
 		deck:setRadius( radius, length )
 	else
 		deck:setRadius( self.radius, self.trailLength )
@@ -199,13 +199,20 @@ function EventTrailFXRay:start( state, pos )
 	local x1, y1 = self.transform:getLoc()
 	local dx, dy = vecAngle( dir + 90 - 180, self.trailLength )
 	local x0, y0 = x1 + dx, y1 + dy
-	prop:setLoc( x0, y0, 5 )
+	local mx = target.mirrorX and -1 or 1
+	local my = target.mirrorY and -1 or 1
+	prop:setLoc( x0 * mx , y0 * my, 5 )
+	if target.mirrorY then dir = 180 - dir  end
+	if target.mirrorX then dir = - dir  end
 	prop:setRot( 0,0, dir )
-	prop:setScl( target.mirrorX and -1 or 1, target.mirrorY and -1 or 1, 1 )
+	
 	local action = prop:seekAttr(
 		MOAIProp.ATTR_Y_SCL, 0.5, duration * delay * 1.1, MOAIEaseType.SOFT_EASE_IN
 	)
-	prop:seekLoc( x1,y1, 5, duration * delay, MOAIEaseType.SOFT_EASE_IN )
+	local ddx, ddy = -dx , -dy
+	if target.mirrorX then ddx = - ddx end
+	if target.mirrorY then ddy = - ddy end
+	prop:moveLoc( ddx, ddy, 5, duration * delay, MOAIEaseType.SOFT_EASE_IN )
 	action:setListener( MOAIAction.EVENT_STOP, function()
 		ent:_detachProp( prop )
 	end
