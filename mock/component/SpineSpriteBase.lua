@@ -20,6 +20,7 @@ function SpineSpriteBase:onDetach( entity )
 end
 
 function SpineSpriteBase:setSprite( path, alphaBlend )
+	alphaBlend = alphaBlend~=false
 	self.spritePath = path	
 	self.skeletonData = loadAsset( path )
 	if self.skeletonData  then
