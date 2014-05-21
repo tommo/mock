@@ -38,10 +38,10 @@ end
 --------------------------------------------------------------------
 -----!!!!! ENABLE this to find forgotten log location !!!!
 --------------------------------------------------------------------
-function print(...)
-	_print(debug.traceback())
-	return _print(...)
-end
+-- function print(...)
+-- 	_print(debug.traceback())
+-- 	return _print(...)
+-- end
 
 --------------------------------------------------------------------
 --------Random number & Probablity helpers
