@@ -38,7 +38,7 @@ end
 
 function ThreadTextureLoadTask:onComplete( img )
 	self.texture:load ( img, self.imageTransform, self.debugName or self.filename )
-	self.texture:affirm()
+	self.texture:affirm()	
 end
 
 function ThreadTextureLoadTask:onFail()

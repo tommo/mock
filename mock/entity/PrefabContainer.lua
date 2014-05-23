@@ -5,9 +5,9 @@ CLASS: PrefabContainer ( mock.Entity )
 		'----';
 		Field 'prefab' :asset( 'prefab' ) :set( 'setPrefab' );
 		'----';
-		Field 'resetLoc' :boolean();
-		Field 'resetScl' :boolean();
-		Field 'resetRot' :boolean();
+		Field 'resetLoc' :boolean() :onset( 'refreshPrefab' );
+		Field 'resetScl' :boolean() :onset( 'refreshPrefab' );
+		Field 'resetRot' :boolean() :onset( 'refreshPrefab' );
 		'----';
 		Field 'autoSpawn' :boolean();
 		-- Field 'resetLayer' :boolean();
@@ -27,10 +27,13 @@ function PrefabContainer:__init()
 end
 
 function PrefabContainer:refreshPrefab()
+	if not self.loaded then return end
+
 	if self.instance then
 		self.instance:destroyWithChildrenNow()
 		self.instance = false
 	end
+	
 	if self.prefab then
 		local instance = loadPrefab( self.prefab )
 		self:addInternalChild( instance )
@@ -44,14 +47,14 @@ end
 
 function PrefabContainer:setPrefab( path )
 	self.prefab = path
-	-- if self.autoSpawn
 	self:refreshPrefab()
 end
-
 
 function PrefabContainer:getInstance()
 	return self.instance
 end
 
--- function PrefabContainer:onLoad()
--- end
+function PrefabContainer:onLoad()
+	self.loaded = true
+	self:refreshPrefab()
+end
