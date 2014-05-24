@@ -20,7 +20,7 @@ function buildAnimCurve( keys )
 	return curve
 end
 
-function buildAttrAnim( prop, attr, keys, mode, asDelta )
+function buildAttrAnim( prop, attr, keys, animMode, asDelta )
 	local curve = buildAnimCurve( keys )	
 	local anim = MOAIAnim.new()
 	anim:reserveLinks( 1 )
