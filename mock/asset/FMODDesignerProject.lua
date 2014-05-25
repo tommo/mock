@@ -26,15 +26,21 @@ function FMODDesignerProject:load( path, id )
 end
 
 function FMODDesignerProject:reload( path, id )
-	MOAIFmodEventMgr.unloadProject( self.projectId )
+	self:unload()
 	return self:load( path, id )
 end
 
 function FMODDesignerProject:unload()
 	if not self.loaded then return end
+
 	if loadedFMODProject[ id ] == self then
 		loadedFMODProject[ id ] = nil
 	end
+	
+	for id, group in pairs( self.groups ) do
+		group:unload()
+	end
+
 	if MOAIFmodEventMgr.unloadProject( self.projectId ) then
 		self.loaded = false
 		_stat( 'unloaded fmod project', self.projectId )
@@ -47,6 +53,7 @@ end
 function FMODDesignerProject:loadGroup( id )
 	local group = FMODEventGroup( self, id )
 	group:load()
+	self.groups[ id ] = group
 	return group
 end
 
@@ -86,6 +93,7 @@ end
 function FMODEventGroup:unload()
 	if self.loaded then
 		MOAIFmodEventMgr.unloadGroup( self.fullName )
+		self.loaded = false
 	end
 end
 
@@ -109,6 +117,9 @@ end
 
 function FMODEvent:getFullName()
 	return self.fullName
+end
+
+function FMODEvent:unload()	
 end
 
 --------------------------------------------------------------------
