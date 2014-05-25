@@ -112,6 +112,7 @@ TextureGroup :MODEL{
 		Field 'default'        :boolean() :no_edit();
 
 		Field 'filter'         :enum( EnumTextureFilter );
+		Field 'premultiplyAlpha' :boolean();
 		Field 'mipmap'         :boolean();
 		Field 'wrap'           :boolean();
 		Field 'compression'   :enum( EnumTextureCompression );
@@ -140,6 +141,7 @@ function TextureGroup:__init()
 	self.expanded       = true
 	self.cache          = false
 	self.compression    = false
+	self.premultiplyAlpha = true
 	self.textures  = {}
 end
 
@@ -266,7 +268,7 @@ local defaultTextureConfig = {
 	filter             = 'nearest',
 	wrapmode           = 'clamp',
 	mipmap             = false,
-	premultiply_alpha  = true,
+	premultiplyAalpha  = true,
 }
 
 
@@ -278,7 +280,7 @@ local function loadSingleTexture( pixmapPath, group, debugName )
 	tex.pixmapPath = pixmapPath
 
 	local transform = 0
-	if group['premultiply_alpha'] ~= false then
+	if group['premultiplyAalpha'] ~= false then
 		transform = transform + MOAIImage.PREMULTIPLY_ALPHA
 	end
 	-- transform = transform + MOAIImage.QUANTIZE
