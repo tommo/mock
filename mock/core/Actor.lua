@@ -234,6 +234,21 @@ function Actor:addCoroutine( func, ... )
 	return self:_createCoroutine( false, func, ... )
 end
 
+local function _coroDaemon( self, f, ... )
+	local inner = self:addCoroutine( f, ... )
+	while not inner:isDone() do
+		coroutine.yield()
+	end
+end
+
+function Actor:addDaemonCoroutine( f, ... )
+	local daemon = MOAICoroutine.new()
+	daemon:setDefaultParent( true )
+	daemon:run( _coroDaemon, self, f, ... )
+	return daemon
+end
+
+
 function Actor:clearCoroutines()
 	if not self.coroutines  then return end
 	for coro in pairs( self.coroutines ) do

@@ -154,10 +154,12 @@ local function coroutineFunc( coroutines, coro, func, ...)
 	coroutines[ coro ] = nil  --automatically remove self from thread list
 end
 
-function Component:addCoroutine( func, ... )
-	
+function Component:_addCoroutine( defaultParent, func, ... )
+
 	local coro=MOAICoroutine.new()
-	
+	if defaultParent then
+		coro:setDefaultParent( true )
+	end
 	local coroutines = self.coroutines
 	if not coroutines then
 		coroutines = {}
@@ -181,6 +183,30 @@ function Component:addCoroutine( func, ... )
 	coroutines[coro] = true
 	return coro
 end
+
+function Component:addCoroutine( func, ... )
+	return self:_addCoroutine( false, func, ... )
+end
+
+function Component:addCoroutineP( func, ... )
+	return self:_addCoroutine( true, func, ... )
+end
+
+
+local function _coroDaemon( self, f, ... )
+	local inner = self:addCoroutine( f, ... )
+	while not inner:isDone() do
+		coroutine.yield()
+	end
+end
+
+function Component:addDaemonCoroutine( f, ... )
+	local daemon = MOAICoroutine.new()
+	daemon:setDefaultParent( true )
+	daemon:run( _coroDaemon, self, f, ... )
+	return daemon
+end
+
 
 function Component:clearCoroutines()
 	if not self.coroutines  then return end
