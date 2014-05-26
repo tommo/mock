@@ -337,6 +337,10 @@ local function loadTexPack( config )
 	end
 	local atlases  = {}
 	local textures = {}
+	local pack ={
+		atlases  = atlases,
+		textures = textures
+	}
 	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
 		local texpath = atlasInfo['name']
 		local tex = loadSingleTexture( 
@@ -366,7 +370,7 @@ local function loadTexPack( config )
 			tw,th = tex:getSize()
 		end
 		local u0, v0, u1, v1 = x/tw, y/th, (x+w)/tw, (y+h)/th
-		textures[ name ] = SubTexture:rawInstance{
+		local subTex = SubTexture:rawInstance{
 			type   = 'sub_texture',
 			name   = name,
 			atlas  = tex,
@@ -378,17 +382,15 @@ local function loadTexPack( config )
 			y      = y,
 			source = item.source
 		}
+		textures[ name ] = subTex
+		subTex.pack = pack
 	end
-	local pack ={
-		atlases  = atlases,
-		textures = textures
-	}
-
+	
 	return pack
 end
 
 -----
-local loadedTexPack = {}
+local loadedTexPack = makeAssetCacheTable()
 
 local function getTexPack( config )
 	local pack = loadedTexPack[ config.cache ]

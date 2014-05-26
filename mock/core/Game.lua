@@ -825,5 +825,9 @@ function Game:isEditorMode()
 	return self.editorMode
 end
 
+function Game:collectgarbage( ... )
+	collectgarbage( ... )
+end
+
 game = Game()
 

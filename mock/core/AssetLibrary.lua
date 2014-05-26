@@ -4,7 +4,11 @@ registerSignals{
 	'asset_library.loaded',
 }
 
+__ASSET_CACHE_MT = { __mode = 'v' }
 
+function makeAssetCacheTable()
+	return setmetatable( {}, __ASSET_CACHE_MT )
+end
 --tool functions
 local function fixpath(p)
 	p=string.gsub(p,'\\','/')
@@ -159,14 +163,22 @@ function AssetNode:getAbsFilePath()
 	return absProjectPath( self.filePath )
 end
 
+function AssetNode:getParentNode()
+	if not self.parent then return nil end
+	return AssetLibrary[ self.parent ]
+end
+
+function AssetNode:getCache()
+	return self.cached
+end
+
 function registerAssetNode( path, data )
 	local ppath = splitPath(path)
-	local node = setmetatable( { --fixed attributes
-			path        = path,
-			filePath    = data['filePath'],
-			parent      = ppath,			
-		}, AssetNode )
-	node.cached = {}
+	local node = AssetNode()
+	node.path        = path
+	node.filePath    = data['filePath']
+	node.parent      = ppath			
+	node.cached = makeAssetCacheTable()
 	node.cached.asset = data['type'] == 'folder' and true or false
 	updateAssetNode( node, data )
 	AssetLibrary[ path ] = node
@@ -349,7 +361,7 @@ function releaseAsset( path )
 		if unloader then
 			unloader( asset, node )
 		end
-		node.cached = {}
+		node.cached = makeAssetCacheTable()
 		_stat( 'released node asset', path, node )
 	end
 end

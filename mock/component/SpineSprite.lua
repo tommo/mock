@@ -1,10 +1,5 @@
 module 'mock'
 
-local EVENT_SPINE_ANIMATION_START    = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_START
-local EVENT_SPINE_ANIMATION_END      = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_END
-local EVENT_SPINE_ANIMATION_COMPLETE = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_COMPLETE
-local EVENT_SPINE_ANIMATION_EVENT    = MOAISpineAnimationState.EVENT_SPINE_ANIMATION_EVENT
-
 CLASS: SpineSprite ( SpineSpriteBase )
 	:MODEL{
 		Field 'defaultClip' :string()  :label('Default') :selection( 'getAnimationNames' );
