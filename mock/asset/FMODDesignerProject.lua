@@ -51,7 +51,7 @@ function FMODDesignerProject:unload()
 end
 
 function FMODDesignerProject:loadGroup( id )
-	local group = FMODEventGroup( self, id )
+	local group = FMODEventGroup( self, nil, id )
 	group:load()
 	self.groups[ id ] = group
 	return group
@@ -65,11 +65,23 @@ end
 CLASS: FMODEventGroup ()
 	:MODEL{}
 
-function FMODEventGroup:__init( project, id )
-	self.project = project
-	self.id      = id
-	self.fullName = project.projectId .. '/' .. id
-	self.loaded  = false
+function FMODEventGroup:__init( project, parentGroup, id )
+	self.project     = project
+	self.parentGroup = parentGroup
+	self.id          = id
+	if parentGroup then
+		self.fullName = parentGroup.fullName .. '/' .. id
+	else
+		self.fullName    = project.projectId .. '/' .. id
+	end
+	self.loaded      = false
+	self.groups = {}
+end
+
+function FMODEventGroup:loadSubGroup( id )
+	local group = FMODEventGroup( self.project, self, id )
+	self.groups[ id ] = group
+	return group
 end
 
 function FMODEventGroup:load()
@@ -136,8 +148,17 @@ function FMODProjectLoader( node )
 end
 
 function FMODGroupLoader( node )
-	local proj = loadAsset( node.parent )
-	return proj and proj:loadGroup( node:getName() )
+	local p = node.parent
+	local pAsset, pNode = loadAsset( p )
+	if pNode.type == 'fmod_project' then
+		local proj = pAsset
+		return proj:loadGroup( node:getName() )
+	elseif pNode.type == 'fmod_group' then
+		local group = pAsset
+		return group:loadSubGroup( node:getName() )
+	else
+		error( 'bad fmod designer project asset:'..node:getNodePath() )
+	end
 end
 
 function FMODEventLoader( node )

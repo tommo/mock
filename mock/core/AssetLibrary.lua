@@ -4,7 +4,7 @@ registerSignals{
 	'asset_library.loaded',
 }
 
-__ASSET_CACHE_MT = { __mode = 'v' }
+__ASSET_CACHE_MT = { __mode = '' }
 
 function makeAssetCacheTable()
 	return setmetatable( {}, __ASSET_CACHE_MT )

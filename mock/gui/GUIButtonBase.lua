@@ -12,7 +12,13 @@ CLASS: GUIButtonBase ( GUIWidget )
 		Field 'msg'  :string();
 		Field 'data' :string();
 		'----';
+		Field 'eventTag'  :string();
+		'----';
 	}
+
+function GUIButtonBase:__init()
+	self.eventTag = false
+end
 
 function GUIButtonBase:onLoad()
 end
