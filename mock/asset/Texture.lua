@@ -1,77 +1,59 @@
 module ('mock')
 
--- TEXTURE_ASYNC_LOAD = true
-TEXTURE_ASYNC_LOAD = false
-
---------------------------------------------------------------------
-local texturePlaceHolder = false
-local texturePlaceHolderImage = false
-function getTexturePlaceHolderImage()
-	if not texturePlaceHolderImage then
-		texturePlaceHolderImage = MOAIImage.new()
-		texturePlaceHolderImage:init( w, h )
-		texturePlaceHolderImage:fillRect( 0,0, w, h, 0, 1, 0, 1 )
-	end
-	return texturePlaceHolderImage
+local textureLibrary = false
+local textureLibraryIndex = false
+function getTextureLibrary()
+	return textureLibrary
 end
 
-function getTexturePlaceHolder()
-	if not texturePlaceHolder then
-		texturePlaceHolder = MOAITexture.new()
-		texturePlaceHolder:load( getTexturePlaceHolderImage() )		
-	end
-	return texturePlaceHolder
+function loadTextureLibrary( indexPath )
+	if not indexPath then return end
+	textureLibraryIndex = indexPath
+	textureLibrary = TextureLibrary()	
+	textureLibrary:load( indexPath )
+	return textureLibrary
 end
 
-
---------------------------------------------------------------------
-CLASS: ThreadTextureLoadTask ( ThreadImageLoadTask )
-	:MODEL{}
-
-function ThreadTextureLoadTask:setTargetTexture( tex )
-	self.texture = tex
+local function onGameInit( option )
+	loadTextureLibrary( option['texture_library'] )
 end
 
-function ThreadTextureLoadTask:setDebugName( name )
-	self.debugName = name
+local function onGameConfigSave( data )
+	data[ 'texture_library' ] = textureLibraryIndex
 end
 
-function ThreadTextureLoadTask:onComplete( img )
-	self.texture:load ( img, self.imageTransform, self.debugName or self.filename )
-	self.texture:affirm()	
-end
-
-function ThreadTextureLoadTask:onFail()
-	_warn( 'failed load texture file:', filePath )
-	self.texture:load( getTexturePlaceHolderImage(), self.imageTransform, self.debugName or self.filename )
-end
-
-
---------------------------------------------------------------------
-local function loadTextureAsync( texture, filePath, transform, debugName )
-	local task = ThreadTextureLoadTask( filePath, transform )
-	task:setTargetTexture( texture )
-	task:setDebugName( debugName )
-	task:start()	
-	return true	
-end
+connectSignalFunc( 'game_config.save', onGameConfigSave )
+connectSignalFunc( 'game.init', onGameInit )
 
 --------------------------------------------------------------------
 CLASS: TextureLibrary ()
 CLASS: TextureGroup ()
 CLASS: Texture ()
+
+--------------------------------------------------------------------
+--Texture
 --------------------------------------------------------------------
 Texture	:MODEL{
-		Field 'path' :asset('texture') :readonly();
+		Field 'path' :asset('texture') :readonly() :no_edit(); --view only	
+		Field 'w' :readonly();
+		Field 'h' :readonly();
+
+		Field 'ow' :readonly() :no_edit(); -- for cropped texture
+		Field 'oh' :readonly() :no_edit();
+		
+		Field 'rotated' :boolean();
+
+		Field 'parent' :type( TextureGroup ) :no_edit();
 		Field 'u0' :no_edit();
 		Field 'v0' :no_edit();
 		Field 'u1' :no_edit();
 		Field 'v1' :no_edit();
-		Field 'w' :readonly();
-		Field 'h' :readonly();
-		Field 'processor' :asset('texture_processor');
+		
+		'----';
+		Field 'atlasId' :int();
 
-		Field 'parent' :type( TextureGroup ) :no_edit();
+		'----';
+		Field 'processor' :asset('texture_processor');
 	}
 
 function Texture:__init( path )
@@ -82,13 +64,29 @@ function Texture:__init( path )
 	self.v1 = 0
 	self.w  = 100
 	self.h  = 100
+	self.ow = 100
+	self.oh = 100
+	
+	self.rotated       = false
+	self.prebuiltAtlas = false	
+	self.loaded        = false
+	self._texture      = false
+	self.atlasId       = false	
 end
 
 function Texture:getMoaiTexture()
 	return self._texture
 end
 
+function Texture:getMoaiTextureUV()
+	return self._texture, { self:getUVRect() }
+end
+
 function Texture:getSize()
+	return self.ow, self.oh
+end
+
+function Texture:getCroppedSize()
 	return self.w, self.h
 end
 
@@ -97,52 +95,86 @@ function Texture:getPixmapRect()
 end
 
 function Texture:getUVRect()
-	return 0,1,1,0
+	return self.u0, self.v0, self.u1, self.v1	
 end
 
---------------------------------------------------------------------
-CLASS: SubTexture ( Texture )
-	:MODEL{
-		Field ''
-	}
+function Texture:isPrebuiltAtlas()
+	local node = getAssetNode( self.path )
+	return node:getType() == 'prebuilt_atlas'
+end
 
+function Texture:load()	
+	if self.loaded then return end
+	self.parent:loadTexture( self )
+	self.loaded = true
+end
+
+function Texture:unload()
+end
+
+function Texture:_loadSingleTexture( pixmapPath, w, h, ow, oh )
+	self.pixmapPath = pixmapPath
+	self.w = w
+	self.h = h
+	self.ow = ow or w
+	self.oh = oh or h
+	self.u0 = 0
+	self.v0 = 1
+	self.u1 = 1
+	self.v1 = 0
+end
+
+function Texture:_loadPrebuiltAtlas()
+end
+
+
+--------------------------------------------------------------------
+--Texture Group
 --------------------------------------------------------------------
 TextureGroup :MODEL{
 		Field 'name'           :string()  :no_edit();
 		Field 'default'        :boolean() :no_edit();
 
+		Field 'format'         :enum( EnumTextureFormat );
+		'----';
 		Field 'filter'         :enum( EnumTextureFilter );
 		Field 'premultiplyAlpha' :boolean();
 		Field 'mipmap'         :boolean();
 		Field 'wrap'           :boolean();
-		Field 'compression'   :enum( EnumTextureCompression );
+		-- Field 'compression'    :enum( EnumTextureCompression );
 		'----';
 		Field 'atlasMode'      :enum( EnumTextureAtlasMode );
 		Field 'maxAtlasWidth'  :enum( EnumTextureSize );
 		Field 'maxAtlasHeight' :enum( EnumTextureSize );
 		'----';
+		Field 'repackPrebuiltAtlas' :boolean();
+
+		'----';
 		Field 'processor'      :asset('texture_processor');
 
-		Field 'cache'          :string() :no_edit();
+		Field 'atlasCachePath' :string() :no_edit();
 		Field 'textures'       :array( Texture ) :no_edit();
 		Field 'parent'         :type( TextureLibrary ) :no_edit();
 		Field 'expanded'       :boolean() :no_edit();
 	}
 
 function TextureGroup:__init()
-	self.name           = 'TextureGroup'
-	self.filter         = 'linear'
-	self.mipmap         = false
-	self.wrap           = false
-	self.atlasMode      = false
-	self.maxAtlasWidth  = 1024
-	self.maxAtlasHeight = 1024
-	self.default        = false
-	self.expanded       = true
-	self.cache          = false
-	self.compression    = false
-	self.premultiplyAlpha = true
-	self.textures  = {}
+	self.name                = 'TextureGroup'
+	self.format              = 'auto'
+	self.filter              = 'linear'
+	self.mipmap              = false
+	self.wrap                = false
+	self.atlasMode           = false
+	self.maxAtlasWidth       = 1024
+	self.maxAtlasHeight      = 1024
+	self.default             = false
+	self.expanded            = true
+	self.atlasCachePath      = false
+	self.compression         = false
+	self.premultiplyAlpha    = true
+	self.repackPrebuiltAtlas = false
+	self.textures            = {}
+	self.atlasTextures       = {}
 end
 
 function TextureGroup:addTextureFromPath( path )
@@ -189,6 +221,176 @@ function TextureGroup:findAndRemoveTexture( path )
 	end
 	return false
 end
+
+function TextureGroup:findPrebuiltAtlas()
+	local result = {}
+	for i, t in ipairs( self.textures ) do
+		if t:isPrebuiltAtlas() then
+			table.insert( result, t )
+		end
+	end
+	return result
+end
+
+function TextureGroup:getAssetPath()
+	return '@texture_pack/'..self.name
+end
+
+function TextureGroup:isAtlas()
+	return self.atlasMode
+end
+
+function TextureGroup:loadAtlas()
+	local base = self.atlasCachePath
+	local configPath = base .. '/atlas.json'
+	local f = io.open( configPath, 'r' )
+	if not f then 
+		error( 'file not found:' .. configPath, 2 )   --TODO: proper exception handle
+		return nil
+	end
+	local text = f:read( '*a' )
+	f:close()
+	local data = MOAIJsonParser.decode( text )
+
+	if not data then 
+		error('atlas config file not parsable') --TODO: proper exception handle
+		return nil
+	end
+	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
+		local texpath = atlasInfo['name']
+		local tex = self:_loadSingleTexture( 
+			base .. '/' .. texpath,
+			self:getAssetPath() .. '/' .. texpath
+		)
+		if not tex then
+			error( 'error loading texture:' .. texpath )
+		end
+		self.atlasTextures[ i ] = tex
+	end
+	self.atlasLoaded = true
+end
+
+function TextureGroup:loadTexture( texture )
+	if texture:isPrebuiltAtlas() then	return self:loadPrebuiltAtlas( texture ) end
+	local node = getAssetNode( texture.path )
+	if self:isAtlas() then
+		if not self.atlasLoaded then
+			self:loadAtlas()
+		end
+		local tex = self.atlasTextures[ texture.atlasId ]
+		texture._texture = tex	
+	else
+		local pixmapPath = node:getObjectFile( 'pixmap' )
+		texture._texture = self:_loadSingleTexture( pixmapPath, texture.path )
+	end
+
+end
+
+function TextureGroup:loadPrebuiltAtlas( texture )
+	local node = getAssetNode( texture.path )
+	if self:isAtlas() then --TODO
+		if not self.atlasLoaded then
+			self:loadAtlas()
+		end
+		local tex = self.atlasTextures[ texture.atlasId ]
+		texture._texture = tex	
+	else
+		local atlasPath = node:getObjectFile( 'atlas' )
+		local atlas = PrebuiltAtlas()
+		atlas:load( atlasPath )
+		for i, page in ipairs( atlas.pages ) do
+			local pixmapName = 'pixmap_'..i
+			local pixmapPath = node:getObjectFile( pixmapName )
+			local debugName  = node:getNodePath() .. '@' .. pixmapName
+			page._texture = self:_loadSingleTexture( pixmapPath, debugName )
+		end
+		texture._atlas = atlas		
+	end
+end
+
+function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
+	_stat( 'loading single texture from pixmap:' , pixmapPath )
+
+	local tex = MOAITexture.new()
+	tex.pixmapPath = pixmapPath
+
+	local transform = 0
+	if self.premultiplyAalpha ~= false then
+		transform = transform + MOAIImage.PREMULTIPLY_ALPHA
+	end
+	-- transform = transform + MOAIImage.QUANTIZE
+
+	local filter
+	if self.filter == 'linear' then
+		if self.mipmap then
+			filter = MOAITexture.GL_LINEAR_MIPMAP_LINEAR
+		else
+			filter = MOAITexture.GL_LINEAR
+		end
+	else  --if self.filter == 'nearest' then
+		if self.mipmap then
+			filter = MOAITexture.GL_NEAREST_MIPMAP_NEAREST
+		else
+			filter = MOAITexture.GL_NEAREST
+		end
+	end	
+
+	tex:setFilter( filter )
+	tex:setWrap( self.wrap )
+
+	local filePath = absProjectPath( pixmapPath )	
+	if TEXTURE_ASYNC_LOAD then
+		local task = ThreadTextureLoadTask( filePath, transform )
+		task:setTargetTexture( tex )
+		task:setDebugName( debugName or filePath )
+		task:start()	
+	else
+		tex:load( filePath, transform, debugName )
+		if tex:getSize() <= 0 then
+			_warn( 'failed load texture file:', filePath, debugName )
+			tex:load( getTexturePlaceHolderImage() )
+		end
+	end
+	return tex
+end
+
+function TextureGroup:_loadBuiltAtlas( atlasCachePath )
+	self.atlasCachePath = atlasCachePath
+	local atlasInfoPath = atlasCachePath .. '/atlas.json'
+	--reload texture parameters
+	local f = io.open( atlasInfoPath, 'r' )
+	if not f then 
+		error( 'file not found:' .. atlasInfoPath, 2 )   --TODO: proper exception handle
+		return nil
+	end
+	local text = f:read( '*a' )
+	f:close()
+	local atlasData = MOAIJsonParser.decode( text )
+
+	local atlases = atlasData[ 'atlases' ]
+	for i,item in pairs( atlasData[ 'items' ] ) do
+		local name = item.name
+		local x, y, w, h = unpack( item.rect )
+		local atlas = atlases[ item.atlas + 1 ]
+		local tw, th = unpack( atlas.size )
+		local u0, v0, u1, v1 = x/tw, y/th, (x+w)/tw, (y+h)/th
+		local tex = self:findTexture( name )
+		tex.u0 = u0
+		tex.v0 = v1
+		tex.u1 = u1
+		tex.v1 = v0
+		tex.w  = w
+		tex.h  = h
+		tex.ow = w
+		tex.oh = h		
+		tex.atlasId = item.atlas + 1 
+		--todo:  crop & rotated
+	end
+end
+
+
+--------------------------------------------------------------------
+--Texture Library
 --------------------------------------------------------------------
 TextureLibrary :MODEL{
 		Field 'groups' :array( TextureGroup ) :no_edit();
@@ -196,6 +398,11 @@ TextureLibrary :MODEL{
 
 function TextureLibrary:__init()
 	self.groups = {}	
+	self.lookupDict = {}
+	local defaultGroup = self:addGroup()
+	defaultGroup.name = 'DEFAULT'
+	defaultGroup.default = true
+	self.defaultGroup = defaultGroup
 end
 
 function TextureLibrary:getDefaultGroup()
@@ -236,15 +443,12 @@ end
 function TextureLibrary:addTexture( path )
 	local t = Texture( path )
 	self.defaultGroup:addTexture( t )
+	self.lookupDict[ path ] = t
 	return t
 end
 
 function TextureLibrary:findTexture( path )
-	for i, g in ipairs( self.groups ) do
-		local t = g:findTexture( path )
-		if t then return t end
-	end
-	return nil
+	return self.lookupDict[ path ]	
 end
 
 function TextureLibrary:affirmTexture( path )
@@ -256,177 +460,77 @@ function TextureLibrary:affirmTexture( path )
 end
 
 function TextureLibrary:removeTexture( path )
+	local found
 	for i, g in ipairs( self.groups ) do
-		local t =g:findAndRemoveTexture( path )
-		if t then return t end
+		local t = g:findAndRemoveTexture( path )
+		if t then
+			found = t
+			break
+		end
 	end
-	return false
+	if found then
+		self.lookupDict[ path ] = nil
+		return found
+	else
+		return false
+	end
+end
+
+function TextureLibrary:getReport()
+	local report = {}
+	report[ 'count'  ] = 0
+	report[ 'memory' ] = 0
+	report[ 'count_peak'  ] = 0
+	report[ 'memory_peak' ] = 0
+	return report
+end
+
+function TextureLibrary:save( path )
+	_stat( 'saving texture library', path )
+	return serializeToFile( self, path )
+end
+
+
+function TextureLibrary:load( path )
+	_stat( 'loading textureLibrary', path )
+	self.defaultGroup = nil
+	self.groups = {}
+	deserializeFromFile( self, path )
+	for i, group in ipairs( self.groups ) do
+		if group.default then
+			self.defaultGroup = group
+			break
+		end		
+	end
+	
+	local getAssetNode = getAssetNode
+	for i, group in ipairs( self.groups ) do
+		local textures1 = {}
+		for i, tex in ipairs( group.textures ) do --clear removed textures
+			if getAssetNode( tex.path ) then
+				table.insert( textures1, tex )
+				self.lookupDict[ tex.path ] = tex
+			end
+		end
+		group.textures = textures1
+	end
 end
 
 --------------------------------------------------------------------
-local defaultTextureConfig = {
-	filter             = 'nearest',
-	wrapmode           = 'clamp',
-	mipmap             = false,
-	premultiplyAalpha  = true,
-}
-
-
---------------------------------------------------------------------
-local function loadSingleTexture( pixmapPath, group, debugName )
-	_stat( 'loading texture from pixmap:' , pixmapPath )
-
-	local tex = MOAITexture.new()
-	tex.pixmapPath = pixmapPath
-
-	local transform = 0
-	if group['premultiplyAalpha'] ~= false then
-		transform = transform + MOAIImage.PREMULTIPLY_ALPHA
-	end
-	-- transform = transform + MOAIImage.QUANTIZE
-	local filter
-	if group.filter == 'linear' then
-		if group.mipmap then
-			filter = MOAITexture.GL_LINEAR_MIPMAP_LINEAR
-		else
-			filter = MOAITexture.GL_LINEAR
-		end
-	else  --if group.filter == 'nearest' then
-		if group.mipmap then
-			filter = MOAITexture.GL_NEAREST_MIPMAP_NEAREST
-		else
-			filter = MOAITexture.GL_NEAREST
-		end
-	end	
-
-	tex:setFilter( filter )
-	tex:setWrap( group.wrap )
-
-	local filePath = absProjectPath( pixmapPath )	
-	if TEXTURE_ASYNC_LOAD then
-		loadTextureAsync( tex, filePath, transform, debugName or pixmapPath )
-	else
-		tex:load( filePath, transform, debugName )
-		if tex:getSize() <= 0 then
-			_warn( 'failed load texture file:', path )
-			tex:load( getTexturePlaceHolderImage() )
-		end
-	end
-	tex.type = 'texture'
-	return tex
-
-end
-
-
---------texpack
-local function loadTexPack( config )	
-	local base = config[ 'cache' ]
-	local configPath = base .. '/atlas.json'
-	local f = io.open( configPath, 'r' )
-	if not f then 
-		error( 'file not found:' .. configPath, 2 )   --TODO: proper exception handle
-		return nil
-	end
-	local text = f:read( '*a' )
-	f:close()
-	local data = MOAIJsonParser.decode( text )
-
-	if not data then 
-		error('atlas config file not parsable') --TODO: proper exception handle
-		return nil
-	end
-	local atlases  = {}
-	local textures = {}
-	local pack ={
-		atlases  = atlases,
-		textures = textures
-	}
-	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
-		local texpath = atlasInfo['name']
-		local tex = loadSingleTexture( 
-			base .. '/' .. texpath,
-			config,
-			config['name']..'/'..texpath
-		)
-		if not tex then
-			error( 'error loading texture:' .. texpath )
-		end
-		atlases[i] = {
-			path    = texpath,
-			size    = atlasInfo['size'],
-			texture = tex
-		}
-	end
-
-	for i,item in pairs( data[ 'items' ] ) do
-		local x, y, w, h = unpack( item.rect )
-		local tw, th
-		local atlas = atlases[ item.atlas + 1 ]
-		local tex  = atlas.texture
-		local name = item.name		
-		if atlas.size then
-			tw, th = unpack( atlas.size )
-		else
-			tw,th = tex:getSize()
-		end
-		local u0, v0, u1, v1 = x/tw, y/th, (x+w)/tw, (y+h)/th
-		local subTex = SubTexture:rawInstance{
-			type   = 'sub_texture',
-			name   = name,
-			atlas  = tex,
-			rect   = item.rect,
-			uv     = { u0, v1, u1, v0 },
-			w      = w,
-			h      = h,
-			x      = x,
-			y      = y,
-			source = item.source
-		}
-		textures[ name ] = subTex
-		subTex.pack = pack
-	end
-	
-	return pack
-end
-
------
-local loadedTexPack = makeAssetCacheTable()
-
-local function getTexPack( config )
-	local pack = loadedTexPack[ config.cache ]
-	if pack then return pack end
-	pack = loadTexPack( config )
-	loadedTexPack[ config.cache ] = pack
-	return pack
-end
-
---------texpack
-local function loadSubTexture( path, config )
-	local pack = getTexPack( config )	
-	assert( pack, 'texpack not loaded correctly.')
-	local sub = pack.textures[ path ]
-	return sub
-end
-
--------main
-local function loadTexture( node )
-	local configPath = node:getAbsObjectFile( 'config' )
-	
-	local config = loadAssetDataTable( configPath ) or defaultTextureConfig
-	if not config[ 'atlas_mode' ] then
-		local pixmapPath = node.objectFiles[ 'pixmap' ]
-		return loadSingleTexture( pixmapPath, config, node:getNodePath() )
-	else
-		return loadSubTexture( node.path, config )
-	end
-	
-end
-
 function releaseTexPack( cachePath )
-	loadedTexPack[ cachePath ] = nil
 end
 
-registerAssetLoader( 'texture',     loadTexture )
 
--- registerAssetLoader( 'texpack',     loadTexPack )
--- registerAssetLoader( 'sub_texture', loadTexture )
+--------------------------------------------------------------------
+--Asset Loaders
+--------------------------------------------------------------------
+local function loadTexture( node )
+	local texNode = textureLibrary:findTexture( node:getNodePath() )
+	if texNode then
+		texNode:load()
+	end
+	return texNode	
+end
+
+registerAssetLoader( 'texture',         loadTexture )
+registerAssetLoader( 'prebuilt_atlas',  loadTexture )

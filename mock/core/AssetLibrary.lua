@@ -287,6 +287,9 @@ end
 
 --------------------------------------------------------------------
 --load asset of node
+--------------------------------------------------------------------
+-- local loadingAsset = {} --TODO: a loading list avoid cyclic loading?
+
 function loadAsset( path, option )
 	if path == '' then return nil end
 	if not path   then return nil end
@@ -309,7 +312,7 @@ function loadAsset( path, option )
 	_stat( 'loading asset from:', path )
 	if policy ~= 'auto' and policy ~='force' then return nil end
 
-	if node.parent then
+	if ( not option['skip_parent'] ) and node.parent then
 		loadAsset( node.parent )
 		if node.cached.asset then return node.cached.asset end --already preloaded		
 	end

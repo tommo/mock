@@ -64,25 +64,6 @@ end
 
 local function _onTrailStop( node )
 	local prop = node.prop
-
-end
-
-local function getTextureUV( tex )
-	local ttype = tex.type
-
-	local t, uv
-	if ttype == 'sub_texture' then
-		t = tex.atlas
-		uv = tex.uv
-	elseif ttype == 'framebuffer' then
-		t = tex:getMoaiFrameBuffer()
-		uv = { 0,0,1,1 }
-	else
-		t = tex
-		uv = { 0,1,1,0 }
-	end
-
-	return t, uv
 end
 
 function EventTrailFXArc:start( state, pos )
@@ -94,7 +75,7 @@ function EventTrailFXArc:start( state, pos )
 	local ent = target:getEntity()	
 	--todo: cache this
 	local deck = MOAISectionDeck.new()	
-	local moaiTex, uv = getTextureUV( tex )
+	local moaiTex, uv = tex:getMoaiTextureUV()
 	deck:setTexture( moaiTex )
 	deck:setUVRect( unpack( uv ) )
 	local prop = MOAIProp.new()
@@ -182,7 +163,7 @@ function EventTrailFXRay:start( state, pos )
 	local ent = target:getEntity()	
 	--todo: cache this
 	local deck = MOAIGfxQuad2D.new()	
-	local moaiTex, uv = getTextureUV( tex )
+	local moaiTex, uv = tex:getMoaiTextureUV()
 	deck:setTexture( moaiTex )
 	deck:setUVRect( unpack( uv ) )
 	local w = self.trailWidth

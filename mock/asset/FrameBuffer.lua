@@ -1,5 +1,5 @@
 module 'mock'
-CLASS: FrameBuffer (  )
+CLASS: FrameBuffer ( Texture )
 	:MODEL{
 		Field 'width'  :int();
 		Field 'height' :int();
@@ -18,6 +18,10 @@ end
 
 function FrameBuffer:getSize()
 	return self.width, self.height
+end
+
+function FrameBuffer:getMoaiTextureUV()
+	return self.moaiBuffer, { 0,1,1,0 }
 end
 
 function FrameBuffer:getMoaiFrameBuffer()

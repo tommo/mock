@@ -21,6 +21,16 @@ EnumTextureCompression = {
 	{ 'PVRTC', 'pvrtc' },
 }
 
+EnumTextureFormat = _ENUM_V{
+	'auto',
+	'RGBA8888',
+	'RGB888',
+	'RGBA4444',
+	'RGB565',
+	'PVR-4',
+	'PVR-2'
+}
+
 --------------------------------------------------------------------
 EnumTimerMode = {
 	{ 'normal'            , MOAITimer.NORMAL           } ,

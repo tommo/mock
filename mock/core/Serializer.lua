@@ -339,7 +339,7 @@ function serializeToFile( obj, path )
 end
 
 function deserializeFromFile( obj, path, objMap )
-	assert( path )
+	assert( path, 'no input for deserialization' )
 	local file=io.open( path, 'rb' )
 	if file then
 		local str = file:read('*a')

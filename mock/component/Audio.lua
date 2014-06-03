@@ -68,7 +68,7 @@ end
 
 function SoundSource:start()
 	if self.defaultClipPath then
-		self:playEvent2D( self.defaultClipPath )
+		return self:playEvent2D( self.defaultClipPath )
 	end
 end
 

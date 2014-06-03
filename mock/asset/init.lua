@@ -9,6 +9,8 @@ require 'mock.asset.Scene'
 require 'mock.asset.Prefab'
 
 --GRAPHICS
+require 'mock.asset.TextureHelper'
+require 'mock.asset.PrebuiltAtlas'
 require 'mock.asset.Texture'
 require 'mock.asset.Deck2D'
 require 'mock.asset.DefaultFont'

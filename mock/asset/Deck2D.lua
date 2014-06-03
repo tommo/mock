@@ -1,24 +1,24 @@
 module 'mock'
 --------------------------------------------------------------------
-local function getTextureUV( tex )
-	local ttype = tex.type
-	local t, uv
-	if ttype == 'sub_texture' then
-		t = tex.atlas
-		uv = tex.uv
+-- local function getTextureUV( tex )
+-- 	local ttype = tex.type
+-- 	local t, uv
+-- 	if ttype == 'sub_texture' then
+-- 		t = tex.atlas
+-- 		uv = tex.uv
 		
-	elseif ttype == 'framebuffer' then
-		t = tex:getMoaiFrameBuffer()
-		uv = { 0,0,1,1 }
+-- 	elseif ttype == 'framebuffer' then
+-- 		t = tex:getMoaiFrameBuffer()
+-- 		uv = { 0,0,1,1 }
 
-	else
-		t = tex
-		uv = { 0,1,1,0 }
+-- 	else
+-- 		t = tex
+-- 		uv = { 0,1,1,0 }
 
-	end
+-- 	end
 
-	return t, uv
-end
+-- 	return t, uv
+-- end
 
 local loadedDecks = table.weak()
 
@@ -74,12 +74,6 @@ end
 
 function Deck2D:getTexture()
 	return self.texturePath
-end
-
-function Deck2D:getTextureData()
-	if self.texture then
-		return getTextureUV( self.texture )
-	end
 end
 	
 function Deck2D:setName( n )
@@ -142,7 +136,7 @@ end
 function Quad2D:update()
 	local deck = self:getMoaiDeck()
 	if not self.texture then return end	
-	local tex, uv = getTextureUV( self.texture )
+	local tex, uv = self.texture:getMoaiTextureUV()
 	deck:setTexture( tex )
 	deck:setUVRect( unpack( uv ) )
 
@@ -152,7 +146,7 @@ end
 
 function Quad2D:reset()
 	if not self.texture then return end	
-	local tex, uv = getTextureUV( self.texture )
+	local tex, uv = self.texture:getMoaiTextureUV()
 	local w, h = self.texture:getSize()
 	self.w = w
 	self.h = h
@@ -201,7 +195,7 @@ function Tileset:update()
 
 	local deck = self:getMoaiDeck()
 
-	local tex, uv = getTextureUV( self.texture )
+	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )
 	deck:setTexture( tex )
 
@@ -253,7 +247,7 @@ end
 
 function QuadArray:update()
 	local deck = self:getMoaiDeck()
-	local tex, uv = getTextureUV( self.texture )
+	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )
 	deck:setTexture( tex )
 
@@ -348,7 +342,7 @@ end
 function StretchPatch:update()
 	local deck = self:getMoaiDeck()
 
-	local tex, uv = getTextureUV( self.texture )
+	local tex, uv = self.texture:getMoaiTextureUV()
 	deck:setTexture( tex )
 	deck:setUVRect( 1, unpack( uv ) )	
 
@@ -398,7 +392,7 @@ function PolygonDeck:update()
 	-- mesh:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 	local mesh = self:getMoaiDeck()
 
-	local tex, uv = getTextureUV( self.texture )
+	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )
 	mesh:setTexture( tex )
 	
@@ -516,5 +510,3 @@ registerAssetLoader ( 'deck2d.tileset',      Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.stretchpatch', Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.polygon',      Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.quad_array',   Deck2DItemLoader )
-
--- _getTextureUV = getTextureUV

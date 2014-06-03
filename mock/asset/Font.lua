@@ -32,7 +32,7 @@ local function loadFont( node )
 		local textures = {}
 		for i, path in ipairs( texPaths ) do
 			local tex, node = loadAsset( path )
-			table.insert( textures, tex )
+			table.insert( textures, tex:getMoaiTexture() )
 		end
 		if #textures > 0 then
 			font:loadFromBMFont( node.objectFiles['font'], textures )

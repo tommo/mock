@@ -80,6 +80,8 @@ registerSignals{
 	'layer.add',
 	'layer.remove',
 
+	'game_config.save',
+	'game_config.load',
 }
 
 
@@ -161,7 +163,6 @@ function Game:init( option, fromEditor )
 	
 	_stat( '...loading game modules' )
 	loadAllGameModules( option['script_library'] or false )
-
 	
 	--load layers
 	_stat( '...setting up layers' )
@@ -286,7 +287,7 @@ function Game:init( option, fromEditor )
 	collectgarbage( 'setstepmul', 150 )	
 	
 	----ask other systems to initialize
-	emitSignal( 'game.init' )
+	emitSignal( 'game.init', option )
 
 	----load scenes
 	if option['scenes'] then
@@ -331,7 +332,7 @@ function Game:saveConfigToTable()
 		entry_scene    = self.entryScene,
 		previewing_scene  = self.previewingScene
 	}
-
+	emitSignal( 'game_config.save', data )
 	return data
 end
 
