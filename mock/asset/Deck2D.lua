@@ -57,6 +57,12 @@ function Deck2D:setTexture( path, autoResize )
 	self:update()
 end
 
+function Deck2D:getTextureData()
+	if self.texture then
+		return self.texture:getMoaiTextureUV()
+	end
+end
+
 function Deck2D:getSize()
 	return self.w , self.h
 end

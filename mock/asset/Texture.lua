@@ -1,4 +1,4 @@
-module ('mock')
+module 'mock'
 
 local textureLibrary = false
 local textureLibraryIndex = false
@@ -43,6 +43,9 @@ Texture	:MODEL{
 		
 		Field 'rotated' :boolean();
 
+		Field 'x' :readonly(); --for atlas
+		Field 'y' :readonly();
+		
 		Field 'parent' :type( TextureGroup ) :no_edit();
 		Field 'u0' :no_edit();
 		Field 'v0' :no_edit();
@@ -51,6 +54,7 @@ Texture	:MODEL{
 		
 		'----';
 		Field 'atlasId' :int();
+		Field 'prebuiltAtlasPath' :string() :no_edit();
 
 		'----';
 		Field 'processor' :asset('texture_processor');
@@ -62,16 +66,20 @@ function Texture:__init( path )
 	self.v0 = 1
 	self.u1 = 1
 	self.v1 = 0
+	self.x  = 0
+	self.y  = 0
 	self.w  = 100
 	self.h  = 100
 	self.ow = 100
 	self.oh = 100
 	
 	self.rotated       = false
-	self.prebuiltAtlas = false	
+	self.prebuiltAtlasPath = false
 	self.loaded        = false
-	self._texture      = false
 	self.atlasId       = false	
+
+	self._texture      = false
+	self._prebuiltAtlas = false	
 end
 
 function Texture:getMoaiTexture()
@@ -110,21 +118,6 @@ function Texture:load()
 end
 
 function Texture:unload()
-end
-
-function Texture:_loadSingleTexture( pixmapPath, w, h, ow, oh )
-	self.pixmapPath = pixmapPath
-	self.w = w
-	self.h = h
-	self.ow = ow or w
-	self.oh = oh or h
-	self.u0 = 0
-	self.v0 = 1
-	self.u1 = 1
-	self.v1 = 0
-end
-
-function Texture:_loadPrebuiltAtlas()
 end
 
 
@@ -242,6 +235,7 @@ end
 
 function TextureGroup:loadAtlas()
 	local base = self.atlasCachePath
+	if not base then return nil end
 	local configPath = base .. '/atlas.json'
 	local f = io.open( configPath, 'r' )
 	if not f then 
@@ -283,7 +277,6 @@ function TextureGroup:loadTexture( texture )
 		local pixmapPath = node:getObjectFile( 'pixmap' )
 		texture._texture = self:_loadSingleTexture( pixmapPath, texture.path )
 	end
-
 end
 
 function TextureGroup:loadPrebuiltAtlas( texture )
@@ -292,20 +285,24 @@ function TextureGroup:loadPrebuiltAtlas( texture )
 		if not self.atlasLoaded then
 			self:loadAtlas()
 		end
-		local tex = self.atlasTextures[ texture.atlasId ]
-		texture._texture = tex	
+	end
+	local prebuiltAtlasPath = node:getObjectFile( 'atlas' )
+	local prebuiltAtlas = PrebuiltAtlas()
+	prebuiltAtlas:load( prebuiltAtlasPath )
+	if self:isAtlas() then
+		for i, page in ipairs( prebuiltAtlas.pages ) do
+			local tex = self.atlasTextures[ page.textureAtlasId ]
+			page._texture = tex
+		end
 	else
-		local atlasPath = node:getObjectFile( 'atlas' )
-		local atlas = PrebuiltAtlas()
-		atlas:load( atlasPath )
-		for i, page in ipairs( atlas.pages ) do
+		for i, page in ipairs( prebuiltAtlas.pages ) do
 			local pixmapName = 'pixmap_'..i
 			local pixmapPath = node:getObjectFile( pixmapName )
 			local debugName  = node:getNodePath() .. '@' .. pixmapName
 			page._texture = self:_loadSingleTexture( pixmapPath, debugName )
 		end
-		texture._atlas = atlas		
 	end
+	texture._prebuiltAtlas = prebuiltAtlas		
 end
 
 function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
@@ -352,40 +349,6 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 		end
 	end
 	return tex
-end
-
-function TextureGroup:_loadBuiltAtlas( atlasCachePath )
-	self.atlasCachePath = atlasCachePath
-	local atlasInfoPath = atlasCachePath .. '/atlas.json'
-	--reload texture parameters
-	local f = io.open( atlasInfoPath, 'r' )
-	if not f then 
-		error( 'file not found:' .. atlasInfoPath, 2 )   --TODO: proper exception handle
-		return nil
-	end
-	local text = f:read( '*a' )
-	f:close()
-	local atlasData = MOAIJsonParser.decode( text )
-
-	local atlases = atlasData[ 'atlases' ]
-	for i,item in pairs( atlasData[ 'items' ] ) do
-		local name = item.name
-		local x, y, w, h = unpack( item.rect )
-		local atlas = atlases[ item.atlas + 1 ]
-		local tw, th = unpack( atlas.size )
-		local u0, v0, u1, v1 = x/tw, y/th, (x+w)/tw, (y+h)/th
-		local tex = self:findTexture( name )
-		tex.u0 = u0
-		tex.v0 = v1
-		tex.u1 = u1
-		tex.v1 = v0
-		tex.w  = w
-		tex.h  = h
-		tex.ow = w
-		tex.oh = h		
-		tex.atlasId = item.atlas + 1 
-		--todo:  crop & rotated
-	end
 end
 
 

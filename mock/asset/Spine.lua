@@ -66,15 +66,6 @@ local function parseAtlas( data )
 	return pack
 end
 
--- function convertSpineAtlasToJson( atlasName, jsonName )
---   local f = io.open( atlasName, 'r' )
---   local pack = parseAtlas( f:read( '*a' ) )
---   f:close()
---   local f1 = io.open( jsonName, 'w' )
---   f1:write( MOAIJsonParser.encode( pack, 0x02 + 0x80 ) )
---   f1:close()
--- end
-
 function convertSpineAtlasToPrebuiltAtlas( atlasName )
 	local f = io.open( atlasName, 'r' )
 	local data = f:read( '*a' )
@@ -82,7 +73,6 @@ function convertSpineAtlasToPrebuiltAtlas( atlasName )
 	local pack = parseAtlas( data )
 	local atlas = PrebuiltAtlas()
 	for i, pageData in ipairs( pack.pages ) do
-		table.foreach( pageData, print )
 		local page = atlas:addPage()
 		page.texture   = pageData.texture
 		page.source    = pageData.texture
@@ -107,13 +97,10 @@ end
 --------------------------------------------------------------------
 --LOADERS
 --------------------------------------------------------------------
--- function SpineAtlasLoader( node )
--- end
-
 function loadSpineAtlas( node )
 	local atlasNodePath = node:getChildPath( node:getBaseName() .. '_spine_atlas' )
 	local atlasTexture, atlasNode = loadAsset( atlasNodePath, { skip_parent = true } )
-	local atlas      = atlasTexture._atlas
+	local atlas      = atlasTexture._prebuiltAtlas
 	local spineAtlas = MOAISpineAtlas.new()
 	--load atlas items	
 	for i, page in ipairs( atlas.pages ) do
@@ -134,7 +121,6 @@ function loadSpineAtlas( node )
 	end
 	return spineAtlas
 end
-
 
 function SpineJSONLoader( node )
 	local jsonPath  = node:getAbsObjectFile( 'json' )
