@@ -134,6 +134,7 @@ TextureGroup :MODEL{
 		Field 'premultiplyAlpha' :boolean();
 		Field 'mipmap'         :boolean();
 		Field 'wrap'           :boolean();
+		Field 'pow2'           :boolean();
 		-- Field 'compression'    :enum( EnumTextureCompression );
 		'----';
 		Field 'atlasMode'      :enum( EnumTextureAtlasMode );
@@ -166,6 +167,7 @@ function TextureGroup:__init()
 	self.compression         = false
 	self.premultiplyAlpha    = true
 	self.repackPrebuiltAtlas = false
+	self.pow2                = false
 	self.textures            = {}
 	self.atlasTextures       = {}
 end
@@ -312,7 +314,7 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 	tex.pixmapPath = pixmapPath
 
 	local transform = 0
-	if self.premultiplyAalpha ~= false then
+	if self.premultiplyAlpha then
 		transform = transform + MOAIImage.PREMULTIPLY_ALPHA
 	end
 	-- transform = transform + MOAIImage.QUANTIZE
