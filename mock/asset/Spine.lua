@@ -123,9 +123,7 @@ function loadSpineAtlas( node )
 end
 
 function SpineJSONLoader( node )
-	local jsonPath  = node:getAbsObjectFile( 'json' )
-	-- local atlasPath = node:getAbsObjectFile( 'atlas' )
-	-- local atlasJson = node:getAbsObjectFile( 'atlas_json' )	
+	local jsonPath  = node:getAbsObjectFile( 'skel' )
 	local atlas     = loadSpineAtlas( node ) --test
 	local jsonData  = loadAssetDataTable( jsonPath )
 	local skeletonData = MOAISpineSkeletonData.new()
