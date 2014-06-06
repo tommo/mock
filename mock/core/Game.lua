@@ -481,12 +481,9 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	local mainScene = self.mainScene
 	
 	if not additive then
-		-- print( 'clear scene' )
-		-- print( getTracingObjectCount()) 
 		mainScene:clear( true )
 		MOAISim.forceGC()
-		-- print( getTracingObjectCount()) 
-		-- print( 'collected' )
+		_stat( 'tracing object:', getTracingObjectCount() )
 	end
 	
 	local runningState = mainScene.running

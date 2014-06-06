@@ -308,7 +308,7 @@ function TextureGroup:loadPrebuiltAtlas( texture )
 end
 
 function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
-	_stat( 'loading single texture from pixmap:' , pixmapPath )
+	_stat( 'loading single texture from pixmap:' , pixmapPath, debugName )
 
 	local tex = MOAITexture.new()
 	tex.pixmapPath = pixmapPath
@@ -338,6 +338,12 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 	tex:setWrap( self.wrap )
 
 	local filePath = absProjectPath( pixmapPath )	
+	if not filePath then
+		_warn( 'nil imagepath specified', self.debugName )
+		tex:load( getTexturePlaceHolderImage() )
+		return tex
+	end
+	
 	if TEXTURE_ASYNC_LOAD then
 		local task = ThreadTextureLoadTask( filePath, transform )
 		task:setTargetTexture( tex )

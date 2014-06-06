@@ -9,7 +9,7 @@ local texturePlaceHolderImage = false
 function getTexturePlaceHolderImage( w, h )
 	if not texturePlaceHolderImage then
 		texturePlaceHolderImage = MOAIImage.new()
-		texturePlaceHolderImage:init( w, h )
+		texturePlaceHolderImage:init( w or 32, h or 32 )
 		texturePlaceHolderImage:fillRect( 0,0, w, h, 0, 1, 0, 1 )
 	end
 	return texturePlaceHolderImage

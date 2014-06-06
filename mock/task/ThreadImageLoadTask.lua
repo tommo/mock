@@ -8,6 +8,9 @@ function ThreadImageLoadTask:__init( path, transform )
 end
 
 function ThreadImageLoadTask:onExec( queue )
+	if not self.imagePath then
+		return self:fail()
+	end
 	local imgTask = MOAIImageLoadTask.new()
 	imgTask:start(
 		queue:getThread(),
