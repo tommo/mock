@@ -87,6 +87,14 @@ function Scene:getTime()
 	return game:getTime()
 end
 
+function Scene:flushPendingStart()
+	local pendingStart = self.pendingStart
+	self.pendingStart = {}
+	for entity in pairs( pendingStart ) do
+		entity:start()
+	end
+end
+
 function Scene:threadMain( dt )
 	-- runProfiler( 5 )
 	dt = 0
@@ -97,12 +105,6 @@ function Scene:threadMain( dt )
 		if self.active then
 			-- local dt = nowTime - lastTime
 			lastTime = nowTime
-			--start
-			local pendingStart = self.pendingStart
-			self.pendingStart = {}
-			for entity in pairs( pendingStart ) do
-				entity:start()
-			end
 
 			--callNextFrame
 			local pendingCall = self.pendingCall
@@ -134,6 +136,9 @@ function Scene:threadMain( dt )
 					laterDestroy[ entity ] = nil
 				end
 			end
+
+			self:flushPendingStart()
+
 		--end of step update
 		end
 		--executeDestroyQueue()
@@ -144,6 +149,7 @@ function Scene:threadMain( dt )
 				entity:destroyNow()
 			end
 		end
+
 		dt = coroutine.yield()
 		if self.exiting then 
 			self:exitNow() 
