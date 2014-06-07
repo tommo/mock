@@ -1,25 +1,6 @@
 module 'mock'
+
 --------------------------------------------------------------------
--- local function getTextureUV( tex )
--- 	local ttype = tex.type
--- 	local t, uv
--- 	if ttype == 'sub_texture' then
--- 		t = tex.atlas
--- 		uv = tex.uv
-		
--- 	elseif ttype == 'framebuffer' then
--- 		t = tex:getMoaiFrameBuffer()
--- 		uv = { 0,0,1,1 }
-
--- 	else
--- 		t = tex
--- 		uv = { 0,1,1,0 }
-
--- 	end
-
--- 	return t, uv
--- end
-
 local loadedDecks = table.weak()
 
 function getLoadedDecks()
@@ -57,6 +38,11 @@ function Deck2D:setTexture( path, autoResize )
 	self:update()
 end
 
+function Deck2D:getTexture()
+	return self.texturePath
+end
+
+
 function Deck2D:getTextureData()
 	if self.texture then
 		return self.texture:getMoaiTextureUV()
@@ -76,10 +62,6 @@ function Deck2D:getRect()
 	local ox,oy = self:getOrigin()
 	local w,h   = self:getSize()
 	return ox - w/2, oy - h/2, ox + w/2, oy + h/2 
-end
-
-function Deck2D:getTexture()
-	return self.texturePath
 end
 	
 function Deck2D:setName( n )

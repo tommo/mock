@@ -209,15 +209,14 @@ end
 
 --------------------------------------------------------------------
 --loader: func( assetType, filePath )
-function registerAssetLoader( assetType, loader )
+function registerAssetLoader( assetType, loader, unloader )
 	assert( loader )
 	AssetLoaders[ assetType ]   = loader
+	if unloader then
+		AssetUnloaders[ assetType ] = unloader
+	end
 end
 
-function registerAssetUnloader( assetType, unloader )
-	assert( unloader )
-	AssetUnloaders[ assetType ] = unloader
-end
 --------------------------------------------------------------------
 --put preloaded asset into AssetNode of according path
 function preloadIntoAssetNode( path, asset )
@@ -362,7 +361,7 @@ function releaseAsset( path )
 		local atype  = node.type
 		local unloader = AssetUnloaders[ atype ]
 		if unloader then
-			unloader( asset, node )
+			unloader( node, asset )
 		end
 		node.cached = makeAssetCacheTable()
 		_stat( 'released node asset', path, node )

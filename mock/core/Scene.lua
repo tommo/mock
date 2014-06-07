@@ -88,6 +88,7 @@ function Scene:getTime()
 end
 
 function Scene:flushPendingStart()
+	if not self.running then return end
 	local pendingStart = self.pendingStart
 	self.pendingStart = {}
 	for entity in pairs( pendingStart ) do

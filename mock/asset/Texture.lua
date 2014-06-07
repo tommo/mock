@@ -118,6 +118,10 @@ function Texture:load()
 end
 
 function Texture:unload()
+	_stat( 'unload texture:', self.path )
+	self.loaded = false
+	self._texture = false
+	self._prebuiltAtlas = false
 end
 
 
@@ -266,7 +270,13 @@ function TextureGroup:loadAtlas()
 	self.atlasLoaded = true
 end
 
+function TextureGroup:unloadAtlas()
+	self.atlasTextures = {}
+	self.atlasLoaded = false
+end
+
 function TextureGroup:loadTexture( texture )
+	_stat( 'load texture item:', texture.path )
 	if texture:isPrebuiltAtlas() then	return self:loadPrebuiltAtlas( texture ) end
 	local node = getAssetNode( texture.path )
 	if self:isAtlas() then
@@ -503,5 +513,13 @@ local function loadTexture( node )
 	return texNode	
 end
 
-registerAssetLoader( 'texture',         loadTexture )
-registerAssetLoader( 'prebuilt_atlas',  loadTexture )
+local function unloadTexture( node, texture )
+	local texNode = textureLibrary:findTexture( node:getNodePath() )
+	if texNode then
+		texNode:unload()
+	end
+end
+
+
+registerAssetLoader( 'texture',         loadTexture, unloadTexture )
+registerAssetLoader( 'prebuilt_atlas',  loadTexture, unloadTexture )
