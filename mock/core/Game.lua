@@ -217,20 +217,20 @@ function Game:init( option, fromEditor )
 	actionRoot:run( function()
 			while true do
 				coroutine.yield()
-				-- self:onRootUpdate( dt ) --delta time get passed in
 			end
 		end
 	)
 	
 	MOAIActionMgr.setRoot( actionRoot )
-	local actionRoot2=MOAICoroutine.new()	
-	actionRoot2:run( function()
+	local actionRootDecoy=MOAICoroutine.new()	
+	actionRootDecoy:run( function()
 			while true do
 				local dt = coroutine.yield()
 				self:onRootUpdate( dt ) --delta time get passed in
 			end
 		end
 	)
+
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 
 			0
@@ -510,6 +510,10 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	return scn
 end
 
+function Game:scheduleOpenSceneByPath( scnPath, additive, arguments )
+	self.pendingLoading = { scnPath, additive, arguments }
+end
+
 function Game:onSceneExit( scn )
 	assert( scn == self.mainScene )
 	local pendingScene = self.pendingScene
@@ -578,7 +582,12 @@ end
 
 function Game:onRootUpdate( delta )
 	self.time = self.time + delta
-	emitSignal('game.update', delta)
+	emitSignal( 'game.update', delta )
+	if self.pendingLoading then
+		local loadingParams = self.pendingLoading
+		self.pendingLoading = false
+		self:openSceneByPath( unpack( loadingParams ) )
+	end
 end
 
 function Game:resetClock()
@@ -646,6 +655,8 @@ function Game:setThrottle(v)
 	self.throttle=v
 	return self.actionRoot:throttle(v*1)
 end
+
+
 
 
 --------------------------------------------------------------------

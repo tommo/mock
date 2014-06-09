@@ -30,8 +30,6 @@ end
 function ThreadTaskManager:__init()
 	self.queues = {}
 	self.defaultQueue = 'main'
-	-- self.busy = false
-	self.coroutine = MOAICoroutine.new()
 end
 
 function ThreadTaskManager:getQueue( name, createIfNotExist )
@@ -60,7 +58,6 @@ function ThreadTaskManager:pushTask( queue, t )
 end
 
 function ThreadTaskManager:isBusy( queueName )
-	-- if not queueName then return self:isAnyBusy() end
 	local q = self:getQueue( queueName or self.defaultQueue, false )
 	if not q then return false end
 	return q:isBusy()
@@ -69,29 +66,6 @@ end
 function ThreadTaskManager:isAnyBusy()
 	return self.busy
 end
-
--- function ThreadTaskManager:getCoroutine()
--- 	return self.coroutine
--- end
-
--- function ThreadTaskManager:wake()
--- 	if self.coroutine:isActive() then return end
--- 	self.busy = true
--- 	self.coroutine:run( function()
--- 		return self:threadMain()
--- 	end
--- 	)
--- end
-
--- function ThreadTaskManager:threadMain()
--- 	while true do
--- 		for name, queue in pairs( self.queues ) do
-
--- 		end
--- 		coroutine.yield()
--- 	end
--- 	self.busy = false
--- end
 
 --------------------------------------------------------------------
 CLASS: ThreadTaskQueue ()
@@ -128,7 +102,6 @@ end
 
 function ThreadTaskQueue:pushTask( task )
 	table.insert( self.pending, task )
-	-- self.manager:wake()
 	self.taskSize  = self.taskSize + task:getTaskSize()
 	self.taskCount = self.taskCount + 1
 	self.totalTaskSize  = self.totalTaskSize + task:getTaskSize()
@@ -142,23 +115,27 @@ end
 function ThreadTaskQueue:processNext()
 	local t = table.remove( self.pending, 1 )
 	if t then
+		_stat( 'Processing task', t:toString() )
 		self.activeTask = t
 		t.execTime0 = os.clock()
 		t:onExec( self )
+		_stat( 'task in execution now' )
 		return t
 	else
 		--no more task, stop the thread
+		_stat( 'Thread empty, now stopping....' )
 		self.thread:stop()
 		self.thread = nil
 	end
 end
 
 function ThreadTaskQueue:isBusy()
-	return self.activeTask or ( next( self.pending ) ~= nil )
+	return ( self.activeTask and true ) or ( next( self.pending ) ~= nil )
 end
 
 function ThreadTaskQueue:notifyCompletion( task )
 	assert( self.activeTask == task )
+	_stat( 'Task completed', task:toString() )
 	self.activeTask = false
 	self.taskSize = self.taskSize - task:getTaskSize()
 	self.taskCount = self.taskCount - 1
@@ -168,6 +145,7 @@ end
 
 function ThreadTaskQueue:notifyFail( task ) --TODO: allow interrupt on error?
 	assert( self.activeTask == task )
+	_stat( 'Task failed', task:toString() )
 	self.activeTask = false
 	self.taskSize = self.taskSize - task:getTaskSize()
 	self.taskCount = self.taskCount - 1
@@ -185,6 +163,10 @@ end
 
 function ThreadTask:start( queueName )
 	getThreadTaskManager():pushTask( queueName or self:getDefaultQueue(), self )
+end
+
+function ThreadTask:toString()
+	return '<unknown>'
 end
 
 function ThreadTask:complete( ... )

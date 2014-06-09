@@ -46,3 +46,7 @@ function ThreadTextureLoadTask:onFail()
 	self.texture:load( getTexturePlaceHolderImage(), self.imageTransform, self.debugName or self.filename )
 end
 
+
+function ThreadTextureLoadTask:toString()
+	return '<textureLoadTask>' .. self.imagePath .. '\t' .. ( self.debugName or '')
+end

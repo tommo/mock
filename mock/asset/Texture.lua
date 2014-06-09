@@ -6,6 +6,11 @@ function getTextureLibrary()
 	return textureLibrary
 end
 
+function preloadTextureGroup( groupName )
+	local group = textureLibrary:getGroup( groupName )
+	group:_preloadAll()
+end
+
 function loadTextureLibrary( indexPath )
 	if not indexPath then return end
 	textureLibraryIndex = indexPath
@@ -324,7 +329,9 @@ function TextureGroup:loadAtlas()
 	if not data then 
 		error('atlas config file not parsable') --TODO: proper exception handle
 		return nil
-	end
+	end	
+
+	local prevTex
 	for i, atlasInfo in pairs( data[ 'atlases' ] ) do
 		local texpath = atlasInfo['name']
 		local tex = self:_loadSingleTexture( 
@@ -334,9 +341,12 @@ function TextureGroup:loadAtlas()
 		if not tex then
 			error( 'error loading texture:' .. texpath )
 		end
+		tex._previous = prevTex -- make a ref-ring to avoid partial collection
 		self._atlasTexturesCache[ i ] = tex
+		prevTex = tex
 	end
-	-- self.atlasLoaded = true
+	prevTex._previous = self._atlasTexturesCache[ 1 ]
+	
 end
 
 function TextureGroup:unloadAtlas()
@@ -433,7 +443,13 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 		return tex
 	end
 	
-	if TEXTURE_ASYNC_LOAD then
+	local async = TEXTURE_ASYNC_LOAD
+	if self.format == 'PVR-4' or self.format == 'PVR-2' then
+		--todo: use async raw data loading routine
+		async = false
+	end
+
+	if async then
 		local task = ThreadTextureLoadTask( filePath, transform )
 		task:setTargetTexture( tex )
 		task:setDebugName( debugName or filePath )
@@ -452,6 +468,12 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 	return tex
 end
 
+function TextureGroup:_preloadAll()
+	for path, texture in pairs( self.textures ) do
+		local instance = texture:buildInstance()
+		instance:load()
+	end
+end
 
 --------------------------------------------------------------------
 --Texture Library
@@ -597,7 +619,9 @@ local function loadTexture( node )
 end
 
 local function unloadTexture( node, textureInstance )
-	textureInstance:unload()
+-- 	local texNode = textureLibrary:findTexture( node:getNodePath() )
+-- 	if not texNode then return nil end
+-- 	textureInstance:unload()
 end
 
 

@@ -101,7 +101,6 @@ function BaseClass:MEMBER( t )
 	return self
 end
 
-
 function BaseClass:META( t )
 	self.__meta = t
 	return self

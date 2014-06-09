@@ -15,12 +15,6 @@ EnumTextureSize = {
 	{ '8192', 8192 }
 }
 
-EnumTextureCompression = {
-	{ 'none',  false },
-	{ 'auto',  'auto' },
-	{ 'PVRTC', 'pvrtc' },
-}
-
 EnumTextureFormat = _ENUM_V{
 	'auto',
 	'RGBA8888',

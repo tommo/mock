@@ -73,7 +73,8 @@ end
 
 
 --------------------------------------------------------------------
-function serializeScene( scene )
+function serializeScene( scene, option )
+	option = option or {}
 	emitSignal( 'scene.serialize', scene )
 	local objMap = SerializeObjectMap()
 	local entityList = {}
@@ -120,7 +121,7 @@ function serializeScene( scene )
 		end
 	end
 
-	return {
+	local result = {
 		_assetType  = 'scene',
 		meta        = scene.metaData or {},
 		map         = map,
@@ -128,6 +129,11 @@ function serializeScene( scene )
 		guid        = guidMap,
 		prefabId    = prefabIdMap
 	}
+
+	if option.save_dependency_list then
+		result.asset_dependency = collectSceneAssetDependency( scene )
+	end
+	return result
 end
 
 --------------------------------------------------------------------
@@ -162,8 +168,8 @@ function deserializeScene( data, scn )
 	return scn
 end
 
-function serializeSceneToFile( scn, path )
-	local data = serializeScene( scn )
+function serializeSceneToFile( scn, path, option )
+	local data = serializeScene( scn, option )
 	local str  = encodeJSON( data )
 	local file = io.open( path, 'wb' )
 	if file then
@@ -258,6 +264,13 @@ local function sceneLoader( node, option )
 	scn.path = node:getNodePath()
 	--entities
 	deserializeScene( data, scn )
+	local dep = data['asset_dependency']
+	if dep then
+		for assetPath in pairs( dep ) do
+			mock.loadAsset( assetPath )
+		end
+	end
+
 	return scn, false --no cache
 end
 

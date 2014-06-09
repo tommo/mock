@@ -24,4 +24,9 @@ function ThreadImageLoadTask:onExec( queue )
 			end
 		end
 	 )
+	self._task = imgTask
+end
+
+function ThreadImageLoadTask:toString()
+	return '<imageLoadTask>' .. self.imagePath
 end

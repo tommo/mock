@@ -29,7 +29,8 @@ end
 
 function collectAssetGarbage()
 	MOAISim.forceGC()
-	MOAICoroutine.new():run( function()
+	local collectThread = MOAICoroutine.new()
+	collectThread:run( function()
 			setAssetCacheWeak()
 			coroutine.yield()
 			setAssetCacheStrong()
@@ -39,6 +40,7 @@ function collectAssetGarbage()
 			-- reportTracingObject( true )
 		end
 		)
+	return collectThread
 end
 --------------------------------------------------------------------
 
