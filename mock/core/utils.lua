@@ -463,9 +463,19 @@ function table.sum(t)
 	return s
 end
 
-local weakMT={__mode='k'}
+local weakMT={ __mode = 'kv' }
 function table.weak( n )
-	return setmetatable(n or {},weakMT)
+	return setmetatable( n or {}, weakMT)
+end
+
+local weakKMT={ __mode = 'k' }
+function table.weak_k( n )
+	return setmetatable( n or {}, weakKMT)
+end
+
+local weakVMT={ __mode = 'v' }
+function table.weak_v( n )
+	return setmetatable( n or {}, weakVMT)
 end
 
 function table.find( t, v )
@@ -1061,4 +1071,17 @@ function table.show(t, name, indent)
    addtocart(t, name, indent)
    return cart .. autoref
 end
+
+
+-- --------------------------------------------------------------------
+-- local weakVMT = { 
+-- 	__call = function( t, v )
+-- 		t[1] = v
+-- 	end,
+-- 	__mode = 'v' }
+-- function newweakref( value )
+-- 	local t = setmetatable( {}, weakVMT )
+-- 	t[1] = value
+-- 	return t
+-- end
 

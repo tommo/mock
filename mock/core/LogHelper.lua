@@ -136,3 +136,11 @@ function _traceback( msg, ... )
 	print( msg )
 	print( debug.traceback(2) )
 end
+
+--------------------------------------------------------------------
+function reportHistogram()
+	MOAILuaRuntime.reportHistogram( 'histogram' )
+	local f = io.open( 'histogram', 'r' )
+	print( f:read( '*a' ) )
+	f:close()
+end

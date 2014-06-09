@@ -48,12 +48,13 @@ PrebuiltAtlasPage
 	}
 
 function PrebuiltAtlasPage:__init()
-	self.id      = 0
+	self.id             = 0
 	self.textureAtlasId = 0
-	self.source  = false
-	-- self.texture = false
-	self.items   = {}
-	self.parent  = false
+	self.source         = false	
+	self.items          = {}
+	self.parent         = false
+	self._texture       = false
+	
 	self.w = 100
 	self.h = 100
 	self.ow = 100
@@ -93,6 +94,10 @@ function PrebuiltAtlasPage:findItem( id )
 		if item.name == id then return item end
 	end
 	return nil
+end
+
+function PrebuiltAtlasPage:getMoaiTexture()
+	return self._texture
 end
 
 --------------------------------------------------------------------

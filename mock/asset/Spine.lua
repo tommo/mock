@@ -100,12 +100,13 @@ end
 function loadSpineAtlas( node )
 	local atlasNodePath = node:getChildPath( node:getBaseName() .. '_spine_atlas' )
 	local atlasTexture, atlasNode = loadAsset( atlasNodePath, { skip_parent = true } )
-	local atlas      = atlasTexture._prebuiltAtlas
+	local atlas      = atlasTexture:getPrebuiltAtlas()
 	local spineAtlas = MOAISpineAtlas.new()
 	--load atlas items	
 	for i, page in ipairs( atlas.pages ) do
+		local texture = page:getMoaiTexture()
+		assert( texture )
 		for j, item in ipairs( page.items ) do
-			local texture = page._texture
 			spineAtlas:addRegion( 
 				item.name,
 				texture,
@@ -119,8 +120,10 @@ function loadSpineAtlas( node )
 			)
 		end
 	end
+	spineAtlas._texture = atlasTexture
 	return spineAtlas
 end
+
 
 function SpineJSONLoader( node )
 	local jsonPath  = node:getAbsObjectFile( 'skel' )

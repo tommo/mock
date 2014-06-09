@@ -4,11 +4,44 @@ registerSignals{
 	'asset_library.loaded',
 }
 
-__ASSET_CACHE_MT = { __mode = '' }
+--------------------------------------------------------------------
+local __ASSET_CACHE_MT = { 
+	-- __mode = 'kv'
+}
+
+local __ASSET_CACHE_WEAK_MODE = 'kv'
 
 function makeAssetCacheTable()
 	return setmetatable( {}, __ASSET_CACHE_MT )
 end
+
+function _allowAssetCacheWeakMode( allowed )
+	__ASSET_CACHE_WEAK_MODE = allowed and 'kv' or false
+end
+
+function setAssetCacheWeak()
+	__ASSET_CACHE_MT.__mode = __ASSET_CACHE_WEAK_MODE
+end
+
+function setAssetCacheStrong()
+	__ASSET_CACHE_MT.__mode = false
+end
+
+function collectAssetGarbage()
+	MOAISim.forceGC()
+	MOAICoroutine.new():run( function()
+			setAssetCacheWeak()
+			coroutine.yield()
+			setAssetCacheStrong()
+			-- reportLoadedMoaiTextures()			
+			-- reportAssetInCache{ 'texture', 'spine' }
+			-- reportHistogram()
+			-- reportTracingObject( true )
+		end
+		)
+end
+--------------------------------------------------------------------
+
 --tool functions
 local function fixpath(p)
 	p=string.gsub(p,'\\','/')
@@ -368,3 +401,46 @@ function releaseAsset( path )
 	end
 end
 
+
+--------------------------------------------------------------------
+function reportAssetInCache( typeFilter )
+	local output = {}
+	if type( typeFilter ) == 'string' then
+		typeFilter = { typeFilter }
+	elseif type ( typeFilter ) == 'table' then
+		typeFilter = typeFilter
+	else
+		typeFilter = false
+	end
+	for path, node in pairs( AssetLibrary ) do
+		local atype = node:getType()
+		if atype ~= 'folder' and node.cached.asset then
+			local matched
+			if typeFilter then
+				matched = false
+				for i, t in ipairs( typeFilter ) do
+					if t == atype then
+						matched = true
+						break
+					end
+				end
+			else
+				matched = true
+			end
+			if matched then
+				table.insert( output, { path, atype, node.cached.asset } )
+			end
+		end
+	end
+	local function _sortFunc( i1, i2 )
+		if i1[2] == i2[2] then
+			return i1[1] < i2[1]
+		else
+			return i1[2] < i2[2]
+		end
+	end
+	table.sort( output, _sortFunc )
+	for i, item in ipairs( output ) do
+		printf( '%s \t %s', item[2], item[1]  )
+	end
+end

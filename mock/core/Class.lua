@@ -34,6 +34,7 @@ local newClass
 local separatorField
 local globalClassRegistry = {}
 local tracingObjectAllocation = true
+local tracingObjectAllocationStack = false
 local tracingObjectTable = setmetatable( {}, { __mode = 'k' } )
 
 local reservedMembers = {
@@ -53,6 +54,30 @@ end
 
 function getTracingObjectCount()
 	return table.len( tracingObjectTable )
+end
+
+function reportTracingObject( ignoreMockObject )
+	local objectCounts = {}
+	for o in pairs( tracingObjectTable ) do
+		local name = o:getClassFullName() or '<unknown>'
+		if ignoreMockObject and name:sub( 1, 4 ) == 'mock' then
+			--do nothing
+		elseif name == 'Model' or name == 'Field' then
+			--do nothing
+		else
+			objectCounts[ name ] = ( objectCounts[ name ] or 0 ) + 1
+		end
+	end
+	local output = {}
+	for name, count in pairs( objectCounts ) do
+		table.insert( output, { name, count } )
+	end
+	table.sort( output, function( i1, i2 ) return i1[1] < i2[1] end )
+
+	for i, item in ipairs( output ) do
+		print( string.format( '%9d\t%s',item[2], item[1] ) )
+	end
+
 end
 
 --------------------------------------------------------------------
@@ -174,6 +199,9 @@ local function buildInstanceBuilder(class)
 			init(o,...)
 			if tracingObjectAllocation then
 				tracingObjectTable[ o ] = true
+				if tracingObjectAllocationStack then
+					o.__createtraceback = debug.traceback( 2 )
+				end
 			end
 			return o
 		end
@@ -182,6 +210,9 @@ local function buildInstanceBuilder(class)
 			local o = setmetatable({}, class)
 			if tracingObjectAllocation then
 				tracingObjectTable[ o ] = true
+				if tracingObjectAllocationStack then
+					o.__createtraceback = debug.traceback( 2 )
+				end
 			end
 			return o
 		end
@@ -363,7 +394,7 @@ end
 
 CLASS: Model ()
 function Model:__init( clas, clasName )
-	self.__class = clas
+	self.__src_class = clas
 	self.__name  = clas.__fullname or clasName or 'LuaObject'
 	rawset( clas, '__model', self )
 end
@@ -439,12 +470,12 @@ function Model:update( body )
 	end
 	self.__fields = fields
 	self.__fieldNames = fieldN
-	-- self.__class.__name = name
+	-- self.__src_class.__name = name
 	return self
 end
 
 function Model:getMeta()
-	return rawget( self.__class, '__meta' )
+	return rawget( self.__src_class, '__meta' )
 end
 
 
@@ -507,12 +538,12 @@ local function _collectMeta( clas, meta )
 end
 
 function Model:getCombinedMeta()
-	return _collectMeta( self.__class )
+	return _collectMeta( self.__src_class )
 end
 
 
 function Model:getSuperModel( name )
-	local superclass = self.__class.__super
+	local superclass = self.__src_class.__super
 	if not superclass then return nil end
 	local m = rawget( superclass, '__model' )
 	if not m then
@@ -522,7 +553,7 @@ function Model:getSuperModel( name )
 end
 
 function Model:getClass()
-	return self.__class
+	return self.__src_class
 end
 
 function Model:newInstance( ... )
@@ -533,7 +564,7 @@ end
 function Model:isInstance( obj )
 	if type(obj) ~= 'table' then return false end
 	local clas = getmetatable( obj )
-	local clas0 = self.__class
+	local clas0 = self.__src_class
 	while clas do
 		if clas == clas0 then return true end
 		clas = rawget( clas, '__super' )
@@ -856,7 +887,7 @@ end
 --------------------------------------------------------------------
 CLASS: MoaiModel (Model)
 function MoaiModel:newinstance( ... )
-	return self.__class.new()
+	return self.__src_class.new()
 end
 
 --------------------------------------------------------------------

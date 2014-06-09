@@ -95,9 +95,10 @@ end
 function SpineSprite:stop( resetPose )
 	if self.animState then
 		self.animState:stop()
-	end
-	if resetPose ~= false then
-		self.skeleton:setBonesToSetupPose()
+		self.animState = false
+		if resetPose ~= false then
+			self.skeleton:setBonesToSetupPose()
+		end
 	end
 end
 
@@ -129,6 +130,11 @@ function SpineSprite:getAnimationNames()
 		table.insert( result, { k, k } )
 	end
 	return result
+end
+
+function SpineSprite:onDetach( entity )
+	self:stop()
+	return SpineSpriteBase.onDetach( self, entity )
 end
 
 wrapWithMoaiPropMethods( SpineSprite, ':getSkeleton()' )
