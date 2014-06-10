@@ -6,8 +6,12 @@ CLASS: SpineSpriteBase ()
 	}
 
 function SpineSpriteBase:__init()
-	self.skeleton  = MOAISpineSkeleton.new()
+	self.skeleton  = self:_createSkeleton()
 	self.propInserted  = false
+end
+
+function SpineSpriteBase:_createSkeleton()
+	return MOAISpineSkeleton.new()
 end
 
 function SpineSpriteBase:onAttach( entity )
@@ -39,7 +43,6 @@ end
 function SpineSpriteBase:getSprite()
 	return self.spritePath
 end
-
 
 function SpineSpriteBase:setMixTable( t )
 	self.mixTable = t

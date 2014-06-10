@@ -52,6 +52,7 @@ require 'mock.component.Box2DBody'
 require 'mock.component.AuroraSprite'
 require 'mock.component.SpineSpriteBase'
 require 'mock.component.SpineSprite'
+require 'mock.component.SpineSpriteSimple'
 
 --------------------------------------------------------------------
 ---- AI
