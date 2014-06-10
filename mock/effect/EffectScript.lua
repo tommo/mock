@@ -2,7 +2,7 @@ module 'mock'
 
 CLASS: EffectScript ( EffectNode )
 	:MODEL{
-		Field 'script' :string() :widget('textbox');
+		Field 'script' :string()  :no_edit(); --will use a custom script box for widget
 	}
 
 function EffectScript:__init()

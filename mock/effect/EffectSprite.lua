@@ -78,6 +78,58 @@ function EffectAuroraSprite:getClipNames()
 	return result
 end
 
+
+--------------------------------------------------------------------
+--Aurora Sprite
+--------------------------------------------------------------------
+CLASS: EffectSpineSprite ( EffectTransformNode )
+	:MODEL{
+		Field 'spritePath' :asset( 'spine' );
+		Field 'clip'  :string() :selection( 'getClipNames' );
+		Field 'mode'  :enum( EnumTimerMode );
+		'----';
+		Field 'color'    :type('color')  :getset('Color') ;
+		'----';
+		Field 'blend' :enum( EnumBlendMode );
+	}
+
+function EffectSpineSprite:__init()
+	self.blend = 'alpha'
+	self.mode  = MOAITimer.NORMAL
+	self.clip  = false
+	self.color = { 1,1,1,1 }
+end
+
+function EffectSpineSprite:getColor()
+	return unpack( self.color )
+end
+
+function EffectSpineSprite:setColor( r,g,b,a )
+	self.color = { r,g,b,a }
+end
+
+function EffectSpineSprite:onLoad( fxState )
+	local sprite = SpineSprite()
+	sprite:setSprite( self.spritePath )
+	setPropBlend( sprite.skeleton, self.blend )
+	self:applyTransformToProp( sprite )
+	fxState:linkTransform( sprite.skeleton )
+	fxState:linkPartition( sprite.skeleton )
+	sprite.skeleton:setColor( unpack( self.color ) )
+	sprite:play( self.clip, self.mode )
+	fxState[ self ] = sprite
+end
+
+function EffectSpineSprite:getClipNames()
+	local data = mock.loadAsset( self.spritePath )
+	if not data then return nil end
+	local result = {}
+	for k,i in pairs( data._animationTable ) do
+		table.insert( result, { k, k } )
+	end
+	return result
+end
+
 --------------------------------------------------------------------
 registerTopEffectNodeType(
 	'sprite-static',
@@ -89,6 +141,12 @@ registerTopEffectNodeType(
 registerTopEffectNodeType(
 	'sprite-aurora',
 	EffectAuroraSprite,
+	EffectCategoryTransform
+)
+
+registerTopEffectNodeType(
+	'sprite-spine',
+	EffectSpineSprite,
 	EffectCategoryTransform
 )
 

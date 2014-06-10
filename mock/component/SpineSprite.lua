@@ -67,6 +67,7 @@ function SpineSprite:play( clipName, mode, resetPose )
 		10000
 	)
 	anim:setSpan( 10000 )
+	anim:apply( 0 )
 	anim:start()
 	anim.owner = self
 	-- anim:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )

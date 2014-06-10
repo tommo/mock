@@ -10,6 +10,7 @@ local function AuroraSpriteLoader( node )
 	local data = loadAssetDataTable( node:getObjectFile('def') )
 	local textures = {}
 	local texRects = {}
+	local uvRects  = {}
 
 	--load images
 	for i, image in pairs( data.images ) do
@@ -22,18 +23,12 @@ local function AuroraSpriteLoader( node )
 			_error( 'cannot load sprite texture', imgFile )
 			return nil
 		end
-
-		if tex.type == 'sub_texture' then
-			local x, y, w, h = tex:getPixmapRect()
-			local tw,th = tex.atlas:getSize()
-			textures[ i ] = tex.atlas
-			texRects[ i ] = { tw, th, x, y } --todo
-		else
-			textures[ i ] = tex
-			local w, h = tex:getSize()
-			texRects[ i ] = { w, h, 0, 0 }	--w,h, ox,oy
-		end
-
+		local mtex, uvRect = tex:getMoaiTextureUV() 
+		textures[ i ] = mtex
+		local tw, th = mtex:getSize()
+		local ox, oy = 0, 0 --todo
+		texRects[ i ] = { tw, th, ox, oy } 
+		
 	end
 
 	local deck = MOAIGfxQuadListDeck2D.new()

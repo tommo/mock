@@ -1,9 +1,17 @@
 module 'mock'
+
+EnumActionOnStop = _ENUM_V{
+	'default', --inherit from effect
+	'detach',
+	'destroy',
+	'none'
+}
 --------------------------------------------------------------------
 CLASS: EffectEmitter ( Component )
 	:MODEL{
-		Field 'effect' :asset('effect') :set('setEffect');
-		Field 'autoPlay' :boolean();
+		Field 'effect'        :asset('effect') :set('setEffect');
+		Field 'autoPlay'      :boolean();
+		Field 'actionOnStop'  :enum( EnumActionOnStop );
 }
 
 mock.registerComponent( 'EffectEmitter', EffectEmitter )
@@ -12,14 +20,14 @@ mock.registerComponent( 'EffectEmitter', EffectEmitter )
 function EffectEmitter:__init()
 	self.duration   = false
 	self.effect     = false
-	self.autoPlay   = false
+	self.autoPlay   = true
 	self.effectConfig = false
-	self.destroyOnStop = false
 	self.playing    = false
 	self.prop       = MOAIProp.new()
 	self.activeStates    = {}
 	self.mirrorX    = false
 	self.mirrorY    = false
+	self.actionOnStop = 'default'
 end
 
 function EffectEmitter:setEffect( e )
@@ -58,8 +66,8 @@ end
 
 function EffectEmitter:start()
 	if self.playing then return end
-	self.playing = true
 	if not self.effectConfig then return end	
+	
 	local state = EffectState( self, self.effectConfig )
 	self.effectConfig:loadIntoState( state )
 	--state:start()
@@ -71,6 +79,7 @@ function EffectEmitter:start()
 		self.time1 = false
 	end
 	self._entity.scene:addUpdateListener( self )
+	self.playing = true
 	return state
 end
 
@@ -83,19 +92,44 @@ function EffectEmitter:stop()
 		state:stop()
 	end
 	self.activeStates = {}
-	if self.destroyOnStop then
+	local actionOnStop = self.actionOnStop
+	if actionOnStop == 'default' then
+		actionOnStop = self.effectConfig:getRootNode().actionOnStop
+	end
+
+	if actionOnStop == 'detach' then
 		self._entity:detach( self )
+	elseif actionOnStop == 'destroy' then
+		self._entity:destroy()
+	else
+		-- do nothing
 	end
 end
 
-function EffectEmitter:onUpdate( dt )	
+function EffectEmitter:onUpdate( dt )
+	local stopped = false
 	for state in pairs( self.activeStates ) do
 		state:update( dt )
+		if not state.playing then
+			stopped = stopped or {}
+			stopped[ state ] = true
+		end
 	end
+	if stopped then
+		for s in pairs( stopped ) do
+			self.activeStates[ s ] = nil
+		end
+		if not next( self.activeStates ) then
+			self:stop()
+			return
+		end
+	end
+	
 	local t = os.clock()
 	if self.time1 and t >= self.time1 then
 		self:stop()
 	end
+
 end
 
 function EffectEmitter:setDestroyOnStop( f )
@@ -104,7 +138,7 @@ end
 
 function EffectEmitter:setDuration( d )
 	self.duration = d
-	if self.plaing then
+	if self.playing then
 		self.time1 = self.time0 + self.duration	
 	end
 end

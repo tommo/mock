@@ -346,6 +346,8 @@ end
 CharacterConfig	:MODEL{
 		Field 'name'    :string();
 		Field 'spine'   :asset('spine') :getset('Spine');
+		Field 'simpleSkeleton'  :boolean();
+		'----';
 		Field 'actions' :array( CharacterAction ) :no_edit();		
 		Field 'baseCharacter' :asset( 'character' );
 	}
@@ -354,6 +356,7 @@ function CharacterConfig:__init()
 	self.name    = 'character'
 	self.baseCharacter = false
 	self.actions = {}
+	self.simpleSkeleton = false
 end
 
 function CharacterConfig:getSpine()

@@ -142,17 +142,24 @@ end
 --------------------------------------------------------------------
 --CLASS: EffectRoot
 --------------------------------------------------------------------
+EnumActionOnStop = _ENUM_V{
+	'detach',
+	'destroy',
+	'none'
+}
 
 EffectRoot :MODEL {
 	Field 'duration' :range( 0 );
 	Field 'loop'     :boolean();	
 	Field 'followEmitter' :boolean();
+	Field 'actionOnStop'  :enum(EnumActionOnStop)
 }
 
 function EffectRoot:__init()
 	self.duration = 0
 	self.loop = false
 	self.followEmitter = false
+	self.actionOnStop  = 'none'
 end
 
 function EffectRoot:getDefaultName()
@@ -283,10 +290,19 @@ function EffectState:__init( emitter, config )
 		inheritTransform( trans, prop )
 	else
 		prop:forceUpdate()
-		trans:setLoc( prop:getLoc() )
-		trans:setScl( prop:getScl() )
-		trans:setRot( prop:getRot() )
+		trans:setLoc( prop:getWorldLoc() )
+		trans:setScl( prop:getWorldScl() )
+		trans:setRot( 0,0, prop:getWorldRot() )
+		trans:forceUpdate()
 	end
+	local duration = root.duration or -1
+	self.elapsed = 0
+	if duration <= 0 then
+		self.duration = false
+	else
+		self.duration = duration
+	end
+	self.playing = true
 end
 
 function EffectState:getTransformNode()
@@ -307,6 +323,7 @@ end
 
 function EffectState:linkTransform( trans )
 	inheritTransform( trans, self._trans )	
+	trans:forceUpdate()
 end
 
 function EffectState:linkPartition( prop )
@@ -326,9 +343,11 @@ function EffectState:getEffectConfig()
 end
 
 function EffectState:start()
+	self.playing = true
 end
 
 function EffectState:stop()
+	self.playing = false
 end
 
 function EffectState:addUpdateListener( node )
@@ -340,8 +359,14 @@ function EffectState:removeUpdatingListener( node )
 end
 
 function EffectState:update( dt )
+	self.elapsed = self.elapsed + dt
 	for k in pairs( self._updateListeners ) do
 		k:onUpdate( self, dt )
+	end
+	if self.duration then
+		if self.elapsed >= self.duration then
+			self:stop()
+		end
 	end
 end
 
