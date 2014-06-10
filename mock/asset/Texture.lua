@@ -365,8 +365,11 @@ function TextureGroup:loadTexture( instance )
 		if not self:isAtlasLoaded() then
 			self:loadAtlas()
 		end
-		local tex = self._atlasTexturesCache[ instance:getSource().atlasId ]
-		assert( tex )
+		local atlasId = instance:getSource().atlasId
+		local tex = self._atlasTexturesCache[ atlasId ]
+		if not tex then
+			_error( 'texture atlas not in cache', atlasId, self.name )
+		end
 		instance._texture = tex
 	else
 		local pixmapPath = node:getObjectFile( 'pixmap' )
