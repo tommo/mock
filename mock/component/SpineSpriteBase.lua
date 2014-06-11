@@ -25,7 +25,7 @@ end
 
 function SpineSpriteBase:setSprite( path, alphaBlend )
 	alphaBlend = alphaBlend~=false
-	self.spritePath = path	
+	self.spritePath   = path	
 	self.skeletonData = loadAsset( path )
 	if self.skeletonData  then
 		local entity = self._entity

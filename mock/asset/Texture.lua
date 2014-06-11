@@ -8,7 +8,7 @@ end
 
 function preloadTextureGroup( groupName )
 	local group = textureLibrary:getGroup( groupName )
-	group:_preloadAll()
+	return group:_preloadAll()
 end
 
 function loadTextureLibrary( indexPath )
@@ -40,16 +40,17 @@ CLASS: Texture ()
 --------------------------------------------------------------------
 Texture	:MODEL{
 		Field 'path' :asset('texture') :readonly() :no_edit(); --view only	
-		Field 'w' :readonly();
-		Field 'h' :readonly();
+		Field 'w'    :readonly();
+		Field 'h'    :readonly();
 
+		----
 		Field 'ow' :readonly() :no_edit(); -- for cropped texture
 		Field 'oh' :readonly() :no_edit();
 		
-		Field 'rotated' :boolean();
+		Field 'rotated' :boolean() :no_edit();
 
-		Field 'x' :readonly(); --for atlas
-		Field 'y' :readonly();
+		Field 'x' :readonly() :no_edit(); --for atlas
+		Field 'y' :readonly() :no_edit();
 		
 		Field 'parent' :type( TextureGroup ) :no_edit();
 		Field 'u0' :no_edit();
@@ -58,10 +59,11 @@ Texture	:MODEL{
 		Field 'v1' :no_edit();
 		
 		'----';
-		Field 'atlasId' :int();
+		Field 'atlasId' :int() :no_edit();
 		Field 'prebuiltAtlasPath' :string() :no_edit();
 
-		'----';
+		'----';		
+		Field 'scale'     ;
 		Field 'processor' :asset('texture_processor');
 	}
 
@@ -80,17 +82,9 @@ function Texture:__init( path )
 	
 	self.rotated       = false
 	self.prebuiltAtlasPath = false
-	self.atlasId       = false		
-
+	self.atlasId       = false
+	self.scale  = -1
 end
-
--- function Texture:getMoaiTexture()
--- 	return self._cache['texture']
--- end
-
--- function Texture:getMoaiTextureUV()
--- 	return self._cache['texture'], { self:getUVRect() }
--- end
 
 function Texture:getSize()
 	return self.ow, self.oh
@@ -117,6 +111,13 @@ function Texture:buildInstance()
 	return TextureInstance( self )
 end
 
+function Texture:getScale()
+	local scl = self.scale
+	if scl <= 0 then
+		return self.parent:getScale()
+	end
+	return scl
+end
 
 --------------------------------------------------------------------
 CLASS: TextureInstance ()
@@ -170,6 +171,10 @@ function TextureInstance:getUVRect()
 	return self._src:getUVRect()
 end
 
+function TextureInstance:getScale()
+	return self._src:getScale()
+end
+
 function TextureInstance:isPrebuiltAtlas()
 	return self._src:isPrebuiltAtlas()
 end
@@ -220,6 +225,7 @@ TextureGroup :MODEL{
 		Field 'repackPrebuiltAtlas' :boolean();
 
 		'----';
+		Field 'scale'          :range( 0.1 );
 		Field 'processor'      :asset('texture_processor');
 
 		Field 'atlasCachePath' :string() :no_edit();
@@ -245,6 +251,8 @@ function TextureGroup:__init()
 	self.repackPrebuiltAtlas = false
 	self.pow2                = false
 	self.textures            = {}
+
+	self.scale               = 1
 
 	self._atlasTexturesCache  = makeAssetCacheTable()
 end
@@ -302,6 +310,10 @@ function TextureGroup:findPrebuiltAtlas()
 		end
 	end
 	return result
+end
+
+function TextureGroup:getScale()
+	return self.scale
 end
 
 function TextureGroup:getAssetPath()
@@ -391,11 +403,13 @@ function TextureGroup:loadPrebuiltAtlas( instance )
 	prebuiltAtlas:load( prebuiltAtlasPath )
 	if self:isAtlas() then
 		for i, page in ipairs( prebuiltAtlas.pages ) do
-			local tex = self._atlasTexturesCache[ page.textureAtlasId ]
-			if not tex then
+			if page.textureAtlasId > 0 then
+				local tex = self._atlasTexturesCache[ page.textureAtlasId ]
+				if not tex then
+					_warn( 'atlas cache not loaded', page.textureAtlasId )				
+				end
+				page._texture = tex
 			end
-			assert( tex )
-			page._texture = tex
 		end
 	else
 		for i, page in ipairs( prebuiltAtlas.pages ) do
@@ -472,10 +486,13 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 end
 
 function TextureGroup:_preloadAll()
+	local instances = {}
 	for path, texture in pairs( self.textures ) do
 		local instance = texture:buildInstance()
 		instance:load()
+		instances[ instance ] = true
 	end
+	return instances
 end
 
 --------------------------------------------------------------------
@@ -578,7 +595,6 @@ function TextureLibrary:save( path )
 	_stat( 'saving texture library', path )
 	return serializeToFile( self, path )
 end
-
 
 function TextureLibrary:load( path )
 	_stat( 'loading textureLibrary', path )

@@ -72,7 +72,6 @@ registerSignals{
 	'mainscene.open',
 	'mainscene.refresh',
 	'mainscene.close',
-	'mainscene.ready',
 
 	'scene.update',
 

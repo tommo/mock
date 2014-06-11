@@ -64,9 +64,10 @@ function SpineSprite:play( clipName, mode, resetPose )
 		clipName, 
 		mode == MOAITimer.LOOP,
 		0,
-		10000
+		-1
 	)
-	anim:setSpan( 10000 )
+	local duration = span:getDuration()
+	anim:setSpan( duration )
 	anim:apply( 0 )
 	anim:start()
 	anim.owner = self

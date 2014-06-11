@@ -102,22 +102,24 @@ function loadSpineAtlas( node )
 	local atlasTexture, atlasNode = loadAsset( atlasNodePath, { skip_parent = true } )
 	local atlas      = atlasTexture:getPrebuiltAtlas()
 	local spineAtlas = MOAISpineAtlas.new()
-	--load atlas items	
+	--load atlas items
+	local scale = atlasTexture:getScale()	
 	for i, page in ipairs( atlas.pages ) do
-		local texture = page:getMoaiTexture()
-		assert( texture )
-		for j, item in ipairs( page.items ) do
-			spineAtlas:addRegion( 
-				item.name,
-				texture,
-				item.w, item.h,
-				item.ow, item.oh,
-				item.ox, item.oy,
-				item.x, item.y,
-				-1,
-				item.rotated,
-				page.w, page.h
-			)
+		if #page.items > 0 then
+			local texture = page:getMoaiTexture()
+			for j, item in ipairs( page.items ) do
+				spineAtlas:addRegion( 
+					item.name,
+					texture,
+					item.w/scale, item.h/scale,
+					item.ow, item.oh,
+					item.ox, item.oy,
+					item.x/scale, item.y/scale,
+					-1,
+					item.rotated,
+					page.w/scale, page.h/scale
+				)
+			end
 		end
 	end
 	spineAtlas._texture = atlasTexture

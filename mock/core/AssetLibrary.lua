@@ -34,8 +34,8 @@ function collectAssetGarbage()
 			setAssetCacheWeak()
 			coroutine.yield()
 			setAssetCacheStrong()
-			-- reportLoadedMoaiTextures()			
-			-- reportAssetInCache{ 'texture', 'spine' }
+			reportLoadedMoaiTextures()			
+			-- reportAssetInCache()
 			-- reportHistogram()
 			-- reportTracingObject( true )
 		end

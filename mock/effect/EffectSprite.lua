@@ -88,8 +88,9 @@ CLASS: EffectSpineSprite ( EffectTransformNode )
 		Field 'clip'  :string() :selection( 'getClipNames' );
 		Field 'mode'  :enum( EnumTimerMode );
 		'----';
-		Field 'color'    :type('color')  :getset('Color') ;
+		Field 'throttle'  :range( 0 );
 		'----';
+		Field 'color'    :type('color')  :getset('Color') ;
 		Field 'blend' :enum( EnumBlendMode );
 	}
 
@@ -98,6 +99,7 @@ function EffectSpineSprite:__init()
 	self.mode  = MOAITimer.NORMAL
 	self.clip  = false
 	self.color = { 1,1,1,1 }
+	self.throttle = 1
 end
 
 function EffectSpineSprite:getColor()
@@ -108,6 +110,10 @@ function EffectSpineSprite:setColor( r,g,b,a )
 	self.color = { r,g,b,a }
 end
 
+local function _onSpineAnimStop( anim )
+	return anim._effectNode:stop()
+end
+
 function EffectSpineSprite:onLoad( fxState )
 	local sprite = SpineSprite()
 	sprite:setSprite( self.spritePath )
@@ -116,7 +122,14 @@ function EffectSpineSprite:onLoad( fxState )
 	fxState:linkTransform( sprite.skeleton )
 	fxState:linkPartition( sprite.skeleton )
 	sprite.skeleton:setColor( unpack( self.color ) )
-	sprite:play( self.clip, self.mode )
+	sprite:setThrottle( self.throttle )
+	local animState = sprite:play( self.clip, self.mode )
+	animState._effectNode = self
+	animState:setListener( MOAITimer.EVENT_STOP, 
+		function()
+			fxState:removeActiveNode( self )
+		end
+	)
 	fxState[ self ] = sprite
 end
 

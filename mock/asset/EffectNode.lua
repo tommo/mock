@@ -89,6 +89,7 @@ function EffectNode:loadIntoState( state )
 	for i, child in pairs( self.children ) do
 		child:loadIntoState( state )
 	end
+	state:addActiveNode( self )
 end
 
 function EffectNode:onLoad( state )
@@ -283,6 +284,7 @@ function EffectState:__init( emitter, config )
 	self._trans  =  trans 
 	self._config = config
 	self._updateListeners = {}
+	self._activeNodes = {}
 
 	local root = config:getRootNode()
 	self._followEmitter = root.followEmitter
@@ -350,6 +352,26 @@ function EffectState:stop()
 	self.playing = false
 end
 
+function EffectState:_removeActiveNode( node, removeChildren )
+	self._activeNodes[ node ] = nil
+	if removeChildren then
+		for i, child in pairs( self.children ) do
+			self:_removeActiveNode( child, true )
+		end
+	end
+end
+
+function EffectState:removeActiveNode( node, removeChildren )
+	self:_removeActiveNode( node, removeChildren )
+	if not next( self._activeNodes ) then
+		return self:stop()
+	end
+end
+
+function EffectState:addActiveNode( node )
+	self._activeNodes[ node ] = true
+end
+
 function EffectState:addUpdateListener( node )
 	self._updateListeners[ node ] = true
 end
@@ -365,10 +387,11 @@ function EffectState:update( dt )
 	end
 	if self.duration then
 		if self.elapsed >= self.duration then
-			self:stop()
+			return self:stop()
 		end
-	end
+	end	
 end
+
 
 --------------------------------------------------------------------
 -- Asset Loader
