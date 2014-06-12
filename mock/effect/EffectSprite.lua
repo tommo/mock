@@ -124,13 +124,17 @@ function EffectSpineSprite:onLoad( fxState )
 	sprite.skeleton:setColor( unpack( self.color ) )
 	sprite:setThrottle( self.throttle )
 	local animState = sprite:play( self.clip, self.mode )
-	animState._effectNode = self
-	animState:setListener( MOAITimer.EVENT_STOP, 
-		function()
-			fxState:removeActiveNode( self )
-		end
-	)
 	fxState[ self ] = sprite
+	if animState then
+		animState._effectNode = self
+		animState:setListener( MOAITimer.EVENT_STOP, 
+			function()
+				fxState:removeActiveNode( self )
+			end
+		)
+	else
+		fxState:removeActiveNode( self )
+	end
 end
 
 function EffectSpineSprite:getClipNames()

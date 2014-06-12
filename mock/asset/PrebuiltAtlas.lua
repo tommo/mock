@@ -89,6 +89,17 @@ function PrebuiltAtlasPage:updateTexture( textureAtlasId, x, y, w, h )
 	--todo: other modifications/ size/ explosion...
 end
 
+function PrebuiltAtlasPage:rescale( scl )
+	self.w = self.w * scl
+	self.h = self.h * scl
+	for i, item in ipairs( self.items ) do
+		item.x = item.x*scl
+		item.y = item.y*scl
+		item.w = item.w*scl
+		item.h = item.h*scl
+	end
+end
+
 function PrebuiltAtlasPage:findItem( id )
 	for i, item in ipairs( self.items ) do
 		if item.name == id then return item end
@@ -138,6 +149,12 @@ function PrebuiltAtlas:affirmPage( id )
 		page = self.pages[ id ]
 	end
 	return page
+end
+
+function PrebuiltAtlas:rescale( scl )
+	for i, page in ipairs( self.pages ) do
+		page:rescale( scl )
+	end
 end
 
 function PrebuiltAtlas:load( path )
