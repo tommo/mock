@@ -108,7 +108,7 @@ function EventEffect:start( state, pos )
 		rz = - rz
 	end
 
-	em.prop:setLoc( target:modelToWorld ( x,y,z ) )
+	em.prop:setLoc( x,y,z )
 	em.prop:setRot( rx,ry,rz )
 	em.prop:setScl( sx,sy,sz )
 	em:start()
@@ -177,7 +177,9 @@ function TrackEffect:start( state )
 end
 
 function TrackEffect:stop( state )
-	local emitters = state.effectEmitters[ self ]
+	local emitterList = state.effectEmitters
+	if not emitterList then return end
+	local emitters = emitterList[ self ]
 	local ent = state.target:getEntity()
 	for em in pairs( emitters ) do
 		if em._entity then

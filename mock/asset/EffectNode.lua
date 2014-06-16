@@ -292,9 +292,11 @@ function EffectState:__init( emitter, config )
 		inheritTransform( trans, prop )
 	else
 		prop:forceUpdate()
+		-- inheritTransform( trans, prop )
 		trans:setLoc( prop:getWorldLoc() )
 		trans:setScl( prop:getScl() )
 		trans:setRot( prop:getRot() )
+		-- trans:setRot( prop:getWorldRot() )
 		trans:forceUpdate()
 	end
 	local duration = root.duration or -1
