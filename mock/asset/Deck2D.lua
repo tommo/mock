@@ -234,6 +234,7 @@ function QuadArray:createMoaiDeck()
 end
 
 function QuadArray:update()
+	if not self.texture then return end
 	local deck = self:getMoaiDeck()
 	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )

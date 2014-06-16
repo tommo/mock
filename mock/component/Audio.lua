@@ -158,6 +158,7 @@ function SoundSource:isBusy()
 end
 	
 function SoundSource:clearInstances()
+	if not self.eventInstances then return end
 	local t1 = {}
 	for evt, k in pairs( self.eventInstances ) do
 		if evt:isValid() then
