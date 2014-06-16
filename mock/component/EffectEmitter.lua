@@ -58,10 +58,13 @@ end
 
 function EffectEmitter:setMirrorX( mirror )
 	self.mirrorX = mirror
+	setSclX( self.prop, (mirror and -1) or 1 )
 end
 
 function EffectEmitter:setMirrorY( mirror )
 	self.mirrorY = mirror
+	setSclY( self.prop, (mirror and -1) or 1 )
+	
 end
 
 function EffectEmitter:start()
@@ -132,8 +135,8 @@ function EffectEmitter:onUpdate( dt )
 
 end
 
-function EffectEmitter:setDestroyOnStop( f )
-	self.destroyOnStop = false
+function EffectEmitter:setActionOnStop( f )
+	self.actionOnStop = f or 'default'
 end
 
 function EffectEmitter:setDuration( d )

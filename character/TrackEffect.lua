@@ -26,6 +26,8 @@ CLASS: EventEffect ( CharacterActionEvent )
 		Field 'loc' :type('vec3') :getset('Loc');
 		Field 'rot' :type('vec3') :getset('Rot');
 		Field 'scl' :type('vec3') :getset('Scl');
+		'----';
+		Field 'stopWithEvent' :boolean();
 	}
 
 function EventEffect:__init()
@@ -33,8 +35,9 @@ function EventEffect:__init()
 	self.loop   = false
 	self.effect = false
 	self.followSlot = false
-	self.spineSlot = false
-	self.transform = MOAITransform.new()
+	self.spineSlot  = false
+	self.transform  = MOAITransform.new()
+	self.stopWithEvent = true
 end
 
 function EventEffect:getSpineSlotList()
@@ -84,30 +87,39 @@ function EventEffect:start( state, pos )
 	if effect == '' then effect = nil end
 	if not self.effect then return end
 	local target = state.target
-	local ent = target:getEntity()	
+	local emEnt = target:getEntity()	
 	local em = mock.EffectEmitter()
-	ent:attachInternal( em )	
+	emEnt:attachInternal( em )	
 	local transform = self.transform
 	em:setEffect( self.effect )
-	local x,y,z = transform:getLoc()
+
+	local x,y,z    = transform:getLoc()
 	local rx,ry,rz = transform:getRot()
 	local sx,sy,sz = transform:getScl()
 	local kx = target.mirrorX and -1 or 1
 	local ky = target.mirrorY and -1 or 1
+	
 	sx = sx * kx
 	sy = sy * ky
 	x = x * kx
 	y = y * ky
+	
 	if kx * ky == -1 then
 		rz = - rz
 	end
+
 	em.prop:setLoc( target:modelToWorld ( x,y,z ) )
 	em.prop:setRot( rx,ry,rz )
-	em.prop:setScl( sx,sy,sz )	
+	em.prop:setScl( sx,sy,sz )
 	em:start()
 	local length = self.length/1000
 	em:setDuration( length )
-	em:setDestroyOnStop( true )
+	if self.stopWithEvent then
+		em:setActionOnStop( 'detach' )
+	else
+		em:setActionOnStop( 'none' )
+	end
+	state.effectEmitters[ self.parent ][ em ] = true
 end
 
 function EventEffect:toString()
@@ -151,6 +163,28 @@ end
 
 function TrackEffect:toString()
 	return '<fx>' .. tostring( self.name )
+end
+
+function TrackEffect:start( state )
+	--build MOAISpineAnimationTrack
+	local target      = state.target
+	local effectEmitters = state.effectEmitters
+	if not effectEmitters then 
+		effectEmitters = {}
+		state.effectEmitters = effectEmitters
+	end
+	effectEmitters[ self ] = {}
+end
+
+function TrackEffect:stop( state )
+	local emitters = state.effectEmitters[ self ]
+	local ent = state.target:getEntity()
+	for em in pairs( emitters ) do
+		if em._entity then
+			ent:detach( em )
+		end
+	end
+	state.effectEmitters[ self ] = nil
 end
 
 --------------------------------------------------------------------

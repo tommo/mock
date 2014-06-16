@@ -119,8 +119,10 @@ function EffectSpineSprite:onLoad( fxState )
 	sprite:setSprite( self.spritePath )
 	setPropBlend( sprite.skeleton, self.blend )
 	self:applyTransformToProp( sprite )
+	
 	fxState:linkTransform( sprite.skeleton )
 	fxState:linkPartition( sprite.skeleton )
+
 	sprite.skeleton:setColor( unpack( self.color ) )
 	sprite:setThrottle( self.throttle )
 	local animState = sprite:play( self.clip, self.mode )

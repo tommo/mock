@@ -293,8 +293,8 @@ function EffectState:__init( emitter, config )
 	else
 		prop:forceUpdate()
 		trans:setLoc( prop:getWorldLoc() )
-		trans:setScl( prop:getWorldScl() )
-		trans:setRot( 0,0, prop:getWorldRot() )
+		trans:setScl( prop:getScl() )
+		trans:setRot( prop:getRot() )
 		trans:forceUpdate()
 	end
 	local duration = root.duration or -1
@@ -305,6 +305,7 @@ function EffectState:__init( emitter, config )
 		self.duration = duration
 	end
 	self.playing = true
+
 end
 
 function EffectState:getTransformNode()

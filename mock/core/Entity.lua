@@ -258,6 +258,7 @@ function Entity:detach( com, fromAll )
 		end
 		if onDetach then onDetach( com, self ) end
 	end
+	com._entity = nil
 	return com
 end
 
