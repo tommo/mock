@@ -99,6 +99,21 @@ function linkLoc( p1, p2 )
 	p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_Z_LOC )
 end
 
+
+function linkWorldLoc( p1, p2 )
+	p1:setAttrLink( MOAIProp.ATTR_X_LOC, p2, MOAIProp.ATTR_WORLD_X_LOC )
+	p1:setAttrLink( MOAIProp.ATTR_Y_LOC, p2, MOAIProp.ATTR_WORLD_Y_LOC )
+	p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_WORLD_Z_LOC )
+end
+
+
+function linkWorldScl( p1, p2 )
+	p1:setAttrLink( MOAIProp.ATTR_X_SCL, p2, MOAIProp.ATTR_WORLD_X_SCL )
+	p1:setAttrLink( MOAIProp.ATTR_Y_SCL, p2, MOAIProp.ATTR_WORLD_Y_SCL )
+	p1:setAttrLink( MOAIProp.ATTR_Z_SCL, p2, MOAIProp.ATTR_WORLD_Z_SCL )
+end
+
+
 function linkPiv( p1, p2 )
 	p1:setAttrLink( MOAIProp.ATTR_X_PIV, p2, MOAIProp.ATTR_X_PIV )
 	p1:setAttrLink( MOAIProp.ATTR_Y_PIV, p2, MOAIProp.ATTR_Y_PIV )

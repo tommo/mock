@@ -97,6 +97,20 @@ function FSMController:pollMsg()
 	return nil
 end
 
+function FSMController:peekMsg( id )
+	id = id or 1
+	local m = self.msgBox[ id ]
+	if m then return m[1],m[2],m[3] end
+	return nil
+end
+
+function FSMController:hasMsgInBox( msg )
+	for i, m in ipairs( self.msgBox ) do
+		if m[1] == msg then return true end
+	end
+	return false
+end
+
 function FSMController:updateFSM( dt )
 	local func = self.currentStateFunc
 	if func then
