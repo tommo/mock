@@ -180,6 +180,7 @@ function TrackEffect:stop( state )
 	local emitterList = state.effectEmitters
 	if not emitterList then return end
 	local emitters = emitterList[ self ]
+	if not emitters then return end
 	local ent = state.target:getEntity()
 	for em in pairs( emitters ) do
 		if em._entity then
