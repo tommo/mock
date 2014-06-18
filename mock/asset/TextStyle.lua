@@ -123,7 +123,7 @@ function StyleSheet:addStyle()
 end
 
 function StyleSheet:removeStyle( s )
-	local idx = table.find( self.styles, s )
+	local idx = table.index( self.styles, s )
 	if idx then	table.remove( self.styles, idx ) end
 end
 

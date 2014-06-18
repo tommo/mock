@@ -49,7 +49,7 @@ function registerScreenProfile( p )
 end
 
 function unregisterScreenProfile( p )
-	local idx = table.find( _screenProfileRegistry, p )
+	local idx = table.index( _screenProfileRegistry, p )
 	if idx then table.remove( _screenProfileRegistry, idx ) end
 end
 

@@ -478,9 +478,16 @@ function table.weak_v( n )
 	return setmetatable( n or {}, weakVMT)
 end
 
-function table.find( t, v )
+function table.index( t, v )
 	for k, v1 in pairs( t ) do
 		if v1==v then return k end
+	end
+	return nil
+end
+
+function table.match( t, func )	
+	for k, v in pairs( t ) do
+		if func( k,v ) then return k, v end
 	end
 	return nil
 end

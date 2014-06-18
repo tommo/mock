@@ -467,7 +467,7 @@ function Deck2DPack:addDeck( name, dtype, src )
 end
 
 function Deck2DPack:removeDeck( deck )
-	local idx  = table.find( self.decks, deck )
+	local idx  = table.index( self.decks, deck )
 	if idx then table.remove( self.decks, idx ) end
 end
 

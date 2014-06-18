@@ -550,7 +550,7 @@ function Game:addLayer( name, addPos )
 end
 
 function Game:removeLayer( layer )
-	local i = table.find( self.layers, layer )
+	local i = table.index( self.layers, layer )
 	if not i then return end
 	table.remove( self.layers, i )
 end

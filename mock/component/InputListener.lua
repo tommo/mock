@@ -15,7 +15,7 @@ function installInputListener( self, option )
 	local joystickCallback = false
 	
 	local sensors = option['sensors'] or false
-	if not sensors or table.find( sensors, 'mouse' ) then
+	if not sensors or table.index( sensors, 'mouse' ) then
 		----MouseEvent
 		local onMouseEvent = self.onMouseEvent
 		local onMouseDown  = self.onMouseDown
@@ -53,7 +53,7 @@ function installInputListener( self, option )
 		end
 	end
 
-	if not sensors or table.find( sensors, 'touch' ) then
+	if not sensors or table.index( sensors, 'touch' ) then
 		----TouchEvent
 		local onTouchEvent  = self.onTouchEvent  
 		local onTouchDown   = self.onTouchDown
@@ -81,7 +81,7 @@ function installInputListener( self, option )
 	end
 
 	----KeyEvent
-	if not sensors or table.find( sensors, 'keyboard' ) then
+	if not sensors or table.index( sensors, 'keyboard' ) then
 		local onKeyEvent = self.onKeyEvent
 		local onKeyDown  = self.onKeyDown
 		local onKeyUp    = self.onKeyUp
@@ -102,7 +102,7 @@ function installInputListener( self, option )
 	end
 
 	---JOYSTICK EVNET
-	if not sensors or table.find( sensors, 'joystick' ) then
+	if not sensors or table.index( sensors, 'joystick' ) then
 		local onJoyButtonDown = self.onJoyButtonDown
 		local onJoyButtonUp   = self.onJoyButtonUp
 		local onJoyAxisMove   = self.onJoyAxisMove
