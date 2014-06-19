@@ -32,7 +32,7 @@ CLASS: EventEffect ( CharacterActionEvent )
 
 function EventEffect:__init()
 	self.name   = 'effect'
-	self.loop   = false
+	self.loop   = falsephong15
 	self.effect = false
 	self.followSlot = false
 	self.spineSlot  = false

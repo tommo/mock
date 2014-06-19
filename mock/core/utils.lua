@@ -376,10 +376,22 @@ function projectPointToLine( ax, ay, bx, by, px, py )
 end
 
 local sin=math.sin
-function wave(freq,min,max,off)
-	off=off or 0
-	return (sin(os.clock()*freq*(2*3.141592653)+off)*(max-min)+(min+max))/2
+function wave(freq,min,max,off,timeoff)
+	off     = off or 0
+	timeoff = timeoff or 0
+	local t = os.clock() + timeoff
+	return (sin( t *freq* (2*3.141592653) + off)*(max-min)+(min+max))/2
 end
+
+-- function wavefunc( freq, min, max, off )
+-- 	off = off or 0
+-- 	local t0 = os.clock()
+-- 	local f = function()
+-- 		local t = os.clock() + timeoff
+-- 		return ( sin( t * freq* ( 2 * 3.141592653 ) ) * (max-min)+(min+max))/2
+-- 	end
+-- 	return f
+-- end
 
 function inRange(x,y,diff)
 	local d=math.abs(x-y)
@@ -603,7 +615,7 @@ oneOf = _oneOf
 
 
 --------------TIME & DATE
-function formatSecs(s,hour) --return 'mm:ss'
+function formatSecs( s, hour ) --return 'mm:ss'
 	local m=math.floor(s/60)
 	local ss=s-m*60
 	if hour then

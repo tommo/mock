@@ -689,7 +689,7 @@ function Game:getUserDataPath( path )
 	return self.userDataPath .. '/' ..path
 end
 
-function Game:saveSettingData( filename, data )
+function Game:saveSettingData( data, filename )
 	local str  = encodeJSON( data )
 	local raw  = MOAIDataBuffer.deflate( str, 0 )
 	local file = io.open( self.userDataPath..'/'..filename, 'wb' )
@@ -699,7 +699,7 @@ function Game:saveSettingData( filename, data )
 	return true
 end
 
-function Game:loadSettingData(filename)
+function Game:loadSettingData( filename )
 	_stat( '...reading setting data from:', filename )
 	local file = io.open( self.userDataPath..'/'..filename, 'rb' )
 	if file then
@@ -711,6 +711,45 @@ function Game:loadSettingData(filename)
 	end
 end
 
+local function _getHash( raw, key )
+	local hashWriter = MOAIHashWriter.new()
+	hashWriter:openWhirlpool()
+	hashWriter:write( raw )
+	if key then hashWriter:write( key ) end
+	hashWriter:close()
+	local hash = hashWriter:getHash()
+	return hash
+end
+
+function Game:saveSafeSettingData( data, filename, key )
+	local str  = encodeJSON( data )
+	local raw  = MOAIDataBuffer.deflate( str )
+	local file = io.open( self.userDataPath..'/'..filename, 'wb' )
+	file:write( _getHash( raw, key ) )
+	file:write( raw )
+	file:close()
+	return true
+end
+
+function Game:loadSafeSettingData( filename, key )
+	_stat( '...reading setting data from:', filename )
+	local stream = MOAIFileStream.new()
+	local path = self.userDataPath..'/'..filename
+	if stream:open( path, MOAIFileStream.READ ) then
+		local hash = stream:read( 64 )
+		local raw  = stream:read()
+		local str  = MOAIDataBuffer.inflate( raw )
+		stream:close()
+		if not str then return nil end
+		local hash1 = _getHash( raw, key )
+		local match = hash == hash1
+		local data = MOAIJsonParser.decode( str )
+		return data, match
+	else
+		_warn( 'no file to open', path )
+		return nil
+	end
+end 
 -------------------------
 
 function Game:setDebugEnabled( enabled )
