@@ -544,6 +544,16 @@ function string.gsplit(s, sep, plain )
 	end
 end
 
+function string.split( s, sep, plain )
+	local result = {}
+	local i = 1
+	for p in string.gsplit( s, sep, plain ) do
+		result[ i ] = p
+		i = i + 1
+	end
+	return result
+end
+
 --------------------------------------------------------------------
 local autotableMT={
 	__index=function(t,k)
