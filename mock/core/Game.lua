@@ -689,6 +689,11 @@ function Game:getUserDataPath( path )
 	return self.userDataPath .. '/' ..path
 end
 
+function Game:checkSettingFileExists( path )
+	local fullPath = self:getUserDataPath( path )
+	return MOAIFileSystem.checkFileExists( fullPath )
+end
+
 function Game:saveSettingData( data, filename )
 	local str  = encodeJSON( data )
 	local raw  = MOAIDataBuffer.deflate( str, 0 )
@@ -740,7 +745,10 @@ function Game:loadSafeSettingData( filename, key )
 		local raw  = stream:read()
 		local str  = MOAIDataBuffer.inflate( raw )
 		stream:close()
-		if not str then return nil end
+		if not str then
+			_warn( 'cannot extract data', path )
+			return nil
+		end
 		local hash1 = _getHash( raw, key )
 		local match = hash == hash1
 		local data = MOAIJsonParser.decode( str )
