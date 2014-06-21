@@ -62,9 +62,16 @@ end
 
 function FSMController:__init()
 	self.msgBox = {}
+	local msgFilter = false
 	self.msgBoxListener = function( msg, data, source )
+		if msgFilter and msgFilter( msg,data,source ) == false then return end
 		return insert( self.msgBox, { msg, data, source } )
 	end
+	self._msgFilterSetter = function( f ) msgFilter = f end
+end
+
+function FSMController:setMsgFilter( func )
+	return self._msgFilterSetter( func )
 end
 
 function FSMController:onAttach( entity )
@@ -89,6 +96,10 @@ end
 
 function FSMController:clearMsgBox()
 	self.msgBox = {}
+end
+
+function FSMController:pushTopMsg( msg, data, source )
+	insert( self.msgBox, 1, { msg, data, source } )
 end
 
 function FSMController:pollMsg()
