@@ -141,14 +141,13 @@ LOG = MOAILogMgr.log
 function grabNextFrame( filepath, frameBuffer )
 	local image = MOAIImage.new()
 	frameBuffer = frameBuffer or MOAIGfxDevice.getFrameBuffer()
-	frameBuffer:grabNextFrame(image,
+	frameBuffer:grabNextFrame(
+		image,
 		function()
-			
-			local w,h=image:getSize()
-			local setRGBA=image.setRGBA
-			local getRGBA=image.getRGBA
-
-			-- io.write('postprocessing...')
+			local w,h = image:getSize()
+			local setRGBA = image.setRGBA
+			local getRGBA = image.getRGBA
+			io.write('postprocessing...')
 			for y=1,h do
 				for x=1,w do
 					local r,g,b,a=getRGBA(image,x,y)
@@ -156,7 +155,7 @@ function grabNextFrame( filepath, frameBuffer )
 				end
 			end
 			image:writePNG(filepath)
-			-- io.write('saved:   ',filepath,'\n')
+			io.write('saved:   ',filepath,'\n')
 		end)
 end
 
