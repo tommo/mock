@@ -173,3 +173,32 @@ end
 function decodeJSON( data ) --included default flags
 	return MOAIJsonParser.decode( data )
 end
+
+
+
+--------------------------------------------------------------------
+----extract all easetype constant to global env?
+--------------------------------------------------------------------
+
+EASE_IN        = MOAIEaseType.EASE_IN
+EASE_OUT       = MOAIEaseType.EASE_OUT
+FLAT           = MOAIEaseType.FLAT
+LINEAR         = MOAIEaseType.LINEAR
+SHARP_EASE_IN  = MOAIEaseType.SHARP_EASE_IN
+SHARP_EASE_OUT = MOAIEaseType.SHARP_EASE_OUT
+SHARP_SMOOTH   = MOAIEaseType.SHARP_SMOOTH
+SMOOTH         = MOAIEaseType.SMOOTH
+SOFT_EASE_IN   = MOAIEaseType.SOFT_EASE_IN
+SOFT_EASE_OUT  = MOAIEaseType.SOFT_EASE_OUT
+SOFT_SMOOTH    = MOAIEaseType.SOFT_SMOOTH
+BACK_IN        = MOAIEaseType.BACK_IN
+BACK_OUT       = MOAIEaseType.BACK_OUT
+BACK_SMOOTH    = MOAIEaseType.BACK_SMOOTH
+ELASTIC_IN     = MOAIEaseType.ELASTIC_IN
+ELASTIC_OUT    = MOAIEaseType.ELASTIC_OUT
+ELASTIC_SMOOTH = MOAIEaseType.ELASTIC_SMOOTH
+BOUNCE_IN      = MOAIEaseType.BOUNCE_IN
+BOUNCE_OUT     = MOAIEaseType.BOUNCE_OUT
+BOUNCE_SMOOTH  = MOAIEaseType.BOUNCE_SMOOTH
+
+--------------------------------------------------------------------
