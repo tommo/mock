@@ -15,6 +15,8 @@ CLASS: Entity ( Actor )
 		----
 		Field 'name'      :string()  :getset('Name');
 		'----';
+		Field 'tags'      :string()  :getset('Tags');
+		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
 		Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
 		Field 'layer'     :type('layer')  :getset( 'Layer' ) :no_nil();
@@ -136,7 +138,6 @@ function Entity:destroy()
 			entitiesByName[ self.name ] = nil
 		end
 	end
-
 end
 
 function Entity:destroyLater( delay )
@@ -342,10 +343,6 @@ function Entity:_attachTransform( t )
 	return t
 end
 
--- function Entity:_detachTransform( t )
---
--- end
-
 function Entity:_attachLoc( t )
 	local _prop = self._prop
 	inheritLoc( t, _prop )
@@ -546,6 +543,19 @@ function Entity:setLayer( layerName )
 	else
 		self.layer = layerName --insert later
 	end
+end
+
+function Entity:setTags( t )
+	self._tags = t
+end
+
+function Entity:getTags()
+	return self._tags
+end
+
+function Entity:hasTag( t )
+	if not self._tags then return false end
+	return self._tags:find( t )
 end
 
 --------------------------------------------------------------------

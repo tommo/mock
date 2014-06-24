@@ -274,4 +274,5 @@ local function sceneLoader( node, option )
 	return scn, false --no cache
 end
 
+
 registerAssetLoader( 'scene', sceneLoader )
