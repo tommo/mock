@@ -22,6 +22,7 @@ function Character:__init()
 	self.mirrorY     = false
 
 	self.actionEventCallbacks = false
+	self.pendingActions = false
 end
 
 --------------------------------------------------------------------
@@ -124,7 +125,14 @@ end
 
 function Character:playAction( name )
 	local state = self:setAction( name )
+	self.pendingActions = false
 	if state then	state:start()	end
+	return state
+end
+
+function Character:playActionSequence( first, ... )
+	local state = self:playAction( first )
+	self.pendingActions = { ... }
 	return state
 end
 
@@ -210,11 +218,24 @@ end
 
 --------------------------------------------------------------------
 function Character:processStateEvent( evtype, timesExecuted )	
+	if evtype == 'stop' then
+		if self.pendingActions then
+			local nextAction = table.remove( self.pendingActions, 1 )
+			if nextAction then
+				local state = self:setAction( nextAction )
+				if state then	state:start()	end
+			else
+				self.pendingActions = false
+			end
+		end
+	end
+
 	if self.stateEventCallbacks then
 		for i, callback in ipairs( self.stateEventCallbacks ) do
 			callback( self, evtype, timesExecuted )
 		end
 	end
+
 end
 
 function Character:addStateEventCallback( cb )
