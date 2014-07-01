@@ -29,6 +29,18 @@ function buildAttrAnim( prop, attr, keys, animMode, asDelta )
 	return anim, curve
 end
 
+function buildMultiAttrAnim( prop, attrs, keys, animMode, asDelta )
+	local curve = buildAnimCurve( keys )	
+	local anim = MOAIAnim.new()
+	anim:setMode( animMode or MOAITimer.NORMAL )	
+	local count = #attrs
+	anim:reserveLinks( count )
+	for i, attr in ipairs( attrs ) do
+		anim:setLink( i, curve, prop, attr, asDelta )
+	end
+	return anim, curve
+end
+
 function buildSimpleRotationAnim( prop, from, to, duration, easeMode, animMode, asDelta )
 	easeMode = easeMode or MOAIEaseType.LINEAR
 	return buildAttrAnim(
