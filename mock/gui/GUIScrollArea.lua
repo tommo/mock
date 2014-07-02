@@ -144,6 +144,10 @@ function GUIScrollArea:setScrollSize( w, h )
 	self.scrollW, self.scrollH = w, h
 end
 
+-- function GUIScrollArea:expandScrollSize( w, h )
+-- 	if self.scrollW 
+-- end
+
 function GUIScrollArea:isScrolling()
 	local vx, vy = self.speedScrollX, self.speedScrollY
 	return vx*vx >= 1 or vy*vy >= 1
