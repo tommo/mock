@@ -25,6 +25,14 @@ CLASS: EffectStaticSprite ( EffectTransformNode )
 		Field 'blend' :enum( EnumBlendMode );
 	}
 
+function EffectStaticSprite:getDefaultName()
+	return 'sprite'
+end
+
+function EffectStaticSprite:getTypeName()
+	return 'sprite'
+end
+
 function EffectStaticSprite:onLoad( fxState )
 	local sprite = MOAIProp.new()
 	local deck = loadAsset( self.deck )
@@ -54,6 +62,14 @@ function EffectAuroraSprite:__init()
 	self.blend = 'alpha'
 	self.mode  = MOAITimer.NORMAL
 	self.FPS   = 10
+end
+
+function EffectAuroraSprite:getDefaultName()
+	return 'aurora'
+end
+
+function EffectAuroraSprite:getTypeName()
+	return 'aurora'
 end
 
 function EffectAuroraSprite:onLoad( fxState )
@@ -101,6 +117,16 @@ function EffectSpineSprite:__init()
 	self.color = { 1,1,1,1 }
 	self.throttle = 1
 end
+
+
+function EffectSpineSprite:getDefaultName()
+	return 'spine'
+end
+
+function EffectSpineSprite:getTypeName()
+	return 'spine'
+end
+
 
 function EffectSpineSprite:getColor()
 	return unpack( self.color )

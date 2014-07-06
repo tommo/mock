@@ -306,9 +306,9 @@ function EffectState:__init( emitter, config )
 	else
 		self.duration = duration
 	end
-	self.playing = true
 	self.timer = MOAITimer.new()
 	self.timer:setMode( MOAITimer.CONTINUE )
+	self.timer:start()
 
 end
 
@@ -363,19 +363,12 @@ function EffectState:getEffectConfig()
 	return self._config
 end
 
-local k = 0
-function EffectState:start()
-	self.playing = true
-	self.timer:start()
-	-- print( "timer start", k )
-	-- k = k + 1
+function EffectState:isPlaying()
+	return self.timer:isBusy()
 end
 
-function EffectState:stop()
-	self.playing = false
+function EffectState:stop()	
 	self.timer:stop()
-	-- print( "timer stop", k  )
-	-- k = k - 1
 end
 
 function EffectState:_removeActiveNode( node, removeChildren )

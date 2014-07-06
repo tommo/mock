@@ -117,14 +117,12 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	for i, node in pairs( emitterNodes ) do
 		local em = node:buildEmitter()
 		em:setSystem( system )
-		fxState:attachAction( em )
 		emitters[ i ] = em
 		fxState[ node ] = em
 	end
 
 	fxState[ self ] = system
-	fxState:attachAction( system )
-
+		
 	return system, emitters, forces
 end
 
@@ -132,9 +130,16 @@ function EffectNodeParticleSystem:onLoad( fxState )
 	local system, emitters, forces = self:buildSystem( nil, fxState )	
 	fxState:linkPartition( system )
 	fxState:linkVisible( system )
+
+	for _,em in pairs( emitters ) do
+		fxState:attachAction( em )
+	end
+	fxState:attachAction( system )
+		
 	if self.syncTransform then --attach system only
 		fxState:linkTransform( system )
 	else --attach emitter/forces only
+		--TODO: need rotation/scale
 		for _,em in pairs( emitters ) do
 			fxState:linkTransform( em )
 		end

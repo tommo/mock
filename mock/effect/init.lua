@@ -6,3 +6,5 @@ require 'mock.effect.EffectColor'
 require 'mock.effect.EffectSprite'
 require 'mock.effect.EffectParticleSystem'
 
+--------------------------------------------------------------------
+require 'mock.effect.EffectSubEffect'

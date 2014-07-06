@@ -73,7 +73,6 @@ function EffectEmitter:start()
 	
 	local state = EffectState( self, self.effectConfig )
 	self.effectConfig:loadIntoState( state )
-	state:start()
 	self.activeStates[ state ] = true
 	self.time0 = os.clock()
 	if self.duration then
@@ -113,7 +112,7 @@ function EffectEmitter:onUpdate( dt )
 	local stopped = false
 	for state in pairs( self.activeStates ) do
 		state:update( dt )
-		if not state.playing then
+		if not state:isPlaying() then
 			stopped = stopped or {}
 			stopped[ state ] = true
 		end

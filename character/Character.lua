@@ -17,6 +17,7 @@ function Character:__init()
 	self.spineSprite = mock.SpineSprite()	
 	self.soundSource = mock.SoundSource()
 	self.throttle    = 1
+	self.scale       = 1
 	self.params      = {}
 	self.mirrorX     = false
 	self.mirrorY     = false
@@ -48,26 +49,30 @@ function Character:updateConfig()
 	if not config then return end
 	local path = config:getSpine()
 	self.spineSprite:setSprite( path )
+	self.scale = config.scale
 	local sk = self.spineSprite.skeleton
 	if sk then
-		setSclX( sk, self.mirrorX and -1 or 1 )
-		setSclY( sk, self.mirrorY and -1 or 1 )
+		local scale = self.scale
+		setSclX( sk, self.mirrorX and -scale or scale )
+		setSclY( sk, self.mirrorY and -scale or scale )
 	end
 end
 
 function Character:setMirrorX( mirror )
+	local scale = self.scale
 	self.mirrorX = mirror
 	local skeleton = self.spineSprite.skeleton
 	if skeleton then
-		setSclX( skeleton, mirror and -1 or 1 )
+		setSclX( skeleton, mirror and -scale or scale )
 	end
 end
 
 function Character:setMirrorY( mirror )
+	local scale = self.scale
 	self.mirrorY = mirror
 	local skeleton = self.spineSprite.skeleton
 	if skeleton then
-		setSclY( skeleton, mirror and -1 or 1 )
+		setSclY( skeleton, mirror and -scale or scale )
 	end
 end
 

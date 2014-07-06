@@ -348,6 +348,8 @@ CharacterConfig	:MODEL{
 		Field 'spine'   :asset('spine') :getset('Spine');
 		Field 'simpleSkeleton'  :boolean();
 		'----';
+		Field 'scale';
+		'----';
 		Field 'actions' :array( CharacterAction ) :no_edit();		
 		Field 'baseCharacter' :asset( 'character' );
 	}
@@ -357,6 +359,7 @@ function CharacterConfig:__init()
 	self.baseCharacter = false
 	self.actions = {}
 	self.simpleSkeleton = false
+	self.scale   = 1
 end
 
 function CharacterConfig:getSpine()
