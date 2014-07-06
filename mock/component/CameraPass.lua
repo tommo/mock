@@ -91,8 +91,14 @@ function CameraManager:update()
 	end
 
 	for context, renderData in pairs( contextMap ) do
-		game:setRenderStack( context, renderData.deviceRenderTable, renderData.bufferTable, renderData.renderTableMap )		
+		game:setRenderStack(
+			context,
+			renderData.deviceRenderTable,
+			renderData.bufferTable,
+			renderData.renderTableMap
+		)
 	end
+
 end
 
 function CameraManager:_buildBufferTable( passQueue )
@@ -111,7 +117,6 @@ function CameraManager:_buildBufferTable( passQueue )
 	--collect batches
 	for i, entry in ipairs( passQueue ) do
 		local tag = entry.tag
-
 		if tag == 'buffer' then
 			local fb = entry.framebuffer or deviceBuffer
 			local option = entry.option or defaultOptions
@@ -127,6 +132,7 @@ function CameraManager:_buildBufferTable( passQueue )
 				currentFB     = fb
 				currentOption = option
 			end
+
 		elseif tag == 'layer' then
 			if not currentBatch then
 				currentBatch = {}
@@ -145,15 +151,15 @@ function CameraManager:_buildBufferTable( passQueue )
 	end
 
 	--
-	local bufferTable    = {}
 	local innerContainer = {}
 	local batchCount  = #bufferInfoTable
+	
 	local id = 0
-
 	local function switchBatch()
-		if batchCount==0 then return end
+		if batchCount == 0 then return end
 		id = id + 1
 		if id > batchCount then id = 1 end
+
 		local info = bufferInfoTable[ id ]
 		local fb   = info.buffer
 		--batch
@@ -175,7 +181,6 @@ function CameraManager:_buildBufferTable( passQueue )
 		--switcher,
 		buildCallbackLayer( switchBatch ),
 	}
-
 	local resultRenderTableMap = {}
 	for i, entry in ipairs( bufferInfoTable ) do
 		local buffer = entry.buffer		
@@ -285,7 +290,6 @@ function CameraPass:clearFramebuffers()
 	end
 	self.framebuffers = {}
 end
-
 
 local function _convertFilter( filter, mipmap )
 	local output
@@ -410,7 +414,7 @@ function CameraPass:buildCallbackRenderLayer( func )
 	local dummyDeck = MOAIScriptDeck.new()
 	dummyProp:setDeck( dummyDeck )
 	dummyDeck:setDrawCallback( func )
-	dummyDeck:setRect(-10000,-10000,10000,10000)
+	dummyDeck:setRect( -10000, -10000, 10000, 10000 )
 	layer:insertProp( dummyProp )
 	return layer
 end
@@ -427,9 +431,9 @@ function CameraPass:pushSceneRenderPass( framebuffer, option )
 	for id, sceneLayer in ipairs( scene.layers ) do
 		local name  = sceneLayer.name
 		local p = self:buildSceneLayerRenderLayer( sceneLayer )
-
 		self:pushRenderLayer( p )
 	end
+
 end
 
 --------------------------------------------------------------------

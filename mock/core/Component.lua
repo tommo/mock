@@ -149,70 +149,38 @@ end
 ---------coroutine control
 --------------------------------------------------------------------
 
-local function coroutineFunc( coroutines, coro, func, ...)
-	func( ... )
-	coroutines[ coro ] = nil  --automatically remove self from thread list
-end
-
-function Component:_addCoroutine( defaultParent, func, ... )
-
-	local coro=MOAICoroutine.new()
-	if defaultParent then
-		coro:setDefaultParent( true )
-	end
+local _WEAKMT = { __mode = 'kv' }
+function Component:_weakHoldCoroutine( coro )
 	local coroutines = self.coroutines
 	if not coroutines then
-		coroutines = {}
+		coroutines = setmetatable( {}, _WEAKMT )
 		self.coroutines = coroutines
 	end
-	local tt = type( func )
-	if tt == 'string' then --method name
-		local _func = self[ func ]
-		assert( type(_func) == 'function' , 'method not found:'..func )
-		coro:run( coroutineFunc,
-			coroutines, coro, _func, self,
-			...)
-	elseif tt=='function' then --function
-		coro:run( coroutineFunc,
-			coroutines, coro, func,
-			...)
-	else
-		error('unknown coroutine func type:'..tt)
-	end
-
 	coroutines[coro] = true
-	return coro
+	return coro	
 end
 
 function Component:addCoroutine( func, ... )
-	return self:_addCoroutine( false, func, ... )
+	local coro = self._entity:addCoroutineFor( self, func, ... )
+	return self:_weakHoldCoroutine( coro )
 end
 
 function Component:addCoroutineP( func, ... )
-	return self:_addCoroutine( true, func, ... )
+	local coro = self._entity:addCoroutinePFor( self, func, ... )
+	return self:_weakHoldCoroutine( coro )
 end
 
-
-local function _coroDaemon( self, f, ... )
-	local inner = self:addCoroutine( f, ... )
-	while not inner:isDone() do
-		coroutine.yield()
-	end
+function Component:addDaemonCoroutine( func, ... )
+	local coro = self._entity:addDaemonCoroutineFor( self, func, ... )
+	return self:_weakHoldCoroutine( coro )
 end
-
-function Component:addDaemonCoroutine( f, ... )
-	local daemon = MOAICoroutine.new()
-	daemon:setDefaultParent( true )
-	daemon:run( _coroDaemon, self, f, ... )
-	return daemon
-end
-
 
 function Component:clearCoroutines()
-	if not self.coroutines  then return end
+	if not self.coroutines then return end
 	for coro in pairs( self.coroutines ) do
 		coro:stop()
 	end
+	self.coroutines = nil
 end
 
 --------------------------------------------------------------------

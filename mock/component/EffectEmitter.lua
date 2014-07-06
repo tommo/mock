@@ -73,7 +73,7 @@ function EffectEmitter:start()
 	
 	local state = EffectState( self, self.effectConfig )
 	self.effectConfig:loadIntoState( state )
-	--state:start()
+	state:start()
 	self.activeStates[ state ] = true
 	self.time0 = os.clock()
 	if self.duration then

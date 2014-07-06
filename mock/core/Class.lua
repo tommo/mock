@@ -33,9 +33,9 @@ local rawget, rawset = rawget, rawset
 local newClass
 local separatorField
 local globalClassRegistry = {}
-local tracingObjectAllocation = true
+local tracingObjectAllocation      = false
 local tracingObjectAllocationStack = false
-local tracingObjectTable = setmetatable( {}, { __mode = 'k' } )
+local tracingObjectTable = setmetatable( {}, { __mode = 'kv' } )
 
 local reservedMembers = {
 	['__init']  = true,
@@ -56,7 +56,7 @@ function getTracingObjectCount()
 	return table.len( tracingObjectTable )
 end
 
-function reportTracingObject( ignoreMockObject )
+function reportTracingObject( filter, ignoreMockObject )
 	local objectCounts = {}
 	for o in pairs( tracingObjectTable ) do
 		local name = o:getClassFullName() or '<unknown>'
@@ -64,19 +64,23 @@ function reportTracingObject( ignoreMockObject )
 			--do nothing
 		elseif name == 'Model' or name == 'Field' then
 			--do nothing
-		else
-			objectCounts[ name ] = ( objectCounts[ name ] or 0 ) + 1
+		elseif not filter or ( name:find( filter ) ) then
+				objectCounts[ name ] = ( objectCounts[ name ] or 0 ) + 1
 		end
 	end
+
+	local total  = 0
 	local output = {}
 	for name, count in pairs( objectCounts ) do
 		table.insert( output, { name, count } )
 	end
 	table.sort( output, function( i1, i2 ) return i1[1] < i2[1] end )
-
+	print( '--------' )
 	for i, item in ipairs( output ) do
 		print( string.format( '%9d\t%s',item[2], item[1] ) )
+		total = total + item[2]
 	end
+	print( '-- total objects:', total )
 
 end
 

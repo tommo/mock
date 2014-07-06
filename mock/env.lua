@@ -36,6 +36,8 @@ end
 
 module( 'mock.env', package.seeall )
 
+print( 'LUA Version:', _VERSION )
+
 require 'mock.core'
 --------------------------------------------------------------------
 require 'mock.task.basic'

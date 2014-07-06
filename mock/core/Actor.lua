@@ -187,73 +187,80 @@ end
 -- end
 
 ---------coroutine control
-local function _coroutineWrapperFunc( coroutines, coro, func, ...)
-	func( ... )
-	coroutines[ coro ] = nil  --automatically remove self from thread list
-	--TODO: push to cache
+local function _coroutineMethodWrapper( func, obj, ... )
+	return func( obj, ... )
 	-- coroutineCache:push( coro )
 end
 
-function setActorCoroutineWrapper( f )
-	_coroutineWrapperFunc = f
+local _WEAKMT = { __mode = 'kv' }
+function Actor:_weakHoldCoroutine( coro )
+	local coroutines = self.coroutines
+	if not coroutines then
+		coroutines = setmetatable( {}, _WEAKMT )
+		self.coroutines = coroutines
+	end
+	coroutines[coro] = true
+	return coro	
 end
 
 --------------------------------------------------------------------
-function Actor:_createCoroutine( defaultParent, func, ... )
-	local coro = MOAICoroutine.new()
-	local coroutines = self.coroutines
-	if not coroutines then
-		coroutines = {}
-		self.coroutines = coroutines
-	end
+function Actor:_createCoroutine( defaultParent, func, obj, ... )
+	local coro = MOAICoroutine.new()	
 	if defaultParent then coro:setDefaultParent( defaultParent ) end
 	local tt = type( func )
 	if tt == 'string' then --method name
-		local _func = self[ func ]
+		local _func = obj[ func ]
 		assert( type(_func) == 'function' , 'method not found:'..func )
-		coro:run( _coroutineWrapperFunc,
-			coroutines, coro, _func, self,
-			...)
+		coro:run( _coroutineMethodWrapper, _func, obj, ... )
 	elseif tt=='function' then --function
-		coro:run( _coroutineWrapperFunc,
-			coroutines, coro, func,
-			...)
+		coro:run( func, ... )
 	else
 		error('unknown coroutine func type:'..tt)
 	end
 
-	coroutines[coro] = true
-	return coro
+	return self:_weakHoldCoroutine( coro )
 end
 
 function Actor:addCoroutineP( func, ... )
-	return self:_createCoroutine( true, func, ... )
+	return self:addCoroutinePFor( self, func, ... )
 end
 
 function Actor:addCoroutine( func, ... )
-	return self:_createCoroutine( false, func, ... )
+	return self:addCoroutineFor( self, func, ... )
 end
 
-local function _coroDaemon( self, f, ... )
-	local inner = self:addCoroutine( f, ... )
+function Actor:addCoroutinePFor( obj, func, ... )
+	return self:_createCoroutine( true, func, obj, ... )
+end
+
+function Actor:addCoroutineFor( obj, func, ... )
+	return self:_createCoroutine( false, func, obj, ... )
+end
+
+local function _coroDaemon( self, obj, f, ... )
+	local inner = self:addCoroutineFor( obj, f, ... )
 	while not inner:isDone() do
 		coroutine.yield()
 	end
 end
 
 function Actor:addDaemonCoroutine( f, ... )
-	local daemon = MOAICoroutine.new()
-	daemon:setDefaultParent( true )
-	daemon:run( _coroDaemon, self, f, ... )
-	return daemon
+	return self:addDaemonCoroutineFor( self, f, ... )	
 end
 
+function Actor:addDaemonCoroutineFor( obj, f, ... )
+	local daemon = MOAICoroutine.new()
+	daemon:setDefaultParent( true )
+	daemon:run( _coroDaemon, self, obj, f, ... )
+	return self:_weakHoldCoroutine( daemon )
+end
 
 function Actor:clearCoroutines()
-	if not self.coroutines  then return end
+	if not self.coroutines then return end
 	for coro in pairs( self.coroutines ) do
 		coro:stop()
 	end
+	self.coroutines = nil
 end
 
 ----------state control

@@ -117,13 +117,14 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	for i, node in pairs( emitterNodes ) do
 		local em = node:buildEmitter()
 		em:setSystem( system )
-		em:start()
+		fxState:attachAction( em )
 		emitters[ i ] = em
 		fxState[ node ] = em
 	end
 
 	fxState[ self ] = system
-	system:start()
+	fxState:attachAction( system )
+
 	return system, emitters, forces
 end
 

@@ -307,6 +307,8 @@ function EffectState:__init( emitter, config )
 		self.duration = duration
 	end
 	self.playing = true
+	self.timer = MOAITimer.new()
+	self.timer:setMode( MOAITimer.CONTINUE )
 
 end
 
@@ -329,30 +331,51 @@ end
 function EffectState:linkTransform( trans )
 	inheritTransform( trans, self._trans )	
 	trans:forceUpdate()
+	return trans
 end
 
 function EffectState:linkPartition( prop )
 	inheritPartition( prop, self._emitterProp )
+	return prop
 end
 
 function EffectState:linkVisible( prop )
 	inheritVisible( prop, self._emitterProp )
+	return prop
 end
 
 function EffectState:linkColor( prop )
 	inheritColor( prop, self._emitterProp )
+	return prop
 end
+
+function EffectState:getTimer()
+	return self.timer
+end
+
+function EffectState:attachAction( action )
+	self.timer:addChild( action )
+	return action
+end
+
 
 function EffectState:getEffectConfig()
 	return self._config
 end
 
+local k = 0
 function EffectState:start()
 	self.playing = true
+	self.timer:start()
+	-- print( "timer start", k )
+	-- k = k + 1
 end
 
 function EffectState:stop()
 	self.playing = false
+	self.timer:stop()
+	-- print( "timer stop", k  )
+	-- k = k - 1
 end
 
 function EffectState:_removeActiveNode( node, removeChildren )

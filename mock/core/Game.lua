@@ -505,8 +505,7 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	mainScene.assetPath = scnPath
 	--todo: previous scene
 	scn.arguments = args
-	scn:flushPendingStart()
-	return scn
+	return scn:flushPendingStart()
 end
 
 function Game:scheduleOpenSceneByPath( scnPath, additive, arguments )
@@ -859,7 +858,7 @@ function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTab
 
 	if context == self.currentRenderContext then
 		for framebuffer, renderTable in pairs( renderTableMap ) do
-			framebuffer:setRenderTable( renderTable )
+			framebuffer:setRenderTable( renderTable )		
 		end
 		if deviceRenderTable then
 			MOAIGfxDevice.getFrameBuffer():setRenderTable( deviceRenderTable )	

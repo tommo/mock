@@ -50,10 +50,13 @@ function DebugHelper:reportUsage()
 	print('Memory:')
 	table.foreach(MOAISim.getMemoryUsage(),print)
 	print('--------')
-	for k,s in pairs(self.scenes) do
-		local count=table.len(s.objects)
-		if count>0 then
-			printf('Object in scene "%s": %d',s.name,count)
+
+	if game.scenes then
+		for k,s in pairs( game.scenes ) do
+			local count=table.len(s.objects)
+			if count>0 then
+				printf('Object in scene "%s": %d',s.name,count)
+			end
 		end
 	end
 	print('--------')
@@ -143,3 +146,30 @@ function Profiler:writeReport( path )
 	self.ProFi:writeReport( path )
 end
 
+
+
+--------------------------------------------------------------------
+local tracingCoroutines = setmetatable( {}, { __mode = 'kv' } )
+function _reportTracingCoroutines()
+	local count = {}
+	local countActive = {}
+	for coro, tb in pairs( tracingCoroutines ) do
+		count[ tb ] = ( count[ tb ] or 0 ) + 1
+		if coro:isBusy() then
+			countActive[ tb ] = ( countActive[ tb ] or 0 ) + 1
+		end
+	end
+	for tb, c in pairs( count ) do
+		if c > 1 then
+			print( '------CORO COUNT:', c, countActive[ tb ] )
+			print( tb )
+		end
+	end
+end
+
+local oldNew = MOAICoroutine.new
+MOAICoroutine.new = function( ... )
+	local coro = oldNew( ... )
+	tracingCoroutines[ coro ] = debug.traceback( 3 )
+	return coro
+end
