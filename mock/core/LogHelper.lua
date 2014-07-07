@@ -22,9 +22,12 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
+
+
 --------------------------------------------------------------------
 local DebugHelper = mock.DebugHelper
-_codemark=function(s,...) return DebugHelper:setCodeMark(s,...) end
+_codemark = function(s,...) return DebugHelper:setCodeMark(s,...) end
+--------------------------------------------------------------------
 
 local startTimePoints={}
 function _logtime(name)

@@ -130,15 +130,14 @@ function GameCenterHelper:login()
 	local function onAchievementReady(errorcode)
 		if not errorcode then 
 			self.achievements=MOAIGameCenterIOS.getAchievements()
-			-- print('achievements ready')
-			-- table.print(self.achievements)
+			_stat( 'achievements ready' )
 			return emitSignal('gamecenter.achievement.ready')
 		end
 	end
-	-- print('Login Gamecenter')
+	_stat( 'logging into Gamecenter...' )
 
-	MOAIGameCenterIOS.setAchievementReadyCallback(onAchievementReady)
-	MOAIGameCenterIOS.authenticatePlayer(onAuthenticate)
+	MOAIGameCenterIOS.setAchievementReadyCallback( onAchievementReady )
+	MOAIGameCenterIOS.authenticatePlayer( onAuthenticate )
 	
 end
 
@@ -164,7 +163,7 @@ function GameCenterHelper:threadSync()
 			local a=table.remove(self.reportAchievementQueue,1) or false
 			if a then
 				self.reportingAchievement=a
-				print('reporting:',a.name,a.progress)
+				_stat( 'reporting achievements to Game Center:', a.name, a.progress )
 				MOAIGameCenterIOS.reportAchievementProgress(a.name,a.progress)
 			end
 		end
@@ -173,7 +172,7 @@ function GameCenterHelper:threadSync()
 			local r=table.remove(self.reportScoreQueue,1) or false
 			if r then 
 				self.reportingScore=r
-				print('reporting:',r.boardID,r.score)
+				_stat( 'reporting score to Game Center:', r.boardID, r.score )
 				MOAIGameCenterIOS.reportScore(r.score,r.boardID)
 			end
 		end

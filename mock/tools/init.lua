@@ -9,7 +9,7 @@ require 'mock.tools.JoystickConfig'
 --Stat
 require 'mock.tools.Stat'
 -- require 'mock.tools.Analytic'
--- require 'mock.tools.AchievementBase'
+require 'mock.tools.Achievement'
 -- require 'mock.tools.HighscoreTable'
 
 --------------------------------------------------------------------
