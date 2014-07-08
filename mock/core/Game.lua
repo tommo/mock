@@ -230,22 +230,6 @@ function Game:init( option, fromEditor )
 		end
 	)
 
-	MOAISim.clearLoopFlags()
-	MOAISim.setLoopFlags( 
-			0
-			-- + MOAISim.LOOP_FLAGS_MULTISTEP
-			+ MOAISim.LOOP_FLAGS_DEFAULT
-			-- + MOAISim.LOOP_FLAGS_SOAK
-			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
-			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
-			
-			-- + MOAISim.SIM_LOOP_FORCE_STEP
-			-- + MOAISim.SIM_LOOP_NO_DEFICIT
-			-- + MOAISim.SIM_LOOP_NO_SURPLUS
-		)
-	-- MOAISim.setLongDelayThreshold( 100 )
-	-- MOAISim.setBoostThreshold( 3 )	
-	-- MOAISim.setStepMultiplier( 2 )	
 
 	self.actionRoot = actionRoot
 	self:setThrottle( 1 )
@@ -282,8 +266,26 @@ function Game:init( option, fromEditor )
 
 	----extra
 	_stat( '...extra init' )
-	collectgarbage( 'setpause',   70  )
-	collectgarbage( 'setstepmul', 150 )	
+	-- collectgarbage( 'setpause',   70  )
+	-- collectgarbage( 'setstepmul', 150 )	
+
+	MOAISim.clearLoopFlags()
+	MOAISim.setLoopFlags( 
+			0
+			-- + MOAISim.LOOP_FLAGS_MULTISTEP
+			+ MOAISim.LOOP_FLAGS_DEFAULT
+			-- + MOAISim.LOOP_FLAGS_SOAK
+			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
+			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
+			
+			-- + MOAISim.SIM_LOOP_FORCE_STEP
+			-- + MOAISim.SIM_LOOP_NO_DEFICIT
+			-- + MOAISim.SIM_LOOP_NO_SURPLUS
+		)
+	-- MOAISim.setLongDelayThreshold( 100 )
+	-- MOAISim.setBoostThreshold( 3 )	
+	-- MOAISim.setStepMultiplier( 2 )	
+
 	
 	----ask other systems to initialize
 	emitSignal( 'game.init', option )
@@ -481,7 +483,7 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	
 	if not additive then
 		mainScene:clear( true )
-		collectAssetGarbage()
+		-- collectAssetGarbage()
 	end
 	
 	local runningState = mainScene.running
@@ -672,10 +674,10 @@ end
 --------------------------------------------------------------------
 ---------Data settings
 --------------------------------------------------------------------
-function Game:updateSetting(key,data, persistLater)
+function Game:updateSetting( key, data, persistLater )
 	self.settingData[key]=data
 	if not persistLater then
-		self:saveData(self.settingFileName,self.settingData)
+		self:saveSettingData( self.settingData, self.settingFileName )
 	end
 end
 
