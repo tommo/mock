@@ -353,7 +353,6 @@ function Scene:clear( keepEditorEntity )
 			end
 		end
 	end
-
 	for e in pairs( toRemove ) do
 		e:destroyWithChildrenNow()
 	end

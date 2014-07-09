@@ -97,3 +97,17 @@ function DeckComponent:isVisible()
 	return self.prop:getAttr( MOAIProp.ATTR_VISIBLE ) ~= 0
 end
 
+--------------------------------------------------------------------
+local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
+
+function DeckComponent:setShader( shaderPath )
+	self.shader = shaderPath	
+	if shaderPath then
+		local shader = mock.loadAsset( shaderPath )
+		if shader then
+			local moaiShader = shader:getMoaiShader()
+			return self.prop:setShader( moaiShader )
+		end
+	end
+	self.prop:setShader( defaultShader )
+end

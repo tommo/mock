@@ -14,12 +14,15 @@ function loadAssetDataTable(filename) --lua or json?
 	return data
 end
 
+function loadTextData( filename )
+	local fp = io.open( filename, 'r' )
+	local text = fp:read( '*a' )
+	return text
+end
 ---------------------basic loaders
 local basicLoaders = {}
 function basicLoaders.text( node )
-	local fp = io.open( node.filePath, 'r' )
-	local text = fp:read( '*a' )
-	return text
+	return loadTextData( node.filePath )
 end
 
 ----------REGISTER the loaders

@@ -129,38 +129,17 @@ end
 
 function SpineJSONLoader( node )
 	local jsonPath  = node:getAbsObjectFile( 'skel' )
-	local atlas     = loadSpineAtlas( node ) --test
-	local jsonData  = loadAssetDataTable( jsonPath )
+	local atlas     = loadSpineAtlas( node ) --test	
 	local skeletonData = MOAISpineSkeletonData.new()
 	skeletonData:loadWithAtlas( jsonPath, atlas )
-	skeletonData.atlas = atlas
+	skeletonData.atlas = atlas	
+	skeletonData._animationTable = skeletonData:getAnimationNames()
+	skeletonData._slotTable      = skeletonData:getSlotNames()
+	skeletonData._skinTable      = skeletonData:getSkinNames()
+	skeletonData._boneTable      = skeletonData:getBoneNames()
+
+	skeletonData._jsonPath = jsonPath
 	
-	--id tables
-	skeletonData._jsonData = assert( jsonData )
-	local animations = table.keys( jsonData['animations'] or {} )
-	local skins      = table.keys( jsonData['skins'] or {} )
-	local slots      = table.keys( jsonData['slots'] or {} )
-	local bones      = table.keys( jsonData['bones'] or {} )
-	local animationTable = {}	
-	for i, n in ipairs( animations ) do
-		animationTable[ n ] = i
-	end
-	local skinTable = {}
-	for i, n in ipairs( skins ) do
-		skinTable[ n ] = i
-	end
-	local slotTable = {}
-	for i, n in ipairs( slots ) do
-		slotTable[ n ] = i
-	end
-	local boneTable = {}
-	for i, n in ipairs( bones ) do
-		boneTable[ n ] = i
-	end
-	skeletonData._animationTable = animationTable
-	skeletonData._slotTable      = slotTable
-	skeletonData._skinTable      = skinTable
-	skeletonData._boneTable      = boneTable
 	return skeletonData
 end
 

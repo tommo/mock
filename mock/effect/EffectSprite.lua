@@ -141,7 +141,7 @@ local function _onSpineAnimStop( anim )
 end
 
 function EffectSpineSprite:onLoad( fxState )
-	local sprite = SpineSprite()
+	local sprite = SpineSpriteSimple()
 	sprite:setSprite( self.spritePath )
 	setPropBlend( sprite.skeleton, self.blend )
 	self:applyTransformToProp( sprite )

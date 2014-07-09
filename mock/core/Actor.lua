@@ -33,8 +33,6 @@ module 'mock'
 
 
 CLASS: Actor ()
-
-
 function Actor:__init()
 	self.msgListeners = {}
 	self.state  = 'normal'
@@ -192,15 +190,43 @@ local function _coroutineMethodWrapper( func, obj, ... )
 	-- coroutineCache:push( coro )
 end
 
-local _WEAKMT = { __mode = 'kv' }
-function Actor:_weakHoldCoroutine( coro )
-	local coroutines = self.coroutines
-	if not coroutines then
-		coroutines = setmetatable( {}, _WEAKMT )
-		self.coroutines = coroutines
+if not jit then
+
+	local _WEAKMT = { __mode = 'kv' }
+	local _WEAKMT = {}
+	function Actor:_weakHoldCoroutine( coro )
+		local coroutines = self.coroutines
+		if not coroutines then
+			coroutines = setmetatable( {}, _WEAKMT )
+			self.coroutines = coroutines
+		end
+		coroutines[coro] = true
+		return coro	
 	end
-	coroutines[coro] = true
-	return coro	
+
+else 
+	--*WORKAROUND: weak table cause crash when using Luajit
+	function Actor:_weakHoldCoroutine( newCoro )
+		local coroutines = self.coroutines
+		if not coroutines then
+			coroutines = { [newCoro] = true }
+			self.coroutines = coroutines
+			return newCoro
+		end
+		--remove dead ones
+		local dead = {}
+		for coro in pairs( coroutines ) do
+			if coro:isDone() then
+				dead[ coro ] = true
+			end
+		end
+		for coro in pairs( dead ) do
+			coroutines[ coro ] = nil
+		end
+		coroutines[ newCoro ] = true
+		return newCoro	
+	end
+
 end
 
 --------------------------------------------------------------------
@@ -218,7 +244,8 @@ function Actor:_createCoroutine( defaultParent, func, obj, ... )
 		error('unknown coroutine func type:'..tt)
 	end
 
-	return self:_weakHoldCoroutine( coro )
+	local coro = self:_weakHoldCoroutine( coro )
+	return coro
 end
 
 function Actor:addCoroutineP( func, ... )

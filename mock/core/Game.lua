@@ -266,14 +266,14 @@ function Game:init( option, fromEditor )
 
 	----extra
 	_stat( '...extra init' )
-	-- collectgarbage( 'setpause',   70  )
-	-- collectgarbage( 'setstepmul', 150 )	
+	-- collectgarbage( 'setpause',   80  )
+	-- collectgarbage( 'setstepmul', 200 )	
 
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 
 			0
 			-- + MOAISim.LOOP_FLAGS_MULTISTEP
-			+ MOAISim.LOOP_FLAGS_DEFAULT
+			-- + MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
 			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
 			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
@@ -483,7 +483,7 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	
 	if not additive then
 		mainScene:clear( true )
-		-- collectAssetGarbage()
+		collectAssetGarbage()
 	end
 	
 	local runningState = mainScene.running

@@ -64,6 +64,8 @@ local function searchFile( path )
 		if fp then
 			fp:close()
 			return mapped
+		else
+			_warn( 'mapped script not found:', path, mapped )
 		end
 	end
 	path = path:gsub( '%.','/' )

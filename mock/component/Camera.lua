@@ -26,6 +26,8 @@ CLASS: Camera ( Component )
 	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
 	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
 	Field 'framebuffer'      :asset('framebuffer')  :getset('OutputFrameBuffer');
+	'----';
+	Field 'clearBuffer'      :boolean();
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
@@ -36,6 +38,7 @@ end
 
 function Camera:__init( option )
 	option = option or {}
+	self.clearBuffer = true
 
 	local cam = MOAICamera.new()
 	self._camera  = cam
@@ -139,7 +142,7 @@ end
 -- end
 
 function Camera:loadPasses()
-	self:addPass( SceneCameraPass() )
+	self:addPass( SceneCameraPass( self.clearBuffer ) )
 end
 
 function Camera:addPass( pass )

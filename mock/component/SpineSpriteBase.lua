@@ -31,7 +31,7 @@ function SpineSpriteBase:setSprite( path, alphaBlend )
 		local entity = self._entity
 		if entity then
 			entity:_detachProp( self.skeleton )		
-			self.skeleton  = MOAISpineSkeleton.new()
+			self.skeleton  = self:_createSkeleton()
 			self.skeleton:load( self.skeletonData, 0.001, true )
 			entity:_attachProp( self.skeleton )
 		else
