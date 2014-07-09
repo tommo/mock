@@ -10,12 +10,18 @@ CLASS: EffectSubEffect ( EffectTransformNode )
 
 
 function EffectSubEffect:onLoad( fxState )
+	if not self.effect then
+		return fxState:removeActiveNode( self )
+	end
+
 	local parentEmitter = fxState._emitter
 	local subEmitter = EffectEmitter()	
 	parentEmitter:getEntity():attach( subEmitter )
 	subEmitter.actionOnStop = 'detach'
+	
 	subEmitter:setEffect( self.effect )
-	self:applyTransformToProp( subEmitter )
+
+	self:applyTransformToProp( subEmitter.prop )
 	fxState:linkTransform( subEmitter.prop )
 	--TODO: avoid cyclic effect reference
 	local subState = subEmitter:start()
