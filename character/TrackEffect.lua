@@ -19,6 +19,7 @@ CLASS: EventEffect ( CharacterActionEvent )
 	:MODEL{
 		Field 'effect' :asset( 'effect' );
 		Field 'loop'   :boolean();
+		Field 'layer'  :string();
 		'----';
 		Field 'spineSlot'  :string() :selection( 'getSpineSlotList' );
 		Field 'followSlot' :boolean();
@@ -38,6 +39,7 @@ function EventEffect:__init()
 	self.spineSlot  = false
 	self.transform  = MOAITransform.new()
 	self.stopWithEvent = true
+	self.layer      = false
 end
 
 function EventEffect:getSpineSlotList()
@@ -87,9 +89,13 @@ function EventEffect:start( state, pos )
 	if effect == '' then effect = nil end
 	if not self.effect then return end
 	local target = state.target
-	local emEnt = target:getEntity()	
+
+	local emEnt = mock.Entity()
 	local em = mock.EffectEmitter()
-	emEnt:attachInternal( em )	
+	emEnt:attach( em )
+	local layer = self.layer
+	if layer == '' then layer = false end
+	target:getEntity():addChild( emEnt, layer )
 	local transform = self.transform
 	em:setEffect( self.effect )
 
@@ -113,11 +119,9 @@ function EventEffect:start( state, pos )
 	em.prop:setScl( sx,sy,sz )
 	em:start()
 	local length = self.length/1000
-	em:setDuration( length )
+	em:setActionOnStop( 'destroy' )
 	if self.stopWithEvent then
-		em:setActionOnStop( 'detach' )
-	else
-		em:setActionOnStop( 'none' )
+		em:setDuration( length )
 	end
 	state.effectEmitters[ self.parent ][ em ] = true
 end

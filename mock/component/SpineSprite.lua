@@ -4,6 +4,7 @@ CLASS: SpineSprite ( SpineSpriteBase )
 	:MODEL{
 		Field 'defaultClip' :string()  :label('Default') :selection( 'getAnimationNames' );
 		Field 'autoPlay'    :boolean() :label('Auto Play');
+		Field 'throttle'    ;
 	}
 
 registerComponent( 'SpineSprite', SpineSprite )

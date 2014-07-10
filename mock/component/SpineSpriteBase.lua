@@ -2,6 +2,8 @@ module 'mock'
 
 CLASS: SpineSpriteBase ()
 	:MODEL{
+		Field 'shader' :asset('shader') :set( 'setShader' );
+		'----';
 		Field 'sprite' :asset('spine') :getset('Sprite') :label('Sprite');
 	}
 
@@ -37,6 +39,7 @@ function SpineSpriteBase:setSprite( path, alphaBlend )
 		else
 			self.skeleton:load( self.skeletonData, 0.001, true )
 		end
+		self:updateShader()
 	end
 end
 
@@ -60,4 +63,23 @@ end
 function SpineSpriteBase:getClipLength( name )
 	--TODO
 	return 1
+end
+
+function SpineSpriteBase:setShader( shaderPath )
+	self.shader = shaderPath	
+	self:updateShader()
+end
+
+local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
+function SpineSpriteBase:updateShader()
+	if self.skeleton then
+		if self.shader then
+			local shader = mock.loadAsset( self.shader )
+			if shader then
+				local moaiShader = shader:getMoaiShader()
+				return self.skeleton:setShader( moaiShader )
+			end
+		end
+		self.skeleton:setShader( defaultShader )
+	end
 end

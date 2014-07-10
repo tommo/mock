@@ -22,8 +22,14 @@ CLASS: EffectStaticSprite ( EffectTransformNode )
 	:MODEL{
 		Field 'deck'  :asset('deck2d\\..*');
 		Field 'index' :int() :range(0);
+		'----';
+		Field 'color'    :type('color')  :getset('Color') ;
 		Field 'blend' :enum( EnumBlendMode );
 	}
+
+function EffectStaticSprite:__init()
+	self.color = { 1,1,1,1 }
+end
 
 function EffectStaticSprite:getDefaultName()
 	return 'sprite'
@@ -40,10 +46,21 @@ function EffectStaticSprite:onLoad( fxState )
 	setPropBlend( sprite, self.blend )
 	--todo: shader	
 	self:applyTransformToProp( sprite )
-	fxState:linkTransform( sprite.prop )
-	fxState:linkPartition( sprite.prop )
+
+	fxState:linkTransform( sprite )
+	fxState:linkPartition( sprite )
+	sprite:setColor( unpack( self.color ) )
 	fxState[ self ] = sprite
 end
+
+function EffectStaticSprite:getColor()
+	return unpack( self.color )
+end
+
+function EffectStaticSprite:setColor( r,g,b,a )
+	self.color = { r,g,b,a }
+end
+
 
 --------------------------------------------------------------------
 --Aurora Sprite
