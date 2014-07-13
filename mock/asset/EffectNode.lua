@@ -195,6 +195,10 @@ function EffectConfig:getRootNode()
 	return self._root
 end
 
+function EffectConfig:findNode( name )
+	return self._root:findChild( name )
+end
+
 function EffectConfig:loadIntoState( state )
 	self._root:loadIntoState( state )
 end
