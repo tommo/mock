@@ -185,10 +185,17 @@ end
 -- end
 
 ---------coroutine control
-local function _coroutineMethodWrapper( func, obj, ... )
-	return func( obj, ... )
-	-- coroutineCache:push( coro )
+local function _coroutineFuncWrapper( coro, func, ... )
+	func( ... )
+	return coro:stop()
 end
+
+local function _coroutineMethodWrapper( coro, func, obj, ... )
+	func( obj, ... )
+	return coro:stop()
+end
+--TODO: coroutine pool?
+
 
 if not jit then
 
@@ -237,9 +244,10 @@ function Actor:_createCoroutine( defaultParent, func, obj, ... )
 	if tt == 'string' then --method name
 		local _func = obj[ func ]
 		assert( type(_func) == 'function' , 'method not found:'..func )
-		coro:run( _coroutineMethodWrapper, _func, obj, ... )
+		coro:run( _coroutineMethodWrapper, coro, _func, obj, ... )
 	elseif tt=='function' then --function
-		coro:run( func, ... )
+		coro:run( _coroutineFuncWrapper, coro, func, ... )
+		-- coro:run( func, ... )
 	else
 		error('unknown coroutine func type:'..tt)
 	end
@@ -262,6 +270,11 @@ end
 
 function Actor:addCoroutineFor( obj, func, ... )
 	return self:_createCoroutine( false, func, obj, ... )
+end
+
+
+local function _coroDaemonInner( obj, f, ... )
+	local inner = self:addCoroutineFor( obj, f, ... )
 end
 
 local function _coroDaemon( self, obj, f, ... )
