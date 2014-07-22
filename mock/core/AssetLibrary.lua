@@ -9,6 +9,9 @@ local __ASSET_CACHE_MT = {
 	-- __mode = 'kv'
 }
 
+local __ASSET_CACHE_LOCKED_MT = { 	
+}
+
 local __ASSET_CACHE_WEAK_MODE = 'kv'
 
 function makeAssetCacheTable()
@@ -27,6 +30,23 @@ function setAssetCacheStrong()
 	__ASSET_CACHE_MT.__mode = false
 end
 
+--------------------------------------------------------------------
+local _retainedAssetTable = {}
+function retainAsset( assetPath ) --keep asset during one collection cycle
+	local node = getAssetNode( assetPath )
+	if not node then return _warn( 'no asset to hold', assetPath ) end
+	_retainedAssetTable[ node ] = true
+	setmetatable( node.cached, __ASSET_CACHE_LOCKED_MT )
+end
+
+function releaseRetainAssets()
+	for node in pairs( _retainedAssetTable ) do
+		setmetatable( node.cached, __ASSET_CACHE_MT )
+	end
+	_retainedAssetTable = {}
+end
+
+--------------------------------------------------------------------
 function collectAssetGarbage()
 	MOAISim.forceGC()
 	local collectThread = MOAICoroutine.new()
@@ -38,10 +58,13 @@ function collectAssetGarbage()
 			-- reportAssetInCache()
 			-- reportHistogram()
 			-- reportTracingObject( true )
+			releaseRetainAssets()
 		end
 		)
 	return collectThread
 end
+
+
 --------------------------------------------------------------------
 
 --tool functions
