@@ -115,3 +115,11 @@ function Stat:setChangeSignalList( t )
 		self:setChangeSignal( key, sig )
 	end
 end
+
+function Stat:serialize()
+	return self.values
+end
+
+function Stat:deserialize( values )
+	self.values = values
+end
