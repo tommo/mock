@@ -3,6 +3,7 @@ module 'mock'
 CLASS: SpineSpriteBase ()
 	:MODEL{
 		Field 'shader' :asset('shader') :set( 'setShader' );
+		Field 'preAlpha' :boolean();
 		'----';
 		Field 'sprite' :asset('spine') :getset('Sprite') :label('Sprite');
 	}
@@ -10,6 +11,7 @@ CLASS: SpineSpriteBase ()
 function SpineSpriteBase:__init()
 	self.skeleton  = self:_createSkeleton()
 	self.propInserted  = false
+	self.preAlpha = false
 end
 
 function SpineSpriteBase:_createSkeleton()
@@ -34,10 +36,10 @@ function SpineSpriteBase:setSprite( path, alphaBlend )
 		if entity then
 			entity:_detachProp( self.skeleton )		
 			self.skeleton  = self:_createSkeleton()
-			self.skeleton:load( self.skeletonData, 0.001, true )
+			self.skeleton:load( self.skeletonData, 0.001, not self.preAlpha )
 			entity:_attachProp( self.skeleton )
 		else
-			self.skeleton:load( self.skeletonData, 0.001, true )
+			self.skeleton:load( self.skeletonData, 0.001, not self.preAlpha )
 		end
 		self:updateShader()
 	end
