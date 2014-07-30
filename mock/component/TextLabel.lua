@@ -118,6 +118,14 @@ function TextLabel:getText( )
 	return self.text
 end
 
+function TextLabel:appendText( text )
+	return self.text .. text
+end
+
+function TextLabel:appendTextf( pattern, ... )
+	return self:appendText( string.format( pattern, ... ) )
+end
+
 --------------------------------------------------------------------
 local textAlignments = {
 	center    = MOAITextLabel.CENTER_JUSTIFY,

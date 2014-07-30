@@ -1,5 +1,17 @@
 module 'mock'
 
+--------------------------------------------------------------------
+
+local DEFAULT_TOUCH_PADDING = 20
+function setDefaultTouchPadding( pad )
+	DEFAULT_TOUCH_PADDING = pad or 20
+end
+
+function getDefaultTouchPadding()
+	return DEFAULT_TOUCH_PADDING or 20
+end
+
+--------------------------------------------------------------------
 CLASS: GUIWidget ( Entity )
 	:MODEL{}
 
@@ -119,6 +131,10 @@ end
 function GUIWidget:getRect()
 	local w, h = self:getSize()
 	return 0,0,w,h
+end
+
+function GUIWidget:getPadding()
+	return DEFAULT_TOUCH_PADDING
 end
 
 function GUIWidget:getRootWidget()

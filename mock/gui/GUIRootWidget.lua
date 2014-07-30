@@ -2,14 +2,6 @@ module 'mock'
 
 local insert,remove=table.insert,table.remove
 
-local DEFAULT_TOUCH_PADDING = 20
-function setDefaultTouchPadding( pad )
-	DEFAULT_TOUCH_PADDING = pad or 20
-end
-
-function getDefaultTouchPadding()
-	return DEFAULT_TOUCH_PADDING or 20
-end
 
 --------------------------------------------------------------------
 CLASS: GUIPointer ()
@@ -61,21 +53,21 @@ function GUIRootWidget:getModalWidget()
 	return self.modalWidget
 end
 
-local function _findTopWidget( parent, x, y, pad )	
+local function _findTopWidget( parent, x, y, padding )	
 	local childId = 0
 	local children = parent.childWidgets
 	local count = #children
-	-- print('---Widget>>')
 	for k = count , 1, -1 do
 		local child = children[ k ]
 		if child:isVisible() and child:isActive() and child.inputEnabled then 
 			local px,py,pz = child:getWorldLoc()
+			local pad = padding or child:getPadding()
 			local inside = child:inside( x, y, pz, pad )
 			if inside == 'group' then
-				local found = _findTopWidget( child, x, y, pad )
+				local found = _findTopWidget( child, x, y, padding )
 				if found then	return found end
 			elseif inside then
-				local result = _findTopWidget( child, x, y, pad ) or child
+				local result = _findTopWidget( child, x, y, padding ) or child
 				return result
 			end
 		end
@@ -85,7 +77,7 @@ end
 
 function GUIRootWidget:findTopWidget( x, y, pad )
 	local start = self.modalWidget or self 
-	return _findTopWidget( start, x, y, pad or DEFAULT_TOUCH_PADDING )
+	return _findTopWidget( start, x, y, pad )
 end
 
 function GUIRootWidget:onTouchEvent( ev, touch, x, y )
@@ -95,7 +87,6 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		p.state = 'down'
 		x, y    = self:wndToWorld( x, y )
 		local widget = self:findTopWidget( x, y )
-		-- print( 'found widget', widget )
 		if widget then 
 			p.activeWidget = widget
 			widget:onPress( touch, x,y )
