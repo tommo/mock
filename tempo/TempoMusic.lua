@@ -23,7 +23,7 @@ end
 --------------------------------------------------------------------
 local function loadTempoMusic( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('config') )
-	local config = mock.deserialize( nil, data )
+	local config = mock.deserialize( nil, data )	
 	return config
 end
 
