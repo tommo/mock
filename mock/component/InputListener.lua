@@ -108,6 +108,7 @@ function installInputListener( self, option )
 		local onJoyAxisMove   = self.onJoyAxisMove
 		if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove then
 			joystickCallback = function( ev, joyId, btnId, axisId, value, mock )
+				print( ev, joyid, btnId, axisId, value )
 				if mock and refuseMockUpInput then return end
 				if ev == 'down' then
 					if onJoyButtonDown then onJoyButtonDown( self, joyId, btnId, mock ) end
