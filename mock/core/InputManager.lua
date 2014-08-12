@@ -494,6 +494,7 @@ function InputDevice:initJoystickEventHandler()
 		local buttonSensorName = joyName..'.button'
 		local joyButtonSensor = self:getSensor( buttonSensorName )
 		if joyButtonSensor then
+			-- print( 'foundJoyButtonSensor', buttonSensorName )
 			local function onJoyButtonEvent( key, down )
 				if not self.enabled then return end
 				if down then

@@ -182,6 +182,11 @@ function GUIListItemBase:onPress( pointer, x, y )
 	self.dragY0 = y
 	self.dragDiffX = 0
 	self.dragDiffY = 0
+	
+	local sx, sy = self.parent:getScrollSpeed()
+	local ss = sx*sx + sy*sy
+	self.slowScrollTapping = ss<10
+	self.pressTime = os.clock()
 	if self.parent:isScrolling() then
 		self.parent:grabScroll( true )
 	else
@@ -198,6 +203,7 @@ function GUIListItemBase:onDrag( pointer, x, y )
 	self.dragDiffX = self.dragDiffX + dx
 	if not self.parent:isScrollGrabbed() then
 		if math.magnitude( self.dragDiffX, self.dragDiffY ) > 10 then
+			self.slowScrollTapping = false
 			self.parent:grabScroll( true )
 		else
 			return
@@ -208,12 +214,14 @@ function GUIListItemBase:onDrag( pointer, x, y )
 end
 
 function GUIListItemBase:onRelease( pointer, x, y )
+	local timeDelta = os.clock() - self.pressTime
 	if self.parent:isScrollGrabbed() then
 		self.parent:grabScroll( false )
-	else
-		self:emit( 'ui.list.select', self.parent, self )
-		self.parent:selectItem( self )
+		if timeDelta > 0.5 then return end
+		if not self.slowScrollTapping then return end
 	end
+	self:emit( 'ui.list.select', self.parent, self )
+	self.parent:selectItem( self )
 end
 
 function GUIListItemBase:onSelect()

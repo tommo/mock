@@ -83,6 +83,11 @@ function GUIScrollArea:getScroll()
 	return x, y 
 end
 
+function GUIScrollArea:getScrollSpeed()
+	return self.speedScrollX, self.speedScrollY
+end
+
+
 function GUIScrollArea:moveScroll( dx, dy, t, easeType )
 	return self.innerTransform:moveLoc( dx, dy, 0, t, easeType )
 end
