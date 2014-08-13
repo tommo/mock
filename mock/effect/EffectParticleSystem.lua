@@ -697,6 +697,7 @@ registerTopEffectNodeType(
 		'particle-state'             ,
 		'particle-emitter-timed'     , 
 		'particle-emitter-distance'  ,
+		'particle-force-linear'      ,
 		'particle-force-radial'      ,
 		'particle-force-attractor'   ,
 		'particle-force-basin'       ,
@@ -717,6 +718,12 @@ registerEffectNodeType(
 registerEffectNodeType( 
 	'particle-emitter-distance',
 	EffectNodeParticleDistanceEmitter,
+	EffectCategoryTransform
+)
+
+registerEffectNodeType( 
+	'particle-force-linear',
+	EffectNodeForceLinear,
 	EffectCategoryTransform
 )
 
