@@ -350,8 +350,16 @@ function StretchPatch:update()
 	deck.patchHeight = h
 end
 
-
 --------------------------------------------------------------------
+--MESH Decks
+--------------------------------------------------------------------
+
+local vertexFormat = MOAIVertexFormat.new ()
+vertexFormat:declareCoord ( 1, MOAIVertexFormat.GL_FLOAT, 2 )
+vertexFormat:declareUV ( 2, MOAIVertexFormat.GL_FLOAT, 2 )
+vertexFormat:declareColor ( 3, MOAIVertexFormat.GL_UNSIGNED_BYTE )
+
+
 CLASS: PolygonDeck ( Deck2D )
 	:MODEL{
 		Field 'polyline'   :array() :no_edit();		
@@ -359,10 +367,6 @@ CLASS: PolygonDeck ( Deck2D )
 		Field 'indexList'  :array() :no_edit();		
 	}
 
-local vertexFormat = MOAIVertexFormat.new ()
-vertexFormat:declareCoord ( 1, MOAIVertexFormat.GL_FLOAT, 2 )
-vertexFormat:declareUV ( 2, MOAIVertexFormat.GL_FLOAT, 2 )
-vertexFormat:declareColor ( 3, MOAIVertexFormat.GL_UNSIGNED_BYTE )
 
 function PolygonDeck:__init()
 	self.polyline   = false
@@ -377,6 +381,71 @@ function PolygonDeck:createMoaiDeck()
 end
 
 function PolygonDeck:update()
+	-- local w, h = self.w, self.h
+	-- mesh:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
+	local mesh = self:getMoaiDeck()
+
+	local tex, uv = self.texture:getMoaiTextureUV()
+	local u0,v0,u1,v1 = unpack( uv )
+	mesh:setTexture( tex )
+	
+	local us = u1-u0
+	local vs = v1-v0
+
+	local vertexList  = self.vertexList
+	local vertexCount = #vertexList
+	local indexList   = self.indexList
+	local indexCount  = #indexList
+
+	local vbo = MOAIVertexBuffer.new ()
+	vbo:setFormat ( vertexFormat )
+	vbo:reserveVerts ( vertexCount )
+	for i = 1, vertexCount, 4 do
+		local x, y = vertexList[ i ], vertexList[ i + 1 ]
+		local u, v = vertexList[ i + 2 ], vertexList[ i + 3 ]
+		vbo:writeFloat ( x, y )
+		vbo:writeFloat ( u*us + u0,  v*vs +v0 )
+		vbo:writeColor32 ( 1, 1, 1 )
+	end
+	vbo:bless ()
+
+	-- local ibo = MOAIIndexBuffer.new ()
+	-- ibo:reserve ( indexCount )
+	-- for i = 1, indexCount, 2 do
+	-- 	local a, b = indexList[ i ], indexList[ i + 1 ]
+	-- 	ibo:setIndex( i, a, b )
+	-- end
+
+	mesh:setVertexBuffer ( vbo )
+	-- mesh:setIndexBuffer ( ibo )
+
+end
+
+
+--------------------------------------------------------------------
+--Cylinder
+--------------------------------------------------------------------
+CLASS: CylinderDeck ( Deck2D )
+	:MODEL{
+		Field 'radius' ;
+		Field 'height' ;
+		Field 'span'   :int() :range( 3 );
+	}
+
+function CylinderDeck:__init()
+	self.radius = 100
+	self.height = 100
+	self.span = 16
+end
+
+
+function CylinderDeck:createMoaiDeck()
+	local mesh = MOAIMesh.new ()	
+	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
+	return mesh
+end
+
+function CylinderDeck:update()
 	-- local w, h = self.w, self.h
 	-- mesh:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 	local mesh = self:getMoaiDeck()
