@@ -5,6 +5,13 @@ EnumEventTempoType = {
 	{ 'beat',  'beat' },
 	{ 'sub',   'sub' },
 }
+
+EnumEventTempoBeatType = {
+	{ 'any', 'any' },
+	{ 'on' , 'on'  },
+	{ 'off', 'off' },
+}
+
 --------------------------------------------------------------------
 CLASS: EventTempo ( CharacterActionEvent )
 	:MODEL{
@@ -12,7 +19,9 @@ CLASS: EventTempo ( CharacterActionEvent )
 		Field 'value' :number() :range( 0, 4 ) :widget('slider') :meta{ step = 0.25 };
 		Field 'wait'  :number() :range( 0, 4 ) :widget('slider') :meta{ step = 0.25 };
 		'----';
-		Field 'strict' :boolean()
+		Field 'strict' :boolean();
+		'----';
+		Field 'waitBeatType' :enum( EnumEventTempoBeatType );
 	}
 
 function EventTempo:__init()
@@ -20,6 +29,7 @@ function EventTempo:__init()
 	self.value = 0
 	self.wait  = 0
 	self.strict = false
+	self.waitBeatType = 'any'
 end
 
 function EventTempo:toString()
