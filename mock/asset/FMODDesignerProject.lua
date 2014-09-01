@@ -52,8 +52,8 @@ end
 
 function FMODDesignerProject:loadGroup( id )
 	local group = FMODEventGroup( self, nil, id )
-	group:load()
 	self.groups[ id ] = group
+	group:load()
 	return group
 end
 
@@ -81,6 +81,7 @@ end
 function FMODEventGroup:loadSubGroup( id )
 	local group = FMODEventGroup( self.project, self, id )
 	self.groups[ id ] = group
+	group:load()
 	return group
 end
 
