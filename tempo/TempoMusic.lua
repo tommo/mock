@@ -8,6 +8,7 @@ CLASS: TempoMusic ()
 		Field 'accentOffset' :int();
 		Field 'beatPoints': array( 'number' ) :no_edit();
 		Field 'syncPoints': array( 'number' ) :no_edit();
+		Field 'length'
 	}
 
 function TempoMusic:__init()
@@ -18,6 +19,7 @@ function TempoMusic:__init()
 	self.accentOffset = 0
 	self.beatPoints = {}
 	self.syncPoints = {}
+	self.length     = 0
 end
 
 --------------------------------------------------------------------
