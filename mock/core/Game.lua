@@ -266,8 +266,8 @@ function Game:init( option, fromEditor )
 
 	----extra
 	_stat( '...extra init' )
-	-- collectgarbage( 'setpause',   80  )
-	-- collectgarbage( 'setstepmul', 200 )	
+	collectgarbage( 'setpause',   80  )
+	collectgarbage( 'setstepmul', 200 )	
 
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 

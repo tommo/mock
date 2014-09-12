@@ -71,7 +71,6 @@ function DebugHelper:showDebugLines(show)
 	end
 end
 
-
 function DebugHelper:setDebugEnabled(d)
 	self.debugEnabled=d or false
 	if not self.debugger then
@@ -173,3 +172,7 @@ MOAICoroutine.new = function( ... )
 	tracingCoroutines[ coro ] = debug.traceback( 3 )
 	return coro
 end
+
+--------------------------------------------------------------------
+--dump calltree
+

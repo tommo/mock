@@ -234,7 +234,7 @@ if MOAIFreeTypeFontReader then
 			
 			function class.new ()
 				local self = new ()
-				superInterface.setCache ( self, MOAIGlyphCache.new ())
+				superInterface.setCache ( self, MOAIDynamicGlyphCache.new ())
 				superInterface.setReader ( self, MOAIFreeTypeFontReader.new ())
 				return self
 			end
@@ -341,9 +341,9 @@ MOAIRenderMgr.extend (
 		end
 		
 		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
-		function class.grabNextFrame ()
+		function class.grabNextFrame (image, callback)
 			local frameBuffer = MOAIGfxDevice.getFrameBuffer ()
-			frameBuffer:grabNextFrame ()
+			frameBuffer:grabNextFrame (image, callback)
 		end
 		
 		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
@@ -490,6 +490,7 @@ MOAIXmlParser.extend (
 			local element = {
 				getAttribute	= function ( name ) return parser:getElementAttribute ( name ) end,
 				getAttributes	= function () return parser:getElementAttributes () end,
+				getLineNumber	= function () return parser:getElementLineNumber () end,
 				getName			= function () return parser:getElementName () end,
 				getText			= function () return parser:getElementText () end,
 			}
@@ -520,6 +521,10 @@ MOAIProp2D		= MOAIGraphicsProp2D
 -- Cross Platform
 --============================================================--
 
+if MOAISim.forceGC then
+    MOAISim.forceGarbageCollection = MOAISim.forceGC
+end
+
 MOAIApp = MOAIAppAndroid or MOAIAppIOS
 MOAIBrowser = MOAIBrowserAndroid or MOAIBrowserIOS
 MOAISafariIOS = MOAIBrowserIOS
@@ -542,9 +547,6 @@ MOAIMath.seedSFMT(1)
 MOAITwitter = MOAITwitterAndroid or MOAITwitterIOS
 
 -- Compatibility
-if MOAIAppAndroid then
-    MOAIAppAndroid.openURL = MOAIBrowserAndroid.openURL
-end
 
 if MOAITwitterIOS then
     MOAITwitter.sendTweet = function(text, url) MOAITwitterIOS.composeTweet(text, url) end

@@ -48,16 +48,15 @@ end
 
 --------------------------------------------------------------------
 function collectAssetGarbage()
-	MOAISim.forceGC()
 	local collectThread = MOAICoroutine.new()
 	collectThread:run( function()
 			setAssetCacheWeak()
-			coroutine.yield()
+			MOAISim.forceGC()
 			setAssetCacheStrong()
 			-- reportLoadedMoaiTextures()			
 			-- reportAssetInCache()
 			-- reportHistogram()
-			-- reportTracingObject( true )
+			reportTracingObject( true )
 			releaseRetainAssets()
 		end
 		)

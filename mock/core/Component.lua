@@ -148,7 +148,7 @@ end
 --------------------------------------------------------------------
 ---------coroutine control
 --------------------------------------------------------------------
-if jit then
+-- if jit then
 	
 	local _WEAKMT = { __mode = 'kv' }
 	local _WEAKMT = {}
@@ -162,32 +162,32 @@ if jit then
 		return coro	
 	end
 
-else 
-	--*WORKAROUND: weak table cause crash when using Luajit
-	function Component:_weakHoldCoroutine( newCoro )
-		local coroutines = self.coroutines
-		if not coroutines then
-			coroutines = { 
-				[newCoro] = true
-			}
-			self.coroutines = coroutines
-			return
-		end
-		--remove dead ones
-		local dead = {}
-		for coro in pairs( coroutines ) do
-			if coro:isDone() then
-				dead[ coro ] = true
-			end
-		end
-		for coro in pairs( dead ) do
-			coroutines[ coro ] = nil
-		end
-		coroutines[ newCoro ] = true
-		return newCoro	
-	end
+-- else 
+-- 	--*WORKAROUND: weak table cause crash when using Luajit
+-- 	function Component:_weakHoldCoroutine( newCoro )
+-- 		local coroutines = self.coroutines
+-- 		if not coroutines then
+-- 			coroutines = { 
+-- 				[newCoro] = true
+-- 			}
+-- 			self.coroutines = coroutines
+-- 			return newCoro
+-- 		end
+-- 		--remove dead ones
+-- 		local dead = {}
+-- 		for coro in pairs( coroutines ) do
+-- 			if coro:isDone() then
+-- 				dead[ coro ] = true
+-- 			end
+-- 		end
+-- 		for coro in pairs( dead ) do
+-- 			coroutines[ coro ] = nil
+-- 		end
+-- 		coroutines[ newCoro ] = true
+-- 		return newCoro	
+-- 	end
 
-end
+-- end
 
 
 function Component:addCoroutine( func, ... )

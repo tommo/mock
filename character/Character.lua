@@ -29,7 +29,6 @@ end
 --------------------------------------------------------------------
 function Character:onAttach( entity )
 	entity:attachInternal( self.spineSprite )
-
 	entity:attachInternal( self.soundSource )
 end
 --------------------------------------------------------------------

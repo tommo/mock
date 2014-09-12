@@ -74,6 +74,7 @@ end
 function CharacterState:doStep( step )
 	self.timer:doStep( step )
 	local t1 = self.timer:getTime()
+	-- printf( 'dostep %s %d %d', tostring(self), step*100, t1*100 )
 	local action = self.action
 	if not action then return end
 	for i, track in ipairs( action.tracks ) do
