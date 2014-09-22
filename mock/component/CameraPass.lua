@@ -322,7 +322,7 @@ function CameraPass:buildFramebuffer()
 	return fb
 end
 
-function CameraPass:buildDebugLinesLayer()
+function CameraPass:buildDebugDrawLayer()
 	local camera   = self.camera
 	if not camera.showDebugLines then return nil end
 	local layer    = MOAILayer.new()
@@ -334,11 +334,20 @@ function CameraPass:buildDebugLinesLayer()
 	layer._mock_camera = camera
 
 	layer:showDebugLines( true )
-	-- local world = game:getBox2DWorld()
+	
+	local renderTable = {}
+
+	local world = game:getBox2DWorld()
+	world:setDebugDrawEnabled( true )
+	table.insert( renderTable, world )
+
+	layer:setOverlayTable( renderTable )
 	-- if world then layer:setBox2DWorld( world ) end
 
 	return layer
 end
+
+
 
 function CameraPass:buildSceneLayerRenderLayer( sceneLayer )	
 	local camera   = self.camera
@@ -450,7 +459,7 @@ function SceneCameraPass:onBuild()
 		self:pushFrameBuffer( false, { clearColor = false } )
 	end
 	self:pushSceneRenderPass()
-	local debugLayer = self:buildDebugLinesLayer()
+	local debugLayer = self:buildDebugDrawLayer()
 	if debugLayer then
 		self:pushRenderLayer( debugLayer )
 	end
