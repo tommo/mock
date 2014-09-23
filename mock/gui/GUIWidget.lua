@@ -74,7 +74,7 @@ function GUIWidget:destroyNow()
 	if self.__modal then
 		self:setModal( false )		
 	end
-	Entity.destroyNow( self )
+	return Entity.destroyNow( self )
 end
 
 function GUIWidget:setModal( modal )

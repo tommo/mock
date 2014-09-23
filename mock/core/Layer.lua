@@ -2,17 +2,17 @@ module 'mock'
 
 
 local sortModeValue = {
-	iso =                	MOAILayer.SORT_ISO;
-	priority_ascending = 	MOAILayer.SORT_PRIORITY_ASCENDING;
-	priority_descending =	MOAILayer.SORT_PRIORITY_DESCENDING;
-	x_ascending =        	MOAILayer.SORT_X_ASCENDING;
-	x_descending =       	MOAILayer.SORT_X_DESCENDING;
-	y_ascending =        	MOAILayer.SORT_Y_ASCENDING;
-	y_descending =       	MOAILayer.SORT_Y_DESCENDING;
-	z_ascending =        	MOAILayer.SORT_Z_ASCENDING;
-	z_descending =       	MOAILayer.SORT_Z_DESCENDING;
-	vector_ascending =   	MOAILayer.SORT_VECTOR_ASCENDING;
-	vector_descending =  	MOAILayer.SORT_VECTOR_DESCENDING;
+	iso                 =  MOAILayer.SORT_ISO;
+	priority_ascending  =  MOAILayer.SORT_PRIORITY_ASCENDING;
+	priority_descending =	 MOAILayer.SORT_PRIORITY_DESCENDING;
+	x_ascending         =  MOAILayer.SORT_X_ASCENDING;
+	x_descending        =  MOAILayer.SORT_X_DESCENDING;
+	y_ascending         =  MOAILayer.SORT_Y_ASCENDING;
+	y_descending        =  MOAILayer.SORT_Y_DESCENDING;
+	z_ascending         =  MOAILayer.SORT_Z_ASCENDING;
+	z_descending        =  MOAILayer.SORT_Z_DESCENDING;
+	vector_ascending    =  MOAILayer.SORT_VECTOR_ASCENDING;
+	vector_descending   =  MOAILayer.SORT_VECTOR_DESCENDING;
 }
 
 CLASS: Layer ()
@@ -106,9 +106,10 @@ end
 
 function Layer:makeMoaiLayer( partition )
 	local layer     = MOAILayer.new()
-	local partition = partition or MOAIPartition.new()
-
-	layer:setPartition( partition )
+	-- local partition = partition or MOAIPartition.new()
+	if partition then
+		layer:setPartition( partition )
+	end
 	layer.name     = self.name
 
 	layer.priority = self.priority or 0

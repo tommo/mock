@@ -143,6 +143,7 @@ function Scene:threadMain( dt )
 
 		--end of step update
 		end
+		
 		--executeDestroyQueue()
 		local pendingDestroy = self.pendingDestroy
 		self.pendingDestroy = {}
@@ -229,9 +230,10 @@ function Scene:start()
 
 	self.mainThread = MOAICoroutine.new()
 	self.mainThread:setDefaultParent( true )
-	self.mainThread:run(function()
-		return self:threadMain()
-	end
+	self.mainThread:run(
+		function()
+			return self:threadMain()
+		end
 	)
 
 	for ent in pairs( self.entities ) do

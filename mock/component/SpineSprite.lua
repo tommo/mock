@@ -42,7 +42,7 @@ function SpineSprite:getSkeletonData()
 	return self.skeletonData
 end
 
-function SpineSprite:play( clipName, mode, resetPose )
+function SpineSprite:play( clipName, mode, resetPose, waitAttach )
 	if self.animState then
 		self.animState:stop( resetPose )
 	end
@@ -70,7 +70,9 @@ function SpineSprite:play( clipName, mode, resetPose )
 	local duration = span:getDuration()
 	anim:setSpan( duration )
 	anim:apply( 0 )
-	anim:start()
+	if not waitAttach then
+		anim:start()
+	end
 	anim.owner = self
 	-- anim:setListener( EVENT_SPINE_ANIMATION_EVENT, _onSpineAnimationEvent )
 	-- anim:setListener( EVENT_SPINE_ANIMATION_COMPLETE, _onSpineAnimationComplete )

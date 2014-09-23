@@ -93,11 +93,7 @@ function Camera:onAttach( entity )
 	self:loadPasses()
 	self:bindSceneLayers()
 	self:updateRenderLayers()
-	getCameraManager():register( self )
-	--use as main camera if no camera applied yet for current scene
-	-- if not findMainCameraForScene( self.scene ) then 
-	-- 	self:setMainCamera()
-	-- end
+	getCameraManager():register( self )	
 end
 
 function Camera:onDetach( entity )

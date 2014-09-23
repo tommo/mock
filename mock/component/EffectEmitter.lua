@@ -45,11 +45,10 @@ function EffectEmitter:onAttach( entity )
 end
 
 function EffectEmitter:onDetach( entity )
-	self:stop()
 	entity:_detachProp( self.prop )
-	self.prop:forceUpdate()
+	self:stop()
 end
- 
+
 function EffectEmitter:onStart()
 	if self.autoPlay then
 		self:start()
@@ -67,7 +66,7 @@ function EffectEmitter:setMirrorY( mirror )
 	
 end
 
-function EffectEmitter:start()
+function EffectEmitter:start( waitStart )
 	if self.playing then return end
 	if not self.effectConfig then return end	
 	
@@ -82,6 +81,9 @@ function EffectEmitter:start()
 	end
 	self._entity.scene:addUpdateListener( self )
 	self.playing = true
+	if not waitStart then
+		state.timer:start()
+	end
 	return state
 end
 

@@ -153,9 +153,9 @@ function EffectSpineSprite:setColor( r,g,b,a )
 	self.color = { r,g,b,a }
 end
 
-local function _onSpineAnimStop( anim )
-	return anim._effectNode:stop()
-end
+-- local function _onSpineAnimStop( anim )
+-- 	return anim._effectNode:stop()
+-- end
 
 function EffectSpineSprite:onLoad( fxState )
 	local sprite = SpineSpriteSimple()
@@ -168,13 +168,15 @@ function EffectSpineSprite:onLoad( fxState )
 
 	sprite.skeleton:setColor( unpack( self.color ) )
 	sprite:setThrottle( self.throttle )
-	local animState = sprite:play( self.clip, self.mode )
+	local animState = sprite:play( self.clip, self.mode, nil, 'waitAttach' )
 	fxState[ self ] = sprite
 	if animState then
+		fxState:attachAction( animState )
 		animState._effectNode = self
-		animState:setListener( MOAITimer.EVENT_STOP, 
+		animState:setListener( MOAIAction.EVENT_STOP, 
 			function()
 				fxState:removeActiveNode( self )
+				sprite.skeleton:setPartition( nil )
 			end
 		)
 	else

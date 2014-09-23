@@ -312,8 +312,6 @@ function EffectState:__init( emitter, config )
 	end
 	self.timer = MOAITimer.new()
 	self.timer:setMode( MOAITimer.CONTINUE )
-	self.timer:start()
-
 end
 
 function EffectState:getTransformNode()
@@ -362,7 +360,6 @@ function EffectState:attachAction( action )
 	return action
 end
 
-
 function EffectState:getEffectConfig()
 	return self._config
 end
@@ -372,12 +369,14 @@ function EffectState:isPlaying()
 end
 
 function EffectState:stop()	
+	-- print( 'stop', self._config._path )
 	self.timer:stop()
 end
 
 function EffectState:_removeActiveNode( node, removeChildren )
 	self._activeNodes[ node ] = nil
 	if removeChildren then
+		if not self.children then return end
 		for i, child in pairs( self.children ) do
 			self:_removeActiveNode( child, true )
 		end
@@ -422,6 +421,7 @@ end
 function loadEffectConfig( node )
 	local defData   = loadAssetDataTable( node:getObjectFile('def') )
 	local config = deserialize( nil, defData )
+	config._path = node:getNodePath()
 	return config
 end
 

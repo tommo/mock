@@ -176,3 +176,19 @@ end
 --------------------------------------------------------------------
 --dump calltree
 
+
+
+--------------------------------------------------------------------
+--command
+CLASS: DebugCommand ()
+	:MODEL{}
+
+function DebugCommand:onExec()
+end
+
+function DebugCommand:finish()
+end
+
+function DebugCommand:fail()
+end
+

@@ -266,8 +266,9 @@ function Game:init( option, fromEditor )
 
 	----extra
 	_stat( '...extra init' )
-	collectgarbage( 'setpause',   80  )
-	collectgarbage( 'setstepmul', 200 )	
+	-- collectgarbage( 'setpause',   80  )
+	-- collectgarbage( 'setstepmul', 200 )	
+	-- MOAILuaRuntime.reportGC( true )
 
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 
@@ -813,13 +814,10 @@ function Game:setupBox2DWorld( settings )
 	positionIterations = positionIterations or defaultWorldSettings.positionIterations
 	world:setIterations ( velocityIterations, positionIterations )
 
-	world:setAutoClearForces ( settings.autoClearForces )
-
-	world:setTimeToSleep           ( 10000 )
-
-	-- world:setTimeToSleep           ( settings.timeToSleep )
-	-- world:setAngularSleepTolerance ( settings.angularSleepTolerance )
-	-- world:setLinearSleepTolerance  ( settings.linearSleepTolerance )
+	world:setAutoClearForces       ( settings.autoClearForces )
+	world:setTimeToSleep           ( settings.timeToSleep )
+	world:setAngularSleepTolerance ( settings.angularSleepTolerance )
+	world:setLinearSleepTolerance  ( settings.linearSleepTolerance )
 	world:start()
 	self.b2world = world
 	local ground = world:addBody( MOAIBox2DBody.STATIC )

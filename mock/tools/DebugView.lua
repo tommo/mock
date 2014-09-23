@@ -81,3 +81,4 @@ function DebugView:onUpdate()
 	end
 	self.text:setString(result)
 end
+

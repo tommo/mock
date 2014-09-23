@@ -87,7 +87,10 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	system:setReversedDrawOrder( true )
 
 	system.config = self
-	setupMoaiProp( system, self )
+
+	setPropBlend( system, self.blend )
+	local deck = mock.loadAsset( self.deck )
+	system:setDeck( deck )
 	
 	--build child nodes	
 	local emitters = {}
@@ -128,14 +131,19 @@ end
 
 function EffectNodeParticleSystem:onLoad( fxState )
 	local system, emitters, forces = self:buildSystem( nil, fxState )	
+	fxState:linkVisible  ( system )
+	fxState:attachAction ( system )
 	fxState:linkPartition( system )
-	fxState:linkVisible( system )
 
-	for _,em in pairs( emitters ) do
+	for _, em in pairs( emitters ) do
 		fxState:attachAction( em )
 	end
-	fxState:attachAction( system )
-		
+	
+	system:setListener( MOAIAction.EVENT_STOP, function()
+			system:setPartition( nil )
+		end
+	)
+
 	if self.syncTransform then --attach system only
 		fxState:linkTransform( system )
 	else --attach emitter/forces only

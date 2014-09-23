@@ -16,18 +16,27 @@ function EffectSubEffect:onLoad( fxState )
 
 	local parentEmitter = fxState._emitter
 	local subEmitter = EffectEmitter()	
+	subEmitter.autoPlay = false
+
 	parentEmitter:getEntity():attach( subEmitter )
 	subEmitter.actionOnStop = 'detach'
-	
 	subEmitter:setEffect( self.effect )
 
 	self:applyTransformToProp( subEmitter.prop )
 	fxState:linkTransform( subEmitter.prop )
+
 	--TODO: avoid cyclic effect reference
-	local subState = subEmitter:start()
+	local subState 
+	subState = subEmitter:start( 'waitStart' )
 	if subState then
-		fxState:attachAction( subState:getTimer() )
+		local timer = subState:getTimer()
+		fxState:attachAction( timer )
 		fxState[ self ] = subEmitter
+		timer:setListener( MOAIAction.EVENT_STOP, 
+			function()
+				fxState:removeActiveNode( self )
+			end
+		)
 	else
 		fxState:removeActiveNode( self )
 	end

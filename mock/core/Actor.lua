@@ -127,118 +127,41 @@ function Actor:tell( msg, data, source )
 	end
 end
 
--- ---- Subscribe & Broadcast
--- function Actor:subscribe(target, msgTransform)
--- 	local subs = target._subscribers
--- 	if not subs then
--- 		subs = {}
--- 		target._subscribers=subs
--- 	end
--- 	subs[self]=msgTransform or false
--- 	local subed=self._subscribed
--- 	if not subed then
--- 		subed = {}
--- 		self._subscribed = subed
--- 	end
--- 	subed[target]=true
--- end
-
--- function Actor:unsubscribe(target)
--- 	local subs=target._subscribers
--- 	if subs then 
--- 		subs[self]=nil
--- 		if self._subscribed then
--- 			self._subscribed[target]=nil
--- 		end
--- 	end
--- end
-
--- function Actor:unsubscribeAll()
--- 	local subed = self._subscribed
--- 	if subed then
--- 		for t in pairs(subed) do
--- 			local subs = t._subscribers
--- 			if subs then t[self] = nil end
--- 		end
--- 	end
--- 	self._subscribed = nil
--- end
-
--- function Actor:broadcast( msg, data, source )
--- 	local subs = self._subscribers
--- 	if not subs then return end
--- 	for obj, transform in pairs( subs ) do
--- 		if transform then
--- 			local m1 = transform[msg]			
--- 			local tt=type(m1)
--- 			if tt == 'function' then
--- 				m1( obj, msg, data, source or self )
--- 			elseif tt == 'string' then
--- 				obj:tell( m1, data, source or self )
--- 			elseif tt ~= false then
--- 				obj:tell( msg, data, source or self )
--- 			end
--- 		else
--- 			obj:tell( msg, data, source or self )
--- 		end
--- 	end
--- end
-
 ---------coroutine control
 local function _coroutineFuncWrapper( coro, func, ... )
 	func( ... )
-	return coro:stop()
 end
 
 local function _coroutineMethodWrapper( coro, func, obj, ... )
 	func( obj, ... )
-	return coro:stop()
 end
---TODO: coroutine pool?
 
-
--- if not jit then
-
-	local _WEAKMT = { __mode = 'kv' }
-	local _WEAKMT = {}
-	function Actor:_weakHoldCoroutine( coro )
-		local coroutines = self.coroutines
-		if not coroutines then
-			coroutines = setmetatable( {}, _WEAKMT )
-			self.coroutines = coroutines
-		end
-		coroutines[coro] = true
-		return coro	
+function Actor:_weakHoldCoroutine( newCoro )
+	local coroutines = self.coroutines
+	if not coroutines then
+		coroutines = { [newCoro] = true }
+		self.coroutines = coroutines
+		return newCoro
 	end
+	--remove dead ones
+	local dead = {}
+	for coro in pairs( coroutines ) do
+		if coro:isDone() then
+			dead[ coro ] = true
+		end
+	end
+	for coro in pairs( dead ) do
+		coroutines[ coro ] = nil
+	end
+	coroutines[ newCoro ] = true
+	return newCoro	
+end
 
--- else 
--- 	--*WORKAROUND: weak table cause crash when using Luajit
--- 	function Actor:_weakHoldCoroutine( newCoro )
--- 		local coroutines = self.coroutines
--- 		if not coroutines then
--- 			coroutines = { [newCoro] = true }
--- 			self.coroutines = coroutines
--- 			return newCoro
--- 		end
--- 		--remove dead ones
--- 		local dead = {}
--- 		for coro in pairs( coroutines ) do
--- 			if coro:isDone() then
--- 				dead[ coro ] = true
--- 			end
--- 		end
--- 		for coro in pairs( dead ) do
--- 			coroutines[ coro ] = nil
--- 		end
--- 		coroutines[ newCoro ] = true
--- 		return newCoro	
--- 	end
-
--- end
 
 --------------------------------------------------------------------
 function Actor:_createCoroutine( defaultParent, func, obj, ... )
 	local coro = MOAICoroutine.new()	
+
 	if defaultParent then coro:setDefaultParent( defaultParent ) end
 	local tt = type( func )
 	if tt == 'string' then --method name
@@ -247,7 +170,6 @@ function Actor:_createCoroutine( defaultParent, func, obj, ... )
 		coro:run( _coroutineMethodWrapper, coro, _func, obj, ... )
 	elseif tt=='function' then --function
 		coro:run( _coroutineFuncWrapper, coro, func, ... )
-		-- coro:run( func, ... )
 	else
 		error('unknown coroutine func type:'..tt)
 	end
