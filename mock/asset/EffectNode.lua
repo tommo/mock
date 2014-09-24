@@ -95,6 +95,9 @@ end
 function EffectNode:onLoad( state )
 end
 
+function EffectNode:onStop( state )
+end
+
 function EffectNode:getTransformNode( fxState )
 	return self:getProp( fxState )
 end
@@ -369,12 +372,16 @@ function EffectState:isPlaying()
 end
 
 function EffectState:stop()	
-	-- print( 'stop', self._config._path )
+	for node in pairs( self._activeNodes ) do
+		node:onStop( self )
+	end
+	self._activeNodes = nil
 	self.timer:stop()
 end
 
 function EffectState:_removeActiveNode( node, removeChildren )
 	self._activeNodes[ node ] = nil
+	self[ node ] = nil
 	if removeChildren then
 		if not self.children then return end
 		for i, child in pairs( self.children ) do
@@ -384,7 +391,7 @@ function EffectState:_removeActiveNode( node, removeChildren )
 end
 
 function EffectState:removeActiveNode( node, removeChildren )
-	self:_removeActiveNode( node, removeChildren )
+	self:_removeActiveNode( node, removeChildren ~= false )
 	if not next( self._activeNodes ) then
 		return self:stop()
 	end

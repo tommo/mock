@@ -10,8 +10,8 @@ function SpineSpriteSimple:_createSkeleton()
 	return MOAISpineSkeletonSimple.new()
 end
 
-
 function SpineSpriteSimple:onDetach( entity )
+	self:stop()
 	entity:_detachProp( self.skeleton )
 end
 

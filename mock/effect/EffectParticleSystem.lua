@@ -129,6 +129,7 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	return system, emitters, forces
 end
 
+local _count = 0
 function EffectNodeParticleSystem:onLoad( fxState )
 	local system, emitters, forces = self:buildSystem( nil, fxState )	
 	fxState:linkVisible  ( system )
@@ -138,11 +139,7 @@ function EffectNodeParticleSystem:onLoad( fxState )
 	for _, em in pairs( emitters ) do
 		fxState:attachAction( em )
 	end
-	
-	system:setListener( MOAIAction.EVENT_STOP, function()
-			system:setPartition( nil )
-		end
-	)
+	_count = _count + 1
 
 	if self.syncTransform then --attach system only
 		fxState:linkTransform( system )
@@ -155,6 +152,12 @@ function EffectNodeParticleSystem:onLoad( fxState )
 			fxState:linkTransform( f )
 		end
 	end
+end
+
+function EffectNodeParticleSystem:onStop( fxState )
+	local system = fxState[ self ]
+	system:stop()
+	system:setPartition( nil )	
 end
 
 --------------------------------------------------------------------

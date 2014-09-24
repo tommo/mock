@@ -175,7 +175,7 @@ function EffectSpineSprite:onLoad( fxState )
 		animState._effectNode = self
 		animState:setListener( MOAIAction.EVENT_STOP, 
 			function()
-				fxState:removeActiveNode( self )
+				fxState:removeActiveNode( self )				
 				sprite.skeleton:setPartition( nil )
 			end
 		)

@@ -42,6 +42,11 @@ function TextLabel:onDetach( entity )
 	entity:_detachProp( self.box )
 end
 
+function TextLabel:setBlend( b )
+	self.blend = b
+	setPropBlend( self.box, b )
+end
+
 function TextLabel:setDefaultStyle( styleName )
 	self.defaultStyle = styleName or 'default'
 	self:updateStyles()
@@ -177,6 +182,20 @@ function TextLabel:useDeckShader()
 	self.box:setShader( getBuiltinShader(DECK2D_SHADER) )
 end
 
+--------------------------------------------------------------------
+local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
+
+function TextLabel:setShader( shaderPath )
+	self.shader = shaderPath	
+	if shaderPath then
+		local shader = mock.loadAsset( shaderPath )
+		if shader then
+			local moaiShader = shader:getMoaiShader()
+			return self.box:setShader( moaiShader )
+		end
+	end
+	self.box:setShader( defaultShader )
+end
 registerComponent( 'TextLabel', TextLabel )
 registerEntityWithComponent( 'TextLabel', TextLabel )
 wrapWithMoaiPropMethods( TextLabel, 'box' )
