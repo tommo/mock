@@ -37,3 +37,5 @@ require 'mock.asset.AuroraSprite'
 ---Effect
 require 'mock.asset.EffectNode'
 require 'mock.asset.EffectPack'
+
+-- require 'mock.asset.PhysicsMaterial'

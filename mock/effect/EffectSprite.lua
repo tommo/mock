@@ -122,6 +122,7 @@ CLASS: EffectSpineSprite ( EffectTransformNode )
 		Field 'mode'  :enum( EnumTimerMode );
 		'----';
 		Field 'throttle'  :range( 0 );
+		Field 'offset'   ;
 		'----';
 		Field 'color'    :type('color')  :getset('Color') ;
 		Field 'blend' :enum( EnumBlendMode );
@@ -133,6 +134,7 @@ function EffectSpineSprite:__init()
 	self.clip  = false
 	self.color = { 1,1,1,1 }
 	self.throttle = 1
+	self.offset = 0
 end
 
 
@@ -168,7 +170,7 @@ function EffectSpineSprite:onLoad( fxState )
 
 	sprite.skeleton:setColor( unpack( self.color ) )
 	sprite:setThrottle( self.throttle )
-	local animState = sprite:play( self.clip, self.mode, nil, 'waitAttach' )
+	local animState = sprite:play( self.clip, self.mode, nil, 'waitAttach', self.offset )
 	fxState[ self ] = sprite
 	if animState then
 		fxState:attachAction( animState )

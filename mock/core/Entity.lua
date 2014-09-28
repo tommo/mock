@@ -863,7 +863,7 @@ function Entity:setupTransform( transform )
 	return setupMoaiTransform( self._prop, transform )
 end
 
-function Entity:inside( x, y, z, pad )
+function Entity:inside( x, y, z, pad, checkChildren )
 	for com in pairs(self.components) do
 		local inside = com.inside
 		if inside then
@@ -871,9 +871,11 @@ function Entity:inside( x, y, z, pad )
 		end
 	end
 
-	for child in pairs(self.children) do
-		if child:inside(x,y,z,pad) then
-			return true
+	if checkChildren~=false then
+		for child in pairs(self.children) do
+			if child:inside(x,y,z,pad) then
+				return true
+			end
 		end
 	end
 	
@@ -896,12 +898,29 @@ function Entity:pick( x, y, z, pad )
 	return nil
 end
 
+
 function Entity:resetTransform()
 	self:setLoc( 0, 0, 0 )
 	self:setRot( 0, 0, 0 )
 	self:setScl( 1, 1, 1 )
 	self:setPiv( 0, 0, 0 )
 end
+
+-- function Entity:onEditorPick( x, y, z, pad )
+-- 	for child in pairs(self.children) do
+-- 		local e = child:onEditorPick(x,y,z,pad)
+-- 		if e then return e end
+-- 	end
+
+-- 	for com in pairs(self.components) do
+-- 		local inside = com.inside
+-- 		if inside then
+-- 			if inside( com, x, y, z, pad ) then return self end
+-- 		end
+-- 	end
+-- 	return nil
+-- end
+
 
 --------------------------------------------------------------------
 --- Registry

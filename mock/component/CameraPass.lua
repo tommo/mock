@@ -450,13 +450,16 @@ end
 CLASS: SceneCameraPass ( CameraPass )
  	:MODEL{} 
 
-function SceneCameraPass:__init( clear )
+function SceneCameraPass:__init( clear, clearColor )
 	self.clearBuffer = clear ~= false
+	self.clearColor  = clearColor or false
 end
 
 function SceneCameraPass:onBuild()
 	if not self.clearBuffer then
 		self:pushFrameBuffer( false, { clearColor = false } )
+	else
+		self:pushFrameBuffer( false, { clearColor = self.clearColor } )
 	end
 	self:pushSceneRenderPass()
 	local debugLayer = self:buildDebugDrawLayer()

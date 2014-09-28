@@ -258,4 +258,36 @@ injectMoaiPropComponentMethod( MOAITextBox )
 
 
 
+--------------------------------------------------------------------
+local function affirmComponentClass( t, id )
+	if type(id) ~= 'string' then error('component class name expected',2) end
+	local classCreator = CLASS[ id ]
+	local f = function( a, ... )		
+		local clas = classCreator( CLASS, ... )
+		mock.registerComponent( id, clas )
+		return clas
+	end
+	setfenv( f, getfenv( 2 ) )
+	return f
+end
 
+_G.COMPONENT = setmetatable( {}, { __index = affirmComponentClass } )
+
+--------------------------------------------------------------------
+
+local function affirmEntityClass( t, id )
+	if type(id) ~= 'string' then error('entity class name expected',2) end
+	local classCreator = CLASS[ id ]
+	local f = function( a, superclass, ... )
+		if not superclass then
+			superclass = Entity
+		end
+		local clas = classCreator( CLASS, superclass, ... )
+		mock.registerEntity( id, clas )
+		return clas
+	end
+	setfenv( f, getfenv( 2 ) )
+	return f
+end
+
+_G.ENTITY = setmetatable( {}, { __index = affirmEntityClass } )

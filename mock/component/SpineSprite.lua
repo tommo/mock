@@ -42,7 +42,7 @@ function SpineSprite:getSkeletonData()
 	return self.skeletonData
 end
 
-function SpineSprite:play( clipName, mode, resetPose, waitAttach )
+function SpineSprite:play( clipName, mode, resetPose, waitAttach, offset )
 	if self.animState then
 		self.animState:stop( resetPose )
 	end
@@ -64,7 +64,7 @@ function SpineSprite:play( clipName, mode, resetPose, waitAttach )
 		0, 
 		clipName, 
 		mode == MOAITimer.LOOP,
-		0,
+		offset or 0,
 		-1
 	)
 	local duration = span:getDuration()

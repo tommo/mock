@@ -28,6 +28,7 @@ CLASS: Camera ( Component )
 	Field 'framebuffer'      :asset('framebuffer')  :getset('OutputFrameBuffer');
 	'----';
 	Field 'clearBuffer'      :boolean();
+	Field 'clearColor'       :type( 'color' ) :getset( 'ClearColor' )
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
@@ -39,7 +40,7 @@ end
 function Camera:__init( option )
 	option = option or {}
 	self.clearBuffer = true
-
+	self.clearColor = { 0,0,0,0 }
 	local cam = MOAICamera.new()
 	self._camera  = cam
 	cam.source = self
@@ -138,7 +139,8 @@ end
 -- end
 
 function Camera:loadPasses()
-	self:addPass( SceneCameraPass( self.clearBuffer ) )
+	self.passes = {}
+	self:addPass( SceneCameraPass( self.clearBuffer, self.clearColor ) )
 end
 
 function Camera:addPass( pass )
@@ -411,6 +413,16 @@ function Camera:setViewport( mode, x0, y0, x1, y1 )
 		error( 'unknown camera mode:' .. tostring( mode ) )
 	end
 	self:updateViewport()
+end
+
+function Camera:getClearColor()
+	return unpack( self.clearColor )
+end
+
+function Camera:setClearColor( r,g,b,a )
+	self.clearColor = {r,g,b,a}
+	self:updateRenderLayers()
+	-- self:update
 end
 
 --------------------------------------------------------------------

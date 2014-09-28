@@ -10,7 +10,7 @@ CLASS: TextLabel ()
 		Field 'text'          :string()  :set('setText') :widget('textbox');
 		'----';
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
-		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle');
+		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle') :selection( 'getStyleNames' );
 		'----';
 		Field 'rectLimit'     :boolean(); --TODO:update this
 		Field 'size'          :type('vec2') :getset( 'Size' );
@@ -67,6 +67,16 @@ end
 
 function TextLabel:getStyleSheet()
 	return self.styleSheetPath
+end
+
+function TextLabel:getStyleNames()
+	local sheet = mock.loadAsset( self.styleSheetPath )
+	if not sheet then return nil end
+	local result = {}
+	for i, name in pairs( sheet:getStyleNames() ) do
+		table.insert( result, { name, name } )
+	end
+	return result
 end
 
 function TextLabel:getSize()
@@ -160,11 +170,10 @@ function TextLabel:getBounds()
 end
 
 function TextLabel:drawBounds()
-	GIIHelper.setVertexTransform( self.box )
-	local x1,y1, x2,y2 = self.box:getRect()
-	MOAIDraw.drawRect( x1,y1,x2,y2 )
+	GIIHelper.setVertexTransform( self._entity:getProp() )
+	local x1,y1, x2,y2 = self.box:getRect()	
+	MOAIDraw.drawRect( x1,-y1,x2,-y2 )
 end
-
 
 function TextLabel:inside( x, y, z, pad )
 	return self.box:inside( x,y,z, pad )	

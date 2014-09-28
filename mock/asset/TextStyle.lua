@@ -116,6 +116,14 @@ function StyleSheet:updateStyles()
 	end
 end
 
+function StyleSheet:getStyleNames()
+	local names = {}
+	for i, s in ipairs( self.styles ) do
+		names[i] = s.name
+	end
+	return names
+end
+
 function StyleSheet:addStyle()
 	local s = TextStyle()
 	table.insert( self.styles, s )
