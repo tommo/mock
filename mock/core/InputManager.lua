@@ -562,22 +562,37 @@ function InputDevice:initMotionEventHandler()
 end
 
 
-
----Gyrosopce
-function InputDevice:getLevelData()
-	if level then
-		return level:getLevel()
+---Accelerometer
+function InputDevice:getAccelerometerData()
+	if self.level then
+		return self.level:getLevel()
 	end
+	return 0,0,0
 end	
 -- 
-function InputDevice:initLevelEventHandler()
+function InputDevice:initAccelerometerEventHandler()
 	--TODO
-	local level = self:getSensor( 'level' )
-	if level then
-		level:setCallback( onMotionEvent )
-	end
+	self.level = self:getSensor( 'level' )
+	-- if self.level then
+	-- 	self.level:setCallback( onMotionEvent )
+	-- end
 end
 
+---Accelerometer
+function InputDevice:getGyroscopeData()
+	if self.gyroscope then
+		return self.gyroscope:getLevel()
+	end
+	return 0,0,0
+end	
+-- 
+function InputDevice:initGyroscopeEventHandler()
+	--TODO
+	self.gyroscope = self:getSensor( 'gyroscope' )
+	-- if self.gyroscope then
+	-- 	self.gyroscope:setCallback( onMotionEvent )
+	-- end
+end
 
 
 ----Compass
@@ -650,7 +665,8 @@ function InputDevice:init()
 	-- TODO: implement belows
 	self:initJoystickEventHandler ()
 	-- self:initMotionEventHandler   ()
-	self:initLevelEventHandler    ()
+	self:initAccelerometerEventHandler    ()
+	self:initGyroscopeEventHandler    ()
 	self:initCompassEventHandler  ()
 end
 
@@ -753,9 +769,16 @@ end
 
 --JOYSTICK
 
---MOTION
+--ACCELEROMETER
+function getAccelerometerData()
+	return _defaultInputDevice:getAccelerometerData()
+end
 
 --GYROSCOPE
+function getGyroscopeData()
+	return _defaultInputDevice:getGyroscopeData()
+end
+
 
 --COMPASS
 function addCompassListener( func )

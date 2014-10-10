@@ -24,3 +24,7 @@ require 'mock.tools.ProfilerHelper'
 -- require 'tools.i18n'
 -- require 'mock.tools.GameCenter'
 -- require 'tools.FacebookHelper'
+
+--------------------------------------------------------------------
+--Math
+require 'mock.tools.Quaternion'

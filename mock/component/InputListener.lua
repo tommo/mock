@@ -121,6 +121,9 @@ function installInputListener( self, option )
 			inputDevice:addJoystickListener( joystickCallback )
 		end
 	end
+
+	--MOTION Callbakcs
+	
 	
 	self.__inputListenerData = {
 		mouseCallback    = mouseCallback,

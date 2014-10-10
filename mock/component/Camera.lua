@@ -28,7 +28,7 @@ CLASS: Camera ( Component )
 	Field 'framebuffer'      :asset('framebuffer')  :getset('OutputFrameBuffer');
 	'----';
 	Field 'clearBuffer'      :boolean();
-	Field 'clearColor'       :type( 'color' ) :getset( 'ClearColor' )
+	Field 'clearColor'       :type( 'color' ) :getset( 'ClearColor' );
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
@@ -71,7 +71,10 @@ function Camera:__init( option )
 	-- self.excludedLayers = option.excluded or ( option.included and 'all' or false )
 	self.excludedLayers = {}
 	self:setOutputFrameBuffer( false )
+	self:_initDefault()
+end
 
+function Camera:_initDefault()
 	self:setFOV( 90 )
 	local defaultNearPlane, defaultFarPlane = -10000, 10000
 	self:setNearPlane( defaultNearPlane )

@@ -349,7 +349,7 @@ end
 
 
 
-function CameraPass:buildSceneLayerRenderLayer( sceneLayer )	
+function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )	
 	local camera   = self.camera
 	if not camera:isLayerIncluded( sceneLayer.name ) then return false end
 
@@ -361,8 +361,17 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer )
 
 	layer:showDebugLines( false )
 	layer:setPartition ( sceneLayer:getPartition() )
-	layer:setViewport  ( camera.viewport )
-	layer:setCamera    ( camera._camera )
+	if option and option.viewport then
+		layer:setViewport  ( option.viewport )
+	else
+		layer:setViewport  ( camera.viewport )
+	end
+
+	if option and option.transform then
+		layer:setCamera  ( option.transform )
+	else
+		layer:setCamera  ( camera._camera )
+	end
 
 	if camera.parallaxEnabled and source.parallax then
 		layer:setParallax( unpack(source.parallax) )
@@ -428,7 +437,6 @@ function CameraPass:buildCallbackRenderLayer( func )
 	return layer
 end
 
-
 function CameraPass:pushSceneRenderPass( framebuffer, option )
 	local camera = self.camera
 	local scene  = camera.scene
@@ -439,11 +447,11 @@ function CameraPass:pushSceneRenderPass( framebuffer, option )
 
 	for id, sceneLayer in ipairs( scene.layers ) do
 		local name  = sceneLayer.name
-		local p = self:buildSceneLayerRenderLayer( sceneLayer )
+		local p = self:buildSceneLayerRenderLayer( sceneLayer, option )
 		self:pushRenderLayer( p )
 	end
-
 end
+
 
 
 --------------------------------------------------------------------
@@ -481,4 +489,3 @@ end
 
 function CallbackCameraPass:onDraw( ... )
 end
---------------------------------------------------------------------
