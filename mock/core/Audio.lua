@@ -1,7 +1,9 @@
 module 'mock'
+
 --[[
 	FMOD Designer Only
 ]]
+
 function initFmodDesigner()
 	--TODO: accept config from startup script
 	local MOAIFmodEventMgrReady = MOAIFmodEventMgr.init{

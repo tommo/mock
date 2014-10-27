@@ -2,7 +2,7 @@ module 'mock'
 
 ---DEAD LOCK DEBUG HELPER
 local DEADLOCK_THRESHOLD = 100 
-local DEADLOCK_TRACK     = 5
+local DEADLOCK_TRACK     = 10
 local DEADLOCK_TRACK_ENABLED = true
 --------------------------------------------------------------------
 local function buildFSMScheme( scheme )

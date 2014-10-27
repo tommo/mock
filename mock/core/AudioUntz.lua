@@ -2,7 +2,7 @@ module 'mock'
 
 MOAIUntzSystem.initialize ()
 
-CLASS: MusicPlayer ( Component )
+-- CLASS: MusicPlayer ( Component )
 
 -- function MusicPlayer
 -- local checkFileExists=MOAIFileSystem.checkFileExists
