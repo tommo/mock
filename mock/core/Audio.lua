@@ -5,6 +5,7 @@ module 'mock'
 ]]
 
 function initFmodDesigner()
+	if not MOAIFmodEventMgr then return end
 	--TODO: accept config from startup script
 	local MOAIFmodEventMgrReady = MOAIFmodEventMgr.init{
 			["soundMemoryMB"]              =  16 ;
