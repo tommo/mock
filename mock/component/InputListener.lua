@@ -105,15 +105,18 @@ function installInputListener( self, option )
 	if not sensors or table.index( sensors, 'joystick' ) then
 		local onJoyButtonDown = self.onJoyButtonDown
 		local onJoyButtonUp   = self.onJoyButtonUp
+		local onJoyButtonEvent = self.onJoyButtonEvent
 		local onJoyAxisMove   = self.onJoyAxisMove
-		if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove then
+		if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove or onJoyButtonEvent then
 			joystickCallback = function( ev, joyId, btnId, axisId, value, mock )
 				-- print( ev, joyid, btnId, axisId, value )
 				if mock and refuseMockUpInput then return end
 				if ev == 'down' then
 					if onJoyButtonDown then onJoyButtonDown( self, joyId, btnId, mock ) end
+					if onJoyButtonEvent then onJoyButtonEvent( self, joyId, btnId, true, mock ) end
 				elseif ev == 'up' then
 					if onJoyButtonUp then onJoyButtonUp( self, joyId, btnId, mock ) end
+					if onJoyButtonEvent then onJoyButtonEvent( self, joyId, btnId, false, mock ) end
 				elseif ev == 'axis' then
 					if onJoyAxisMove then onJoyAxisMove( self, joyId, axisId, value ) end
 				end
