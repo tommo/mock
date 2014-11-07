@@ -14,7 +14,7 @@ function Character:__init()
 	self.config      = false
 	self.default     = 'default'
 	self.activeState = false
-	self.spineSprite = mock.SpineSprite()	
+	self.spineSprite = mock.SpineSprite()
 	self.soundSource = mock.SoundSource()
 	self.throttle    = 1
 	self.scale       = 1

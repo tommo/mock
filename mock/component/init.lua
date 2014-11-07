@@ -34,6 +34,9 @@ require 'mock.component.TiledTextureRect'
 require 'mock.component.DrawScript'
 require 'mock.component.InputScript'
 
+require 'mock.component.Geometry'
+require 'mock.component.TexturePlane'
+
 --------------------------------------------------------------------
 ---- Actor ?
 require 'mock.component.MsgEmitter'
