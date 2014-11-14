@@ -44,6 +44,10 @@ function ShaderProgram:__init()
 
 	self.vsh = false
 	self.fsh = false
+	
+	self.vshSrc = false
+	self.fshSrc = false
+
 	self.uniforms   = {}
 	self.attributes = false
 end
@@ -54,7 +58,6 @@ end
 
 function ShaderProgram:build( force )
 	if self.built and not force then return end
-
 	local vshSource
 	local fshSource
 
@@ -69,8 +72,15 @@ function ShaderProgram:build( force )
 	else
 		fshSource = mock.loadAsset( self.fsh )
 	end
+	
+	return self:buildFromSource( vshSource, fshSource )
+end
 
+function ShaderProgram:buildFromSource( vshSource, fshSource )
 	local prog  = self.prog
+
+	self.vshSource = vshSource
+	self.fshSource = fshSource
 
 	prog:load( vshSource, fshSource )
 	prog._source = self
@@ -122,6 +132,7 @@ function ShaderProgram:build( force )
 			uniformTable[ name ] = i
 		end
 	end
+	
 	self.uniformTable = uniformTable
 	self.built = true
 end
@@ -183,6 +194,12 @@ end
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
+
+function buildShaderProgramFromString( vsh, fsh )
+	local prog = ShaderProgram()
+	prog:buildFromSource( vsh, fsh )
+	return prog
+end
 
 local shaderPrograms = {}
 
