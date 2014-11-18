@@ -483,6 +483,9 @@ function wrapWithMoaiPropMethods( clas, propName )
 			'inside',
 		})
 
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_R_COL, 'ColorR' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_G_COL, 'ColorG' )
+	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_B_COL, 'ColorB' )
 	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_A_COL, 'Alpha' )
 	_wrapAttrGetterBoolean( clas, propName, MOAIProp.ATTR_VISIBLE, 'isVisible' )
 
