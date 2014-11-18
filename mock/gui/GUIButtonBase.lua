@@ -23,17 +23,18 @@ end
 function GUIButtonBase:onLoad()
 end
 
-function GUIButtonBase:onPress	( touch, x, y )
+function GUIButtonBase:_onPress	( touch, x, y )
 	self:setState 'press'
 	self:emit( 'ui.button.press', self )
 	self:updateState()
+	return self:onPress( touch, x, y )
 end
 
 function GUIButtonBase:onStateChange()
 	return self:updateState()
 end
 
-function GUIButtonBase:onRelease( touch, x, y )
+function GUIButtonBase:_onRelease( touch, x, y )
 	if self.state == 'disabled' then return end
 	self:setState 'normal'
 	self:emit( 'ui.button.release', self )
@@ -44,10 +45,12 @@ function GUIButtonBase:onRelease( touch, x, y )
 		if onClick then onClick( self ) end		
 	end
 	self:updateState()
-end
-
-function GUIButtonBase:onClick()
+	return self:onRelease( touch, x, y )
 end
 
 function GUIButtonBase:updateState()
+end
+
+---user callback
+function GUIButtonBase:onClick()
 end

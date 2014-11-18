@@ -89,7 +89,7 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		local widget = self:findTopWidget( x, y )
 		if widget then 
 			p.activeWidget = widget
-			widget:onPress( touch, x,y )
+			widget:_onPress( touch, x,y )
 			if not widget.__multiTouch then
 				if not widget.__activeTouch then widget.__activeTouch=touch end
 			end
@@ -102,7 +102,7 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		if p.activeWidget then
 			x, y = self:wndToWorld(x,y)
 			local widget = p.activeWidget
-			widget:onRelease( touch, x, y )
+			widget:_onRelease( touch, x, y )
 			if not widget.__multiTouch then	widget.__activeTouch=false		end
 		end
 		p.activeWidget = false
@@ -115,7 +115,7 @@ function GUIRootWidget:onTouchEvent( ev, touch, x, y )
 		-- p.state='drag'
 		if p.activeWidget then
 			x, y = self:wndToWorld( x, y )
-			p.activeWidget:onDrag( touch, x, y )
+			p.activeWidget:_onDrag( touch, x, y )
 		end
 
 	end

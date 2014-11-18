@@ -296,13 +296,13 @@ function GUIScrollArea:updateTargetScrollY( dt )
 end
 
 --------------------------------------------------------------------
-function GUIScrollArea:onPress( pointer, x,y )
+function GUIScrollArea:_onPress( pointer, x,y )
 	self:grabScroll( true )
 	self.dragX0 = x
 	self.dragY0 = y
 end
 
-function GUIScrollArea:onDrag( pointer, x,y )
+function GUIScrollArea:_onDrag( pointer, x,y )
 	self:grabScroll( true )
 	local dx, dy = x-self.dragX0, y-self.dragY0
 	self:addTargetScrollX( dx )
@@ -311,7 +311,7 @@ function GUIScrollArea:onDrag( pointer, x,y )
 	self.dragY0 = y
 end
 
-function GUIScrollArea:onRelease( pointer, x,y )
+function GUIScrollArea:_onRelease( pointer, x,y )
 	self:grabScroll( false )
 end
 
