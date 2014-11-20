@@ -18,6 +18,7 @@ end
 
 local function _StateStopListener( timer, timesExecuted )
 	timer.state.target:processStateEvent( 'stop', timesExecuted )
+	timer.state.over   = true
 end
 
 local function _stateLoopListener( timer, timesExecuted )
@@ -26,6 +27,7 @@ end
 
 function CharacterState:__init( target, action )
 	self.active = false
+	self.over   = false
 	self.action = action
 	self.target = target
 	
@@ -137,6 +139,10 @@ function CharacterState:apply( a, b )
 end
 
 function CharacterState:isDone()
+	return self.timer:isDone()
+end
+
+function CharacterState:isActive()
 	return self.timer:isDone()
 end
 

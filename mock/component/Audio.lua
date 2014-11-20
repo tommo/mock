@@ -5,6 +5,8 @@ module 'mock'
 --TODO: add multiple listener support (need host works) ?
 CLASS: SoundListener ()
 :MODEL{
+	Field 'forward'    :type('vec3') :getset('VectorForward');
+	Field 'up'         :type('vec3') :getset('VectorUp') ;
 	
 }
 wrapWithMoaiTransformMethods( SoundListener, '_listener' )
@@ -12,8 +14,9 @@ wrapWithMoaiTransformMethods( SoundListener, '_listener' )
 function SoundListener:__init()
 	local listener = MOAIFmodEventMgr.getMicrophone()
 	self._listener = listener
-	listener:setVectorForward( 0,0,-1 )
-	listener:setVectorUp( 0,1,0 )
+	self:setVectorForward( 0,0,-1 )
+	self:setVectorUp( 0,1,0 )
+	self.transformHookNode = MOAIScriptNode.new()
 end
 
 function SoundListener:onAttach( entity )
@@ -24,6 +27,23 @@ function SoundListener:onDetach( entity )
 	-- do nothing...
 end
 
+function SoundListener:getVectorForward()
+	return unpack( self.forward )
+end
+
+function SoundListener:setVectorForward( x,y,z )
+	self.forward = { x,y,z }
+	self._listener:setVectorForward( x,y,z )
+end
+
+function SoundListener:getVectorUp()
+	return unpack( self.up )
+end
+
+function SoundListener:setVectorUp( x,y,z )
+	self.up = { x,y,z }
+	self._listener:setVectorUp( x,y,z )
+end
 registerComponent( 'SoundListener', SoundListener )
 
 --------------------------------------------------------------------
@@ -33,11 +53,14 @@ CLASS: SoundSource ()
 	:MODEL{
 		Field 'defaultClip' :asset('fmod_event')  :getset('DefaultClip');
 		Field 'autoPlay'    :boolean();
+		Field 'is3D' :boolean();
 	}
 
 function SoundSource:__init()
 	self.eventInstances = {}
 	self.eventNamePrefix = false
+	self.is3D = true
+	self.loopSound = true
 end
 
 function SoundSource:onAttach( entity )
@@ -68,9 +91,14 @@ end
 
 function SoundSource:start()
 	if self.defaultClipPath then
-		return self:playEvent2D( self.defaultClipPath )
+		if self.is3D then
+			return self:playEvent3D( self.defaultClipPath )
+		else
+			return self:playEvent2D( self.defaultClipPath )
+		end
 	end
 end
+
 
 --------------------------------------------------------------------
 local inheritLoc = inheritLoc
@@ -129,6 +157,7 @@ end
 
 function SoundSource:playEvent3D( event, follow )
 	local x,y,z
+	self._entity:forceUpdate()
 	x,y,z = self._entity:getWorldLoc()
 	return self:playEvent3DAt( event, x,y,z, follow )
 end

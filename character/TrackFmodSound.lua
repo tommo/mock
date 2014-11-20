@@ -35,9 +35,9 @@ function EventFmodSound:start( state, pos )
 	if self.sound then 
 		local target = state.target
 		if self.loop then
-			local evt = target.soundSource:loopEvent2D( self.sound )
+			local evt = target.soundSource:loopEvent3D( self.sound )
 		else
-			local evt = target.soundSource:playEvent2D( self.sound )
+			local evt = target.soundSource:playEvent3D( self.sound )
 		end
 	end
 end

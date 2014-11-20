@@ -1,6 +1,7 @@
 --------------------------------------------------------------------
 ---- Base
 require 'mock.component.Behaviour'
+require 'mock.component.UpdateListener'
 require 'mock.component.RenderComponent'
 require 'mock.component.DeckComponent'
 
@@ -62,7 +63,6 @@ require 'mock.component.SpineSpriteSimple'
 --------------------------------------------------------------------
 ---- AI
 require 'mock.component.FSMController'
-require 'mock.component.UpdateListener'
 require 'mock.component.BehaviorTree'
 
 --------------------------------------------------------------------
