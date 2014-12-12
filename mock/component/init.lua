@@ -56,6 +56,7 @@ require 'mock.component.PhysicsBody'
 --------------------------------------------------------------------
 ---- Extended
 require 'mock.component.AuroraSprite'
+require 'mock.component.MSprite'
 require 'mock.component.SpineSpriteBase'
 require 'mock.component.SpineSprite'
 require 'mock.component.SpineSpriteSimple'
