@@ -5,8 +5,9 @@ local DECK2D_TEX_ONLY_SHADER    = MOAIShaderMgr. DECK2D_TEX_ONLY_SHADER
 local DECK2D_SHADER             = MOAIShaderMgr. DECK2D_SHADER
 local FONT_SHADER               = MOAIShaderMgr. FONT_SHADER
 
-CLASS: TextLabel ()
+CLASS: TextLabel ( RenderComponent )
 	:MODEL{
+		'----';
 		Field 'text'          :string()  :set('setText') :widget('textbox');
 		'----';
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
@@ -18,12 +19,13 @@ CLASS: TextLabel ()
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
 	}
 
-function TextLabel:__init()
+function TextLabel:__init(  )
 	local box = MOAITextBox.new()
 	box:setStyle( getFallbackTextStyle() )
 	box:setScl( 1,-1,1 )
 	self.box  = box
 	self.text = ''
+	self.blend = 'alpha'
 	self.alignment  = 'left'
 	self.alignmentV = 'top'
 	self:setSize( 100, 100 )
@@ -42,11 +44,26 @@ function TextLabel:onDetach( entity )
 	entity:_detachProp( self.box )
 end
 
+--------------------------------------------------------------------
 function TextLabel:setBlend( b )
 	self.blend = b
 	setPropBlend( self.box, b )
 end
 
+local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
+function TextLabel:setShader( shaderPath )
+	self.shader = shaderPath	
+	if shaderPath then
+		local shader = mock.loadAsset( shaderPath )
+		if shader then
+			local moaiShader = shader:getMoaiShader()
+			return self.prop:setShader( moaiShader )
+		end
+	end
+	self.prop:setShader( defaultShader )
+end
+
+--------------------------------------------------------------------
 function TextLabel:setDefaultStyle( styleName )
 	self.defaultStyle = styleName or 'default'
 	self:updateStyles()
@@ -193,7 +210,6 @@ end
 
 --------------------------------------------------------------------
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
-
 function TextLabel:setShader( shaderPath )
 	self.shader = shaderPath	
 	if shaderPath then
@@ -205,6 +221,7 @@ function TextLabel:setShader( shaderPath )
 	end
 	self.box:setShader( defaultShader )
 end
+
 registerComponent( 'TextLabel', TextLabel )
 registerEntityWithComponent( 'TextLabel', TextLabel )
 wrapWithMoaiPropMethods( TextLabel, 'box' )
