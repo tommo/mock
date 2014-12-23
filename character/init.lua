@@ -21,6 +21,7 @@ require 'character.TrackEffect'
 --------------------------------------------------------------------
 require 'character.TrackTrailFX'
 require 'character.EventYaka'
+require 'character.TrackTapEvent'
 
 
 ---	

@@ -396,7 +396,6 @@ function forceLoadAsset( path ) --no cache
 	return loadAsset( path, { policy = 'force' } )
 end
 
-
 function getCachedAsset( path )
 	if path == '' then return nil end
 	if not path   then return nil end
@@ -467,4 +466,13 @@ function reportAssetInCache( typeFilter )
 	for i, item in ipairs( output ) do
 		printf( '%s \t %s', item[2], item[1]  )
 	end
+end
+
+--------------------------------------------------------------------
+function loadAssetFolder( path )
+	local node = getAssetNode( path )
+	if not ( node and node:getAssetType() == 'folder' ) then 
+		return _warn( 'folder path expected:', path )
+	end
+	
 end
