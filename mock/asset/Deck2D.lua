@@ -180,9 +180,12 @@ function Tileset:update()
 	self.th = th
 	local w1, h1   = tw + spacing, th + spacing
 	local col, row = math.floor(texW/w1), math.floor(texH/h1)	
+	self.col = col
+	self.row = row
+
+	if not self.texture then return end	
 
 	local deck = self:getMoaiDeck()
-
 	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )
 	deck:setTexture( tex )
@@ -194,8 +197,7 @@ function Tileset:update()
 		ox/texW * du + u0, oy/texH * dv + v0,
 		tw/texW * du,      th/texH * dv
 		)
-	self.col = col
-	self.row = row
+	
 end
 
 --------------------------------------------------------------------

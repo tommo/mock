@@ -495,17 +495,21 @@ function Camera:setPriority( p )
 	getCameraManager():update()
 end
 
-function Camera:setOutputFrameBuffer( fb )
-	self.frameBufferPath = fb or false
-	if fb then 
-		fb = mock.loadAsset( fb )
+function Camera:setOutputFrameBuffer( fbPath )
+	local fb
+	self.frameBufferPath = fbPath or false
+	if fbPath then 
+		fb = mock.loadAsset( fbPath )
 		fb = fb and fb:getMoaiFrameBuffer()
+		if not fb then
+			_error( 'cannot build framebuffer', self.frameBufferPath )
+		end
 	end
 	self.frameBuffer = fb or MOAIGfxDevice.getFrameBuffer()
 	if self.scene then
 		self:updateViewport()
 		self:updateRenderLayers()
-	end	
+	end
 end
 
 function Camera:getOutputFrameBuffer()

@@ -51,7 +51,7 @@ function CameraManager:getCameraList()
 end
 
 function CameraManager:update()
-	--TODO: render order of framebuffers
+	--TODO: render order of frameBuffers
 	local contextMap = {}
 
 	local renderTableMap = {}
@@ -118,7 +118,7 @@ function CameraManager:_buildBufferTable( passQueue )
 	for i, entry in ipairs( passQueue ) do
 		local tag = entry.tag
 		if tag == 'buffer' then
-			local fb = entry.framebuffer or deviceBuffer
+			local fb = entry.frameBuffer or deviceBuffer
 			local option = entry.option or defaultOptions
 			if fb ~= currentFB  then				
 				currentBatch = {}
@@ -237,8 +237,8 @@ CLASS: CameraPass ()
 function CameraPass:__init()
 	self.camera = false
 	self.renderLayers = {}
-	self.framebuffer  = false
-	self.framebuffers = {}
+	self.frameBuffer  = false
+	self.frameBuffers = {}
 	self.passes = {}
 end
 
@@ -246,10 +246,10 @@ function CameraPass:getCamera()
 	return self.camera
 end
 
-function CameraPass:pushRenderLayer( layer, framebuffer, option )
+function CameraPass:pushRenderLayer( layer, frameBuffer, option )
 	if not layer then return end
-	if framebuffer or option then
-		self:pushFrameBuffer( framebuffer, option )
+	if frameBuffer or option then
+		self:pushFrameBuffer( frameBuffer, option )
 	end
 
 	table.insert( self.passes, {
@@ -260,10 +260,10 @@ function CameraPass:pushRenderLayer( layer, framebuffer, option )
 	return layer
 end
 
-function CameraPass:pushFrameBuffer( framebuffer, option )
+function CameraPass:pushFrameBuffer( frameBuffer, option )
 	table.insert( self.passes, { 
 		tag         = 'buffer',
-		framebuffer = framebuffer or false,
+		frameBuffer = frameBuffer or false,
 		option      = option 
 		}
 	)
@@ -275,20 +275,20 @@ function CameraPass:build()
 	return self.passes
 end
 
-function CameraPass:requestFramebuffer( name )
+function CameraPass:requestFrameBuffer( name )
 	name = name or 'default'
-	local fb = self.framebuffers[ name ]
+	local fb = self.frameBuffers[ name ]
 	if fb then return fb end
-	fb = self:buildFramebuffer()
-	self.framebuffers[ name ] = fb
+	fb = self:buildFrameBuffer()
+	self.frameBuffers[ name ] = fb
 	return fb
 end
 
-function CameraPass:clearFramebuffers()
-	for name, fb in pairs( self.framebuffers ) do
+function CameraPass:clearFrameBuffers()
+	for name, fb in pairs( self.frameBuffers ) do
 		fb:release()
 	end
-	self.framebuffers = {}
+	self.frameBuffers = {}
 end
 
 local function _convertFilter( filter, mipmap )
@@ -309,15 +309,14 @@ local function _convertFilter( filter, mipmap )
 	return output
 end
 
-function CameraPass:buildFramebuffer()
+function CameraPass:buildFrameBuffer()
 	local camera = self.camera
-	local fb0 = camera:getMoaiFrameBuffer()
-	if fb0 then
-	end
 	local fb = MOAIFrameBufferTexture.new()
 	fb:setClearColor()
 	fb:setClearDepth( false )
-	fb:init( 1136, 640 )
+	local w, h = camera:getViewportWndSize()
+	fb:init( w, h )
+	print( fb, w, h )
 	fb:setFilter( MOAITexture.GL_LINEAR )
 	return fb
 end
@@ -346,7 +345,6 @@ function CameraPass:buildDebugDrawLayer()
 
 	return layer
 end
-
 
 
 function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )	
@@ -400,11 +398,12 @@ function CameraPass:buildSingleQuadRenderLayer( texture )
 
 	local viewport = MOAIViewport.new()
 	local vx,vy,vx1,vy1 = camera:getViewportWndRect()
+	local w, h = vx1-vx, vy1-vy
 	viewport:setSize( vx,vy,vx1,vy1 )
-	viewport:setScale( vx1-vx, vy1-vy )
+	viewport:setScale( w, h )
 	layer:setViewport( viewport )
 	local quad = MOAIGfxQuad2D.new()
-	local w, h = camera:getViewportSize()
+	-- local w, h = camera:getViewportSize()
 	quad:setRect( -w/2, -h/2, w/2, h/2 )
 	quad:setUVRect( 0,0,1,1 )
 	if texture then quad:setTexture( texture ) end
@@ -437,12 +436,12 @@ function CameraPass:buildCallbackRenderLayer( func )
 	return layer
 end
 
-function CameraPass:pushSceneRenderPass( framebuffer, option )
+function CameraPass:pushSceneRenderPass( frameBuffer, option )
 	local camera = self.camera
 	local scene  = camera.scene
 	--make a copy of layers from current scene
-	if framebuffer or option then
-		self:pushFrameBuffer( framebuffer, option )
+	if frameBuffer or option then
+		self:pushFrameBuffer( frameBuffer, option )
 	end
 
 	for id, sceneLayer in ipairs( scene.layers ) do
@@ -464,10 +463,12 @@ function SceneCameraPass:__init( clear, clearColor )
 end
 
 function SceneCameraPass:onBuild()
+	local camera = self:getCamera()
+	local fb0 = camera:getMoaiFrameBuffer() or fb0
 	if not self.clearBuffer then
-		self:pushFrameBuffer( false, { clearColor = false } )
+		self:pushFrameBuffer( fb0, { clearColor = false } )
 	else
-		self:pushFrameBuffer( false, { clearColor = self.clearColor } )
+		self:pushFrameBuffer( fb0, { clearColor = self.clearColor } )
 	end
 	self:pushSceneRenderPass()
 	local debugLayer = self:buildDebugDrawLayer()

@@ -9,6 +9,7 @@ CLASS: TexturePlane ( RenderComponent )
 	}
 
 registerComponent( 'TexturePlane', TexturePlane )
+mock.registerEntityWithComponent( 'TexturePlane', TexturePlane )
 
 function TexturePlane:__init()
 	self.texture = false
@@ -71,3 +72,20 @@ function TexturePlane:resetSize()
 		self:setSize( tex:getSize() )
 	end
 end
+
+
+--------------------------------------------------------------------
+local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
+
+function TexturePlane:setShader( shaderPath )
+	self.shader = shaderPath	
+	if shaderPath then
+		local shader = mock.loadAsset( shaderPath )
+		if shader then
+			local moaiShader = shader:getMoaiShader()
+			return self.prop:setShader( moaiShader )
+		end
+	end
+	self.prop:setShader( defaultShader )
+end
+

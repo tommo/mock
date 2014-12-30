@@ -21,7 +21,7 @@ function FrameBuffer:getSize()
 end
 
 function FrameBuffer:getMoaiTextureUV()
-	return self.moaiBuffer, { 0,1,1,0 }
+	return self.moaiBuffer, { 0,0,1,1 }
 end
 
 function FrameBuffer:getMoaiFrameBuffer()

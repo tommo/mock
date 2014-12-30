@@ -74,11 +74,27 @@ function MSprite:setSprite( path )
 		self.currentClip = false
 		self.spriteData = spriteData
 		self.prop:setDeck( spriteData.frameDeck )
-		self.prop:setIndex( 0 )
+		self.prop:setIndex( 1 )
 		self.prop:forceUpdate()
 	end
 
 end
+
+--------------------------------------------------------------------
+local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
+
+function MSprite:setShader( shaderPath )
+	self.shader = shaderPath	
+	if shaderPath then
+		local shader = mock.loadAsset( shaderPath )
+		if shader then
+			local moaiShader = shader:getMoaiShader()
+			return self.prop:setShader( moaiShader )
+		end
+	end
+	self.prop:setShader( defaultShader )
+end
+
 
 function MSprite:getSprite()
 	return self.spritePath
@@ -195,12 +211,13 @@ function MSprite:resetAndPlay( clipName, mode )
 	else --same as playing clip
 		self:setTime( 0 )
 		self:apply( 0 )
-		self:start()
+		return self:start()
 	end
 end
 
 function MSprite:start()
 	self.driver:start()
+	return self.driver
 end
 
 function MSprite:reset()

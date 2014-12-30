@@ -151,6 +151,7 @@ end
 --------------------------------------------------------------------
 function Shader:__init()
 	self.shader = MOAIShader.new()
+	self.shader.parent = self
 end
 
 function Shader:setProgram( prog )
