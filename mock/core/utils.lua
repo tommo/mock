@@ -75,41 +75,23 @@ function probselect(t)
 	
 	local total=0
 	for i, s in ipairs(t) do
-		total=total+s[1]
+		local w = s[1]
+		if w > 0 then
+			total=total+w
+		end
 	end
 	
-	local k=random()*total
-	local kk=0
-
-	for i, s in ipairs(t) do
-		local p=s[1]
-		if k>kk and k<=kk+p then return s[2] end
-		kk=kk+p
-	end
-	return t.default
-end
-
-
-function probselect2(t)
-	
-	local total=0
-	local t1={}
-	local c=1
-	for k, p in pairs(t) do
-		total=total+p
-		t1[c]={p,k}
-		c=c+1
-	end
-	
-	local k  = random() * total
+	local k = random()*total
 	local kk = 0
 
-	for i, s in ipairs(t1) do
-		local p=s[1]
-	if k>kk and k<=kk+p then return s[2] end
-		kk=kk+p
+	for i, s in ipairs(t) do
+		local w=s[1]
+		if w > 0 then
+			if k>kk and k<=kk+w then return s[2] end
+			kk=kk+w
+		end
 	end
-	return nil
+	return t.default
 end
 
 function randselect(t)
@@ -117,7 +99,6 @@ function randselect(t)
 	local k = ( math.floor( random() * 100 * i ) % i )+1
 	return t[ k ]
 end
-
 
 function randselectexcept(t,x)
 	local v
