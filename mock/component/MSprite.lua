@@ -46,6 +46,7 @@ function MSprite:__init()
 	self.playFPS     = 60
 	self.playSpeed   = 1
 	self.driver:reserveLinks( 3 ) --offset x & offset y & frame index	
+	self.featureMask = {}
 end
 
 function MSprite:onAttach( entity )
@@ -73,11 +74,55 @@ function MSprite:setSprite( path )
 		self:stop( true )
 		self.currentClip = false
 		self.spriteData = spriteData
-		self.prop:setDeck( spriteData.frameDeck )
+		local instance = MOAIGfxMaskedQuadListDeck2DInstance.new()
+		instance:setSource( spriteData.frameDeck )
+		self.deckInstance = instance
+		-- self:_updateFeatureMask()
+		self.prop:setDeck( instance )
 		self.prop:setIndex( 1 )
 		self.prop:forceUpdate()
 	end
 
+end
+
+-- function MSprite:_updateFeatureMask()
+-- 	if not self.deckInstance then return end
+-- 	local instance = self.deckInstance
+-- 	for i = 1, 64 do
+-- 		instance:setMask( i, self.featureMask[ i ] ~= false )
+-- 	end
+-- end
+
+function MSprite:getFeatureNames()
+	if self.spriteData then
+		return self.spriteData.featureNames
+	end
+	return {}
+end
+
+function MSprite:setFeatureHidden( featureName, value )
+	if not self.deckInstance then return end
+	local features = self.spriteData.features
+	local bit = features and features[ featureName ] or 0
+	self.deckInstance:setMask( bit, value ~= false )
+	-- self.featureMask[ bit ] = value ~= false
+	-- if not self.deckInstance then return end
+end
+
+function MSprite:setupFeatures( featureNames )
+	if not self.deckInstance then return end
+	local features = self.spriteData.features
+	if not features then return end
+	local instance = self.deckInstance
+	for i = 1, 64 do --hide all
+		instance:setMask( i, true )
+	end
+	for i, featureName in ipairs( featureNames ) do
+		local bit = features[ featureName ]
+		if bit then
+			instance:setMask( bit, false ) --show target feature
+		end
+	end
 end
 
 --------------------------------------------------------------------

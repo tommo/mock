@@ -11,7 +11,15 @@ local function MSpriteLoader( node )
 	local textures = {}
 	local texRects = {}
 	local uvRects  = {}
+	local features = {}
+	local featureNames = {}
 
+	if data.features then
+		for i, entry in pairs( data.features ) do
+			features[ entry.name ] = entry.id
+			featureNames[ i ] = entry.name
+		end
+	end
 	--load images
 	local count = 0
 	for id, name in pairs( data.atlases ) do
@@ -31,7 +39,7 @@ local function MSpriteLoader( node )
 		texRects[ id ] = { tw, th, ox, oy } 
 	end
 
-	local deck = MOAIGfxQuadListDeck2D.new()
+	local deck = MOAIGfxMaskedQuadListDeck2D.new()
 	--count parts
 	local partCount = 0
 	for frameId, frame in pairs( data.frames ) do
@@ -78,7 +86,8 @@ local function MSpriteLoader( node )
 			local x1, y1 = x0 + w, y0 + h
 			-- deck:setRect( partIdx, x0 + ox, y0 + oy, x1 + ox, y1 + oy )
 			deck:setRect( partIdx, x0, -y0, x1, -y1 )
-			deck:setPair( partIdx, m.index, partIdx )
+			local featureBit = m.feature or 0
+			deck:setPair( partIdx, m.index, partIdx, featureBit )
 			partIdx = partIdx + 1
 		end
 		deck:setList( i, basePartId, partIdx - basePartId )
@@ -136,7 +145,9 @@ local function MSpriteLoader( node )
 	local sprite = {
 		frameDeck  = deck,
 		animations = animations,
-		texture    = tex
+		texture    = tex,
+		features   = features,
+		featureNames   = featureNames,
 	}
 
 	return sprite
