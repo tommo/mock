@@ -187,7 +187,7 @@ function Tileset:update()
 
 	local deck = self:getMoaiDeck()
 	local tex, uv = self.texture:getMoaiTextureUV()
-	local u0,v0,u1,v1 = unpack( uv )
+	local u0,v1,u1,v0 = unpack( uv )
 	deck:setTexture( tex )
 
 	local du, dv = u1 - u0, v1 - v0
