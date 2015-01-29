@@ -50,6 +50,7 @@ function ShaderProgram:__init()
 
 	self.uniforms   = {}
 	self.attributes = false
+	self.shaders    = table.weak_k()
 end
 
 function ShaderProgram:getMoaiShaderProgram()
@@ -135,12 +136,16 @@ function ShaderProgram:buildFromSource( vshSource, fshSource )
 	
 	self.uniformTable = uniformTable
 	self.built = true
+	for shader in pairs( self.shaders ) do
+		shader:setProgram( self )
+	end
 end
 
 function ShaderProgram:buildShader( data )	
 	if not self.built then self:build() end
 	local shader = Shader()
 	shader:setProgram( self )
+	self.shaders[ shader ] = true
 	--TODO:set uniforms from data
 	return shader
 end
@@ -233,12 +238,17 @@ function releaseShaderProgram( vshPath, fshPath )
 	end
 end
 
+function getShaderPrograms()
+	return shaderPrograms
+end
+
 local function shaderLoader( node )
 	local data = loadAssetDataTable( node:getObjectFile('def') )
 	local vsh = data['vsh'] or '__default_vsh__'
 	local fsh = data['fsh'] or '__default_fsh__'
 	local prog = affirmShaderProgram( vsh, fsh )
 	if prog then
+		node.cached.program = prog
 		return prog:buildShader( data )
 	end
 end
@@ -247,6 +257,7 @@ local function shaderSourceLoader( node )
 	local data = loadTextData( node:getObjectFile('src') )
 	return data
 end
+
 
 registerAssetLoader ( 'shader', shaderLoader   )
 registerAssetLoader ( 'vsh', shaderSourceLoader )

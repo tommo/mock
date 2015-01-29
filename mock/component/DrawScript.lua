@@ -1,6 +1,9 @@
 module 'mock'
 
 CLASS: DrawScript ()
+	-- :MODEL{
+	-- 	Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
+	-- }
 function DrawScript:__init( option )
 	local prop = MOAIProp.new()
 
@@ -18,6 +21,15 @@ function DrawScript:__init( option )
 
 	local rect = option and option['rect']
 	self:setRect( rect and unpack( rect ) )
+end
+
+function DrawScript:getBlend()
+	return self.blend
+end
+
+function DrawScript:setBlend( b )
+	self.blend = b	
+	setPropBlend( self.prop, b )
 end
 
 function DrawScript:setScissorRect( rect )
