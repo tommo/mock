@@ -12,10 +12,12 @@ EffectNode :MODEL {
 		Field 'name'     :string();
 		Field 'children' :array( EffectNode ) :no_edit();
 		Field 'parent'   :type( EffectNode ) :no_edit();
+		Field '_hidden'  :boolean() :no_edit();
 	}
 
 function EffectNode:__init()
 	self._built   = false
+	self._hidden  = false
 	self.parent   = false
 	self.children = {}
 	self.name     = self:getDefaultName()
@@ -50,6 +52,7 @@ function EffectNode:addChild( n, idx )
 		table.insert( self.children, n )
 	end
 	n.parent = self
+	return n
 end
 
 function EffectNode:removeChild( n )	
