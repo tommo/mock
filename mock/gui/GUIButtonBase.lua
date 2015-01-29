@@ -43,6 +43,9 @@ function GUIButtonBase:_onRelease( touch, x, y )
 		self:emit( 'ui.button.click', self )
 		local onClick=self.onClick
 		if onClick then onClick( self ) end		
+		if self.msg and self.msg~='' then
+			self:getRootWidget():tell( self.msg, self.data, self )
+		end
 	end
 	self:updateState()
 	return self:onRelease( touch, x, y )

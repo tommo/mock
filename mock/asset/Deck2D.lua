@@ -150,6 +150,7 @@ CLASS: Tileset ( Deck2D )
 		Field 'tw'       :int() :label('tile width')  ;
 		Field 'th'       :int() :label('tile height') ;
 		Field 'spacing'  :int() :label('spacing')  ;
+		Field 'reset'    :action();
 	}
 
 function Tileset:__init()
@@ -166,6 +167,16 @@ function Tileset:createMoaiDeck()
 	local deck = MOAITileDeck2D.new()
 	return deck
 end
+
+function Tileset:reset()
+	if not self.texture then return end	
+	local tex, uv = self.texture:getMoaiTextureUV()
+	local w, h = self.texture:getSize()
+	self.w = w
+	self.h = h
+	self:update()
+end
+
 
 function Tileset:update()
 	local texW, texH = self.w, self.h
