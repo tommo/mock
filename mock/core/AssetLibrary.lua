@@ -354,6 +354,7 @@ function loadAsset( path, option )
 	local node   = getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )
+		print( debug.traceback(2) )
 		return nil
 	end
 

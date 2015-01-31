@@ -306,6 +306,75 @@ function QuadArray:update()
 end
 
 --------------------------------------------------------------------
+
+--------------------------------------------------------------------
+CLASS: SubQuad ()
+	:MODEL {
+		Field 'x';
+		Field 'y';
+		Field 'w';
+		Field 'h';
+		Field 'u1';
+		Field 'v1';
+		Field 'u0';
+		Field 'v0';
+	}
+
+CLASS: QuadList ( Deck2D )
+	:MODEL {
+		Field 'ox'       :int() :label('origin X') ;
+		Field 'oy'       :int() :label('origin Y') ;
+		Field 'count'    :int();
+	}
+
+function QuadList:__init()
+	self.count   = 0
+	self.ox      = 0
+	self.oy      = 0
+	self.quads = {} 
+end
+
+function QuadList:createMoaiDeck()
+	local deck = MOAIGfxQuadListDeck2D.new()
+	return deck
+end
+
+function QuadList:clearQuads()
+	self.quads = {}
+end
+
+function QuadList:addQuad( x0,y0,x1,y1, u0,v0,u1,v1 )
+	local q = { x0,y0,x1,y1, u0,v0,u1,v1 } 
+	table.insert( self.quads, q )
+end
+
+function QuadList:update()
+	if not self.texture then return end
+	local deck = self:getMoaiDeck()
+	local tex, uv = self.texture:getMoaiTextureUV()
+	local u0,v0,u1,v1 = unpack( uv )
+	deck:setTexture( tex )
+	
+	local quads = self.quads
+	local count = #quads
+	if count == 0 then return end
+	deck:reserveLists( count )
+	deck:reservePairs( count )
+	deck:reserveQuads( count )
+	deck:reserveUVQuads( count )
+	deck:setList( 1, 1, count )
+
+	for i = 1, count do
+		local q = quads[ i ]
+		local  x0,y0,x1,y1, u0,v0,u1,v1 = unpack( q )
+		deck:setRect( i, x0,y0, x1,y1 )
+		deck:setUVRect( i, u0,v0, u1,v1 )
+		deck:setPair( i, i, i )
+	end
+end
+
+
+--------------------------------------------------------------------
 CLASS: StretchPatch ( Quad2D )
 	:MODEL {
 		Field 'left'   :number() :label('border left')   :meta{ min=0, max=1 };
