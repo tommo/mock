@@ -122,6 +122,11 @@ end
 --------------------------------------------------------------------
 ------ Destructor
 --------------------------------------------------------------------
+function Entity:tryDestroy()
+	if not self.scene then return end
+	return self:destroy()
+end
+
 function Entity:destroy()
 	assert( self.scene )
 	local scene = self.scene

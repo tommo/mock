@@ -119,6 +119,12 @@ EnumTextAlignmentV = _ENUM_V{
 	'baseline',
 }
 
+-- EnumTextWordBreak = _ENUM_V{
+-- 	'break-char',
+-- 	'break-none'
+-- 	WORD_BREAK_CHAR
+-- }
+
 --------------------------------------------------------------------
 EnumParticleForceType = {
 	{ 'force',   MOAIParticleForce. FORCE   },

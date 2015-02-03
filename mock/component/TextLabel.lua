@@ -17,6 +17,7 @@ CLASS: TextLabel ( RenderComponent )
 		Field 'size'          :type('vec2') :getset( 'Size' );
 		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
+		Field 'wordBreak'     :boolean()  :set('setWordBreak') :label('break word');
 	}
 
 function TextLabel:__init(  )
@@ -34,6 +35,8 @@ function TextLabel:__init(  )
 	self:setStyleSheet( getDefaultStyleSheet() )
 	self.rectLimit = true
 	self:useDeckShader()	
+	self.wordBreak = false
+	-- self:useFontShader()
 end
 
 function TextLabel:onAttach( entity )
@@ -49,6 +52,11 @@ function TextLabel:setBlend( b )
 	self.blend = b
 	setPropBlend( self.box, b )
 end
+
+function TextLabel:setWordBreak( wbreak )
+		self.wordBreak = wbreak
+		self.box:setWordBreak( wbreak and MOAITextLabel.WORD_BREAK_CHAR or MOAITextLabel.WORD_BREAK_NONE )
+	end
 
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
 function TextLabel:setShader( shaderPath )
@@ -171,15 +179,18 @@ local textAlignments = {
 function TextLabel:setAlignment( align )
 	align = align or 'left'
 	self.alignment = align
-	self.box:setAlignment( textAlignments[ align ] )
-	self:updateRect()
+	return self:_updateAlignment()
 end
 
 function TextLabel:setAlignmentV( align )
 	align = align or 'top'	 
 	self.alignmentV = align
-	self.box:setAlignment( textAlignments[ self.alignment ], textAlignments[ align ] )
-	self:updateRect()
+	return self:_updateAlignment()
+end
+
+function TextLabel:_updateAlignment()	
+	self.box:setAlignment( textAlignments[ self.alignment ], textAlignments[ self.alignmentV ] )
+	return self:updateRect()
 end
 
 function TextLabel:getBounds()

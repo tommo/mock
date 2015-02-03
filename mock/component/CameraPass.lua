@@ -275,11 +275,11 @@ function CameraPass:build()
 	return self.passes
 end
 
-function CameraPass:requestFrameBuffer( name )
+function CameraPass:requestFrameBuffer( name, option )
 	name = name or 'default'
 	local fb = self.frameBuffers[ name ]
 	if fb then return fb end
-	fb = self:buildFrameBuffer()
+	fb = self:buildFrameBuffer( option )
 	self.frameBuffers[ name ] = fb
 	return fb
 end
@@ -309,15 +309,17 @@ local function _convertFilter( filter, mipmap )
 	return output
 end
 
-function CameraPass:buildFrameBuffer()
+function CameraPass:buildFrameBuffer( option )
 	local camera = self.camera
 	local fb = MOAIFrameBufferTexture.new()
 	fb:setClearColor()
-	fb:setClearDepth( false )
+	fb:setClearDepth( option and option.clearDpeth or false )
 	local w, h = camera:getViewportWndSize()
+	if option and option.size then w,h = unpack( option.size ) end
+
 	fb:init( w, h )
 	print( fb, w, h )
-	fb:setFilter( MOAITexture.GL_LINEAR )
+	fb:setFilter( option and option.filter or MOAITexture.GL_LINEAR )
 	return fb
 end
 

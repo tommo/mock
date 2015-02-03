@@ -42,6 +42,8 @@ local function loadFont( node )
 
 	elseif atype == 'font_ttf' then
 		local filename = node.objectFiles['font']
+		font:getReader():enableAntiAliasing( true )
+		font:getCache():setColorFormat( MOAIImage.COLOR_FMT_RGBA_8888 )
 		font:load( filename, 0 )
 
 	elseif atype == 'font_bdf' then
