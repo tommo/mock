@@ -28,7 +28,7 @@ function getDefaultStyleSheet()
 		return DEFAULT_STYLESHEET
 	end
 	if DEFAULT_STYLESHEET == nil then
-		DEFAULT_STYLESHEET = findAsset( 'default.stylesheet' ) or false
+		DEFAULT_STYLESHEET = findAsset( '.stylesheet' ) or false
 	end
 	return DEFAULT_STYLESHEET
 end

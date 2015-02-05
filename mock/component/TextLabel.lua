@@ -13,7 +13,7 @@ CLASS: TextLabel ( RenderComponent )
 		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle') :selection( 'getStyleNames' );
 		'----';
-		Field 'rectLimit'     :boolean(); --TODO:update this
+		Field 'rectLimit'     :boolean() :set( 'setRectLimit' ); --TODO:update this
 		Field 'size'          :type('vec2') :getset( 'Size' );
 		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
@@ -102,6 +102,11 @@ function TextLabel:getStyleNames()
 		table.insert( result, { name, name } )
 	end
 	return result
+end
+
+function TextLabel:setRectLimit( limit )
+	self.rectLimit = limit
+	self:updateRect()
 end
 
 function TextLabel:getSize()
@@ -199,8 +204,10 @@ end
 
 function TextLabel:drawBounds()
 	GIIHelper.setVertexTransform( self._entity:getProp() )
-	local x1,y1, x2,y2 = self.box:getRect()	
-	MOAIDraw.drawRect( x1,-y1,x2,-y2 )
+	if self.rectLimit then
+		local x1,y1, x2,y2 = self.box:getRect()	
+		MOAIDraw.drawRect( x1,-y1,x2,-y2 )
+	end
 end
 
 function TextLabel:inside( x, y, z, pad )
