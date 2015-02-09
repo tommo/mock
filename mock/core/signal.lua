@@ -49,10 +49,20 @@ end
 
 local function signalConnect( sig, obj, func )
 	sig.slots[ obj ] = func
+	return obj, func
 end
 
 local function signalConnectFunc( sig, func )
 	sig.slots[ func ] = staticHolder
+	return func
+end
+
+local function signalDisconnect( sig, obj )
+	sig.slots[ obj ] = nil
+end
+
+local function signalDisconnectAll( sig )
+	sig.slots = {}
 end
 
 local function signalEmit( sig, ... )
@@ -67,16 +77,24 @@ local function signalEmit( sig, ... )
 end
 signalMT.__call = signalEmit
 
-local function signalDisconnect( sig, obj )
-	sig[ obj ] = nil
-end
 
 function signalProto:connect( a, b )
-	if (not b) and type( a ) == 'function' then --function connection
+	if (not b) and ( type( a ) == 'function' ) then --function connection
 		return signalConnectFunc( self, a )
+	elseif type( b ) == 'string' then
+		func = a[ b ]
+		return signalConnect( self, a, func )
 	else
-		return signalConnectFunc( self, a, b )
+		return signalConnect( self, a, b )
 	end
+end
+
+function signalProto:disconnect( a )
+	return signalDisconnect( self, a )
+end
+
+function signalProto:disconnectAll()
+	return signalDisconnectAll( self )
 end
 
 

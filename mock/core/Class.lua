@@ -205,50 +205,68 @@ local function buildInitializer(class,f)
 end
 
 
-local newSignal = newSignal
-local function buildSignalInitializer( class, f )
-	--FIXME: replace this NAIVE impl.
-	if not class then return f end
+local newSignal        = newSignal
+local signalConnect    = signalConnect
+local signalDisconnect = signalDisconnect
+
+local function collectSignalInfo( class, info )
+	if not class then return info end
 	local signals = rawget( class, '__signals' )
-	-- print( class, signals )
 	if signals then
-		local signalInfos = false
-		
-		local function init( obj )
-			if not signalInfos then
-				signalInfos = {}
-				for id, handler in pairs( signals ) do
-					if handler and handler ~= '' then
-						local func = class[ handler ]
-						if type( func ) ~= 'function' then
-							error( 'signal handler is not a function!' )
-						end
-						signalInfos[ id ] = func
-					else
-						signalInfos[ id ] = false
-					end
+		for id, handler in pairs( signals ) do
+			if handler and handler ~= '' then
+				if info[ id ] == nil then
+					info[ id ] = handler
 				end
+			else
+				info[ id ] = false
 			end
-			for id, func in pairs( signalInfos ) do
-				local sig = newSignal()
-				obj[ id ] = sig
-				if func then
-					signalConnect( sig, obj, func )
+		end
+	end
+	return collectSignalInfo( class.__super, info )
+end
+
+local function buildSignalInitializer( class, f )
+	local signals = collectSignalInfo( class, {} )
+	--FIXME: replace this NAIVE impl.
+	if not next( signals ) then return false end
+	
+	local signalMethods = false
+	local function init( obj )
+		if not signalMethods then --collect signal methods at first instance creation
+			signalMethods = {}
+			for id, handler in pairs( signals ) do
+				if handler and handler ~= '' then
+					local func = class[ handler ]
+					if type( func ) ~= 'function' then
+						error( 'signal handler is not a function!' )
+					end
+					signalMethods[ id ] = func
+				else
+					signalMethods[ id ] = false
 				end
 			end
 		end
 
-		if f then
-			local f1 = f
-			f = function( a, ... )
-				init( a, ... )
-				return f1( a, ... )
+		for id, func in pairs( signalMethods ) do
+			local sig = newSignal()				
+			obj[ id ] = sig
+			if func then
+				signalConnect( sig, obj, func )
 			end
-		else
-			f = init
 		end
+
 	end
-	return buildSignalInitializer( class.__super, f )
+
+	return init
+end
+
+function clearAllSignalConnections( owner, obj )
+	for key in pairs( owner.__signals ) do
+		local signal = owner[ key ]
+		--assert
+		signalDisconnect( signal, obj )
+	end
 end
 
 function buildInstanceBuilder( class )
