@@ -33,13 +33,31 @@ module 'mock'
 
 
 CLASS: Actor ()
+:MODEL{	
+}
+
+
 function Actor:__init()
-	self.msgListeners = {}
 	self.state  = 'normal'
+	self.msgListeners = {}
 	self.coroutines = false
 end
 
---------SIGNAL
+--------------------------------------------------------------------
+-- LOCAL Signal
+--------------------------------------------------------------------
+function Actor:registerSignal( id, localMethod )
+end
+
+function Actor:signal( id )
+end
+
+function Actor:emit( id )
+end
+
+--------------------------------------------------------------------
+--------GLOBAL SIGNAL
+--------------------------------------------------------------------
 function Actor:connect( sig, slot )
 	return self:connectForObject( self, sig, slot )
 end
@@ -99,7 +117,9 @@ function Actor:disconnectAllForObject( owner )
 	self.connectedSignals = signals1
 end
 
----- msgbox?
+--------------------------------------------------------------------
+---- MSGListener: a string message based approach
+--------------------------------------------------------------------
 function Actor:addMsgListener( listener )
 	table.insert( self.msgListeners, listener )
 	return listener
@@ -341,8 +361,6 @@ function Actor:waitFrames(f)
 		yield()
 	end
 end
-
-
 
 function Actor:waitTime(t)
 	if t > 1000 then

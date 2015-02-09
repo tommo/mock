@@ -37,6 +37,8 @@ local tracingObjectAllocation      = false
 local tracingObjectAllocationStack = false
 local tracingObjectTable = setmetatable( {}, { __mode = 'kv' } )
 
+local buildInstanceBuilder
+
 local reservedMembers = {
 	['__init']  = true,
 	['__name']  = true,
@@ -86,7 +88,8 @@ end
 
 --------------------------------------------------------------------
 local BaseClass = {
-	__subclasses={}
+	__subclasses={},
+	__signals = false,
 }
 
 _BASECLASS = BaseClass --use this to extract whole class tree
@@ -107,6 +110,13 @@ end
 
 function BaseClass:META( t )
 	self.__meta = t
+	return self
+end
+
+local signalEmit = signalEmit
+function BaseClass:SIGNAL( t )
+	self.__signals = t
+	buildInstanceBuilder( self )
 	return self
 end
 
@@ -150,6 +160,8 @@ function BaseClass:assertInstance( superclass )
 	end
 end
 
+--Signals
+
 -- function BaseClass:superCall( name, ... )
 -- 	local m = self[ name ]
 -- 	local super = self.__super
@@ -166,65 +178,100 @@ end
 --------------------------------------------------------------------
 local function buildInitializer(class,f)
 	if not class then return f end
-	local init=rawget(class,'__init')
+	local init = rawget( class, '__init' )
 	
-	if type(init)=='table' then --copy
-		local t1=init
-		init=function(a)
-			for k,v in pairs(t1) do
-				a[k]=v
+	if type( init ) == 'table' then --copy
+		local t1 = init
+		init = function(a)
+			for k,v in pairs( t1 ) do
+				a[ k ] = v
 			end
 		end
 	end
 
 	if init then
 		if f then
-			local f1=f
-			f=function(a,...)
-				init(a,...)
-				return f1(a,...)
+			local f1 = f
+			f = function( a, ... )
+				init( a, ... )
+				return f1( a, ... )
 			end
 		else
-			f=init
+			f = init
 		end
 	end
 
-	return buildInitializer(class.__super,f)
+	return buildInitializer( class.__super, f )
 end
 
-local function buildInstanceBuilder(class)
-	local init=buildInitializer(class)
-	local newinstance
 
-	if init then
-		newinstance=function (t,...)
-			local o=setmetatable({}, class)
-			init(o,...)
-			if tracingObjectAllocation then
-				tracingObjectTable[ o ] = true
-				if tracingObjectAllocationStack then
-					o.__createtraceback = debug.traceback( 2 )
+local newSignal = newSignal
+local function buildSignalInitializer( class, f )
+	--FIXME: replace this NAIVE impl.
+	if not class then return f end
+	local signals = rawget( class, '__signals' )
+	-- print( class, signals )
+	if signals then
+		local signalInfos = false
+		
+		local function init( obj )
+			if not signalInfos then
+				signalInfos = {}
+				for id, handler in pairs( signals ) do
+					if handler and handler ~= '' then
+						local func = class[ handler ]
+						if type( func ) ~= 'function' then
+							error( 'signal handler is not a function!' )
+						end
+						signalInfos[ id ] = func
+					else
+						signalInfos[ id ] = false
+					end
 				end
 			end
-			return o
+			for id, func in pairs( signalInfos ) do
+				local sig = newSignal()
+				obj[ id ] = sig
+				if func then
+					signalConnect( sig, obj, func )
+				end
+			end
 		end
-	else
-		newinstance=function (t)
-			local o = setmetatable({}, class)
-			if tracingObjectAllocation then
-				tracingObjectTable[ o ] = true
-				if tracingObjectAllocationStack then
-					o.__createtraceback = debug.traceback( 2 )
-				end
+
+		if f then
+			local f1 = f
+			f = function( a, ... )
+				init( a, ... )
+				return f1( a, ... )
 			end
-			return o
+		else
+			f = init
 		end
 	end
+	return buildSignalInitializer( class.__super, f )
+end
 
-	local mt=getmetatable(class)
-	mt.__call=newinstance
+function buildInstanceBuilder( class )
+	local init = buildInitializer( class )
+	local initSignals = buildSignalInitializer( class )
 
-	for s in pairs(class.__subclasses) do
+	local newinstance = function (t,...)
+		local o=setmetatable({}, class)
+		if initSignals then initSignals(o,...) end
+		if init then init(o,...) end
+		if tracingObjectAllocation then
+			tracingObjectTable[ o ] = true
+			if tracingObjectAllocationStack then
+				o.__createtraceback = debug.traceback( 2 )
+			end
+		end
+		return o
+	end
+
+	local mt = getmetatable( class )
+	mt.__call = newinstance
+
+	for s in pairs( class.__subclasses ) do
 		buildInstanceBuilder(s)
 	end
 end
@@ -389,6 +436,11 @@ function findClass( term )
 	else
 		return candidates[ 1 ]
 	end
+end
+
+function validateAllClasses()
+	--TODO
+	return true
 end
 
 --------------------------------------------------------------------

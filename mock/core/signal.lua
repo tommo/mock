@@ -23,62 +23,139 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
-local signalTable = {}
+
+--------------------------------------------------------------------
+local insert = table.insert
+local setmetatable = setmetatable
+
+local staticHolder = {}
+
+local signalProto = {}
+local signalMT = {
+	__index = signalProto
+}
+local weakMT = {
+	__mode  = 'v',
+}
+
+local function newSignal()
+	local signal =  setmetatable( { 
+			slots = setmetatable( {}, weakMT ) 
+		}, 
+		signalMT
+		)
+	return signal
+end
+
+local function signalConnect( sig, obj, func )
+	sig.slots[ obj ] = func
+end
+
+local function signalConnectFunc( sig, func )
+	sig.slots[ func ] = staticHolder
+end
+
+local function signalEmit( sig, ... )
+	local slots = sig.slots
+	for obj, func in pairs( slots ) do
+		if func == staticHolder then
+			obj( ... )
+		else
+			func( obj, ... )
+		end
+	end
+end
+signalMT.__call = signalEmit
+
+local function signalDisconnect( sig, obj )
+	sig[ obj ] = nil
+end
+
+function signalProto:connect( a, b )
+	if (not b) and type( a ) == 'function' then --function connection
+		return signalConnectFunc( self, a )
+	else
+		return signalConnectFunc( self, a, b )
+	end
+end
+
+
+--------------------------------------------------------------------
+--GLOBAL SIGALS
+--------------------------------------------------------------------
+local globalSignalTable = {}
 local weakmt = {__mode='v'}
-local function getSignal( sig )
-	local s = signalTable[sig]
-	if not s then 
-		return error('signal not found:'..sig)
-	end
-	return s
-end
 
-
-function connectSignalFunc( sig, func )
-	local s = getSignal(sig)
-	s[ func ] =  func
-	return s
-end
-
-function connectSignalMethod( sig, obj, methodname )
-	local s = getSignal(sig)
-	local m = obj[methodname]	
-	s[ obj ] = function( ... )
-		return m( obj, ... )
-	end
-	return s
-end
-
-connectSignal = connectSignalFunc
-
-function disconnectSignal( sig, id )
-	local s = getSignal(sig)
-	s[id] = nil
-end
-
-function registerSignal(sig)
+local function registerGlobalSignal( sigName )
 	--TODO: add module info for unregistration
-	assert( type(sig) == 'string', 'signal name should be string' )
-	local s = signalTable[sig]
-	if s then 
-		_warn('duplicated signal name:'..sig)
+	assert( type(sigName) == 'string', 'signal name should be string' )
+	local sig = globalSignalTable[sigName]
+	if sig then 
+		_warn('duplicated signal name:'..sigName)
 	end
-	-- s=setmetatable({},weakmt)
-	s = {}
-	signalTable[sig] = s
-	return s
+	-- sig=setmetatable({},weakmt)
+	sig = newSignal()
+	globalSignalTable[sigName] = sig
+	return sig
 end
 
-function registerSignals(sigtable)
-	for i,k in ipairs(sigtable) do
-		registerSignal(k)
+local function registerGlobalSignals( sigTable )
+	for i,k in ipairs( sigTable ) do
+		registerGlobalSignal( k )
 		--TODO: add module info for unregistration
 	end	
 end
 
-function emitSignal(sig,...)
-	local s = getSignal(sig)
-	for k, func in pairs(s) do
-		func( ... )		
+local function getGlobalSignal( sigName )
+	local sig = globalSignalTable[ sigName ]
+	if not sig then 
+		return error( 'signal not found:'..sigName )
 	end
+	return sig
 end
+
+local function connectGlobalSignalFunc( sigName, func )
+	local sig = getGlobalSignal( sigName )
+	signalConnectFunc( sig, func )
+	return s
+end
+
+local function connectGlobalSignalMethod( sigName, obj, methodname )
+	local sig = getGlobalSignal(sigName)
+	local method = assert( obj[ methodname ], 'method not found' )
+	signalConnect( sig, obj, method )
+	return sig
+end
+
+local function disconnectGlobalSignal( sigName, obj )
+	local sig = getGlobalSignal(sigName)
+	signalDisconnect( sig, obj )
+end
+
+local function emitGlobalSignal( sigName, ... )
+	local sig = getGlobalSignal( sigName )
+	return signalEmit( sig, ... )
+end
+
+--------------------------------------------------------------------
+--EXPORT
+--------------------------------------------------------------------
+
+_G.newSignal             = newSignal
+_G.signalConnect         = signalConnect
+_G.signalConnectFunc     = signalConnectFunc
+_G.signalEmit            = signalEmit
+_G.signalDisconnect      = signalDisconnect
+
+--------------------------------------------------------------------
+_G.connectSignal         = connectSignalFunc
+_G.registerSignal        = registerGlobalSignal
+_G.registerGlobalSignal  = registerGlobalSignal
+_G.registerSignals       = registerGlobalSignals
+_G.registerGlobalSignals = registerGlobalSignals
+
+_G.getSignal             = getGlobalSignal
+_G.connectSignalFunc     = connectGlobalSignalFunc
+_G.connectSignalMethod   = connectGlobalSignalMethod
+_G.disconnectSignal      = disconnectGlobalSignal
+_G.emitSignal            = emitGlobalSignal
