@@ -181,6 +181,11 @@ function MSprite:getClip( name )
 	return data.animations[ name ]
 end
 
+function MSprite:hasClip( name )
+	local data = self.spriteData
+	return data and data.animations[ name ]~=nil
+end
+
 function MSprite:getClipLength( name )
 	local clip = name and self:getClip( name ) or self.currentClip
 	if clip then return clip.length * self.playFPS end
