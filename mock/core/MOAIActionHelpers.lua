@@ -5,7 +5,6 @@ local setAttr     = tmpNode.setAttr
 local seekAttr    = tmpNode.seekAttr
 local moveAttr    = tmpNode.moveAttr
 
-
 local tmpaction   = MOAITimer.new()
 local EVENT_STOP  = MOAIAction.EVENT_STOP
 local setListener = tmpaction.setListener

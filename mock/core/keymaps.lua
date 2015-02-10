@@ -178,10 +178,10 @@ local keymap_GLUT={
 	['space']=	32 ;
 	['enter']=	13 ;
 	--directional key
-	-- ['left']=	100 ;
-	-- ['up']=	101 ;
-	-- ['right']=	102 ;
-	-- ['down']=	103 ;
+	['left']=	80 ;
+	['up']=	82 ;
+	['right']=	79 ;
+	['down']=	81 ;
 	-- ['pageup']=104 ;
 	-- ['pagedown']=105 ;
 	-- ['home']=	106 ;
@@ -190,8 +190,13 @@ local keymap_GLUT={
 
 }
 
-for i=39, 200 do
-	keymap_GLUT[string.char(i)]=i
+--TODO: fix this
+for i=39, 64 do
+	keymap_GLUT[ string.char(i) ]=i
+end
+
+for i=91, 120 do
+	keymap_GLUT[ string.char(i) ]=i
 end
 
 function getKeyMap()
