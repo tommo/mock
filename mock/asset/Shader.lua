@@ -146,7 +146,6 @@ function ShaderProgram:buildFromSource( vshSource, fshSource )
 				local utype  = u.type
 				local uvalue = u.value
 				local name   = u.name
-				print( 'declaring', name, utype,  uvalue)
 				if     utype == 'float' then
 					prog:declareUniformFloat( idx, name, uvalue or 0 )
 

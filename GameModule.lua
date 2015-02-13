@@ -184,6 +184,8 @@ function _loadGameModule( path )
 			msg       = errMsg,
 			traceback = tracebackMsg
 		}
+		print( 'failtoload', errMsg ) 
+		
 		return nil, 'failtoload', errMsg, tracebackMsg
 	end
 end

@@ -84,7 +84,7 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	system:reserveStates    ( self.stateCount )
 	system:reserveSprites   ( self.spriteLimit )
 	system:reserveParticles ( self.particleLimit, self.regCount )
-	system:setReversedDrawOrder( true )
+	system:setDrawOrder( MOAIParticleSystem.ORDER_REVERSE )
 
 	system.config = self
 

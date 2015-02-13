@@ -213,13 +213,8 @@ function Game:init( option, fromEditor )
 	self.throttle = 1
 	self.isPaused = false
 
-	local actionRoot=MOAICoroutine.new()	
-	actionRoot:run( function()
-			while true do
-				coroutine.yield()
-			end
-		end
-	)
+	local actionRoot=MOAITimer.new()
+	actionRoot:setMode( MOAITimer.CONTINUE )
 	
 	MOAIActionMgr.setRoot( actionRoot )
 	local actionRootDecoy=MOAICoroutine.new()	
@@ -230,7 +225,6 @@ function Game:init( option, fromEditor )
 			end
 		end
 	)
-
 
 	self.actionRoot = actionRoot
 	self:setThrottle( 1 )
@@ -280,7 +274,7 @@ function Game:init( option, fromEditor )
 			+ MOAISim.SIM_LOOP_ALLOW_BOOST
 			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
 			
-			-- + MOAISim.SIM_LOOP_FORCE_STEP
+			+ MOAISim.SIM_LOOP_FORCE_STEP
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
 			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)

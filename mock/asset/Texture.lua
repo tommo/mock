@@ -15,7 +15,11 @@ function loadTextureLibrary( indexPath )
 	if not indexPath then return end
 	textureLibraryIndex = indexPath
 	textureLibrary = TextureLibrary()	
-	textureLibrary:load( indexPath )
+	if MOAIFileSystem.checkFileExists( indexPath ) then
+		textureLibrary:load( indexPath )
+	else
+		textureLibrary:initDefault()
+	end
 	return textureLibrary
 end
 
@@ -505,11 +509,50 @@ TextureLibrary :MODEL{
 function TextureLibrary:__init()
 	self.groups = {}	
 	self.lookupDict = {}
+	-- local defaultGroup = self:addGroup()
+	-- defaultGroup.name = 'DEFAULT'
+	-- defaultGroup.default = true
+	-- self.defaultGroup = defaultGroup
+end
+
+function TextureLibrary:save( path )
+	_stat( 'saving texture library', path )
+	return serializeToFile( self, path )
+end
+
+function TextureLibrary:initDefault()
+	self.groups = {}
 	local defaultGroup = self:addGroup()
 	defaultGroup.name = 'DEFAULT'
 	defaultGroup.default = true
 	self.defaultGroup = defaultGroup
 end
+
+function TextureLibrary:load( path )
+	_stat( 'loading textureLibrary', path )
+	self.defaultGroup = nil
+	self.groups = {}
+	deserializeFromFile( self, path )
+	for i, group in ipairs( self.groups ) do
+		if group.default then
+			self.defaultGroup = group
+			break
+		end		
+	end
+	
+	local getAssetNode = getAssetNode
+	for i, group in ipairs( self.groups ) do
+		local textures1 = {}
+		for i, tex in ipairs( group.textures ) do --clear removed textures
+			if getAssetNode( tex.path ) then
+				table.insert( textures1, tex )
+				self.lookupDict[ tex.path ] = tex
+			end
+		end
+		group.textures = textures1
+	end
+end
+
 
 function TextureLibrary:getDefaultGroup()
 	return self.defaultGroup
@@ -589,36 +632,6 @@ function TextureLibrary:getReport()
 	report[ 'count_peak'  ] = 0
 	report[ 'memory_peak' ] = 0
 	return report
-end
-
-function TextureLibrary:save( path )
-	_stat( 'saving texture library', path )
-	return serializeToFile( self, path )
-end
-
-function TextureLibrary:load( path )
-	_stat( 'loading textureLibrary', path )
-	self.defaultGroup = nil
-	self.groups = {}
-	deserializeFromFile( self, path )
-	for i, group in ipairs( self.groups ) do
-		if group.default then
-			self.defaultGroup = group
-			break
-		end		
-	end
-	
-	local getAssetNode = getAssetNode
-	for i, group in ipairs( self.groups ) do
-		local textures1 = {}
-		for i, tex in ipairs( group.textures ) do --clear removed textures
-			if getAssetNode( tex.path ) then
-				table.insert( textures1, tex )
-				self.lookupDict[ tex.path ] = tex
-			end
-		end
-		group.textures = textures1
-	end
 end
 
 --------------------------------------------------------------------

@@ -432,6 +432,7 @@ MOAITextLabel.extend (
 		
 		initTextLabelInterface ( interface, superInterface )
 		
+		interface.getString = superInterface.getText
 		interface.getStringBounds = superInterface.getTextBounds
 		interface.setString = superInterface.setText
 	end
@@ -461,10 +462,11 @@ MOAIGfxDevice.extend (
 	
 	----------------------------------------------------------------
 	function ( class, superClass )
+
 		-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 		-- extend the class
-		function class.setClearColor ( r, g, b, a )
-			MOAIGfxDevice.getFrameBuffer():setClearColor ( r, g, b, a )
+		function class.setClearColor ( ... )
+			MOAIGfxDevice.getFrameBuffer():setClearColor ( ... )
 		end
 	end
 )
@@ -512,12 +514,15 @@ end
 -- renames
 --============================================================--
 
-MOAIHashWriter	= MOAIHashWriterCrypto or MOAIHashWriter
-MOAITextBox		= MOAITextLabel
-MOAIThread		= MOAICoroutine
+MOAIHashWriter		= MOAIHashWriterCrypto or MOAIHashWriter
+MOAITextBox			= MOAITextLabel
+MOAIThread			= MOAICoroutine
 
-MOAIProp		= MOAIGraphicsProp
-MOAIProp2D		= MOAIGraphicsProp2D
+MOAIProp			= MOAIGraphicsProp
+MOAIProp2D			= MOAIGraphicsProp2D
+
+MOAIStreamReader	= MOAIStreamAdapter
+MOAIStreamWriter	= MOAIStreamAdapter
 
 --============================================================--
 -- Cross Platform
@@ -527,15 +532,16 @@ if MOAISim.forceGC then
     MOAISim.forceGarbageCollection = MOAISim.forceGC
 end
 
-MOAIApp = MOAIAppAndroid or MOAIAppIOS
-MOAIBrowser = MOAIBrowserAndroid or MOAIBrowserIOS
+MOAIApp = MOAIApp or MOAIAppAndroid or MOAIAppIOS
+MOAIAudioSampler = MOAIAudioSampler or MOAIAudioSamplerCocoa or MOAIAudioSamplerAndroid
+MOAIBrowser = MOAIBrowser or MOAIBrowserAndroid or MOAIBrowserIOS
 MOAISafariIOS = MOAIBrowserIOS
-MOAIDialog = MOAIDialogAndroid or MOAIDialogIOS
-MOAIMoviePlayer = MOAIMoviePlayerAndroid or MOAIMoviePlayerIOS
+MOAIDialog = MOAIDialog or MOAIDialogAndroid or MOAIDialogIOS
+MOAIMoviePlayer = MOAIMoviePlayer or MOAIMoviePlayerAndroid or MOAIMoviePlayerIOS
 
 -- Optional 3rd party extensions
 MOAIAdColony = MOAIAdColonyAndroid or MOAIAdColonyIOS
-MOAIBilling = MOAIBillingAndroid or MOAIBillingIOS
+MOAIBilling = MOAIBilling or MOAIBillingAndroid or MOAIBillingIOS
 MOAIChartBoost = MOAIChartBoostAndroid or MOAIChartBoostIOS
 MOAICrittercism = MOAICrittercismAndroid or MOAICrittercismIOS
 MOAIFacebook = MOAIFacebookAndroid or MOAIFacebookIOS
@@ -582,3 +588,27 @@ if MOAITwitterIOS then
     end
 end
 
+--============================================================--
+-- Managers
+--============================================================--
+
+local wrapGlobal = function ( obj, func )
+	return function ( ... ) return func ( obj, ... ) end
+end
+
+MOAIActionMgr = MOAISim.getActionMgr ()
+
+MOAIActionMgr.getRoot					= wrapGlobal ( MOAIActionMgr, MOAIActionMgr.getRoot )
+MOAIActionMgr.setProfilingEnabled		= wrapGlobal ( MOAIActionMgr, MOAIActionMgr.setProfilingEnabled )
+MOAIActionMgr.setRoot					= wrapGlobal ( MOAIActionMgr, MOAIActionMgr.setRoot )
+MOAIActionMgr.setThreadInfoEnabled		= wrapGlobal ( MOAIActionMgr, MOAIActionMgr.setThreadInfoEnabled )
+
+MOAIInputMgr = MOAISim.getInputMgr ()
+
+MOAIInputMgr.autoTimestamp				= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.autoTimestamp )
+MOAIInputMgr.deferEvents				= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.deferEvents )
+MOAIInputMgr.discardEvents				= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.discardEvents )
+MOAIInputMgr.playback					= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.playback )
+MOAIInputMgr.setAutosuspend				= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.setAutosuspend )
+MOAIInputMgr.setRecorder				= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.setRecorder )
+MOAIInputMgr.suspendEvents				= wrapGlobal ( MOAIInputMgr, MOAIInputMgr.suspendEvents )
