@@ -477,11 +477,10 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 		task:start()	
 	else
 		tex:load( filePath, transform, debugName )
+		tex:affirm()
 		if tex:getSize() <= 0 then
 			_warn( 'failed load texture file:', filePath, debugName )
 			tex:load( getTexturePlaceHolderImage() )
-		else
-			tex:affirm()
 		end
 	end
 	tex.debugName = debugName

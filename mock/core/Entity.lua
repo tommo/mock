@@ -614,7 +614,7 @@ function Entity:start()
 	local copy = {} --there might be new components attached inside component starting
 	for com in pairs( self.components ) do
 		copy[ com ] = true
-	end 
+	end
 	for com, clas in pairs( copy ) do
 		local onStart = com.onStart
 		if onStart then onStart( com, self ) end
@@ -668,12 +668,12 @@ end
 
 function Entity:isActive()
 	return self.active
-end	
+end
 
 function Entity:isLocalActive()
 	return self.localActive
 end
-	
+
 
 --------------------------------------------------------------------
 ------ Child/Component Method invoker

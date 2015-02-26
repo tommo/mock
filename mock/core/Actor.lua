@@ -29,6 +29,8 @@ local yield = coroutine.yield
 local select = select
 local block = MOAICoroutine.blockOnAction
 
+local signalDisconnect = signalDisconnect
+
 module 'mock'
 
 
@@ -97,7 +99,8 @@ function Actor:disconnectAll()
 	if not connectedSignals then return end
 	for i, entry in ipairs( connectedSignals ) do
 		local sig, obj = entry[ 2 ], entry[ 3 ]
-		sig[ obj ]=nil
+		-- sig[ obj ]=nil
+		signalDisconnect( sig, obj )
 	end
 	self.connectedSignals = false
 end
@@ -109,7 +112,8 @@ function Actor:disconnectAllForObject( owner )
 	for i, entry in ipairs(connectedSignals) do
 		local owner1, sig, obj = unpack( entry )
 		if owner == owner1 then
-			sig[ obj ] = nil
+			-- sig[ obj ] = nil
+			signalDisconnect( sig, obj )
 		else
 			table.insert( signals1, entry )
 		end		

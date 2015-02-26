@@ -19,6 +19,8 @@ function TexturePlane:__init()
 	self.deck:setSize( 100, 100 )
 	self.prop = MOAIProp.new()
 	self.prop:setDeck( self.deck:getMoaiDeck() )
+	self.prop:setDepthMask( true )
+	self.prop:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )
 end
 
 function TexturePlane:onAttach( ent )

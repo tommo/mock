@@ -91,7 +91,8 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	setPropBlend( system, self.blend )
 	local deck = mock.loadAsset( self.deck )
 	system:setDeck( deck )
-	
+	system:setDepthMask( false )
+	system:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )
 	--build child nodes	
 	local emitters = {}
 	local forces   = {}

@@ -98,7 +98,6 @@ function Scene:flushPendingStart()
 end
 
 function Scene:threadMain( dt )
-	-- runProfiler( 5 )
 	dt = 0
 	local lastTime = self:getTime()
 	while true do	
@@ -201,7 +200,7 @@ function Scene:createTimer( )
 end
 
 function Scene:pause( paused )
-	self.timer:pause( paused~=false )
+	self.timer:pause( paused ~= false )
 	self.mainThread:pause( paused )
 end
 

@@ -16,7 +16,7 @@ local function buildCallbackLayer( func )
 	local dummyDeck = MOAIScriptDeck.new()
 	dummyProp:setDeck( dummyDeck )
 	dummyDeck:setDrawCallback( func )
-	dummyDeck:setRect(-10000,-10000,10000,10000)
+	dummyDeck:setRect( -10000, -10000, 10000, 10000 )
 	layer:insertProp( dummyProp )
 	return layer
 end
@@ -172,7 +172,7 @@ function CameraManager:_buildBufferTable( passQueue )
 		else
 			fb:setClearColor()
 		end
-		fb:setClearDepth( option and option.clearDepth )
+		fb:setClearDepth( ( option and option.clearDepth ) ~= false )
 	end
 
 	local universalRenderTable = {
@@ -316,9 +316,8 @@ function CameraPass:buildFrameBuffer( option )
 	fb:setClearDepth( option and option.clearDpeth or false )
 	local w, h = camera:getViewportWndSize()
 	if option and option.size then w,h = unpack( option.size ) end
-
-	fb:init( w, h )
-	print( fb, w, h )
+	local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
+	fb:init( w, h, nil, depthFormat )
 	fb:setFilter( option and option.filter or MOAITexture.GL_LINEAR )
 	return fb
 end
