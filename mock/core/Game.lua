@@ -603,6 +603,7 @@ end
 function Game:stop()
 	-- self.actionRoot:stop()
 	self.mainScene:stop()
+	self.b2world:start()
 	self.mainScene:clear( true )
 	self:resetClock()
 	emitSignal( 'game.stop', self )
@@ -613,6 +614,7 @@ function Game:start()
 	self.paused = false
 	-- self.actionRoot:start()
 	self.mainScene:start()
+	self.b2world:start()
 	
 	if self.paused then
 		emitSignal( 'game.resume', self )
@@ -811,7 +813,6 @@ function Game:setupBox2DWorld( settings )
 	world:setTimeToSleep           ( settings.timeToSleep )
 	world:setAngularSleepTolerance ( settings.angularSleepTolerance )
 	world:setLinearSleepTolerance  ( settings.linearSleepTolerance )
-	world:start()
 	self.b2world = world
 	local ground = world:addBody( MOAIBox2DBody.STATIC )
 	self.b2ground = ground

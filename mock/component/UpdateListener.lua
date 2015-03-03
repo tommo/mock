@@ -1,4 +1,6 @@
-CLASS: UpdateListener ()
+module 'mock'
+
+CLASS: UpdateListener ( Component )
 	:MODEL{
 		Field 'active' :boolean() :isset('Active');
 	}

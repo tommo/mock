@@ -1,4 +1,4 @@
--- require 'tools.TMXTool'
+require 'mock.tools.TMXTool'
 require 'mock.tools.InputRecorder'
 require 'mock.tools.DrawHelpers'
 require 'mock.tools.UserAction' --non coroutine action

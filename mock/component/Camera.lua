@@ -29,6 +29,9 @@ CLASS: Camera ( Component )
 	'----';
 	Field 'clearBuffer'      :boolean();
 	Field 'clearColor'       :type( 'color' ) :getset( 'ClearColor' );
+	'----';
+	Field 'showDebugLines'   :boolean() :set( 'setShowDebugLines' );
+
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )

@@ -64,7 +64,8 @@ require 'mock.component.SpineSpriteSimple'
 --------------------------------------------------------------------
 ---- AI
 require 'mock.component.FSMController'
-require 'mock.component.BehaviorTree'
+require 'mock.component.BTController'
+require 'mock.component.SteerController'
 
 --------------------------------------------------------------------
 require 'mock.component.EffectEmitter'

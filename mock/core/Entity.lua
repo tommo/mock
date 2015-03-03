@@ -305,7 +305,7 @@ function Entity:com( id )
 	if tt == 'string' then
 		return self:getComponentByName( id )
 	elseif tt == 'table' then
-		return self:getComponentByName()
+		return self:getComponent( id )
 	elseif tt == 'nil' then
 		local com = next( self.components )
 		return com

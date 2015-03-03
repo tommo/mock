@@ -33,7 +33,6 @@ local signalDisconnect = signalDisconnect
 
 module 'mock'
 
-
 CLASS: Actor ()
 :MODEL{	
 }

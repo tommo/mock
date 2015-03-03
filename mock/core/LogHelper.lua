@@ -77,7 +77,8 @@ function getLogFile()
 end
 
 --------------------------------------------------------------------
-local MOAILog = MOAILogMgr.log
+local MOAILog = io.write
+-- local MOAILog = MOAILogMgr.log
 function _log(...) 
 	for i = 1, select( '#', ... ) do
 		local v = select( i, ... )

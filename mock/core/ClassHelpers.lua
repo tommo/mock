@@ -5,12 +5,16 @@ function _wrapMethod( class, fieldname, methodname, arg, ... )
 	else
 		selfPart = 'self.'..fieldname
 	end
-	local f = loadstring(
-			string.format(
-				"return function( self, ... ) return %s:%s( ... ) end",
+	local debugName = string.gsub( fieldname, '[%.%(%):]', '_') ..'_'..methodname
+	local code = string.format(
+				"local function %s( self, ... ) return %s:%s( ... ) end return %s ",
+				debugName,
 				selfPart,
-				methodname
+				methodname,
+				debugName
 			)
+	local f = loadstring(
+				code
 			)()
 	class[methodname]=f
 end

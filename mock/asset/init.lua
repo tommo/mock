@@ -28,6 +28,7 @@ require 'mock.asset.PexParticle'
 
 --OTHER
 require 'mock.asset.FSMScheme'
+require 'mock.asset.BTScheme'
 require 'mock.asset.FMODDesignerProject'
 
 --ANIMATIONS

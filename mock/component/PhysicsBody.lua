@@ -39,11 +39,11 @@ mock.registerAssetLoader( 'physics_material', loadPhysicsMaterial )
 --------------------------------------------------------------------
 CLASS: PhysicsBody ( mock.Component )
 	:MODEL{
-		Field 'bodyType' :enum( EnumPhysicsBodyType ) :getset( 'Type' );
-		Field 'isBullet' :boolean();
-		Field 'allowSleep' :boolean();
+		Field 'bodyType'     :enum( EnumPhysicsBodyType ) :getset( 'Type' );
+		Field 'isBullet'     :boolean();
+		Field 'allowSleep'   :boolean();
 		Field 'gravityScale' :set( 'setGravityScale' );
-		Field 'fixRotation' :boolean();
+		Field 'fixRotation'  :boolean();
 	}
 
 mock.registerComponent( 'PhysicsBody', PhysicsBody )
@@ -65,7 +65,6 @@ function PhysicsBody:onAttach( entity )
 	self.body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
 	self.body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
 	self.body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_Z_ROT ) 
-	-- self.body:setAttr( MOAIProp.ATTR_Z_ROT, -45 )
 	for com in pairs( entity:getComponents() ) do
 		if isInstance( com, PhysicsShape ) then
 			com:updateParentBody( self )
@@ -100,7 +99,7 @@ function PhysicsBody:onStart( entity )
 		-- inheritTransform( prop, body )
 	end
 	body:setFixedRotation( self.fixRotation )
-	body:setSleepingAllowed( self.allowSleep )
+	-- body:setSleepingAllowed( self.allowSleep )
 	body:setBullet( self.isBullet )
 	body:setGravityScale( self.gravityScale )
 end
@@ -155,7 +154,37 @@ function PhysicsBody:_addJoint( j )
 	self.joints[ j ] = true
 end
 
-
+_wrapMethods( PhysicsBody, 'body', {
+	'applyAngularImpulse',
+	'applyForce',
+	'applyLinearImpulse',
+	'applyTorque',
+	'getAngle',
+	'getAngularVelocity',
+	'getInertia',
+	'getGravityScale',
+	'getLinearVelocity',
+	'getLocalCenter',
+	'getMass',
+	'getPosition',
+	'getWorldCenter',
+	'isActive',
+	'isAwake',
+	'isBullet',
+	'isFixedRotation',
+	'resetMassData',
+	'setActive',
+	'setAngularDamping',
+	'setAngularVelocity',
+	'setAwake',
+	'setBullet',
+	'setFixedRotation',
+	'setLinearDamping',
+	'setLinearVelocity',
+	'setMassData',
+	'setTransform',
+	}
+)
 
 
 --------------------------------------------------------------------
@@ -235,6 +264,16 @@ function PhysicsShape:createShape( body )
 	local shape = body:addCircle( 0,0, 100 )
 	return shape
 end
+
+_wrapMethods( PhysicsShape, 'shape', {
+	'getFilter',
+	'setCollisionHandler',
+	'setDensity',
+	'setFilter',
+	'setFriction',
+	'setRestitution',
+	'setSensor',
+	})
 
 
 --------------------------------------------------------------------
