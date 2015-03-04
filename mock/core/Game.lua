@@ -155,12 +155,13 @@ function Game:init( option, fromEditor )
 
 	--grahpics profile( only for desktop version? )
 	self.graphicsOption = option['graphics']
-
 	self:initGraphics( fromEditor )
 	
+	--assetlibrary
 	_stat( '...loading asset library' )
 	loadAssetLibrary( self.assetLibraryIndex )
 	
+	--scriptlibrary
 	_stat( '...loading game modules' )
 	loadAllGameModules( option['script_library'] or false )
 
@@ -257,6 +258,7 @@ function Game:init( option, fromEditor )
 
 	----physics
 	_stat( 'init physics' )
+	self.physicsOption = option['physics']
 	self:setupBox2DWorld()
 
 	----extra
@@ -321,6 +323,7 @@ function Game:saveConfigToTable()
 		title          = self.title,
 		asset_library  = self.assetLibraryIndex,
 		graphics       = self.graphicsOption,
+		physics        = self.physicsOption,
 		layers         = layerConfigs,
 		global_objects = self.globalObjectLibrary:save(),
 		scenes         = self.scenes,
@@ -603,7 +606,7 @@ end
 function Game:stop()
 	-- self.actionRoot:stop()
 	self.mainScene:stop()
-	self.b2world:start()
+	self.b2world:stop()
 	self.mainScene:clear( true )
 	self:resetClock()
 	emitSignal( 'game.stop', self )
@@ -777,7 +780,7 @@ end
 --------------------------------------------------------------------
 --PHYSICS
 --------------------------------------------------------------------
-local defaultWorldSettings = {
+local defaultWorldOption = {
 	gravity               = { 0, -10 },
 	unitsToMeters         = 0.01,
 	velocityIterations    = 6,
@@ -791,31 +794,37 @@ local defaultWorldSettings = {
 
 }
 
-function Game:setupBox2DWorld( settings )
-	settings = settings or defaultWorldSettings 
+function Game:setupBox2DWorld()
+	local option = self.physicsOption
+	if not option then 
+		option = defaultWorldOption
+		self.physicsOption = option
+	end
 
 	local world = MOAIBox2DWorld.new()
 
-	if settings.gravity then
-		world:setGravity ( unpack(settings.gravity) )
+	if option.gravity then
+		world:setGravity ( unpack(option.gravity) )
 	end
 	
-	if settings.unitsToMeters then
-		world:setUnitsToMeters ( settings.unitsToMeters )
+	if option.unitsToMeters then
+		world:setUnitsToMeters ( option.unitsToMeters )
 	end
 	
-	local velocityIterations, positionIterations = settings.velocityIterations, settings.positionIterations
-	velocityIterations = velocityIterations or defaultWorldSettings.velocityIterations
-	positionIterations = positionIterations or defaultWorldSettings.positionIterations
+	local velocityIterations, positionIterations = option.velocityIterations, option.positionIterations
+	velocityIterations = velocityIterations or defaultWorldOption.velocityIterations
+	positionIterations = positionIterations or defaultWorldOption.positionIterations
 	world:setIterations ( velocityIterations, positionIterations )
 
-	world:setAutoClearForces       ( settings.autoClearForces )
-	world:setTimeToSleep           ( settings.timeToSleep )
-	world:setAngularSleepTolerance ( settings.angularSleepTolerance )
-	world:setLinearSleepTolerance  ( settings.linearSleepTolerance )
+	world:setAutoClearForces       ( option.autoClearForces )
+	world:setTimeToSleep           ( option.timeToSleep )
+	world:setAngularSleepTolerance ( option.angularSleepTolerance )
+	world:setLinearSleepTolerance  ( option.linearSleepTolerance )
 	self.b2world = world
 	local ground = world:addBody( MOAIBox2DBody.STATIC )
 	self.b2ground = ground
+
+	world:start()
 	return world
 end
 
