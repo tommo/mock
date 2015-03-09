@@ -58,6 +58,7 @@ function PhysicsBody:__init()
 	self.bodyType     = 'dynamic'
 	self.body = false
 	self.joints = {}
+	self.mass = 1
 end
 
 function PhysicsBody:onAttach( entity )
@@ -103,6 +104,7 @@ function PhysicsBody:onStart( entity )
 	body:setFixedRotation( self.fixRotation )
 	-- body:setSleepingAllowed( self.allowSleep )
 	body:setBullet( self.isBullet )
+	body:setMassData(self.mass)
 	body:setGravityScale( self.gravityScale )
 end
 
@@ -154,6 +156,14 @@ end
 
 function PhysicsBody:_addJoint( j )
 	self.joints[ j ] = true
+end
+
+function PhysicsBody:setMass(mass)
+	self.mass = mass
+end
+
+function PhysicsBody:getMass()
+	return self.mass
 end
 
 function PhysicsBody:calcMass()
