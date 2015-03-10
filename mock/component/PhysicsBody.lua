@@ -312,6 +312,12 @@ function PhysicsShapeBox:setHeight( h )
 	self:updateShape()
 end
 
+function PhysicsShapeBox:setSize( w, h )
+	self.w = w
+	self.h = h
+	self:updateShape()
+end
+
 function PhysicsShapeBox:setRotation( rotation )
 	self.rotation = rotation
 	self:updateShape()
