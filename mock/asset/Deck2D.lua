@@ -629,6 +629,17 @@ function Deck2DPackLoader( node )
 	return pack
 end
 
+function Deck2DPackUnloader( node )
+	local pack = node:getCachedAsset()
+	if not pack then return end
+	for i, item in ipairs( pack.decks ) do
+		local name = item.name
+		print (name)
+		releaseAsset( node:getChildPath( name ) )
+	end
+end
+
+
 local function Deck2DItemLoader( node )
 	local pack = loadAsset( node.parent )
 	local name = node:getName()	
@@ -643,7 +654,7 @@ local function Deck2DItemLoader( node )
 end
 
 --------------------------------------------------------------------
-registerAssetLoader ( 'deck2d', Deck2DPackLoader )
+registerAssetLoader ( 'deck2d', Deck2DPackLoader, Deck2DPackUnloader )
 
 registerAssetLoader ( 'deck2d.quad',         Deck2DItemLoader )
 registerAssetLoader ( 'deck2d.tileset',      Deck2DItemLoader )

@@ -229,6 +229,10 @@ function AssetNode:getCache()
 	return self.cached
 end
 
+function AssetNode:getCachedAsset()
+	return self.cached and self.cached.asset
+end
+
 function registerAssetNode( path, data )
 	local ppath = splitPath(path)
 	local node = AssetNode()
