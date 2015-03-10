@@ -6,6 +6,9 @@ CLASS: DeckComponent( RenderComponent )
 		Field 'index' :int() :range(0) :getset( 'Index' );
 	}
 
+registerComponent( 'DeckComponent', DeckComponent )
+registerEntityWithComponent( 'DeckComponent', DeckComponent)
+
 --------------------------------------------------------------------
 function DeckComponent:__init()
 	self._moaiDeck = false

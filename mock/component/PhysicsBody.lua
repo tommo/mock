@@ -44,6 +44,8 @@ CLASS: PhysicsBody ( mock.Component )
 		Field 'allowSleep'   :boolean();
 		Field 'gravityScale' :set( 'setGravityScale' );
 		Field 'fixRotation'  :boolean();
+		'----';
+		Field 'Calc Mass'    :action('calcMass');
 	}
 
 mock.registerComponent( 'PhysicsBody', PhysicsBody )
@@ -56,6 +58,7 @@ function PhysicsBody:__init()
 	self.bodyType     = 'dynamic'
 	self.body = false
 	self.joints = {}
+	self.mass = 1
 end
 
 function PhysicsBody:onAttach( entity )
@@ -101,6 +104,7 @@ function PhysicsBody:onStart( entity )
 	body:setFixedRotation( self.fixRotation )
 	-- body:setSleepingAllowed( self.allowSleep )
 	body:setBullet( self.isBullet )
+	body:setMassData(self.mass)
 	body:setGravityScale( self.gravityScale )
 end
 
@@ -153,6 +157,28 @@ end
 function PhysicsBody:_addJoint( j )
 	self.joints[ j ] = true
 end
+
+function PhysicsBody:setMass(mass)
+	self.mass = mass
+end
+
+function PhysicsBody:getMass()
+	return self.mass
+end
+
+function PhysicsBody:calcMass()
+	local deck = self._entity:com(mock.DeckComponent)
+	if deck then
+		local x1,y1,z1, x2,y2,z2 = deck.prop:getBounds()
+
+		local w = x2 - x1
+		local h = y2 - y1
+		local radius = (w+h)/4
+		local linearWeight = radius * 0.1
+		self:setMass(linearWeight*linearWeight)
+	end
+end
+
 
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',
@@ -282,6 +308,8 @@ CLASS: PhysicsShapeBox ( PhysicsShape )
 		Field 'w' :set('setWidth');
 		Field 'h' :set('setHeight');
 		Field 'rotation' :set('setRotation');
+		'----';
+		Field 'Match size' :action('matchSize');
 	}
 
 mock.registerComponent( 'PhysicsShapeBox', PhysicsShapeBox )
@@ -323,11 +351,26 @@ function PhysicsShapeBox:setRotation( rotation )
 	self:updateShape()
 end
 
+function PhysicsShapeBox:matchSize()
+	local deck = self._entity:com(mock.DeckComponent)
+	if deck then
+		local x1,y1,z1, x2,y2,z2 = deck.prop:getBounds()
+
+		self.w = x2 - x1
+		self.h = y2 - y1
+
+		self:setLoc((x1 + x2)/2, (y1+y2)/2)
+
+		self:updateShape()
+	end
+end
 
 --------------------------------------------------------------------
 CLASS: PhysicsShapeCircle ( PhysicsShape )
 	:MODEL{
 		Field 'radius' :set('setRadius');
+		'----';
+		Field 'Match size' :action('matchSize');
 	}
 
 mock.registerComponent( 'PhysicsShapeCircle', PhysicsShapeCircle )
@@ -347,7 +390,18 @@ function PhysicsShapeCircle:setRadius( radius )
 	self:updateShape()
 end
 
+function PhysicsShapeCircle:matchSize()
+	local deck = self._entity:com(mock.DeckComponent)
+	if deck then
+		local x1,y1,z1, x2,y2,z2 = deck.prop:getBounds()
 
+		local radius = ((x2-x1) + (y2-y1)) / 4
+		self.radius = radius
+		self:setLoc((x1 + x2)/2, (y1+y2)/2)
+		
+		self:updateShape()
+	end
+end
 --------------------------------------------------------------------
 CLASS: PhysicsJoint ( mock.Component )
 	:MODEL{
