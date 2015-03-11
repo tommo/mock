@@ -26,9 +26,14 @@ require 'mock.asset.Particle'
 require 'mock.asset.SimpleParticle'
 require 'mock.asset.PexParticle'
 
---OTHER
+--PHYSICS
+require 'mock.asset.PhysicsMaterial'
+
+--LOGIC
 require 'mock.asset.FSMScheme'
 require 'mock.asset.BTScheme'
+
+--AUDIO
 require 'mock.asset.FMODDesignerProject'
 
 --ANIMATIONS
@@ -40,4 +45,3 @@ require 'mock.asset.AuroraSprite'
 require 'mock.asset.EffectNode'
 require 'mock.asset.EffectPack'
 
--- require 'mock.asset.PhysicsMaterial'

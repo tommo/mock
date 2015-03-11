@@ -50,8 +50,9 @@ require 'mock.component.Audio'
 
 --------------------------------------------------------------------
 ---- Physics
--- require 'mock.component.Box2DBody'
 require 'mock.component.PhysicsBody'
+require 'mock.component.PhysicsShape'
+require 'mock.component.PhysicsJoint'
 
 --------------------------------------------------------------------
 ---- Extended

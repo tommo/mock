@@ -293,6 +293,14 @@ function normalize(x,y)
 	return x/l, y/l
 end
 
+function length(x,y)
+	return sqrt(x*x+y*y)
+end
+
+function lengthSqrd(x,y)
+	return x*x+y*y
+end
+
 function direction(x1,y1,x2,y2)
 	return atan2(y2-y1,x2-x1)
 end

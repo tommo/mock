@@ -634,7 +634,6 @@ function Deck2DPackUnloader( node )
 	if not pack then return end
 	for i, item in ipairs( pack.decks ) do
 		local name = item.name
-		print (name)
 		releaseAsset( node:getChildPath( name ) )
 	end
 end

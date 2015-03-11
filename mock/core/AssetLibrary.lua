@@ -417,7 +417,7 @@ end
 
 --------------------------------------------------------------------
 function releaseAsset( path )
-	node = getAssetNode( path )
+	local node = getAssetNode( path )
 	if node then
 		local atype  = node.type
 		local unloader = AssetUnloaders[ atype ]
