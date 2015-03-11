@@ -42,6 +42,10 @@ function Deck2D:getTexture()
 	return self.texturePath
 end
 
+function Deck2D:getTextureInstance()
+	return self.texture
+end
+
 
 function Deck2D:getTextureData()
 	if self.texture then

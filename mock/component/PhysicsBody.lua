@@ -26,11 +26,9 @@ function PhysicsBody:__init()
 	self.gravityScale = 1
 	self.fixRotation  = false
 	self.bodyType     = 'dynamic'
-	self.mass    = 1
-	---	
-	self.body   = false
+	self.body = false
 	self.joints = {}
-
+	self.mass = 1
 end
 
 function PhysicsBody:onAttach( entity )
