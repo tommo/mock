@@ -182,3 +182,45 @@ _wrapMethods( PhysicsBody, 'body', {
 	}
 )
 
+-- Helper
+-- Dynamically add post physics update functionality for one class which
+-- typically has physics components attached on and requires positional
+-- changes during the collision handler.
+function installPhysicsPostUpdate(klass)
+
+	klass['physicsPostThread'] = function(self)
+		while true do
+			self:onPhysicsPostUpdate()
+			coroutine.yield()
+		end
+	end
+
+	-- This could be merged into physicsPostThread() but leave it here for
+	-- possible future updates
+	klass['onPhysicsPostUpdate'] = function(self)
+		if self.callingQueue then 
+			for i,func in ipairs(self.callingQueue) do
+				func()
+			end
+			-- all done, clear queue
+			self.callingQueue = {}
+		end
+	end
+
+	-- Called by user
+	klass['callOnNextUpdate'] = function(self, func)
+		if self.callingQueue then
+			table.insert(self.callingQueue, func)
+		else
+			self.callingQueue = {func}
+		end
+
+	end
+
+	local originalOnStart = klass['onStart']
+	klass['onStart'] = function(self)
+		originalOnStart(self)
+		-- add busy update for onPhysicsPostUpdate
+		self:addCoroutine( 'physicsPostThread' )
+	end
+end
