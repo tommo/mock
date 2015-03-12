@@ -9,5 +9,5 @@ function BTSchemeLoader( node )
 	return tree
 end
 
-
+--------------------------------------------------------------------
 registerAssetLoader ( 'bt_scheme', BTSchemeLoader )

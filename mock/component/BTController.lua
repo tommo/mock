@@ -30,22 +30,46 @@ local function makeShuffleList( range )
 end
 
 --------------------------------------------------------------------
+local ActionRegistry = {}
+function getActionRegistry() 
+	return ActionRegistry
+end
+
+function getActionClass( id )
+	return ActionRegistry[ id ]
+end
+
+function registerActionClass( id, class )
+	if ActionRegistry[ id ] then
+		_warn( 'duplicated action class', id )
+	end
+	ActionRegistry[ id ] = class
+end
+
+--------------------------------------------------------------------
 ---Action ( base class for userdefined object behavior )
 --------------------------------------------------------------------
 CLASS: BTAction ()
-	:MEMBER{
-		serialize = false,
-		start = false,
-		stop = false
-	}
 
+--------------------------------------------------------------------
+BTAction.serialize = false
+BTAction.start = false
+BTAction.stop = false
+
+--class function
+function BTAction.register( thisClas, id )
+	registerActionClass( id, thisClas )
+	return thisClas
+end
+
+--class function
 function BTAction:step( dt )
 	--pass
 	return 'ok'
 end
 
+--------------------------------------------------------------------
 local DUMMYAction = BTAction()
-
 --------------------------------------------------------------------
 -- BTContext: used as a component
 CLASS: BTContext ()
@@ -86,6 +110,9 @@ function BTContext:requestAction( actionNode )
 
 	local name = actionNode.actionName
 	local actionClas = self._actionTable[ name ]
+	if not actionClas then
+		actionClas = ActionRegistry[ name ]
+	end
 	local action
 	if actionClas then
 		action = actionClas()	
@@ -218,8 +245,10 @@ local function loadNode( data )
 	end
 	if children then
 		for i, childData in ipairs( children ) do
-			local childNode = loadNode( childData )
-			if childNode then	node:addNode( childNode ) end
+			if not childData.commented then
+				local childNode = loadNode( childData )
+				if childNode then	node:addNode( childNode ) end
+			end
 		end
 	end
 
@@ -820,8 +849,10 @@ BehaviorTreeNodeTypes = {
 
 CLASS: BTController ( UpdateListener )
 	:MODEL{
-		Field 'scheme' :asset('bt_scheme') :getset('Scheme');
+		Field 'scheme' :asset( '(bt_scheme|bt_script)' ) :getset('Scheme');
 	}
+
+mock.registerComponent( 'BTController', BTController )
 
 local startCountDown = 0
 function BTController:__init()
