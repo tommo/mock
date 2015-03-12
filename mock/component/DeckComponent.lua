@@ -12,6 +12,7 @@ registerEntityWithComponent( 'DeckComponent', DeckComponent)
 --------------------------------------------------------------------
 function DeckComponent:__init()
 	self._moaiDeck = false
+	self.billboard = false
 	self.prop = MOAIProp.new()
 	self:setBlend('normal')
 end
@@ -44,6 +45,21 @@ function DeckComponent:getDeck( deckPath )
 	return self.deckPath	
 end
 
+function DeckComponent:setBillboard( billboard )
+	self.billboard = billboard
+	self.prop:setBillboard( billboard )
+end
+
+function DeckComponent:setDepthMask( enabled )
+	self.depthMask = enabled
+	self.prop:setDepthMask( enabled )
+end
+
+function DeckComponent:setDepthTest( mode )
+	self.depthTest = mode
+	self.prop:setDepthTest( mode )
+end
+
 function DeckComponent:getMoaiDeck()
 	return self._moaiDeck
 end
@@ -54,6 +70,11 @@ end
 
 function DeckComponent:getIndex()
 	return self.prop:getIndex()
+end
+
+
+function DeckComponent:setGrid( grid )
+	self.prop:setGrid( grid )
 end
 
 function DeckComponent:setBlend( b )

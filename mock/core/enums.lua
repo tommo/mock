@@ -153,3 +153,12 @@ EnumDeviceType = _ENUM_V {
 }
 
 --------------------------------------------------------------------
+EnumDepthTestMode = {
+	{ 'disable',       MOAIProp. DEPTH_TEST_DISABLE       },
+	{ 'never',         MOAIProp. DEPTH_TEST_NEVER         },
+	{ 'always',        MOAIProp. DEPTH_TEST_ALWAYS        },
+	{ 'less',          MOAIProp. DEPTH_TEST_LESS          },
+	{ 'less_equal',    MOAIProp. DEPTH_TEST_LESS_EQUAL    },
+	{ 'greater',       MOAIProp. DEPTH_TEST_GREATER       },
+	{ 'greater_equal', MOAIProp. DEPTH_TEST_GREATER_EQUAL },
+}
