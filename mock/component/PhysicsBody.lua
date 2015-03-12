@@ -15,6 +15,8 @@ CLASS: PhysicsBody ( mock.Component )
 		Field 'gravityScale' :set( 'setGravityScale' );
 		Field 'fixRotation'  :boolean();
 		'----';
+		Field 'mass'         :getset( 'Mass' );
+		Field 'updateMassFromShape' :boolean();
 		Field 'Calc Mass'    :action('calcMass');
 	}
 
@@ -26,6 +28,9 @@ function PhysicsBody:__init()
 	self.gravityScale = 1
 	self.fixRotation  = false
 	self.bodyType     = 'dynamic'
+	---	
+	self.updateMassFromShape = false
+	self.bodyReady = false
 	self.mass    = 1
 	---	
 	self.body   = false
@@ -40,6 +45,7 @@ function PhysicsBody:onAttach( entity )
 	self.body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
 	self.body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
 	self.body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_Z_ROT ) 
+
 	for com in pairs( entity:getComponents() ) do
 		if isInstance( com, PhysicsShape ) then
 			com:updateParentBody( self )
@@ -55,6 +61,9 @@ function PhysicsBody:onAttach( entity )
 			com:updateParentBody( self )
 		end
 	end
+
+	self.bodyReady = true
+	self:updateMass()
 
 	self.body:forceUpdate()
 end
@@ -73,11 +82,12 @@ function PhysicsBody:onStart( entity )
 		prop:setAttrLink ( MOAIProp.ATTR_Z_ROT, body, MOAIProp.ATTR_Z_ROT ) 
 		-- inheritTransform( prop, body )
 	end
+
 	body:setFixedRotation( self.fixRotation )
 	-- body:setSleepingAllowed( self.allowSleep )
 	body:setBullet( self.isBullet )
-	body:setMassData(self.mass)
 	body:setGravityScale( self.gravityScale )
+	self:updateMass()
 end
 
 function PhysicsBody:onDetach( entity )
@@ -132,10 +142,20 @@ end
 
 function PhysicsBody:setMass(mass)
 	self.mass = mass
+	self:updateMass()
 end
 
 function PhysicsBody:getMass()
 	return self.mass
+end
+
+function PhysicsBody:updateMass()
+	if not self.bodyReady then return end
+	if self.updateMassFromShape then
+	 	self.body:resetMassData()
+	else
+		self.body:setMassData( self.mass )
+	end
 end
 
 function PhysicsBody:calcMass()
@@ -147,7 +167,7 @@ function PhysicsBody:calcMass()
 		local h = y2 - y1
 		local radius = (w+h)/4
 		local linearWeight = radius * 0.1
-		self:setMass(linearWeight*linearWeight)
+		self:setMass( linearWeight*linearWeight )
 	end
 end
 

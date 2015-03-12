@@ -4,10 +4,11 @@ module 'mock'
 CLASS: PhysicsShape ( mock.Component )
 	:MODEL{
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
-		Field 'material'  :asset( 'physics_material' );
+		Field 'material'  :asset( 'physics_material' ) :getset( 'Material' );
 	}
 
 function PhysicsShape:__init()
+	self.materialPath = false
 	self.material = false
 	self.loc = { 0,0 }
 	self.shape = false
@@ -26,6 +27,36 @@ end
 function PhysicsShape:findBody()
 	local body = self._entity:getComponent( PhysicsBody )
 	return body
+end
+
+function PhysicsShape:getMaterial()
+	return self.materialPath
+end
+
+function PhysicsShape:setMaterial( path )
+	self.materialPath = path
+	if not path then
+		self.material = false
+		return
+	end
+	self.material = loadAsset( path )
+	self:updateMaterial()
+end
+
+function PhysicsShape:getMaterialTag()
+	return self.material and self.material.tag
+end
+
+function PhysicsShape:updateMaterial()
+	local material, shape = self.material, self.shape
+	if not shape then return end
+	if not material then material = getDefaultPhysicsMaterial() end
+	shape:setDensity      ( material.density )
+	shape:setFriction     ( material.friction )
+	shape:setRestitution  ( material.restitution )
+	shape:setSensor       ( material.isSensor )
+	shape:setFilter       ( material.categoryBits or 0, material.maskBits or 0xffff, material.group or 0 )
+	self.parentBody:updateMass()
 end
 
 function PhysicsShape:onAttach( entity )
@@ -64,13 +95,7 @@ function PhysicsShape:updateShape()
 	self.shape = self:createShape( body )
 	--apply material
 	--TODO
-	local shape = self.shape
-	shape:setFriction( 0.5 )
-	shape:setRestitution( 0.3 )
-	shape:setDensity( rand( 0.5, 1 ) )
-
-	self.parentBody.body:resetMassData()
-
+	self:updateMaterial()
 end
 
 function PhysicsShape:createShape( body )
