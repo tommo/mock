@@ -93,6 +93,8 @@ function PhysicsShape:updateShape()
 	if not self.parentBody then return end
 	local body = self.parentBody.body
 	self.shape = self:createShape( body )
+	-- back refernce to the component
+	self.shape.component = self
 	--apply material
 	--TODO
 	self:updateMaterial()
