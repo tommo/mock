@@ -41,6 +41,11 @@ function Entity:_createEntityProp()
 	return newProp()
 end
 
+--create proxy object for ide editor
+function Entity:_createTransformProxy()
+	return false
+end
+
 local _PRIORITY = 1
 function Entity:__init( data )
 	local _prop = self:_createEntityProp()

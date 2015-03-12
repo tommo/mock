@@ -349,9 +349,9 @@ function setupMoaiProp( prop, option )
 	local depthTest = option.depthTest
 	if option.depthMask == false then	prop:setDepthMask( false ) end
 	if depthTest then		
-		if depthTest=='always' then
+		if depthTest == 'always' then
 			prop:setDepthTest( DEPTH_TEST_ALWAYS )
-		elseif depthTest=='greater' then
+		elseif depthTest == 'greater' then
 			prop:setDepthTest( DEPTH_TEST_GREATER )	
 		else 
 			prop:setDepthTest( DEPTH_TEST_LESS_EQUAL )	

@@ -83,6 +83,7 @@ function ShaderProgram:buildFromSource( vshSource, fshSource )
 	self.vshSource = vshSource
 	self.fshSource = fshSource
 
+	prog:purge()
 	prog:load( vshSource, fshSource )
 	prog._source = self
 
@@ -300,6 +301,7 @@ local function shaderLoader( node )
 	loadedShaderPrograms[ prog._key ] = prog
 	if prog then
 		node.cached.program = prog
+				print( prog )
 		return prog:buildShader( 'default' )
 	end
 end
