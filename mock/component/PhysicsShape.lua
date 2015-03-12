@@ -76,6 +76,7 @@ function PhysicsShape:onDetach( entity )
 	if not self.shape then return end
 	if self.parentBody and self.parentBody.body then
 		self.shape:destroy()
+		self.shape.component = nil
 		self.shape = false
 	end
 end
@@ -88,6 +89,7 @@ end
 function PhysicsShape:updateShape()
 	if self.shape then 
 		self.shape:destroy()
+		self.shape.component = nil
 		self.shape = false
 	end
 	if not self.parentBody then return end

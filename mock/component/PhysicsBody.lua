@@ -40,6 +40,7 @@ end
 
 function PhysicsBody:onAttach( entity )
 	self.body = self:createBody()
+	self.body.component = self
 
 	local prop = entity:getProp()
 	self.body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
