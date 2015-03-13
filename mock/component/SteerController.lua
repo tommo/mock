@@ -3,6 +3,8 @@ module 'mock'
 CLASS: PhysicsBodySteerController ()
 	:MODEL{}
 
+registerComponent( 'PhysicsBodySteerController', PhysicsBodySteerController )
+
 function PhysicsBodySteerController:__init()
 	self._controller = MOAISteerBox2DController.new()
 end

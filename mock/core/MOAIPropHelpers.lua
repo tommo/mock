@@ -481,6 +481,7 @@ function wrapWithMoaiPropMethods( clas, propName )
 	wrapWithMoaiTransformMethods( clas, propName )
 
 	_wrapMethods(clas, propName, {
+			'getColor',
 			'setColor',
 			'seekColor',
 			'setVisible',

@@ -20,13 +20,13 @@ CLASS: PhysicsMaterial ()
 	}
 
 function PhysicsMaterial:__init()
-	self.density = 1
-	self.restitution = 0.5
-	self.friction = 0.5
-	self.isSensor = false
-	self.group = 1
+	self.density      = 1
+	self.restitution  = 0.5
+	self.friction     = 0.5
+	self.isSensor     = false
+	self.group        = 1
 	self.categoryBits = 1
-	self.maskBits = 0xffff
+	self.maskBits     = 0xffff
 end
 
 function PhysicsMaterial:clone()

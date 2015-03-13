@@ -39,13 +39,14 @@ function PhysicsBody:__init()
 end
 
 function PhysicsBody:onAttach( entity )
-	self.body = self:createBody()
+	local body = self:createBody()
+	self.body = body
 	self.body.component = self
 
 	local prop = entity:getProp()
-	self.body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
-	self.body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
-	self.body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_Z_ROT ) 
+	body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
+	body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
+	body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_Z_ROT ) 
 
 	for com in pairs( entity:getComponents() ) do
 		if isInstance( com, PhysicsShape ) then
@@ -71,23 +72,22 @@ end
 
 function PhysicsBody:onStart( entity )
 	local body = self.body
-	if self.bodyType == 'dynamic' then
+	if self.bodyType ~= 'static' then
 		body:clearAttrLink( MOAIProp.ATTR_X_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
 
 		local prop = entity:getProp()
-		prop:clearAttrLink( MOAIProp.INHERIT_TRANSFORM )
 		prop:setAttrLink ( MOAIProp.ATTR_X_LOC, body, MOAIProp.ATTR_WORLD_X_LOC ) 
 		prop:setAttrLink ( MOAIProp.ATTR_Y_LOC, body, MOAIProp.ATTR_WORLD_Y_LOC ) 
 		prop:setAttrLink ( MOAIProp.ATTR_Z_ROT, body, MOAIProp.ATTR_Z_ROT ) 
-		-- inheritTransform( prop, body )
 	end
 
-	body:setFixedRotation( self.fixRotation )
-	-- body:setSleepingAllowed( self.allowSleep )
-	body:setBullet( self.isBullet )
-	body:setGravityScale( self.gravityScale )
+	body:setFixedRotation   ( self.fixRotation )
+	body:setSleepingAllowed ( self.allowSleep )
+	body:setBullet          ( self.isBullet )
+	body:setGravityScale    ( self.gravityScale )
+
 	self:updateMass()
 end
 

@@ -36,7 +36,7 @@ local setupMoaiTransform = setupMoaiTransform
 -------init
 --------------------------------------------------------------------
 --change this to use other MOAIProp subclass as entity prop
-local newProp = MOAIProp.new
+local newProp = MOCKProp.new
 function Entity:_createEntityProp()
 	return newProp()
 end
@@ -47,7 +47,7 @@ function Entity:_createTransformProxy()
 end
 
 local _PRIORITY = 1
-function Entity:__init( data )
+function Entity:__init()
 	local _prop = self:_createEntityProp()
 	self._prop       = _prop
 
@@ -63,10 +63,7 @@ function Entity:__init( data )
 	self.active      = true
 	self.localActive = true
 	self.started     = false
-	if type(data) == 'table' then
-		local trans = data.transform
-		if trans then return setupMoaiTransform( _prop, trans ) end
-	end
+	
 end
 
 function Entity:_insertIntoScene( scene, layer )
@@ -781,9 +778,9 @@ end
 --------------------------------------------------------------------
 --Color
 --------------------------------------------------------------------
-function Entity:getColor()
-	return extractColor( self._prop )
-end
+-- function Entity:getColor()
+-- 	return extractColor( self._prop )
+-- end
 
 -- function Entity:setColor( r,g,b,a )
 -- 	return self._prop:setColor( r,g,b,a )
@@ -793,11 +790,7 @@ end
 ----------Transform Conversion
 --------------------------------------------------------------------
 function Entity:setWorldLoc( x,y,z )
-	if self.parent then
-		return self:setLoc( self.parent:worldToModel( x,y,z ) )
-	else
-		return self:setLoc( x,y,z )
-	end
+	return self._prop:setWorldLoc( x, y, z )
 end
 
 function Entity:wndToWorld( x, y, z )

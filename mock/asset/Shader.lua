@@ -301,7 +301,6 @@ local function shaderLoader( node )
 	loadedShaderPrograms[ prog._key ] = prog
 	if prog then
 		node.cached.program = prog
-				print( prog )
 		return prog:buildShader( 'default' )
 	end
 end

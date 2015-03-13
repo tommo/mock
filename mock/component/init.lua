@@ -2,6 +2,7 @@
 ---- Base
 require 'mock.component.Behaviour'
 require 'mock.component.UpdateListener'
+require 'mock.component.IntervalUpdateListener'
 require 'mock.component.RenderComponent'
 require 'mock.component.DeckComponent'
 
