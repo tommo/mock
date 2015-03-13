@@ -50,6 +50,23 @@ function loadAllGameModules( scriptLibrary )
 			GameModule.loadGameModule( modulePath )
 		end
 	end
+
+	local errors = GameModule.getErrorInfo()
+	if errors then
+		print( 'Errors in loading game modules' )
+		print( '------------------------------' )
+		for i, info in ipairs( errors ) do
+			if info.errtype == 'compile' then
+				printf( 'error in compiling %s', info.fullpath )
+			elseif info.errtype == 'load' then
+				printf( 'error in loading %s', info.fullpath )
+			end
+			print( info.msg )
+			print()
+		end
+		print( '------------------------------' )
+		os.exit( -1 )
+	end
 	validateAllClasses()
 end
 

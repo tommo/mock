@@ -270,3 +270,12 @@ function compilePlainLua( inputFile, outputFile )
 	end
 	return false
 end
+
+--------------------------------------------------------------------
+function getErrorInfo()
+	if #_errorInfos > 0 then
+		return _errorInfos
+	else
+		return nil
+	end
+end
