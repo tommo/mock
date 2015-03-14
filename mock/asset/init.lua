@@ -27,6 +27,7 @@ require 'mock.asset.SimpleParticle'
 require 'mock.asset.PexParticle'
 
 --PHYSICS
+require 'mock.asset.PhysicsBodyDef'
 require 'mock.asset.PhysicsMaterial'
 
 --LOGIC
