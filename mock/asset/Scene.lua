@@ -10,15 +10,18 @@ local function entitySortFunc( a, b )
 	return  a._priority < b._priority
 end
 
+local function componentSortFunc( a, b )
+	return ( a._componentID or 0 ) < ( b._componentID or 0 )
+end
 --------------------------------------------------------------------
 local function collectEntity( entity, objMap )
 	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
-	local coms = {}
+	local components = {}
 	local children = {}
 
-	for com in pairs( entity.components ) do
+	for i, com in ipairs( entity:getSortedComponentList() ) do
 		if not com.FLAG_INTERNAL then
-			table.insert( coms, objMap:map( com ) )
+			table.insert( components, objMap:map( com ) )
 		end
 	end
 
@@ -28,8 +31,9 @@ local function collectEntity( entity, objMap )
 		childrenList[i] = e
 		i = i + 1
 	end
+	
 	table.sort( childrenList, entitySortFunc )
-
+	
 	for i, child in ipairs( childrenList ) do
 		local childData = collectEntity( child, objMap )
 		if childData then
@@ -38,7 +42,7 @@ local function collectEntity( entity, objMap )
 	end
 	return {
 		id = objMap:map( entity ),
-		components = coms,
+		components = components,
 		children   = children
 	}
 end

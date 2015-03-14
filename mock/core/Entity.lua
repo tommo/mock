@@ -55,11 +55,15 @@ function Entity:__init()
 	self._priority   = _PRIORITY
 	_prop:setPriority( _PRIORITY )
 
+	self._maxComponentID = 0
+
 	self.scene       = false --not loaded yet
 	self.components  = {}
 	self.children    = {}
 	-- self.timers      = false
 	self.name        = false
+	
+	--TODO: move this into MOCKProp
 	self.active      = true
 	self.localActive = true
 	self.started     = false
@@ -224,8 +228,10 @@ function Entity:attach( com )
 	end
 	assert( not self.components[ com ], 'component already attached!!!!'  )
 	self.components[ com ] = com:getClass()
+	com._componentID = self._maxComponentID
+	self._maxComponentID = self._maxComponentID + 1
 	if self.scene then
-		com._entity = self
+		com._entity = self		
 		local onAttach = com.onAttach
 		if onAttach then onAttach( com, self ) end
 		local entityListener = self.scene.entityListener
@@ -282,6 +288,22 @@ end
 function Entity:getComponents()
 	return self.components
 end
+
+
+local function componentSortFunc( a, b )
+	return ( a._componentID or 0 ) < ( b._componentID or 0 )
+end
+
+function Entity:getSortedComponentList()
+	local list = {}
+	local i = 0
+	for com in pairs( self.components ) do
+		insert( list , com )
+	end
+	table.sort( list, componentSortFunc )
+	return list
+end
+
 
 function Entity:getComponent( clas )
 	if not self.components then return nil end
@@ -960,22 +982,31 @@ registerEntity( 'Entity', Entity )
 --------------------------------------------------------------------
 --Serializer Related
 --------------------------------------------------------------------
-local function _cloneEntity( src, cloneComponents, cloneChildren, objMap )
+local function _cloneEntity( src, cloneComponents, cloneChildren, objMap, ensureComponentOrder )
 	local objMap = {}
 	local dst = clone( src, nil, objMap )
 	dst.layer = src.layer
 	if cloneComponents ~= false then
-		for com in pairs( src.components ) do
-			if not com.FLAG_INTERNAL then
-				local com1 = clone( com, nil, objMap )
-				dst:attach( com1 )
+		if ensureComponentOrder then
+			for i, com in ipairs( src:getSortedComponentList() ) do
+				if not com.FLAG_INTERNAL then
+					local com1 = clone( com, nil, objMap )
+					dst:attach( com1 )
+				end
+			end
+		else
+			for com in pairs( src.components ) do
+				if not com.FLAG_INTERNAL then
+					local com1 = clone( com, nil, objMap )
+					dst:attach( com1 )
+				end
 			end
 		end
 	end
 	if cloneChildren ~= false then
 		for child in pairs( src.children ) do
 			if not child.FLAG_INTERNAL then
-				local child1 = _cloneEntity( child, cloneComponents, cloneChildren, objMap )
+				local child1 = _cloneEntity( child, cloneComponents, cloneChildren, objMap, ensureComponentOrder )
 				dst:addChild( child1 )
 			end
 		end
@@ -983,6 +1014,6 @@ local function _cloneEntity( src, cloneComponents, cloneChildren, objMap )
 	return dst
 end
 
-function cloneEntity( src )
-	return _cloneEntity( src, true, true )
+function cloneEntity( src, ensureComponentOrder )
+	return _cloneEntity( src, true, true, nil, ensureComponentOrder )
 end
