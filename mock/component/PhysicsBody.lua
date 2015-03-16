@@ -1,11 +1,5 @@
 module 'mock'
 
-EnumPhysicsBodyType = _ENUM_V{
-	'dynamic',
-	'static',
-	'kinematic'
-}
-
 --------------------------------------------------------------------
 CLASS: PhysicsBody ( mock.Component )
 	:MODEL{
@@ -210,6 +204,7 @@ _wrapMethods( PhysicsBody, 'body', {
 	'applyTorque',
 	'getAngle',
 	'getAngularVelocity',
+	'getContactList',
 	'getInertia',
 	'getGravityScale',
 	'getLinearVelocity',

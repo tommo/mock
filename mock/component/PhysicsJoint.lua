@@ -32,6 +32,10 @@ function PhysicsJoint:findBody()
 	return body
 end
 
+function PhysicsJoint:getTargetMoaiBody()
+	return self.target and self.target.body
+end
+
 function PhysicsJoint:onAttach( entity )
 	if not self.parentBody then
 		for com in pairs( entity:getComponents() ) do
@@ -70,10 +74,8 @@ function PhysicsJoint:updateJoint()
 		self.joint = false
 	end
 	if not self.parentBody then return end
-	if not self.target then return end
-
 	local bodyA = self.parentBody.body
-	local bodyB = self.target.body
+	local bodyB = self:getTargetMoaiBody()
 	if not ( bodyA and bodyB  ) then return end
 	self.joint = self:createJoint( bodyA, bodyB )
 
@@ -109,6 +111,57 @@ function PhysicsJointDistance:createJoint( bodyA, bodyB )
 			x1,y1
 		)
 	return joint
+end
+
+---------------------------------------------------------------------
+
+CLASS: PhysicsJointFriction ( PhysicsJoint )
+	:MODEL{
+		Field 'target'  :no_edit();
+		Field 'offsetB' :no_edit();
+		'----';
+		Field 'maxForce';
+		Field 'maxTorque';
+
+}
+
+mock.registerComponent( 'PhysicsJointFriction', PhysicsJointFriction )
+
+function PhysicsJointFriction:__init()
+	self.distacne  = 100
+	self.maxForce  = 0
+	self.maxTorque = 0
+end
+
+function PhysicsJointFriction:createJoint( bodyA, bodyB )
+	bodyA:forceUpdate()
+	local x0,y0 = bodyA:getWorldLoc()
+	local joint = game.b2world:addFrictionJoint(
+			bodyA,
+			bodyB,
+			x0,y0,
+			self.maxForce,
+			self.maxTorque
+		)
+	return joint
+end
+
+function PhysicsJointFriction:getTargetMoaiBody()
+	return game:getBox2DWorldGround()
+end
+
+function PhysicsJointFriction:setMaxForce( f )
+	self.maxForce = f
+	if self.joint then
+		self.joint:setMaxForce( f )
+	end
+end
+
+function PhysicsJointFriction:setMaxTorque( t )
+	self.maxTorque = t
+	if self.joint then
+		self.joint:setMaxTorque( t )
+	end
 end
 
 ---------------------------------------------------------------------

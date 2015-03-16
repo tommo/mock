@@ -21,8 +21,8 @@ CLASS: PhysicsMaterial ()
 
 function PhysicsMaterial:__init()
 	self.density      = 1
-	self.restitution  = 0.5
-	self.friction     = 0.5
+	self.restitution  = 0
+	self.friction     = 0
 	self.isSensor     = false
 	self.group        = 1
 	self.categoryBits = 1

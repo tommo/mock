@@ -32,7 +32,6 @@ function TextLabel:__init(  )
 	self:setSize( 100, 100 )
 	self.defaultStyle = 'default'
 	self.styleSheet = false
-	self:setStyleSheet( getDefaultStyleSheet() )
 	self.rectLimit = true
 	self:useDeckShader()	
 	self.wordBreak = false
@@ -45,6 +44,11 @@ end
 
 function TextLabel:onDetach( entity )
 	entity:_detachProp( self.box )
+end
+
+function TextLabel:onEditorInit()
+	local sheet = getDefaultStyleSheet()
+	self:setStyleSheet( sheet )
 end
 
 --------------------------------------------------------------------

@@ -24,8 +24,8 @@ function PhysicsBodyDef:__init()
 	self.isBullet       = false
 	self.fixedRotation  = false
 	self.gravityScale   = 1
-	self.linearDamping  = 0.5
-	self.angularDamping = 0.5
+	self.linearDamping  = 1
+	self.angularDamping = 1
 	self.defaultMaterial = false
 end
 
