@@ -2,9 +2,9 @@ module 'mock'
 
 local function _triggerCollisionHandler( phase, fixA, fixB, arb )
 	local bodyA  = fixA:getBody()
-	local ownerA = bodyA.owner
+	local ownerA = bodyA.component
 	local bodyB  = fixB:getBody()
-	local ownerB = bodyB.owner
+	local ownerB = bodyB.component
 	if phase == MOAIBox2DArbiter.BEGIN then
 		if ownerA.onCollisionEnter then
 			ownerA:onCollisionEnter( ownerB )
@@ -42,7 +42,7 @@ function TriggerObjectBase:onAttach( ent )
 	local prop = ent:getProp()
 	body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_X_LOC ) 
 	body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_Y_LOC ) 
-	body.owner = self
+	body.component = self
 	self:updateCollisionShape()
 end
 
@@ -70,6 +70,14 @@ function TriggerObjectBase:updateCollisionShape()
 	local shape = body:addCircle( 0,0, self.radius )
 	self.shape = shape
 	self.shape:setSensor( true )
+	self:setupCollisionCallback( self.shape )
+	
+end
+
+
+function TriggerObjectBase:setupCollisionCallback( shape )
+	shape.component = self
+	-- shape:setFilter( 0xffff, 0xffff, 0 )
 	shape:setCollisionHandler(
 		_triggerCollisionHandler,
 		MOAIBox2DArbiter.BEGIN + MOAIBox2DArbiter.END

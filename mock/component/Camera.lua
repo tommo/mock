@@ -532,5 +532,6 @@ function Camera:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'camera.png' )
 	giz:setTransform( self._camera )
+	giz:setTarget( self )
 	return giz
 end

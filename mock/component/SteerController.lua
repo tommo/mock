@@ -19,6 +19,10 @@ function PhysicsBodySteerController:onStart()
 	self._controller:start()
 end
 
+function PhysicsBodySteerController:onDetach( ent )
+	self._controller:stop()
+end
+
 function PhysicsBodySteerController:pushBehaviour( behaviour, weight )
 	self._controller:pushBehaviour( behaviour, weight )
 	return behaviour

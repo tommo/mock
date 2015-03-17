@@ -29,6 +29,7 @@ function TriggerAreaCircle:updateCollisionShape()
 	if self.shape then self.shape:destroy() end
 	self.shape = body:addCircle( 0,0, self.radius )
 	self.shape:setSensor( true )
+	self:setupCollisionCallback( self.shape )
 end
 
 function TriggerAreaCircle:setRadius( r )	
@@ -88,6 +89,7 @@ function TriggerAreaBox:updateCollisionShape()
 	local w, h = self.width, self.height
 	self.shape = body:addRect( rectCenter( 0,0, w,h ) )
 	self.shape:setSensor( true )	
+	self:setupCollisionCallback( self.shape )
 end
 
 --------------------------------------------------------------------
