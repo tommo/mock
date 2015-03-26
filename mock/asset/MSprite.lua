@@ -37,6 +37,7 @@ local function MSpriteLoader( node )
 		local tw, th = tex:getSize()
 		local ox, oy = 0, 0 --todo
 		texRects[ id ] = { tw, th, ox, oy } 
+		uvRects[ id ] = uvRect
 	end
 
 	local deck = MOAIGfxMaskedQuadListDeck2D.new()
@@ -64,8 +65,15 @@ local function MSpriteLoader( node )
 		moduleIdToIndex[ id ] = i
 		local x, y, w, h = unpack( m.rect )
 		local texRect = texRects[ m.atlas ]
+		local uvRect = uvRects[ m.atlas ]
 		local tw, th, ox, oy = unpack( texRect )
 		local u0, v0, u1, v1 = (x+ox+0.1)/tw, (y+oy+0.1)/th, (x+ox+w)/tw, (y+oy+h)/th
+		local tu0, tv1, tu1,tv0 = unpack( uvRect )
+		local us, vs = tu1-tu0, tv1-tv0
+		u0 = u0 * us +tu0
+		v0 = v0 * vs +tv0
+		u1 = u1 * us +tu0
+		v1 = v1 * vs +tv0
 		m.uv = {u0, v0, u1, v1}
 		m.index = i
 		deck:setUVRect( i, u0, v0, u1, v1 )
