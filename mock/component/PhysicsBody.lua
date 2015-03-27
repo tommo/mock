@@ -1,19 +1,9 @@
 module 'mock'
 
-EnumPhysicsBodyType = _ENUM_V{
-	'dynamic',
-	'static',
-	'kinematic'
-}
-
 --------------------------------------------------------------------
 CLASS: PhysicsBody ( mock.Component )
 	:MODEL{
-		Field 'bodyType'     :enum( EnumPhysicsBodyType ) :getset( 'Type' );
-		Field 'isBullet'     :boolean();
-		Field 'allowSleep'   :boolean();
-		Field 'gravityScale' :set( 'setGravityScale' );
-		Field 'fixRotation'  :boolean();
+		Field 'bodyDef'      :asset( 'physics_body_def' ) :getset( 'BodyDef' );
 		'----';
 		Field 'mass'         :getset( 'Mass' );
 		Field 'updateMassFromShape' :boolean();
@@ -23,11 +13,8 @@ CLASS: PhysicsBody ( mock.Component )
 mock.registerComponent( 'PhysicsBody', PhysicsBody )
 
 function PhysicsBody:__init()
-	self.isBullet     = false
-	self.allowSleep   = true
-	self.gravityScale = 1
-	self.fixRotation  = false
-	self.bodyType     = 'dynamic'
+	self.bodyDef = false
+	self.bodyDefPath = false
 	---	
 	self.updateMassFromShape = false
 	self.bodyReady = false
@@ -35,8 +22,9 @@ function PhysicsBody:__init()
 	---	
 	self.body   = false
 	self.joints = {}
-	self.mass = 1
+	self.mass    = 1
 end
+
 
 function PhysicsBody:onAttach( entity )
 	local body = self:createBody()
@@ -46,7 +34,9 @@ function PhysicsBody:onAttach( entity )
 	local prop = entity:getProp()
 	body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
 	body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
-	body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_Z_ROT ) 
+	body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_WORLD_Z_ROT ) 
+
+	self:updateBodyDef()
 
 	for com in pairs( entity:getComponents() ) do
 		if isInstance( com, PhysicsShape ) then
@@ -70,23 +60,23 @@ function PhysicsBody:onAttach( entity )
 	self.body:forceUpdate()
 end
 
+function PhysicsBody:getMoaiBody()
+	return self.body
+end
+
 function PhysicsBody:onStart( entity )
 	local body = self.body
-	if self.bodyType ~= 'static' then
+	if self:getType() ~= 'static' then
 		body:clearAttrLink( MOAIProp.ATTR_X_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
 
 		local prop = entity:getProp()
-		prop:setAttrLink ( MOAIProp.ATTR_X_LOC, body, MOAIProp.ATTR_WORLD_X_LOC ) 
-		prop:setAttrLink ( MOAIProp.ATTR_Y_LOC, body, MOAIProp.ATTR_WORLD_Y_LOC ) 
-		prop:setAttrLink ( MOAIProp.ATTR_Z_ROT, body, MOAIProp.ATTR_Z_ROT ) 
+		-- prop:setAttrLink ( MOAIProp.ATTR_X_LOC, body, MOAIProp.ATTR_WORLD_X_LOC ) 
+		-- prop:setAttrLink ( MOAIProp.ATTR_Y_LOC, body, MOAIProp.ATTR_WORLD_Y_LOC ) 
+		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT ) 
+		-- prop:setAttrLink ( MOAIProp.ATTR_Z_ROT, body, MOAIProp.ATTR_Z_ROT ) 
 	end
-
-	body:setFixedRotation   ( self.fixRotation )
-	body:setSleepingAllowed ( self.allowSleep )
-	body:setBullet          ( self.isBullet )
-	body:setGravityScale    ( self.gravityScale )
 
 	self:updateMass()
 end
@@ -112,35 +102,61 @@ local bodyTypeNames = {
 	kinematic = MOAIBox2DBody.KINEMATIC;
 }
 function PhysicsBody:createBody()
+	--TODO: use b2BodyDef here
 	return game.b2world:addBody( bodyTypeNames[ self.bodyType ] or MOAIBox2DBody.DYNAMIC )
 end
 
-function PhysicsBody:getType()
-	return self.bodyType
+function PhysicsBody:setBodyDef( path )
+	self.bodyDefPath = path
+	if path then
+		self.bodyDef = mock.loadAsset( path )
+	end
+	self:updateBodyDef()
 end
 
-function PhysicsBody:setType( t ) 
-	self.bodyType = t
-	if self.body then
-		self.body:setType( bodyTypeNames[ t ] or MOAIBox2DBody.DYNAMIC )
+function PhysicsBody:getBodyDef()
+	return self.bodyDefPath
+end
+
+function PhysicsBody:updateBodyDef()
+	self:applyBodyDef( self.bodyDef )
+end
+
+function PhysicsBody:applyBodyDef( def )
+	if not self.body then return end
+	--TODO: use b2BodyDef here
+	local def  = def or getDefaultPhysicsBodyDef()
+	local body = self.body
+	body:setType( bodyTypeNames[ def.bodyType ] or MOAIBox2DBody.DYNAMIC )
+	body:setFixedRotation   ( def.fixedRotation )
+	body:setSleepingAllowed ( def.allowSleep )
+	body:setBullet          ( def.isBullet )
+	body:setGravityScale    ( def.gravityScale )
+	body:setGravityScale    ( def.linearDamping )
+	body:setGravityScale    ( def.angularDamping )
+end
+
+----
+function PhysicsBody:setType( bodyType )
+	if not self.body then return end
+	self.body:setType( bodyTypeNames[ bodyType ] or MOAIBox2DBody.DYNAMIC )
+end
+
+function PhysicsBody:getType()
+	if self.bodyDef then
+		return self.bodyDef.bodyType
+	else
+		return false
 	end
 end
 
 function PhysicsBody:setGravityScale( s )
-	self.gravityScale = s
 	if self.body then
 		self.body:setGravityScale( s )
 	end
 end
 
-function PhysicsBody:_removeJoint( j )
-	self.joints[ j ] = nil
-end
-
-function PhysicsBody:_addJoint( j )
-	self.joints[ j ] = true
-end
-
+----
 function PhysicsBody:setMass(mass)
 	self.mass = mass
 	self:updateMass()
@@ -173,6 +189,15 @@ function PhysicsBody:calcMass()
 end
 
 
+function PhysicsBody:_removeJoint( j )
+	self.joints[ j ] = nil
+end
+
+function PhysicsBody:_addJoint( j )
+	self.joints[ j ] = true
+end
+
+
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',
 	'applyForce',
@@ -180,6 +205,7 @@ _wrapMethods( PhysicsBody, 'body', {
 	'applyTorque',
 	'getAngle',
 	'getAngularVelocity',
+	'getContactList',
 	'getInertia',
 	'getGravityScale',
 	'getLinearVelocity',

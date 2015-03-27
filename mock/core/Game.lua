@@ -849,6 +849,10 @@ function Game:getBox2DWorld()
 	return self.b2world
 end
 
+function Game:getBox2DWorldGround()
+	return self.b2ground
+end
+
 function Game:startBox2DWorld()
 	self.b2world:start()
 end

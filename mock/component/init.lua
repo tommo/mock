@@ -54,7 +54,8 @@ require 'mock.component.Audio'
 require 'mock.component.PhysicsBody'
 require 'mock.component.PhysicsShape'
 require 'mock.component.PhysicsJoint'
-
+require 'mock.component.PhysicsTrigger'
+require 'mock.component.PhysicsTriggerArea'
 --------------------------------------------------------------------
 ---- Extended
 require 'mock.component.AuroraSprite'
