@@ -55,6 +55,14 @@ function rand(mi,ma)
 	return mi + random() * ( ma - mi )
 end
 
+function randsign()
+	if random() >= 0.5 then
+		return 1
+	else
+		return -1
+	end
+end
+
 function noise( n )
 	return ( random()*2 - 1 ) * n
 end
