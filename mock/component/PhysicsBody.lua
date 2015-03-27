@@ -27,13 +27,14 @@ end
 
 
 function PhysicsBody:onAttach( entity )
-	local body = self:createBody()
+	local body = self:createBody( entity )
 	self.body = body
 	self.body.component = self
 
 	local prop = entity:getProp()
 	body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
 	body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
+	body:setAttrLink ( MOAIProp.ATTR_Z_LOC, prop, MOAIProp.ATTR_WORLD_Z_LOC )
 	body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_WORLD_Z_ROT ) 
 
 	self:updateBodyDef()
@@ -101,9 +102,10 @@ local bodyTypeNames = {
 	static    = MOAIBox2DBody.STATIC;
 	kinematic = MOAIBox2DBody.KINEMATIC;
 }
-function PhysicsBody:createBody()
+function PhysicsBody:createBody( entity )
 	--TODO: use b2BodyDef here
-	return game.b2world:addBody( bodyTypeNames[ self.bodyType ] or MOAIBox2DBody.DYNAMIC )
+	local body = game.b2world:addBody( bodyTypeNames[ self.bodyType ] or MOAIBox2DBody.DYNAMIC )
+	return body
 end
 
 function PhysicsBody:setBodyDef( path )
