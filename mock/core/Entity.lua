@@ -383,6 +383,11 @@ function Entity:_attachColor( t )
 	return t
 end
 
+function Entity:_attachVisible( t )
+	inheritVisible( t, self._prop )
+	return t
+end
+
 function Entity:_insertPropToLayer( p )
 	self.layer:insertProp( p )
 	return p
@@ -823,6 +828,14 @@ function Entity:worldToWnd( x, y ,z )
 	return self.layer:worldToWnd( x, y ,z )
 end
 
+function Entity:worldToProj( x, y ,z )
+	return self.layer:worldToProj( x, y ,z )
+end
+
+function Entity:worldToView( x, y ,z )
+	return self.layer:worldToView( x, y ,z )
+end
+
 function Entity:worldToModel( x, y ,z )
 	return self._prop:worldToModel( x, y ,z )
 end
@@ -837,6 +850,14 @@ end
 
 function Entity:modelToWnd( x, y ,z )
 	return self.layer:worldToWnd( self._prop:modelToWorld( x, y ,z ) )
+end
+
+function Entity:modelToProj( x, y ,z )
+	return self.layer:worldToProj( self._prop:modelToWorld( x, y ,z ) )
+end
+
+function Entity:modelToView( x, y ,z )
+	return self.layer:worldToView( self._prop:modelToWorld( x, y ,z ) )
 end
 
 function Entity:modelRectToWorld(x0,y0,x1,y1)
