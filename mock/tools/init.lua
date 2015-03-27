@@ -28,3 +28,4 @@ require 'mock.tools.ProfilerHelper'
 --------------------------------------------------------------------
 --Math
 require 'mock.tools.Quaternion'
+require 'mock.tools.MeshHelper'
