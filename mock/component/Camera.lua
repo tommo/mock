@@ -52,8 +52,9 @@ function Camera:__init( option )
 	self.relativeViewportSize = false
 	self.fixedViewportSize    = false
 
-	self.viewportScale = false
-	self.mode          = 'expanding' --{ 'strech', 'fixed' }
+	self.viewportScale    = false
+	self.viewportWndRect  = false
+	self.mode             = 'expanding' --{ 'strech', 'fixed' }
 
 	self.zoomControlNode = MOAIScriptNode.new()
 	self.zoomControlNode:reserveAttrs( 1 )
@@ -75,6 +76,9 @@ function Camera:__init( option )
 	self.excludedLayers = {}
 	self:setOutputFrameBuffer( false )
 	self:_initDefault()
+
+	self.subViewports = table.weak_k()
+
 end
 
 function Camera:_initDefault()
@@ -97,9 +101,8 @@ function Camera:onAttach( entity )
 	self.scene = entity.scene
 	entity:_attachTransform( self._camera )
 	self:updateViewport()
-	self:loadPasses()
 	self:bindSceneLayers()
-	self:updateRenderLayers()
+	self:reloadPasses()
 	getCameraManager():register( self )	
 end
 
@@ -144,14 +147,20 @@ end
 -- 	end	
 -- end
 
-function Camera:loadPasses()
+function Camera:reloadPasses()
 	self.passes = {}
+	self:loadPasses()
+	self:updateRenderLayers()
+end
+
+function Camera:loadPasses()
 	self:addPass( SceneCameraPass( self.clearBuffer, self.clearColor ) )
 end
 
 function Camera:addPass( pass )
-	pass.camera = self
-	table.insert( self.passes, pass )	
+	pass:init( self )
+	table.insert( self.passes, pass )
+	return pass
 end
 
 --------------------------------------------------------------------
@@ -323,6 +332,11 @@ function Camera:getScreenRect()
 	return game:getViewportRect()
 end
 
+function Camera:getScreenSize()
+	local x, y, x1, y1 = game:getViewportRect()
+	return  x1 - x, y1 - y
+end
+
 function Camera:getScreenScale()
 	return game:getViewportScale()
 end
@@ -378,6 +392,32 @@ function Camera:updateZoom()
 		self.viewportScale  = { w, h }
 		self.viewport:setScale( w, h )
 	end
+	--update dependant viewports
+	self:updateSubViewports()	
+end
+
+function Camera:updateSubViewports()
+	if not ( self.viewportScale and self.viewportWndRect ) then return end
+	if not next( self.subViewports ) then return end
+	local w, h = unpack( self.viewportScale )
+	local vx0, vy0, vx1, vy1 = unpack( self.viewportWndRect )
+	local sw, sh = self:getScreenSize()
+	for buffer, subViewport in pairs( self.subViewports ) do
+		local bw, bh = buffer:getSize()
+		local sx, sy = bw/sw, bh/sh
+		subViewport:setScale( w, h )
+		subViewport:setSize( vx0 * sx, vy0 * sy, vx1 * sx, vy1 * sy )
+	end
+end
+
+function Camera:getSubViewport( buffer, affirm )
+	if not buffer or buffer == self.frameBuffer then return self.viewport end
+	local viewport = self.subViewports[ buffer ]
+	if not viewport and affirm ~= false then
+		viewport = MOAIViewport.new()
+		self.subViewports[ buffer ] = viewport
+	end
+	return viewport
 end
 
 function Camera:getViewportSize()

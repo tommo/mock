@@ -240,6 +240,24 @@ function CameraPass:__init()
 	self.frameBuffer  = false
 	self.frameBuffers = {}
 	self.passes = {}
+	self.lastFrameBuffer = false
+end
+
+function CameraPass:init( camera )
+	self.camera = camera
+	self:onInit()
+end
+
+function CameraPass:build()
+	self.passes = {}
+	self:onBuild()
+	return self.passes
+end
+
+function CameraPass:onInit()
+end
+
+function CameraPass:onBuild()
 end
 
 function CameraPass:getCamera()
@@ -247,7 +265,10 @@ function CameraPass:getCamera()
 end
 
 function CameraPass:pushRenderLayer( layer, frameBuffer, option )
-	if not layer then return end
+	if not layer then 
+		_error( 'no render layer given!' )
+		return
+	end
 	if frameBuffer or option then
 		self:pushFrameBuffer( frameBuffer, option )
 	end
@@ -261,19 +282,50 @@ function CameraPass:pushRenderLayer( layer, frameBuffer, option )
 end
 
 function CameraPass:pushFrameBuffer( frameBuffer, option )
+	if type( frameBuffer ) == 'string' then
+		local frameBufferName = frameBuffer
+		frameBuffer = self:getFrameBuffer( frameBufferName )
+		if not frameBuffer then
+			_error( 'frame buffer not found:', frameBufferName )
+		end
+	end
+	local buffer = frameBuffer or false
+	self.lastFrameBuffer = buffer
 	table.insert( self.passes, { 
 		tag         = 'buffer',
-		frameBuffer = frameBuffer or false,
+		frameBuffer = buffer,
 		option      = option 
 		}
 	)
 end
 
-function CameraPass:build()
-	self.passes = {}
-	self:onBuild()
-	return self.passes
+function CameraPass:findPreviousFrameBuffer()
+	for i = #self.passes, 1, -1 do
+		local pass = self.passes[ i ]
+		if pass.tag == 'buffer' then
+			return pass.frameBuffer
+		end
+	end
+	return nil
 end
+
+function CameraPass:pushOverridedShader( shader )
+	local moaiShader = nil
+	if type( shader ) == 'string' then --path
+		shader = mock.loadAsset( shader )
+	end
+	if shader then
+		if shader:getClassName() == 'MOAIShader' then
+			moaiShader = shader
+		else
+			moaiShader = shader:getMoaiShader()
+		end
+	end
+	self:pushCallback( function()
+		MOAIGfxDevice.setOverridedShader( moaiShader )
+	end)
+end
+
 
 function CameraPass:requestFrameBuffer( name, option )
 	name = name or 'default'
@@ -284,29 +336,15 @@ function CameraPass:requestFrameBuffer( name, option )
 	return fb
 end
 
+function CameraPass:getFrameBuffer( name )
+	return self.frameBuffers[ name ]
+end
+
 function CameraPass:clearFrameBuffers()
 	for name, fb in pairs( self.frameBuffers ) do
 		fb:release()
 	end
 	self.frameBuffers = {}
-end
-
-local function _convertFilter( filter, mipmap )
-	local output
-	if filter == 'linear' then
-		if mipmap then
-			output = MOAITexture.GL_LINEAR_MIPMAP_LINEAR
-		else
-			output = MOAITexture.GL_LINEAR
-		end
-	else  --if fukter == 'nearest' then
-		if mipmap then
-			output = MOAITexture.GL_NEAREST_MIPMAP_NEAREST
-		else
-			output = MOAITexture.GL_NEAREST
-		end
-	end	
-	return output
 end
 
 function CameraPass:buildFrameBuffer( option )
@@ -316,8 +354,10 @@ function CameraPass:buildFrameBuffer( option )
 	fb:setClearDepth( option and option.clearDpeth or false )
 	local w, h = camera:getViewportWndSize()
 	if option and option.size then w,h = unpack( option.size ) end
+	if option and option.scale then w, h = w*option.scale, h*option.scale end
 	local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
-	fb:init( w, h, nil, depthFormat )
+	local colorFormat = option.colorFormat or nil
+	fb:init( w, h, colorFormat, depthFormat )
 	fb:setFilter( option and option.filter or MOAITexture.GL_LINEAR )
 	return fb
 end
@@ -348,12 +388,26 @@ function CameraPass:buildDebugDrawLayer()
 end
 
 
+function CameraPass:applyCameraToMoaiLayer( layer, option )	
+	local camera   = self.camera
+	layer:setViewport  ( camera:getSubViewport( self.lastFrameBuffer ) )
+	layer:setCamera  ( camera._camera )
+	return layer
+end
+
 function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )	
 	local camera   = self.camera
 	if not camera:isLayerIncluded( sceneLayer.name ) then return false end
+	local includeLayer = option and option.include
+	local excludeLayer = option and option.exclude
+	
+	if includeLayer and not table.index( includeLayer, sceneLayer.name ) then return false end
+	if excludeLayer and table.index( excludeLayer, sceneLayer.name ) then return false end
 
 	local source   = sceneLayer.source
 	local layer    = MOAILayer.new()
+	local buffer   = self.lastFrameBuffer
+
 	layer.name     = sceneLayer.name
 	layer.priority = -1
 	layer.source   = source
@@ -363,7 +417,7 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 	if option and option.viewport then
 		layer:setViewport  ( option.viewport )
 	else
-		layer:setViewport  ( camera.viewport )
+		layer:setViewport  ( camera:getSubViewport( buffer ) )
 	end
 
 	if option and option.transform then
@@ -392,31 +446,50 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 	return layer
 end
 
-function CameraPass:buildSingleQuadRenderLayer( texture )
+function CameraPass:buildSimpleOrthoRenderLayer()
 	local camera   = self.camera
 
 	local layer = MOAILayer.new()
-
 	local viewport = MOAIViewport.new()
 	local vx,vy,vx1,vy1 = camera:getViewportWndRect()
 	local w, h = vx1-vx, vy1-vy
 	viewport:setSize( vx,vy,vx1,vy1 )
 	viewport:setScale( w, h )
 	layer:setViewport( viewport )
+
+	local quadCamera = MOAICamera.new()
+	quadCamera:setOrtho( true )
+	quadCamera:setNearPlane( -100000 )
+	quadCamera:setFarPlane( 100000 )
+	layer:setCamera( quadCamera )
+	layer.width  = w
+	layer.height = h
+	return layer, w, h 
+end
+
+function CameraPass:buildSimpleQuadProp( w, h, texture, shader )
 	local quad = MOAIGfxQuad2D.new()
 	-- local w, h = camera:getViewportSize()
 	quad:setRect( -w/2, -h/2, w/2, h/2 )
 	quad:setUVRect( 0,0,1,1 )
+	local quadProp = MOAIProp.new()
+	quadProp:setDeck( quad )
+
 	if texture then quad:setTexture( texture ) end
+	if shader  then quad:setShader( shader )   end
 
-	local dummyProp = MOAIProp.new()
-	dummyProp:setDeck( quad )
-	layer:insertProp( dummyProp )
+	return quadProp, quad
+end
 
-	layer.quad = quad
-	layer.prop = dummyProp
+function CameraPass:buildSingleQuadRenderLayer( texture, shader )
+	local camera   = self.camera
 
-	return layer
+	local layer, w, h = self:buildSimpleOrthoRenderLayer()
+
+	local prop, quad = self:buildSimpleQuadProp( w, h, texture, shader )
+	layer:insertProp( prop )
+	layer.prop = prop
+	return layer, prop
 end
 
 function CameraPass:buildCallbackRenderLayer( func )
@@ -437,19 +510,29 @@ function CameraPass:buildCallbackRenderLayer( func )
 	return layer
 end
 
-function CameraPass:pushSceneRenderPass( frameBuffer, option )
+function CameraPass:pushGfxPass( passId )
+	self:pushRenderLayer( self:buildCallbackRenderLayer( function()
+		MOAIGfxDevice.setPass( passId )
+	end) )
+end
+
+function CameraPass:pushCallback( func )
+	self:pushRenderLayer( self:buildCallbackRenderLayer( func ) )
+end
+
+
+function CameraPass:pushSceneRenderPass( option )
 	local camera = self.camera
 	local scene  = camera.scene
-	--make a copy of layers from current scene
-	if frameBuffer or option then
-		self:pushFrameBuffer( frameBuffer, option )
-	end
 
 	for id, sceneLayer in ipairs( scene.layers ) do
 		local name  = sceneLayer.name
 		local p = self:buildSceneLayerRenderLayer( sceneLayer, option )
-		self:pushRenderLayer( p )
+		if p then
+			self:pushRenderLayer( p )
+		end
 	end
+
 end
 
 
