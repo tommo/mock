@@ -119,18 +119,26 @@ function _serializeObject( obj, objMap, noNewRef )
 
 	local fields = model:getFieldList( true )
 	---
-	local data = {}
+	local body = {}
 
 	for _, f in ipairs( fields ) do
 		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
-			_serializeField( obj, f, data, objMap, noNewRef )
+			_serializeField( obj, f, body, objMap, noNewRef )
 		end
 	end
 	----	
 
+	local extra = false
+
+	local __serialize = obj.__serialize
+	if __serialize then 
+		extra = __serialize( obj )
+	end
+
 	return {
 		model = model:getName(),
-		body  = data
+		body  = body,
+		extra = extra
 	}
 end
 
@@ -255,6 +263,12 @@ function _deserializeObject( obj, data, objMap )
 			_deserializeField( obj, f, body, objMap )		
 		end
 	end
+
+	local __deserialize = obj.__deserialize
+	if __deserialize then
+		__deserialize( obj, data['extra'] )
+	end
+
 	return obj, objMap
 end
 
