@@ -86,6 +86,7 @@ function GeometryCircle:onGetRect()
 	local r = self.radius
 	return -r,-r, r,r
 end
+
 --------------------------------------------------------------------
 CLASS: GeometryRay ( GeometryComponent )
 	:MODEL{
@@ -107,3 +108,39 @@ function GeometryRay:onGetRect()
 	local l = self.length
 	return 0,0, l,1
 end
+
+
+--------------------------------------------------------------------
+CLASS: GeometryBoxOutline ( GeometryComponent )
+	:MODEL{
+		Field 'size' :type( 'vec3' ) :getset( 'Size' );
+		Field 'h';
+		Field 'd';
+	}
+registerComponent( 'GeometryBoxOutline', GeometryBoxOutline )
+
+function GeometryBoxOutline:__init()
+	self.sizeX = 100
+	self.sizeY = 100
+	self.sizeZ = 100
+end
+
+function GeometryBoxOutline:getSize()
+	return self.sizeX, self.sizeY, self.sizeZ
+end
+
+function GeometryBoxOutline:setSize( x,y,z )
+	self.sizeX, self.sizeY, self.sizeZ = x,y,z
+end
+
+function GeometryBoxOutline:onDraw()
+	local x,y,z = self.sizeX/2, self.sizeY/2, self.sizeZ/2
+	self:applyColor()
+	draw.drawBoxOutline( -x, -y, -z, x, y, z )
+end
+
+function GeometryBoxOutline:onGetRect()
+	local x,y,z = self.sizeX/2, self.sizeY/2, self.sizeZ/2
+	return -x, -y, x, y
+end
+
