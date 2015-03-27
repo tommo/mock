@@ -283,7 +283,7 @@ function Game:init( option, fromEditor )
 	-- collectgarbage( 'setpause',   70  )
 	-- collectgarbage( 'setstepmul', 150 )	
 	-- MOAILuaRuntime.reportGC( true )
-
+	MOAISim.setStep( 1/60 )
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 
 			0
@@ -292,7 +292,7 @@ function Game:init( option, fromEditor )
 			-- + MOAISim.LOOP_FLAGS_SOAK
 			+ MOAISim.SIM_LOOP_ALLOW_BOOST
 			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
-			-- + MOAISim.SIM_LOOP_NO_DEFICIT
+			+ MOAISim.SIM_LOOP_NO_DEFICIT
 			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)
 	-- MOAISim.setLongDelayThreshold( 100 )
@@ -422,6 +422,9 @@ function Game:initGraphics( fromEditor )
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
+
+	self:setClearColor( 0,0,0,1 )
+
 end
 
 function Game:setViewportScale( w, h )
