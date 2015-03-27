@@ -23,6 +23,41 @@ local _DEFAULT_FSH = [[
 	}
 ]]
 
+
+--------------------------------------------------------------------
+function buildShaderProgramFromString( vsh, fsh )
+	local prog = ShaderProgram()
+	prog:buildFromSource( vsh, fsh )
+	return prog
+end
+
+local loadedShaderPrograms = table.weak_k{}
+
+function releaseShaderProgram( vshPath, fshPath )
+	local term = (vshPath or '') .. '|' .. (fshPath or '')
+	local torelease = {}
+	for key, prog in pairs( loadedShaderPrograms ) do
+		if key:find( term ) then 
+			torelease[ key ] = true
+		end
+	end
+
+	for key in pairs( torelease ) do
+		local prog = loadedShaderPrograms[ key ]
+		loadedShaderPrograms[ key ] = nil
+		--TODO: release shaders?
+	end
+end
+
+function getShaderPrograms()
+	return loadedShaderPrograms
+end
+
+function getLoadedShaderProgram( path )
+	return loadedShaderPrograms[ path ]
+end
+
+
 --------------------------------------------------------------------
 CLASS: ShaderProgram ()
 	:MODEL{
@@ -193,15 +228,19 @@ function ShaderProgram:buildShader( key )
 	shader:setProgram( self )
 	key = key or shader
 	self.shaders[ key ] = shader
-	-- for i, u in ipairs( self.uniforms ) do
-	-- 	print( 'seting', u.name, u.value )
-	-- 	shader:setAttr( u.name, u.value )
-	-- end
 	return shader
 end
 
 function ShaderProgram:findShader( key )	
 	return self.shaders[ key ]
+end
+
+function ShaderProgram:affirmShader( key )	
+	local shader = self:findShader( key )
+	if not shader then
+		return self:buildShader( key )
+	end
+	return shader
 end
 
 
@@ -216,6 +255,10 @@ end
 function Shader:setProgram( prog )
 	self.prog = prog
 	self.shader:setProgram( prog:getMoaiShaderProgram() )
+end
+
+function Shader:getProgram()
+	return self.prog
 end
 
 function Shader:getMoaiShader()
@@ -252,57 +295,152 @@ function Shader:moveAttr( name, v, duration, ease )
 	-- return self.shader:moveAttr( id, v, duration, ease )
 end
 
---------------------------------------------------------------------
---------------------------------------------------------------------
 
-function buildShaderProgramFromString( vsh, fsh )
-	local prog = ShaderProgram()
-	prog:buildFromSource( vsh, fsh )
-	return prog
+--------------------------------------------------------------------
+CLASS: MultiShader ( Shader )
+	:MODEL{}
+
+function MultiShader:__init()
+	self.shader = MOAIMultiShader.new()
+	self.shader.parent = self
+	self.subShaders = {}
 end
 
-local loadedShaderPrograms = {}
+function MultiShader:init( maxPass )
+	-- print( 'maxpass', maxPass )
+	self.shader:reserve( maxPass + 1 )
+end
 
-function releaseShaderProgram( vshPath, fshPath )
-	local term = (vshPath or '') .. '|' .. (fshPath or '')
-	local torelease = {}
-	for key, prog in pairs( loadedShaderPrograms ) do
-		if key:find( term ) then 
-			torelease[ key ] = true
+function MultiShader:setSubShader( pass, shader )
+	print( 'set sub shader', pass, shader )
+	self.subShaders[ pass ] = shader
+	self.shader:setSubShader( pass + 1, shader:getMoaiShader() )
+	if pass == 0 then
+		self:setDefaultShader( shader )
+	end
+end
+
+function MultiShader:getSubShader( pass )
+	return self.subShaders[ pass ]
+end
+
+function MultiShader:setDefaultShader( shader )
+	self.defautlSubShader = shader
+	self.shader:setDefaultShader( shader:getMoaiShader() )
+end
+
+
+--------------------------------------------------------------------
+--SINGLE SHADER
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+CLASS: ShaderConfig ()
+
+function ShaderConfig:__init()
+	self.shaderType = 'single'
+	self.subShaders = {}
+	self.program = false
+	self.shaders = table.weak_k()
+	self.shared  = true
+end
+
+function ShaderConfig:loadMultiShader( data )
+	self.shaderType = 'multi'
+	local passCount = 0
+	local maxPass = 0
+	for i, subData in ipairs( data['shaders' ] ) do
+		local pass = subData['pass'] or 0
+		local shared = subData['shared'] ~= false
+		if pass > maxPass then maxPass = pass end
+		if self.subShaders[ pass ] then
+			_warn( 'duplicated shader pass' )
+		else
 		end
+		local path = subData[ 'path' ]
+		local childShaderConfig = loadShaderConfig( path )
+		self.subShaders[ pass ] = assert( childShaderConfig )
 	end
-
-	for key in pairs( torelease ) do
-		local prog = loadedShaderPrograms[ key ]
-		loadedShaderPrograms[ key ] = nil
-		--TODO: release shaders?
-	end
+	self.maxPass = maxPass
 end
 
-function getShaderPrograms()
-	return loadedShaderPrograms
-end
-
-function getLoadedShaderProgram( path )
-	return loadedShaderPrograms[ path ]
-end
-
-
-local function shaderLoader( node )
-	local data = loadAssetDataTable( node:getObjectFile('def') )
-	if not data then return false end
+function ShaderConfig:loadSingleShader( data )
+	self.shaderType = 'single'
 	local prog = ShaderProgram()
 	prog.vsh = data['vsh'] or '__default_vsh__'
 	prog.fsh = data['fsh'] or '__default_fsh__'
 	prog.uniforms = data['uniforms'] or {}
 	prog.globals  = data['globals'] or {}
 	prog:build()
-	prog._key = node:getNodePath()
-	loadedShaderPrograms[ prog._key ] = prog
-	if prog then
-		node.cached.program = prog
-		return prog:buildShader( 'default' )
+	prog.config = self
+	loadedShaderPrograms[ self ] = prog
+	self.program = prog
+end
+
+function ShaderConfig:loadConfig( data )
+	if data['shaders'] then
+		self:loadMultiShader( data )		
+		return true
+	else --single shader config
+		self:loadSingleShader( data )
+		return true
 	end
+end
+
+function ShaderConfig:build( force )
+	if self.built then return end
+	if self.program then
+		self.program:build( force )
+	end
+	for pass, subConfig in pairs( self.subShaders ) do
+		subConfig:build( force )
+	end
+	self.built = true
+end
+
+function ShaderConfig:buildMultiShader( id )
+	local shader = MultiShader()
+	shader:init( self.maxPass )
+	for pass, subConfig in pairs( self.subShaders ) do
+		local subShader = subConfig:affirmShader( id )
+		shader:setSubShader( pass, subShader )
+	end
+	return shader
+end
+
+function ShaderConfig:buildShader( id )
+	self:build()
+	local shader
+	if self.shaderType == 'multi' then --build multiple shader
+		shader = self:buildMultiShader( id )
+	else
+		shader = self.program:buildShader( id )
+	end
+	shader.config = self
+	self.shaders[ id ] = shader
+	return shader
+end
+
+function ShaderConfig:getShader( id )
+	return self.shaders[ id ]
+end
+
+function ShaderConfig:affirmShader( id )
+	local shader = self:getShader( id )
+	if not shader then shader = self:buildShader( id ) end
+	return shader
+end
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+local function shaderLoader( node )
+	local data = loadAssetDataTable( node:getObjectFile('def') )
+	if not data then return false end
+	local config = ShaderConfig()
+	config:loadConfig( data )
+	node.cached.config = config
+	return config:affirmShader( 'default' )	
 end
 
 local function shaderSourceLoader( node )
@@ -310,6 +448,20 @@ local function shaderSourceLoader( node )
 	return data
 end
 
+function buildShader( shaderPath, id )
+	local shader = loadAsset( shaderPath )
+	if id then
+		if shader then
+			return shader:getProgram():affirmShader( id )
+		end
+	end
+	return shader
+end
+
+function loadShaderConfig( path )
+	local shader = loadAsset( path )
+	return shader.config
+end
 
 registerAssetLoader ( 'shader', shaderLoader   )
 registerAssetLoader ( 'vsh', shaderSourceLoader )
