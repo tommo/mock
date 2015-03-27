@@ -75,6 +75,21 @@ function TexturePlane:resetSize()
 	end
 end
 
+function TexturePlane:setBillboard( billboard )
+	self.billboard = billboard
+	self.prop:setBillboard( billboard )
+end
+
+function TexturePlane:setDepthMask( enabled )
+	self.depthMask = enabled
+	self.prop:setDepthMask( enabled )
+end
+
+function TexturePlane:setDepthTest( mode )
+	self.depthTest = mode
+	self.prop:setDepthTest( mode )
+end
+
 
 --------------------------------------------------------------------
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )

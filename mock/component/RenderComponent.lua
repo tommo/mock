@@ -50,3 +50,7 @@ end
 function RenderComponent:setDepthTest( mode )
 	self.depthTest = mode
 end
+
+function RenderComponent:setBillboard( billboard )
+	self.billboard = billboard
+end

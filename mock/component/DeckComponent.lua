@@ -33,6 +33,10 @@ end
 wrapWithMoaiPropMethods( DeckComponent, ':getMoaiProp()' )
 
 --------------------------------------------------------------------
+function DeckComponent:setMoaiDeck( deck )
+	self.prop:setDeck( deck )
+end
+
 function DeckComponent:setDeck( deckPath )
 	self.deckPath = deckPath
 	local deck = mock.loadAsset( deckPath )
