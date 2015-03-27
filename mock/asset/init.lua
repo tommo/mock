@@ -47,3 +47,4 @@ require 'mock.asset.AuroraSprite'
 require 'mock.asset.EffectNode'
 require 'mock.asset.EffectPack'
 
+require 'mock.asset.NamedTileset'
