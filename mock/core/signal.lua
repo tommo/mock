@@ -177,3 +177,9 @@ _G.connectSignalFunc     = connectGlobalSignalFunc
 _G.connectSignalMethod   = connectGlobalSignalMethod
 _G.disconnectSignal      = disconnectGlobalSignal
 _G.emitSignal            = emitGlobalSignal
+
+_G.getGlobalSignal             = getGlobalSignal
+_G.connectGlobalSignalFunc     = connectGlobalSignalFunc
+_G.connectGlobalSignalMethod   = connectGlobalSignalMethod
+_G.disconnectGlobalSignal      = disconnectGlobalSignal
+_G.emitGlobalSignal            = emitGlobalSignal
