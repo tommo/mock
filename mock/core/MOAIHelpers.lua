@@ -202,3 +202,43 @@ BOUNCE_OUT     = MOAIEaseType.BOUNCE_OUT
 BOUNCE_SMOOTH  = MOAIEaseType.BOUNCE_SMOOTH
 
 --------------------------------------------------------------------
+
+function saveMOAIGridTiles( grid )
+	local stream = MOAIMemStream.new()
+	stream:open()
+
+	local writer64 = MOAIStreamAdapter.new()
+	local writerDeflate = MOAIStreamAdapter.new ()
+	writer64:openBase64Writer ( stream )
+	writerDeflate:openDeflateWriter ( writer64 )
+	grid:streamTilesOut( writerDeflate )
+	writerDeflate:close()
+	writer64:close()
+
+	stream:seek( 0 )
+	local encoded = stream:read()
+	stream:close()
+
+	return encoded
+end
+
+
+function loadMOAIGridTiles( grid, dataString )
+
+	local stream = MOAIMemStream.new()
+	stream:write( dataString )
+	stream:seek(0)
+
+	local reader64 = MOAIStreamAdapter.new()
+	local readerDeflate = MOAIStreamAdapter.new ()
+	reader64:openBase64Reader( stream )
+	readerDeflate:openDeflateReader( reader64 )
+
+	grid:streamTilesIn( readerDeflate )
+
+	readerDeflate:close()
+	reader64:close()
+	stream:close()
+
+end
+
