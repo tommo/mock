@@ -102,20 +102,7 @@ registerSignals{
 	'game_config.load',
 }
 
---------------------------------------------------------------------
-local defaultPhysicsWorldOption = {
-	gravity               = { 0, -10 },
-	unitsToMeters         = 0.01,
-	velocityIterations    = 6,
-	positionIterations    = 8,
 
-	angularSleepTolerance = 0,
-	linearSleepTolerance  = 0,
-	timeToSleep           = 0,
-
-	autoClearForces       = true,
-
-}
 
 --------------------------------------------------------------------
 CLASS: Game () 
@@ -290,7 +277,7 @@ function Game:init( option, fromEditor )
 
 	----physics
 	--option for default physics world
-	self.physicsOption = defaultPhysicsWorldOption
+	self.physicsOption = DefaultPhysicsWorldOption
 	if option['physics'] then
 		table.extend( self.physicsOption, option['physics'] )
 	end
@@ -643,7 +630,6 @@ end
 function Game:stop()
 	-- self.actionRoot:stop()
 	self.mainScene:stop()
-	self.b2world:stop()
 	self.mainScene:clear( true )
 	self:resetClock()
 	emitSignal( 'game.stop', self )
@@ -810,59 +796,6 @@ function Game:setClearColor( r,g,b,a )
 		renderContext.clearColor = self.clearColor
 	end
 	return MOAIGfxDevice.getFrameBuffer():setClearColor( r,g,b,a )
-end
-
---------------------------------------------------------------------
---PHYSICS
---------------------------------------------------------------------
-function Game:setupBox2DWorld()
-	local option = self.physicsOption
-	if not option then 
-		option = defaultPhysicsWorldOption
-		self.physicsOption = option
-	end
-
-	local world = MOAIBox2DWorld.new()
-
-	if option.gravity then
-		world:setGravity ( unpack(option.gravity) )
-	end
-	
-	if option.unitsToMeters then
-		world:setUnitsToMeters ( option.unitsToMeters )
-	end
-	
-	local velocityIterations, positionIterations = option.velocityIterations, option.positionIterations
-	velocityIterations = velocityIterations or defaultPhysicsWorldOption.velocityIterations
-	positionIterations = positionIterations or defaultPhysicsWorldOption.positionIterations
-	world:setIterations ( velocityIterations, positionIterations )
-
-	world:setAutoClearForces       ( option.autoClearForces )
-	world:setTimeToSleep           ( option.timeToSleep )
-	world:setAngularSleepTolerance ( option.angularSleepTolerance )
-	world:setLinearSleepTolerance  ( option.linearSleepTolerance )
-	self.b2world = world
-	local ground = world:addBody( MOAIBox2DBody.STATIC )
-	self.b2ground = ground
-
-	world:start()
-	return world
-end
-
-function Game:getBox2DWorld()
-	return self.b2world
-end
-
-function Game:getBox2DWorldGround()
-	return self.b2ground
-end
-
-function Game:startBox2DWorld()
-	self.b2world:start()
-end
-
-function Game:pauseBox2DWorld( paused )
-	self.b2world:pause( paused )
 end
 
 --------------------------------------------------------------------

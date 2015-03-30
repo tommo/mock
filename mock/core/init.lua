@@ -18,6 +18,7 @@ require 'mock.core.LogHelper'
 
 ----------------Core Modules
 require 'mock.core.Actor'
+require 'mock.core.defaults'
 ----asset
 require 'mock.core.AssetLibrary'
 require 'mock.core.AssetScanner'

@@ -1,5 +1,22 @@
 module 'mock'
 
+
+--------------------------------------------------------------------
+local defaultPhysicsWorldOption = {
+	gravity               = { 0, -10 },
+	unitsToMeters         = 0.01,
+	velocityIterations    = 6,
+	positionIterations    = 8,
+
+	angularSleepTolerance = 0,
+	linearSleepTolerance  = 0,
+	timeToSleep           = 0,
+
+	autoClearForces       = true,
+
+}
+
+
 --------------------------------------------------------------------
 --SCENE
 --------------------------------------------------------------------
@@ -249,6 +266,7 @@ function Scene:start()
 		end
 	end
 	self.timer:start()	
+	self.b2world:start()
 end
 
 
@@ -257,6 +275,7 @@ function Scene:stop()
 	self.running = false
 	self.mainThread:stop()
 	self.timer:stop()
+	self.b2world:stop()
 	self.mainThread = false
 end
 
@@ -386,7 +405,7 @@ Scene.add = Scene.addEntity
 --------------------------------------------------------------------
 
 function Scene:setupBox2DWorld()
-	local option = game.physicsOption
+	local option = game and game.physicsOption or DefaultPhysicsWorldOption
 	if not option then 
 		option = defaultWorldOption
 		self.physicsOption = option
