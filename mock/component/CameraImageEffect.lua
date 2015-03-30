@@ -14,8 +14,10 @@ function CameraImageEffect:onAttach( entity )
 end
 
 function CameraImageEffect:onDetach( entity )
-	self.camera:removeImageEffect( self )
-	self.targetCamera = false
+	if self.targetCamera then
+		self.targetCamera:removeImageEffect( self )
+		self.targetCamera = false
+	end
 end
 
 function CameraImageEffect:getCamera()
