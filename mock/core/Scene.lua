@@ -32,6 +32,9 @@ function Scene:__init( option )
 
 	self.throttle        = 1
 
+	self.b2world         = false
+	self.b2ground        = false
+
 	return self
 end
 
@@ -55,6 +58,11 @@ function Scene:init()
 	self.timer   = MOAITimer.new()
 	self.timer:setMode( MOAITimer.CONTINUE )
 	self.timer:attach( self:getActionRoot() )
+
+	self:setupBox2DWorld()
+	self.b2world:attach( self:getActionRoot() )
+
+	emitSignal( 'scene.init', self )
 
 end
 
@@ -372,3 +380,52 @@ function Scene:clear( keepEditorEntity )
 end
 
 Scene.add = Scene.addEntity
+
+--------------------------------------------------------------------
+--PHYSICS
+--------------------------------------------------------------------
+
+function Scene:setupBox2DWorld()
+	local option = game.physicsOption
+	if not option then 
+		option = defaultWorldOption
+		self.physicsOption = option
+	end
+
+	local world = MOAIBox2DWorld.new()
+
+	if option.gravity then
+		world:setGravity ( unpack(option.gravity) )
+	end
+	
+	if option.unitsToMeters then
+		world:setUnitsToMeters ( option.unitsToMeters )
+	end
+	
+	local velocityIterations, positionIterations = option.velocityIterations, option.positionIterations
+	velocityIterations = velocityIterations
+	positionIterations = positionIterations
+	world:setIterations ( velocityIterations, positionIterations )
+
+	world:setAutoClearForces       ( option.autoClearForces )
+	world:setTimeToSleep           ( option.timeToSleep )
+	world:setAngularSleepTolerance ( option.angularSleepTolerance )
+	world:setLinearSleepTolerance  ( option.linearSleepTolerance )
+	self.b2world = world
+	local ground = world:addBody( MOAIBox2DBody.STATIC )
+	self.b2ground = ground
+
+	return world
+end
+
+function Scene:getBox2DWorld()
+	return self.b2world
+end
+
+function Scene:getBox2DWorldGround()
+	return self.b2ground
+end
+
+function Scene:pauseBox2DWorld( paused )
+	self.b2world:pause( paused )
+end

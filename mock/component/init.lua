@@ -80,3 +80,5 @@ require 'mock.component.Layout'
 --------------------------------------------------------------------
 --EFFECTS
 require 'mock.component.CameraImageEffectGrayScale'
+require 'mock.component.CameraImageEffectInvert'
+require 'mock.component.CameraImageEffectColorGrading'

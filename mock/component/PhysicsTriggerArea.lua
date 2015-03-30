@@ -5,7 +5,8 @@ CLASS: TriggerAreaBase ( TriggerObjectBase )
 	}
 
 function TriggerObjectBase:createBody()
-	local body = game.b2world:addBody( MOAIBox2DBody.STATIC )
+	local world = self:getScene():getBox2DWorld()
+	local body = world:addBody( MOAIBox2DBody.STATIC )
 	return body
 end
 

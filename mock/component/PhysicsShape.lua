@@ -24,6 +24,10 @@ function PhysicsShape:getLoc()
 	return unpack( self.loc )
 end
 
+function PhysicsBody:getBox2DWorld()
+	return self:getScene():getBox2DWorld()
+end
+
 function PhysicsShape:findBody()
 	local body = self._entity:getComponent( PhysicsBody )
 	return body

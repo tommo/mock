@@ -102,9 +102,15 @@ local bodyTypeNames = {
 	static    = MOAIBox2DBody.STATIC;
 	kinematic = MOAIBox2DBody.KINEMATIC;
 }
+
+function PhysicsBody:getBox2DWorld()
+	return self._entity.scene:getBox2DWorld()
+end
+
 function PhysicsBody:createBody( entity )
 	--TODO: use b2BodyDef here
-	local body = game.b2world:addBody( bodyTypeNames[ self.bodyType ] or MOAIBox2DBody.DYNAMIC )
+	local world = self:getBox2DWorld()
+	local body = world:addBody( bodyTypeNames[ self.bodyType ] or MOAIBox2DBody.DYNAMIC )
 	return body
 end
 

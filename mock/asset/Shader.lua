@@ -25,8 +25,12 @@ local _DEFAULT_FSH = [[
 
 
 --------------------------------------------------------------------
-function buildShaderProgramFromString( vsh, fsh )
+function buildShaderProgramFromString( vsh, fsh, variables )
 	local prog = ShaderProgram()
+	if variables then
+		prog.uniforms = variables.uniforms or {}
+		prog.globals  = variables.globals or {}
+	end
 	prog:buildFromSource( vsh, fsh )
 	return prog
 end

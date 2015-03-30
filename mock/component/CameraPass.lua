@@ -390,7 +390,7 @@ function CameraPass:buildDebugDrawLayer()
 	
 	local renderTable = {}
 
-	local world = game:getBox2DWorld()
+	local world = self.camera.scene:getBox2DWorld()
 	world:setDebugDrawEnabled( true )
 	table.insert( renderTable, world )
 

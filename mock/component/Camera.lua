@@ -554,7 +554,7 @@ end
 function Camera:removeImageEffect( imageEffect )
 	local idx = table.index( self.imageEffects, imageEffect )
 	if not idx then return end
-	table.remove( self.imageEffects, imageEffect )
+	table.remove( self.imageEffects, idx )
 	self.hasImageEffect = next( self.imageEffects ) ~= nil
 	self:reloadPasses()
 end

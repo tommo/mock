@@ -58,7 +58,8 @@ function TriggerObjectBase:onStart()
 end
 
 function TriggerObjectBase:createBody()
-	local body = game.b2world:addBody( MOAIBox2DBody.DYNAMIC )
+	local world = self:getScen():getBox2DWorld()
+	local body = world:addBody( MOAIBox2DBody.DYNAMIC )
 	body:setGravityScale( 0 )	
 	return body
 end
@@ -115,7 +116,8 @@ function TriggerObject:setRadius( r )
 end
 
 function TriggerObject:createBody()
-	local body = game.b2world:addBody( MOAIBox2DBody.DYNAMIC )
+	local world = self:getScen():getBox2DWorld()
+	local body = world:addBody( MOAIBox2DBody.DYNAMIC )
 	body:setGravityScale( 0 )	
 	return body
 end

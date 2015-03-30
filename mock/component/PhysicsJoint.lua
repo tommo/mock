@@ -27,6 +27,10 @@ function PhysicsJoint:setTarget( target )
 	self:updateJoint()
 end
 
+function PhysicsJoint:getB2World()
+	return self:getScene():getBox2DWorld()
+end
+
 function PhysicsJoint:findBody()
 	local body = self._entity:getComponent( PhysicsBody )
 	return body
@@ -100,11 +104,12 @@ function PhysicsJointDistance:__init()
 end
 
 function PhysicsJointDistance:createJoint( bodyA, bodyB )
+	local world = self:getB2World()
 	bodyA:forceUpdate()
 	bodyB:forceUpdate()
 	local x0,y0 = bodyA:getWorldLoc()
 	local x1,y1 = bodyB:getWorldLoc()
-	local joint = game.b2world:addDistanceJoint(
+	local joint = world:addDistanceJoint(
 			bodyA,
 			bodyB,
 			x0,y0,
@@ -136,7 +141,7 @@ end
 function PhysicsJointFriction:createJoint( bodyA, bodyB )
 	bodyA:forceUpdate()
 	local x0,y0 = bodyA:getWorldLoc()
-	local joint = game.b2world:addFrictionJoint(
+	local joint = self:getB2World():addFrictionJoint(
 			bodyA,
 			bodyB,
 			x0,y0,
@@ -147,7 +152,7 @@ function PhysicsJointFriction:createJoint( bodyA, bodyB )
 end
 
 function PhysicsJointFriction:getTargetMoaiBody()
-	return game:getBox2DWorldGround()
+	return self:getB2World().ground
 end
 
 function PhysicsJointFriction:setMaxForce( f )

@@ -91,6 +91,7 @@ registerSignals{
 	'mainscene.refresh',
 	'mainscene.close',
 
+	'scene.init',
 	'scene.update',
 
 	'layer.update',
@@ -101,6 +102,20 @@ registerSignals{
 	'game_config.load',
 }
 
+--------------------------------------------------------------------
+local defaultPhysicsWorldOption = {
+	gravity               = { 0, -10 },
+	unitsToMeters         = 0.01,
+	velocityIterations    = 6,
+	positionIterations    = 8,
+
+	angularSleepTolerance = 0,
+	linearSleepTolerance  = 0,
+	timeToSleep           = 0,
+
+	autoClearForces       = true,
+
+}
 
 --------------------------------------------------------------------
 CLASS: Game () 
@@ -274,9 +289,11 @@ function Game:init( option, fromEditor )
 	initFmodDesigner()
 
 	----physics
-	_stat( 'init physics' )
-	self.physicsOption = option['physics']
-	self:setupBox2DWorld()
+	--option for default physics world
+	self.physicsOption = defaultPhysicsWorldOption
+	if option['physics'] then
+		table.extend( self.physicsOption, option['physics'] )
+	end
 
 	----extra
 	_stat( '...extra init' )
@@ -637,8 +654,6 @@ function Game:start()
 	self.paused = false
 	-- self.actionRoot:start()
 	self.mainScene:start()
-	self.b2world:start()
-	
 	if self.paused then
 		emitSignal( 'game.resume', self )
 	else
@@ -800,24 +815,10 @@ end
 --------------------------------------------------------------------
 --PHYSICS
 --------------------------------------------------------------------
-local defaultWorldOption = {
-	gravity               = { 0, -10 },
-	unitsToMeters         = 0.01,
-	velocityIterations    = 6,
-	positionIterations    = 8,
-
-	angularSleepTolerance = 0,
-	linearSleepTolerance  = 0,
-	timeToSleep           = 0,
-
-	autoClearForces       = true,
-
-}
-
 function Game:setupBox2DWorld()
 	local option = self.physicsOption
 	if not option then 
-		option = defaultWorldOption
+		option = defaultPhysicsWorldOption
 		self.physicsOption = option
 	end
 
@@ -832,8 +833,8 @@ function Game:setupBox2DWorld()
 	end
 	
 	local velocityIterations, positionIterations = option.velocityIterations, option.positionIterations
-	velocityIterations = velocityIterations or defaultWorldOption.velocityIterations
-	positionIterations = positionIterations or defaultWorldOption.positionIterations
+	velocityIterations = velocityIterations or defaultPhysicsWorldOption.velocityIterations
+	positionIterations = positionIterations or defaultPhysicsWorldOption.positionIterations
 	world:setIterations ( velocityIterations, positionIterations )
 
 	world:setAutoClearForces       ( option.autoClearForces )
