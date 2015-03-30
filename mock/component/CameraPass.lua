@@ -240,17 +240,26 @@ function CameraPass:__init()
 	self.frameBuffer  = false
 	self.frameBuffers = {}
 	self.passes = {}
-	self.lastFrameBuffer = false
+	self.lastFrameBuffer    = false
+	self.defaultFramebuffer = false
+	self.outputFramebuffer  = false
 end
 
 function CameraPass:init( camera )
 	self.camera = camera
+	self.outputFramebuffer = camera:getMoaiFrameBuffer()
+	if camera.hasImageEffect then
+		self.defaultFramebuffer = self:buildFrameBuffer()
+	else
+		self.defaultFramebuffer = self.outputFramebuffer
+	end
 	self:onInit()
 end
 
 function CameraPass:build()
 	self.passes = {}
 	self:onBuild()
+	self:buildImageEffects()
 	return self.passes
 end
 
@@ -262,6 +271,10 @@ end
 
 function CameraPass:getCamera()
 	return self.camera
+end
+
+function CameraPass:getDefaultFramebuffer()
+	return self.defaultFramebuffer
 end
 
 function CameraPass:pushRenderLayer( layer, frameBuffer, option )
@@ -289,7 +302,7 @@ function CameraPass:pushFrameBuffer( frameBuffer, option )
 			_error( 'frame buffer not found:', frameBufferName )
 		end
 	end
-	local buffer = frameBuffer or false
+	local buffer = frameBuffer or self:getDefaultFramebuffer()
 	self.lastFrameBuffer = buffer
 	table.insert( self.passes, { 
 		tag         = 'buffer',
@@ -356,7 +369,7 @@ function CameraPass:buildFrameBuffer( option )
 	if option and option.size then w,h = unpack( option.size ) end
 	if option and option.scale then w, h = w*option.scale, h*option.scale end
 	local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
-	local colorFormat = option.colorFormat or nil
+	local colorFormat = option and option.colorFormat or nil
 	fb:init( w, h, colorFormat, depthFormat )
 	fb:setFilter( option and option.filter or MOAITexture.GL_LINEAR )
 	return fb
@@ -489,7 +502,7 @@ function CameraPass:buildSingleQuadRenderLayer( texture, shader )
 	local prop, quad = self:buildSimpleQuadProp( w, h, texture, shader )
 	layer:insertProp( prop )
 	layer.prop = prop
-	return layer, prop
+	return layer, prop, quad
 end
 
 function CameraPass:buildCallbackRenderLayer( func )
@@ -535,7 +548,21 @@ function CameraPass:pushSceneRenderPass( option )
 
 end
 
-
+function CameraPass:buildImageEffects()
+	if not self.camera.hasImageEffect then return end
+	local defaultFramebuffer = self:getDefaultFramebuffer()
+	local outputFramebuffer = self.outputFramebuffer
+	assert( defaultFramebuffer ~= outputFramebuffer )
+	local imageEffects = self.camera.imageEffects
+	for i, imageEffect in ipairs( imageEffects ) do
+		if i < #imageEffects then
+			self:pushFrameBuffer( defaultFramebuffer ) --TODO:double buffer?
+		else
+			self:pushFrameBuffer( outputFramebuffer )
+		end
+		imageEffect:buildCameraPass( self )
+	end
+end
 
 --------------------------------------------------------------------
 CLASS: SceneCameraPass ( CameraPass )
@@ -548,7 +575,7 @@ end
 
 function SceneCameraPass:onBuild()
 	local camera = self:getCamera()
-	local fb0 = camera:getMoaiFrameBuffer() or fb0
+	local fb0 = self:getDefaultFramebuffer()
 	if not self.clearBuffer then
 		self:pushFrameBuffer( fb0, { clearColor = false } )
 	else

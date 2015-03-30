@@ -18,6 +18,7 @@ require 'mock.component.InputListener'
 ---- Basic components
 require 'mock.component.CameraPass'
 require 'mock.component.Camera'
+require 'mock.component.CameraImageEffect'
 require 'mock.component.StereoCamera'
 require 'mock.component.ScreenAnchor'
 
@@ -76,3 +77,6 @@ require 'mock.component.EffectEmitter'
 
 --------------------------------------------------------------------
 require 'mock.component.Layout'
+--------------------------------------------------------------------
+--EFFECTS
+require 'mock.component.CameraImageEffectGrayScale'

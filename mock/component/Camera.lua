@@ -74,6 +74,10 @@ function Camera:__init( option )
 	self.includedLayers = option.included or 'all'
 	-- self.excludedLayers = option.excluded or ( option.included and 'all' or false )
 	self.excludedLayers = {}
+
+	self.imageEffects = {}
+	self.hasImageEffect = false
+
 	self:setOutputFrameBuffer( false )
 	self:_initDefault()
 
@@ -538,6 +542,26 @@ function Camera:setPriority( p )
 	getCameraManager():update()
 end
 
+--------------------------------------------------------------------
+--image effect support
+function Camera:addImageEffect( imageEffect )
+	table.insert( self.imageEffects, imageEffect )
+	self.hasImageEffect = next( self.imageEffects ) ~= nil
+	print 'reloading passes'
+	self:reloadPasses()
+end
+
+function Camera:removeImageEffect( imageEffect )
+	local idx = table.index( self.imageEffects, imageEffect )
+	if not idx then return end
+	table.remove( self.imageEffects, imageEffect )
+	self.hasImageEffect = next( self.imageEffects ) ~= nil
+	self:reloadPasses()
+end
+
+
+--------------------------------------------------------------------
+--output image buffer support
 function Camera:setOutputFrameBuffer( fbPath )
 	local fb
 	self.frameBufferPath = fbPath or false
@@ -567,11 +591,14 @@ function Camera:getMoaiCamera()
 	return self._camera
 end
 
+--------------------------------------------------------------------
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
 registerComponent( 'Camera', Camera)
 registerEntityWithComponent( 'Camera', Camera )
 
+--------------------------------------------------------------------
+--EDITOR Support
 function Camera:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'camera.png' )
