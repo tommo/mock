@@ -434,6 +434,10 @@ function _cloneObject( obj, dst, objMap )
 		end
 	end
 	----	
+	local __clone = dst.__clone
+	if __clone then
+		__clone( dst, obj )
+	end
 	return dst
 end
 

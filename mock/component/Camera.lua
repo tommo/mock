@@ -563,6 +563,10 @@ function Camera:getMoaiFrameBuffer()
 	return self.frameBuffer
 end
 
+function Camera:getMoaiCamera()
+	return self._camera
+end
+
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
 registerComponent( 'Camera', Camera)
@@ -572,6 +576,5 @@ function Camera:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'camera.png' )
 	giz:setTransform( self._camera )
-	giz:setTarget( self )
 	return giz
 end

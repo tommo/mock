@@ -179,6 +179,10 @@ function inheritVisible( p1, p2 )
 	return p1:setAttrLink ( INHERIT_VISIBLE, p2, ATTR_VISIBLE )
 end
 
+function linkVisible( p1, p2 ) 
+	return p1:setAttrLink ( ATTR_VISIBLE, p2, ATTR_VISIBLE )
+end
+
 function inheritTransformColor( p1, p2 )
 	inheritTransform( p1, p2 )
 	return inheritColor( p1, p2 )

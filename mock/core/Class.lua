@@ -91,7 +91,8 @@ local BaseClass = {
 	__subclasses  = {},
 	__signals     = false,
 	__serialize   = false,
-	__deserialize = false
+	__deserialize = false,
+	__clone       = false,
 }
 
 _BASECLASS = BaseClass --use this to extract whole class tree
@@ -316,6 +317,7 @@ function newClass( b, superclass, name  )
 	b.__subclasses = {}
 	b.__serialize = superclass.__serialize
 	b.__deserialize = superclass.__deserialize
+	b.__clone = superclass.__clone
 
 	if not name then
 		local s = superclass

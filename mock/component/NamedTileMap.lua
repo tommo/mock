@@ -47,7 +47,8 @@ function NamedTileGrid:getMoaiGrid()
 end
 
 function NamedTileGrid:loadTiles( data )
-	assert( self.tileset )
+	-- assert( self.tileset )
+	if not self.tileset then return end
 	local nameToId = data[ 'nameToId' ]
 	local nameToId2 = self.nameToId
 	local w, h = data[ 'width' ], data[ 'height' ]
@@ -83,8 +84,9 @@ function NamedTileGrid:loadTiles( data )
 end
 
 function NamedTileGrid:saveTiles()
-	assert( self.tileset )
-	
+	-- assert( self.tileset )
+	if not self.tileset then return false end
+
 	local encoded = saveMOAIGridTiles( self.grid )
 
 	local output = {}

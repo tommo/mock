@@ -312,7 +312,6 @@ function MultiShader:init( maxPass )
 end
 
 function MultiShader:setSubShader( pass, shader )
-	print( 'set sub shader', pass, shader )
 	self.subShaders[ pass ] = shader
 	self.shader:setSubShader( pass + 1, shader:getMoaiShader() )
 	if pass == 0 then

@@ -90,6 +90,12 @@ function TexturePlane:setDepthTest( mode )
 	self.prop:setDepthTest( mode )
 end
 
+--------------------------------------------------------------------
+function TexturePlane:inside( x, y, z, pad )
+	local _,_,z1 = self.prop:getWorldLoc()
+	return self.prop:inside( x,y,z1, pad )
+end
+
 
 --------------------------------------------------------------------
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
