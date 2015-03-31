@@ -52,9 +52,7 @@ function Scene:__init( option )
 
 	self.b2world         = false
 	self.b2ground        = false
-
-	self.actionPriorityMap   = {}
-	self.actionPriorityQueue = {}
+	self.actionPriorityGroups = {}
 
 	return self
 end
@@ -88,6 +86,22 @@ end
 function Scene:resetTimer()
 	self.timer   = MOAITimer.new()
 	self.timer:setMode( MOAITimer.CONTINUE )
+	self:resetActionPriorityGroups()
+end
+
+function Scene:resetActionPriorityGroups()
+	for i, g in ipairs( self.actionPriorityGroups ) do
+		g:clear()
+		g:stop()
+	end
+	self.actionPriorityGroups = {}
+	for i = 8, -8, -1 do
+		local group = MOAIAction.new()
+		group:setAutoStop( false )
+		group:attach( self.timer )
+		group.priority = i
+		self.actionPriorityGroups[ i ] = group
+	end
 end
 
 
@@ -213,43 +227,8 @@ function Scene:getArguments()
 	return self.arguments
 end
 
-function Scene:affirmActionPriorityGroup( priority )
-	local group = self.actionPriorityMap[ priority ]
-	if group then return group end
-	group = MOAIAction.new()
-	group:setAutoStop( false )
-	group.priority = priority
-	local cursor = false
-	for i, g0 in ipairs( self.actionPriorityQueue ) do
-		if g0.priority < priority then
-			cursor = i
-			break
-		end
-	end
-	if cursor then
-		table.insert( self.actionPriorityQueue, cursor, group )
-	else
-		table.insert( self.actionPriorityQueue, group )
-	end
-	--reattach group to action root
-	local tmpRoot = self:getActionRoot()
-	local root = self.timer
-
-	_stat( 'add priority queue' )
-	for i, g in ipairs( self.actionPriorityQueue ) do
-		g:attach( tmpRoot )
-	end
-	_stat( 'reattach priority queue' )
-	for i, g in ipairs( self.actionPriorityQueue ) do
-		g:attach( root )
-	end
-	_stat( 'added priority queue' )
-	
-	return group
-end
-
 function Scene:setActionPriority( action, priority )
-	local group = self:affirmActionPriorityGroup( tonumber( priority ) )
+	local group = self.actionPriorityGroups[ priority ]
 	action:attach( group )
 end
 
@@ -328,16 +307,10 @@ function Scene:stop()
 	if not self.running then return end
 	self.running = false
 	self:resetTimer()
-	--
 	-- self.b2world:stop()
-	-- self.mainThread:stop()
+	self.mainThread:stop()
 	self.mainThread = false
-	for i, g in ipairs( self.actionPriorityQueue ) do
-		g:clear()
-		g:stop()
-	end
-	self.actionPriorityQueue = {}
-	self.actionPriorityMap   = {}
+
 end
 
 
