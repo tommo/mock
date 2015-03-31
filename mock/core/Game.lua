@@ -233,12 +233,8 @@ function Game:init( option, fromEditor )
 	self.throttle = 1
 	self.isPaused = false
 
-	local actionRoot=MOAITimer.new()
-	actionRoot:setMode( MOAITimer.CONTINUE )
-	
-	MOAIActionMgr.setRoot( actionRoot )
-	local actionRootDecoy=MOAICoroutine.new()	
-	actionRootDecoy:run( function()
+	local actionRoot=MOAICoroutine.new()
+	actionRoot:run( function()
 			while true do
 				local dt = coroutine.yield()
 				self:onRootUpdate( dt ) --delta time get passed in
@@ -623,12 +619,12 @@ end
 function Game:pause()
 	if self.paused then return end 
 	self.paused = true
+	self.actionRoot:pause()
 	self.mainScene:pause()
 	emitSignal( 'game.pause', self )
 end
 
 function Game:stop()
-	-- self.actionRoot:stop()
 	self.mainScene:stop()
 	self.mainScene:clear( true )
 	self:resetClock()
@@ -638,34 +634,34 @@ end
 function Game:start()
 	_stat( 'game start' )
 	self.paused = false
-	-- self.actionRoot:start()
 	self.mainScene:start()
 	if self.paused then
 		emitSignal( 'game.resume', self )
 	else
 		emitSignal( 'game.start', self )
 	end
+	
 end
 
 function Game:isPaused()
 	return self.paused
 end
 
-function Game:pushActionRoot( action )
-	action.prev = self.actionRoot
-	self.actionRoot = action
-	MOAIActionMgr.setRoot( self.actionRoot )
-end
+-- function Game:pushActionRoot( action )
+-- 	action.prev = self.actionRoot
+-- 	self.actionRoot = action
+-- 	MOAIActionMgr.setRoot( self.actionRoot )
+-- end
 
-function Game:popActionRoot()
-	local current = self.actionRoot
-	local r = self.actionRoot.prev
-	if r then 
-		self.actionRoot = r 
-		MOAIActionMgr.setRoot( self.actionRoot )
-	end
-	return current
-end
+-- function Game:popActionRoot()
+-- 	local current = self.actionRoot
+-- 	local r = self.actionRoot.prev
+-- 	if r then 
+-- 		self.actionRoot = r 
+-- 		MOAIActionMgr.setRoot( self.actionRoot )
+-- 	end
+-- 	return current
+-- end
 
 function Game:getActionRoot()
 	return self.actionRoot

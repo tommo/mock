@@ -547,7 +547,6 @@ end
 function Camera:addImageEffect( imageEffect )
 	table.insert( self.imageEffects, imageEffect )
 	self.hasImageEffect = next( self.imageEffects ) ~= nil
-	print 'reloading passes'
 	self:reloadPasses()
 end
 

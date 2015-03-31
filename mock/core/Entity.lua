@@ -704,6 +704,17 @@ function Entity:isLocalActive()
 end
 
 
+function Entity:setActionPriority( action, priority )
+	return self.scene:setActionPriority( action, priority )
+end
+
+function Entity:setCurrentCoroutinePriority( priority )
+	local coro = self:getCurrentCoroutine()
+	if coro then
+		return self:setActionPriority( coro, priority )
+	end
+end
+
 --------------------------------------------------------------------
 ------ Child/Component Method invoker
 --------------------------------------------------------------------

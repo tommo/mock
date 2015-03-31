@@ -57,6 +57,10 @@ function Component:getLayer()
 	return self._entity:getLayer()
 end
 
+function Component:setActionPriority( action, priority )
+	return self._entity:setActionPriority( action, priority )
+end
+
 --------------------------------------------------------------------
 --message & state
 --------------------------------------------------------------------

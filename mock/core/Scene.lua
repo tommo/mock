@@ -21,7 +21,7 @@ local defaultPhysicsWorldOption = {
 --SCENE
 --------------------------------------------------------------------
 CLASS: 
-	Scene (Actor)
+	Scene ()
 	:MODEL{
 		
 	}
@@ -29,7 +29,8 @@ CLASS:
 
 function Scene:__init( option )
 	self.active = false
-	
+	self.__editor_scene = false
+
 	self.running = false
 	self.arguments       = false
 	self.layers          = {}
@@ -52,6 +53,9 @@ function Scene:__init( option )
 	self.b2world         = false
 	self.b2ground        = false
 
+	self.actionPriorityMap   = {}
+	self.actionPriorityQueue = {}
+
 	return self
 end
 
@@ -72,16 +76,21 @@ function Scene:init()
 
 	_stat( 'Initialize Scene' )
 
-	self.timer   = MOAITimer.new()
-	self.timer:setMode( MOAITimer.CONTINUE )
-	self.timer:attach( self:getActionRoot() )
+	self:resetTimer()
 
 	self:setupBox2DWorld()
-	self.b2world:attach( self:getActionRoot() )
-
-	emitSignal( 'scene.init', self )
+	if not self.__editor_scene then
+		emitSignal( 'scene.init', self )
+	end
 
 end
+
+function Scene:resetTimer()
+	self.timer   = MOAITimer.new()
+	self.timer:setMode( MOAITimer.CONTINUE )
+	self.tmpActionRoot = MOAIAction.new()
+end
+
 
 function Scene:initLayers()
 	local layers = {}
@@ -127,7 +136,6 @@ function Scene:threadMain( dt )
 	local lastTime = self:getTime()
 	while true do	
 		local nowTime = self:getTime()
-
 		if self.active then
 			-- local dt = nowTime - lastTime
 			lastTime = nowTime
@@ -206,6 +214,47 @@ function Scene:getArguments()
 	return self.arguments
 end
 
+function Scene:affirmActionPriorityGroup( priority )
+	local group = self.actionPriorityMap[ priority ]
+	if group then return group end
+	group = MOAIAction.new()
+	group:setAutoStop( false )
+	group.priority = priority
+	local cursor = false
+	for i, g0 in ipairs( self.actionPriorityQueue ) do
+		if g0.priority < priority then
+			cursor = i
+			break
+		end
+	end
+	if cursor then
+		table.insert( self.actionPriorityQueue, cursor, group )
+	else
+		table.insert( self.actionPriorityQueue, group )
+	end
+	--reattach group to action root
+	local tmpRoot = self.tmpActionRoot
+	local root = self.timer
+
+	_stat( 'add priority queue' )
+	for i, g in ipairs( self.actionPriorityQueue ) do
+		g:attach( tmpRoot )
+	end
+	_stat( 'reattach priority queue' )
+	for i, g in ipairs( self.actionPriorityQueue ) do
+		g:attach( root )
+	end
+	tmpRoot:clear()
+	_stat( 'added priority queue' )
+	
+	return group
+end
+
+function Scene:setActionPriority( action, priority )
+	local group = self:affirmActionPriorityGroup( tonumber( priority ) )
+	action:attach( group )
+end
+
 --------------------------------------------------------------------
 --TIMER
 --------------------------------------------------------------------
@@ -246,38 +295,56 @@ end
 --Flow Control
 --------------------------------------------------------------------
 function Scene:start()
+	_stat( 'scene start' )
 	if self.running then return end
 	if not self.initialized then self:init() end
 	self.running = true
 	local onStart = self.onStart
 	if onStart then onStart( self ) end
-
+	
 	self.mainThread = MOAICoroutine.new()
 	self.mainThread:setDefaultParent( true )
 	self.mainThread:run(
 		function()
+			for ent in pairs( self.entities ) do
+				if not ent.parent then
+					ent:start()
+				end
+			end
 			return self:threadMain()
 		end
 	)
+	
+	_stat( 'mainthread scene start' )
+	self:setActionPriority( self.mainThread, 0 )
+	_stat( 'box2d scene start' )
+	self:setActionPriority( self.b2world, 1 )
 
-	for ent in pairs( self.entities ) do
-		if not ent.parent then
-			ent:start()
-		end
-	end
-	self.timer:start()	
-	self.b2world:start()
+	_stat( 'scene timer start' )
+	self.timer:attach( self:getActionRoot() )
+
 end
 
 
 function Scene:stop()
 	if not self.running then return end
 	self.running = false
-	self.mainThread:stop()
-	self.timer:stop()
-	self.b2world:stop()
+	self:resetTimer()
+	--
+	-- self.b2world:stop()
+	-- self.mainThread:stop()
 	self.mainThread = false
+	for i, g in ipairs( self.actionPriorityQueue ) do
+		g:clear()
+		g:stop()
+	end
+	self.tmpActionRoot:clear()
+	self.tmpActionRoot = MOAIAction.new()
+	self.actionPriorityQueue = {}
+	self.actionPriorityMap   = {}
 end
+
+
 
 function Scene:exitLater(time)
 	self.exitingTime = game:getTime() + time

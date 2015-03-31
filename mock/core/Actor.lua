@@ -217,6 +217,9 @@ function Actor:addCoroutineFor( obj, func, ... )
 	return self:_createCoroutine( false, func, obj, ... )
 end
 
+function Actor:getCurrentCoroutine()
+	return MOAICoroutine.currentThread()
+end
 
 local function _coroDaemonInner( obj, f, ... )
 	local inner = self:addCoroutineFor( obj, f, ... )
