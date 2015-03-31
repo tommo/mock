@@ -41,4 +41,4 @@ function CameraImageEffectInvert:onBuild( prop, layer )
 end
 
 
-mock.registerComponent( 'CameraImageEffectInvert', CameraImageEffectGrayScale )
+mock.registerComponent( 'CameraImageEffectInvert', CameraImageEffectInvert )
