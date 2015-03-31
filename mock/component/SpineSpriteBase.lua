@@ -19,7 +19,7 @@ function SpineSpriteBase:_createSkeleton()
 end
 
 function SpineSpriteBase:onAttach( entity )
-	entity:_attachProp( self.skeleton )
+	entity:_attachProp( self.skeleton, 'render' )
 end
 
 function SpineSpriteBase:onDetach( entity )
@@ -37,7 +37,7 @@ function SpineSpriteBase:setSprite( path, alphaBlend )
 			entity:_detachProp( self.skeleton )		
 			self.skeleton  = self:_createSkeleton()
 			self.skeleton:load( self.skeletonData, 0.001, not self.preAlpha )
-			entity:_attachProp( self.skeleton )
+			entity:_attachProp( self.skeleton, 'render' )
 		else
 			self.skeleton:load( self.skeletonData, 0.001, not self.preAlpha )
 		end

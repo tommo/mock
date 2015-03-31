@@ -26,7 +26,7 @@ function PatchProp:__init( option )
 end
 
 function PatchProp:onAttach( entity )
-	return entity:_attachProp( self._prop )
+	return entity:_attachProp( self._prop, 'render' )
 end
 
 function PatchProp:onDetach( entity )

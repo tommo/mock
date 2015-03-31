@@ -61,6 +61,9 @@ function Component:setActionPriority( action, priority )
 	return self._entity:setActionPriority( action, priority )
 end
 
+function Component:setCurrentCoroutinePriority( priority )
+	return self._entity:setCurrentCoroutinePriority( priority )
+end
 --------------------------------------------------------------------
 --message & state
 --------------------------------------------------------------------

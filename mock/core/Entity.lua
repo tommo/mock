@@ -121,7 +121,7 @@ function Entity:_insertIntoScene( scene, layer )
 	if entityListener then entityListener( 'add', self, nil ) end
 end
 
-function Entity:getProp()
+function Entity:getProp( role )
 	return self._prop
 end
 
@@ -348,16 +348,11 @@ end
 --------------------------------------------------------------------
 local inheritTransformColor = inheritTransformColor
 local inheritTransform      = inheritTransform
+local inheritColor          = inheritColor
+local inheritVisible        = inheritVisible
 local inheritLoc            = inheritLoc
-local inheritAllPropAttributes = inheritAllPropAttributes
 
-function Entity:_linkSubProp( p )
-	inheritAllPropAttributes( p, self._prop )
-	if self.scissorRect then p:setScissorRect( self.scissorRect ) end
-	return p
-end
-
-function Entity:_attachProp( p )
+function Entity:_attachProp( p, role )
 	local _prop = self._prop
 	inheritTransformColorVisible( p, _prop )
 	self.layer:insertProp( p )
@@ -366,36 +361,37 @@ function Entity:_attachProp( p )
 	return p
 end
 
-function Entity:_attachTransform( t )
+function Entity:_attachTransform( t, role )
 	local _prop = self._prop
 	inheritTransform( t, _prop )
 	return t
 end
 
-function Entity:_attachLoc( t )
+function Entity:_attachLoc( t, role )
 	local _prop = self._prop
 	inheritLoc( t, _prop )
 	return t
 end
 
-function Entity:_attachColor( t )
+function Entity:_attachColor( t, role )
 	inheritColor( t, self._prop )
 	return t
 end
 
-function Entity:_attachVisible( t )
+function Entity:_attachVisible( t, role )
 	inheritVisible( t, self._prop )
 	return t
 end
 
-function Entity:_insertPropToLayer( p )
+function Entity:_insertPropToLayer( p, role )
 	self.layer:insertProp( p )
 	return p
 end
 
-function Entity:_detachProp( p )
+function Entity:_detachProp( p, role )
 	self.layer:removeProp( p )
 end
+
 
 --------------------------------------------------------------------
 ------ Child Entity

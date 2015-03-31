@@ -39,7 +39,7 @@ function TextLabel:__init(  )
 end
 
 function TextLabel:onAttach( entity )
-	entity:_attachProp( self.box )
+	entity:_attachProp( self.box, 'render' )
 end
 
 function TextLabel:onDetach( entity )

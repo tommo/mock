@@ -97,7 +97,7 @@ function TiledTextureRect:__init()
 end
 
 function TiledTextureRect:onAttach( ent )
-	ent:_attachProp( self.prop )
+	ent:_attachProp( self.prop, 'render' )
 end
 
 function TiledTextureRect:onDetach( ent )

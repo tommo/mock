@@ -103,7 +103,7 @@ end
 
 function Camera:onAttach( entity )
 	self.scene = entity.scene
-	entity:_attachTransform( self._camera )
+	entity:_attachTransform( self._camera, 'render' )
 	self:updateViewport()
 	self:bindSceneLayers()
 	self:reloadPasses()

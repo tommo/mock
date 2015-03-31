@@ -50,7 +50,7 @@ function MSprite:__init()
 end
 
 function MSprite:onAttach( entity )
-	return entity:_attachProp( self.prop )
+	return entity:_attachProp( self.prop, 'render' )
 end
 
 function MSprite:onDetach( entity )

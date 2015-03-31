@@ -18,11 +18,11 @@ function DeckComponent:__init()
 end
 
 function DeckComponent:onAttach( entity )
-	entity:_attachProp( self.prop )
+	entity:_attachProp( self.prop, 'render' )
 end
 
 function DeckComponent:onDetach( entity )
-	entity:_detachProp( self.prop )
+	entity:_detachProp( self.prop, 'render' )
 end
 
 --------------------------------------------------------------------

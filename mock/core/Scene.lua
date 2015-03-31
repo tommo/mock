@@ -88,7 +88,6 @@ end
 function Scene:resetTimer()
 	self.timer   = MOAITimer.new()
 	self.timer:setMode( MOAITimer.CONTINUE )
-	self.tmpActionRoot = MOAIAction.new()
 end
 
 
@@ -233,7 +232,7 @@ function Scene:affirmActionPriorityGroup( priority )
 		table.insert( self.actionPriorityQueue, group )
 	end
 	--reattach group to action root
-	local tmpRoot = self.tmpActionRoot
+	local tmpRoot = self:getActionRoot()
 	local root = self.timer
 
 	_stat( 'add priority queue' )
@@ -244,7 +243,6 @@ function Scene:affirmActionPriorityGroup( priority )
 	for i, g in ipairs( self.actionPriorityQueue ) do
 		g:attach( root )
 	end
-	tmpRoot:clear()
 	_stat( 'added priority queue' )
 	
 	return group
@@ -338,8 +336,6 @@ function Scene:stop()
 		g:clear()
 		g:stop()
 	end
-	self.tmpActionRoot:clear()
-	self.tmpActionRoot = MOAIAction.new()
 	self.actionPriorityQueue = {}
 	self.actionPriorityMap   = {}
 end
