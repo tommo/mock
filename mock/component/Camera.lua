@@ -7,10 +7,8 @@ registerSignals{
 local insert = table.insert
 local remove = table.remove
 
---[[
-	camera = 
-		RenderTable 
-]]
+
+---------------------------------------------------------------------
 
 CLASS: Camera ( Component )
 
@@ -25,63 +23,62 @@ CLASS: Camera ( Component )
 	Field 'priority'         :int()     :getset('Priority');
 	Field 'excludedLayers'   :collection( 'layer' ) :getset('ExcludedLayers');
 	Field 'parallaxEnabled'  :boolean() :isset('ParallaxEnabled') :label('parallax');
-	Field 'framebuffer'      :asset('framebuffer')  :getset('OutputFrameBuffer');
 	'----';
 	Field 'clearBuffer'      :boolean();
 	Field 'clearColor'       :type( 'color' ) :getset( 'ClearColor' );
 	'----';
 	Field 'showDebugLines'   :boolean() :set( 'setShowDebugLines' );
+	'----';
+	Field 'outputTarget'     :asset('render_target')  :getset('OutputRenderTargetPath');
 
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
 local function _cameraZoomControlNodeCallback( node )
-	return node.camera:updateViewport()
+	return node.camera:updateZoom()
 end
 
 function Camera:__init( option )
 	option = option or {}
+	
 	self.clearBuffer = true
-	self.clearColor = { 0,0,0,0 }
+	self.clearColor = { .1,.1,.1,1 }
+
 	local cam = MOAICamera.new()
 	self._camera  = cam
 	cam.source = self
-	self.frameBufferPath = false
 
-	self.relativeViewportSize = false
-	self.fixedViewportSize    = false
+	---framebuffer & viewports
+	self.renderTarget = RenderTarget()
+	self.renderTarget:setMode( 'relative' )
 
-	self.viewportScale    = false
-	self.viewportWndRect  = false
-	self.mode             = 'expanding' --{ 'strech', 'fixed' }
+	self.outputRenderTarget     = false
+	self.outputRenderTargetPath = false
 
+
+	--zoom control
 	self.zoomControlNode = MOAIScriptNode.new()
 	self.zoomControlNode:reserveAttrs( 1 )
 	self.zoomControlNode.camera = self
 	self:setZoom( 1 )
 	self.zoomControlNode:setCallback( _cameraZoomControlNodeCallback )
 
+	--layer control
+	self.mainCamera   = false
 	self.renderLayers = {}
-	self.viewport   = MOAIViewport.new()
-	self.priority   = option.priority or 0
-	self.mainCamera = false
-
+	self.priority     = option.priority or 0
 	self.dummyLayer = MOAILayer.new()  --just for projection transform
-	self.dummyLayer:setViewport( self.viewport )
+	self.dummyLayer:setViewport( self:getMoaiViewport() )
 	self.dummyLayer:setCamera( self._camera )
-	
 	self.includedLayers = option.included or 'all'
-	-- self.excludedLayers = option.excluded or ( option.included and 'all' or false )
 	self.excludedLayers = {}
-
+	
+	--extra
 	self.imageEffects = {}
 	self.hasImageEffect = false
 
-	self:setOutputFrameBuffer( false )
 	self:_initDefault()
-
-	self.subViewports = table.weak_k()
 
 end
 
@@ -99,6 +96,9 @@ function Camera:_initDefault()
 
 	self.passes = {}
 	self._enabled = true
+
+	self:setOutputRenderTarget( false )
+
 end
 
 function Camera:onAttach( entity )
@@ -135,21 +135,10 @@ end
 function Camera:tryBindSceneLayer( layer )
 	local name = layer.name
 	if self:isLayerIncluded( name ) then
-		layer:setViewport( self.viewport )
+		layer:setViewport( self:getMoaiViewport() )
 		layer:setCamera( self._camera )
 	end
 end
-
--- function Camera:unbindSceneLayer()
--- 	local scene = self.scene
--- 	if not scene then return end	
--- 	for k, layer in pairs( scene.layers ) do
--- 		if layer.mainCamera == self then
--- 			layer:setViewport( self.viewport )
--- 			layer:setCamera( self._camera )
--- 		end
--- 	end	
--- end
 
 function Camera:reloadPasses()
 	self.passes = {}
@@ -332,7 +321,7 @@ function Camera:worldToWnd( x, y, z )
 	return self.dummyLayer:worldToWnd( x, y, z )
 end
 
-function Camera:getScreenRect()
+function Camera:getScreenRect() --todo: kill me
 	return game:getViewportRect()
 end
 
@@ -346,37 +335,7 @@ function Camera:getScreenScale()
 end
 
 function Camera:updateViewport()
-	local gx0, gy0, gx1, gy1
-	local fb = self.frameBuffer
-	if fb == MOAIGfxDevice.getFrameBuffer() then		
-		gx0, gy0, gx1, gy1 = self:getScreenRect()
-	else
-		gx0, gy0 = 0, 0
-		gx1, gy1 = fb:getSize()
-	end
-
-	local vx0, vy0, vx1, vy1
-
-	--TODO: clip rect if exceeds the framebuffer boundary
-	local mode = self.mode
-	if mode == 'expanding' then
-		vx0, vy0, vx1, vy1 =  gx0, gy0, gx1, gy1
-	elseif mode == 'fixed' then
-		vx0, vy0, vx1, vy1 =  unpack( self.fixedViewportSize )
-	elseif mode == 'relative' then
-		local w, h = gx1-gx0, gy1-gy0
-		local x0, y0 ,x1, y1 = unpack( self.relativeViewportSize )
-		vx0, vy0, vx1, vy1 =  x0*w + gx0, y0*h + gy0, x1*w + gx0, y1*h + gy0
-	else
-		error( 'unknown camera mode:' .. tostring( mode ) )	
-	end
-
-	local vw, vh = vx1 - vx0, vy1 - vy0
-	
-	self.viewportWndRect  = { vx0, vy0, vx1, vy1 }
-	self.viewport:setSize( vx0, vy0, vx1, vy1 )
-
-	self:updateZoom()
+	-- self:updateZoom()
 	emitSignal( 'camera.viewport_update', self )
 end
 
@@ -390,43 +349,22 @@ function Camera:updateZoom()
 		local dx,dy,dx1,dy1 = self:getScreenRect()
 		local dw = dx1-dx
 		local dh = dy1-dy
-		self.viewportScale  = { w, h }
-		self.viewport:setScale( dw/zoom, dh/zoom )
+		self.renderTarget:setFixedScale( w, h )
 	else
-		self.viewportScale  = { w, h }
-		self.viewport:setScale( w, h )
-	end
-	--update dependant viewports
-	self:updateSubViewports()	
-end
-
-function Camera:updateSubViewports()
-	if not ( self.viewportScale and self.viewportWndRect ) then return end
-	if not next( self.subViewports ) then return end
-	local w, h = unpack( self.viewportScale )
-	local vx0, vy0, vx1, vy1 = unpack( self.viewportWndRect )
-	local sw, sh = self:getScreenSize()
-	for buffer, subViewport in pairs( self.subViewports ) do
-		local bw, bh = buffer:getSize()
-		local sx, sy = bw/sw, bh/sh
-		subViewport:setScale( w, h )
-		subViewport:setSize( vx0 * sx, vy0 * sy, vx1 * sx, vy1 * sy )
+		self.renderTarget:setFixedScale( w, h )
 	end
 end
 
-function Camera:getSubViewport( buffer, affirm )
-	if not buffer or buffer == self.frameBuffer then return self.viewport end
-	local viewport = self.subViewports[ buffer ]
-	if not viewport and affirm ~= false then
-		viewport = MOAIViewport.new()
-		self.subViewports[ buffer ] = viewport
-	end
-	return viewport
+function Camera:getRenderTarget()
+	return self.renderTarget
+end
+
+function Camera:getMoaiViewport()
+	return self.renderTarget:getMoaiViewport()
 end
 
 function Camera:getViewportSize()
-	local scale = self.viewportScale
-	return scale[1], scale[2]
+	return self.viewpor:getScale()
 end
 
 function Camera:getViewportRect()
@@ -444,25 +382,11 @@ function Camera:getViewportLocalRect()
 end
 
 function Camera:getViewportWndRect()
-	return unpack( self.viewportWndRect )	
+	return self.renderTarget:getAbsPixelRect()
 end
 
 function Camera:getViewportWndSize()
-	local x0,y0,x1,y1 = self:getViewportWndRect()
-	return x1-x0, y1-y0
-end
-
-function Camera:setViewport( mode, x0, y0, x1, y1 )
-	mode = mode or 'expanding'
-	self.mode = mode
-	if mode == 'relative' then
-		self.relativeViewportSize = { x0, y0, x1, y1 }
-	elseif mode == 'fixed' then
-		self.fixedViewportSize = { x0, y0, x1, y1 }
-	else
-		error( 'unknown camera mode:' .. tostring( mode ) )
-	end
-	self:updateViewport()
+	return self.renderTarget:getPixelSize()
 end
 
 function Camera:getClearColor()
@@ -561,29 +485,32 @@ end
 
 --------------------------------------------------------------------
 --output image buffer support
-function Camera:setOutputFrameBuffer( fbPath )
-	local fb
-	self.frameBufferPath = fbPath or false
-	if fbPath then 
-		fb = mock.loadAsset( fbPath )
-		fb = fb and fb:getMoaiFrameBuffer()
-		if not fb then
-			_error( 'cannot build framebuffer', self.frameBufferPath )
-		end
+function Camera:getRenderTargetPath()
+	return self.renderTargetPath
+end
+
+function Camera:setOutputRenderTargetPath( path )
+	self.outputRenderTargetPath = path
+	return self:setOutputRenderTarget( mock.loadAsset( self.outputRenderTargetPath ))
+end
+
+function Camera:setOutputRenderTarget( outputRenderTarget )
+	if not outputRenderTarget then
+		outputRenderTarget = game:getMainRenderTarget()
 	end
-	self.frameBuffer = fb or MOAIGfxDevice.getFrameBuffer()
+
+	self.outputRenderTarget = outputRenderTarget
+	self.renderTarget:setFrameBuffer( outputRenderTarget:getFrameBuffer() )
+	self.renderTarget:setParent( outputRenderTarget )
+
 	if self.scene then
-		self:updateViewport()
 		self:updateRenderLayers()
 	end
+
 end
 
-function Camera:getOutputFrameBuffer()
-	return self.frameBufferPath
-end
-
-function Camera:getOutputMoaiFrameBuffer()
-	return self.frameBuffer
+function Camera:getOutputRenderTarget()
+	return self.outputRenderTarget
 end
 
 function Camera:getMoaiCamera()

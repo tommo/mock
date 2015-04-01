@@ -35,9 +35,9 @@ local function roundRect( rect )
 end
 
 local function projRect( parentRect, selfRect )
-	local x0, y0, x1, y1 = unpack( pixRect )
+	local x0, y0, x1, y1 = unpack( parentRect )
 	local w, h = x1 - x0, y1 - y0
-	local sx0, sy0, sx1, sy1 = unpack( rect )
+	local sx0, sy0, sx1, sy1 = unpack( selfRect )
 	local ox0, oy0, ox1, oy1 = sx0 - x0, sy0 -y0, sx1 - x0, sy1 -y0
 	return { ox0/w, oy0/h, ox1/w, oy1/h }
 end
@@ -53,7 +53,7 @@ function Viewport:__init( mode )
 	self.aspectRatio = 1
 
 	self.alignCenter = true
-	self.subViewports = {}
+	self.subViewports = table.weak_k()
 	self.parent = false
 
 	self.rect            = { 0,0,1,1 }
@@ -63,13 +63,10 @@ function Viewport:__init( mode )
 
 	self.fixedScale      = false
 	self.scaleSize       = { 1, 1 }
-	self.scalePerPixel   = { 1, 1 }
 
 	self._viewport             = MOAIViewport.new()
-	self._localViewport        = MOAIViewport.new()
 
 	self._viewport.source      = self
-	self._localViewport.source = self
 
 end
 
@@ -78,12 +75,8 @@ function Viewport:setMode( mode )
 	self:updateSize()
 end
 
-function Viewport:getMoaiViewport() --with offset
+function Viewport:getMoaiViewport()
 	return self._viewport
-end
-
-function Viewport:getLocalMoaiViewport() --without offset, for framebuffer
-	return self._localViewport
 end
 
 function Viewport:setAspectRatio( aspectRatio )
@@ -124,6 +117,7 @@ function Viewport:setFixedScale( w, h )
 end
 
 function Viewport:setScalePerPixel( sx, sy )
+	self.fixedScale = false
 	sx = sx or 1
 	sy = sy or sx
 	self.scalePerPixel = { sx, sy }
@@ -135,6 +129,19 @@ function Viewport:addSubViewport( view )
 	view.parent = self
 	view:updateSize()
 	return view
+end
+
+function Viewport:setParent( parent )
+	assert( parent ~= self )
+	if parent == self.parent then return end
+	if self.parent then
+		self.parent.subViewports[ self ] = nil
+		self.parent = false
+	end
+	if parent then
+		parent:addSubViewport( self )
+	end
+	self:updateSize()
 end
 
 function Viewport:updateSize()
@@ -157,17 +164,18 @@ function Viewport:updateSize()
 end
 
 function Viewport:updateScale()
-	if not self.fixedScale then
-		local w, h = self:getPixelSize()
+	if (not self.fixedScale) and self.parent then
+		local w, h = self.parent:getScale()
+		local rw, rh = self:getRelativeSize()
 		self.scaleSize = {
-			w * self.scalePerPixel[1],
-			h * self.scalePerPixel[2]
+			w * rw, h * rh
 		}
 	end
-	self:updateMoaiViewport()
+	self:onUpdateScale()
 	for sub in pairs( self.subViewports ) do
 		sub:updateScale()
 	end
+	self:updateMoaiViewport()
 end
 
 function Viewport:onUpdateSize()
@@ -180,7 +188,7 @@ function Viewport:updateFixedSize()
 	local pixelRect = table.simplecopy( self.pixelRect )
 	if self.parent then
 		self.absPixelRect = moveRect( pixelRect, self.parent:getAbsLoc() )
-		self.rect = projRect( self.parent:getAbsPixelRect(), self.absPixelRect )
+		self.rect = projRect( {self.parent:getAbsPixelRect()}, self.absPixelRect )
 	else
 		self.absPixelRect = pixelRect
 		self.rect = { 0,0,1,1 }
@@ -190,31 +198,26 @@ end
 function Viewport:updateRelativeSize()
 	if not self.parent then 
 		return _warn( 'relative viewport will not work without a parent viewport' )
+		-- return _error( 'relative viewport will not work without a parent viewport' )
 	end
+	
 	local boundRect = expandRect( { self.parent:getAbsPixelRect() }, self.rect )
 	if self.keepAspect then
 		self.absPixelRect = fitRectAspect( boundRect, self.aspectRatio )
 	else
 		self.absPixelRect = boundRect
 	end
+
 end
 
 function Viewport:updateMoaiViewport()
 	local x0,y0,x1,y1 = self:getAbsPixelRect()
 	self._viewport:setSize( x0, y0, x1, y1 )
 	self._viewport:setScale( self:getScale() )
-	local x0,y0,x1,y1 = self:getLocalPixelRect()
-	self._localViewport:setSize( x0, y0, x1, y1 )
-	self._localViewport:setScale( self:getScale() )
 end
 
 function Viewport:getAbsPixelRect()
 	return unpack( self.absPixelRect )
-end
-
-function Viewport:getLocalPixelRect()
-	local x0, y0, x1, y1 = unpack( self.absPixelRect )
-	return 0,0,x1-x0,y1-y0
 end
 
 function Viewport:getAbsLoc()
@@ -226,8 +229,21 @@ function Viewport:getPixelSize()
 	return x1-x0, y1-y0
 end
 
+function Viewport:getRelativeSize()
+	local x0, y0, x1, y1 = unpack( self.rect )
+	return x1-x0, y1-y0
+end
+
+function Viewport:getRelativeRect()
+	return unpack( self.rect )
+end
+
 function Viewport:getScale()
 	return unpack( self.scaleSize )
 end
 
+function Viewport:fitFramebuffer( fb )
+end
 
+function Viewport:resizeFramebuffer( fb )
+end

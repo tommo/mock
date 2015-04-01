@@ -24,12 +24,11 @@ function CameraImageEffect:getCamera()
 	return self.targetCamera
 end
 
-function CameraImageEffect:buildCameraPass( pass )
-	local texture = pass:getDefaultFramebuffer()
+function CameraImageEffect:buildCameraPass( pass, frameBuffer )
 	local layer, prop, quad = pass:buildSingleQuadRenderLayer()
-	prop:setTexture( texture )
+	prop:setTexture( frameBuffer )
 	pass:pushRenderLayer( layer )
-	return self:onBuild( prop, texture, layer )
+	return self:onBuild( prop, frameBuffer, layer )
 end
 
 function CameraImageEffect:onBuild( prop, texture, layer )

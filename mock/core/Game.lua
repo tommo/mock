@@ -396,8 +396,12 @@ end
 function Game:initGraphics( fromEditor )
 	local option = self.graphicsOption or {}
 	
-	self.deviceViewport = Viewport( 'fixed' )
-	self.mainViewport   = self.deviceViewport:addSubViewport( Viewport( 'relative' ) )
+	self.deviceRenderTarget = DeviceRenderTarget( MOAIGfxDevice.getFrameBuffer(), 1, 1 )
+	
+	self.mainRenderTarget   = RenderTarget()
+	self.mainRenderTarget:setFrameBuffer( self.deviceRenderTarget:getFrameBuffer() )
+	self.mainRenderTarget:setParent( self.deviceRenderTarget )
+	self.mainRenderTarget:setMode( 'relative' )
 
 	--TODO
 	local w, h = getDeviceResolution()
@@ -405,7 +409,7 @@ function Game:initGraphics( fromEditor )
 		w, h  = option['device_width'] or 800, option['device_height'] or 600
 	end
 
-	self.deviceViewport:setPixelSize( w, h )
+	self.deviceRenderTarget:setPixelSize( w, h )
 
 	self.width   = option['width']  or w
 	self.height  = option['height'] or h
@@ -413,8 +417,8 @@ function Game:initGraphics( fromEditor )
 
 	self.viewportMode = option['viewport_mode'] or 'fit'
 
-	self.mainViewport:setAspectRatio( self.width/self.height )
-	self.mainViewport:setKeepAspect( self.viewportMode == 'fit' )
+	self.mainRenderTarget:setAspectRatio( self.width/self.height )
+	self.mainRenderTarget:setKeepAspect( true )
 
 	_stat( 'opening window', self.title, self.width, self.height )
 	if not fromEditor then
@@ -426,7 +430,7 @@ function Game:initGraphics( fromEditor )
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
-	self:setClearColor( 0,0,0,1 )
+	self:setClearColor( 0.1, 0.1, 0.1, 1 )
 end
 
 function Game:getViewportScale()
@@ -435,16 +439,16 @@ end
 
 function Game:setDeviceSize( w, h )
 	_stat( 'device.resize', w, h )
-	self.deviceViewport:setPixelSize( w, h )
+	self.deviceRenderTarget:setPixelSize( w, h )
 	emitSignal( 'device.resize', self.width, self.height )
 end
 
 function Game:getDeviceResolution( )
-	return self.deviceViewport:getPixelSize()
+	return self.deviceRenderTarget:getPixelSize()
 end
 
 function Game:getViewportRect()
-	return self.mainViewport:getAbsPixelRect()
+	return self.mainRenderTarget:getAbsPixelRect()
 end
 
 function Game:onResize( w, h )
@@ -455,6 +459,13 @@ function Game:onResize( w, h )
 	self:setDeviceSize( w, h )
 end
 
+function Game:getDeviceRenderTarget()
+	return self.deviceRenderTarget
+end
+
+function Game:getMainRenderTarget()
+	return self.mainRenderTarget
+end
 
 --------------------------------------------------------------------
 ------Scene control
