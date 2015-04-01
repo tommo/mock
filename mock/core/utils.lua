@@ -286,6 +286,15 @@ function wrap(v,minv,maxv)
 	end
 end
 
+function approx_equal(a, b, epislon)
+	epislon = epislon or 0.01
+	
+	if math.abs(a-b) < epislon then
+		return true
+	end
+	return false
+end
+
 math.clamp = clamp
 math.wrap  = wrap
 
@@ -341,6 +350,54 @@ end
 function vecAngle( angle, length )
 	return length * cos( angle * D2R ), length * sin( angle * D2R )
 end
+
+function dotProduct(x1, y1, x2, y2)
+	return x1*x2 + y1*y2
+end
+
+function dirToBitmask(nx, ny)
+
+	local mask = 0
+	if nx == 1 then
+		mask = mask + 0x001
+	elseif nx == -1 then
+		mask = mask + 0x002
+	end
+
+	if ny == 1 then
+		mask = mask + 0x004
+	elseif ny == -1 then
+		mask = mask + 0x008
+	end
+
+	return mask
+end
+
+function major4Direction2(nx, ny)
+	local x, y = nx, ny
+	local four_dir = {
+		{0, 1}, {0, -1}, {1, 0}, {-1, 0}
+	}
+
+	local biggest = -1
+	local biggestIndex = -1
+
+	for i=1,4 do
+		local dp = dotProduct(four_dir[i][1], four_dir[i][2], x, y)
+		if dp >= biggest then
+			biggestIndex = i
+			biggest = dp
+		end
+	end
+
+	return unpack(four_dir[biggestIndex])
+end
+
+function major4Direction(rotDir)
+	local x, y = math.cosd( rotDir ), math.sind( rotDir )
+	return major4Direction2(x, y)
+end
+
 
 --gemometry related
 
