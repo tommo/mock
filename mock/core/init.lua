@@ -33,6 +33,7 @@ require 'mock.core.Audio'
 ----game
 require 'mock.core.Entity'
 require 'mock.core.Component'
+require 'mock.core.Viewport'
 require 'mock.core.Layer'
 require 'mock.core.Scene'
 require 'mock.core.GlobalObject'

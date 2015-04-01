@@ -582,13 +582,14 @@ function Camera:getOutputFrameBuffer()
 	return self.frameBufferPath
 end
 
-function Camera:getMoaiFrameBuffer()
+function Camera:getOutputMoaiFrameBuffer()
 	return self.frameBuffer
 end
 
 function Camera:getMoaiCamera()
 	return self._camera
 end
+
 
 --------------------------------------------------------------------
 wrapWithMoaiTransformMethods( Camera, '_camera' )

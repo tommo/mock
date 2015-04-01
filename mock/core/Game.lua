@@ -273,7 +273,7 @@ function Game:init( option, fromEditor )
 
 	----physics
 	--option for default physics world
-	self.physicsOption = DefaultPhysicsWorldOption
+	self.physicsOption = table.simplecopy( DefaultPhysicsWorldOption )
 	if option['physics'] then
 		table.extend( self.physicsOption, option['physics'] )
 	end
@@ -396,43 +396,37 @@ end
 function Game:initGraphics( fromEditor )
 	local option = self.graphicsOption or {}
 	
+	self.deviceViewport = Viewport( 'fixed' )
+	self.mainViewport   = self.deviceViewport:addSubViewport( Viewport( 'relative' ) )
+
+	--TODO
 	local w, h = getDeviceResolution()
 	if w * h == 0 then
 		w, h  = option['device_width'] or 800, option['device_height'] or 600
 	end
 
-	self.deviceWidth  = w
-	self.deviceHeight = h
+	self.deviceViewport:setPixelSize( w, h )
 
 	self.width   = option['width']  or w
 	self.height  = option['height'] or h
+	self.fullscreen = option['fullscreen'] or false	
 
 	self.viewportMode = option['viewport_mode'] or 'fit'
 
-	local fullscreen = option['fullscreen'] or false
-	self.fullscreen = fullscreen	
+	self.mainViewport:setAspectRatio( self.width/self.height )
+	self.mainViewport:setKeepAspect( self.viewportMode == 'fit' )
 
-	_stat( 'opening window', self.title, w, h,  self.deviceWidth, self.deviceHeight )
+	_stat( 'opening window', self.title, self.width, self.height )
 	if not fromEditor then
 		--FIXME: crash here if no canvas shown up yet
-		MOAISim.openWindow( self.title, self.deviceWidth, self.deviceHeight  )
+		MOAISim.openWindow( self.title, self.width, self.height )
 	end
 	self.graphicsInitialized = true
 	if self.pendingResize then
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
-
 	self:setClearColor( 0,0,0,1 )
-
-end
-
-function Game:setViewportScale( w, h )
-	if self.width == w and self.height == h then return end
-	self.width  = w
-	self.height = h
-	_stat( 'gfx.resize', w, h )
-	emitSignal( 'gfx.resize', w, h )
 end
 
 function Game:getViewportScale()
@@ -440,31 +434,17 @@ function Game:getViewportScale()
 end
 
 function Game:setDeviceSize( w, h )
-	self.deviceWidth  = w
-	self.deviceHeight = h
-	-- _stat( 'device.resize', w, h )
+	_stat( 'device.resize', w, h )
+	self.deviceViewport:setPixelSize( w, h )
 	emitSignal( 'device.resize', self.width, self.height )
 end
 
 function Game:getDeviceResolution( )
-	return self.deviceWidth, self.deviceHeight
+	return self.deviceViewport:getPixelSize()
 end
 
 function Game:getViewportRect()
-	local viewWidth, viewHeight = MOAIGfxDevice.getViewSize()
-	local mode = self.viewportMode or 'fit'
-	if mode == 'fit' then
-		local aspect = self.width / self.height
-		local w = math.min( viewWidth, viewHeight * aspect )
-		local h = math.min( viewWidth / aspect, viewHeight )
-		local x0,y0,x1,y1
-		x0 = ( viewWidth - w ) / 2
-		y0 = ( viewHeight - h ) / 2
-		x1 = x0 + w
-		y1 = y0 + h
-		return x0,y0,x1,y1
-	end
-	return 0, 0, viewWidth, viewHeight
+	return self.mainViewport:getAbsPixelRect()
 end
 
 function Game:onResize( w, h )
@@ -646,22 +626,6 @@ end
 function Game:isPaused()
 	return self.paused
 end
-
--- function Game:pushActionRoot( action )
--- 	action.prev = self.actionRoot
--- 	self.actionRoot = action
--- 	MOAIActionMgr.setRoot( self.actionRoot )
--- end
-
--- function Game:popActionRoot()
--- 	local current = self.actionRoot
--- 	local r = self.actionRoot.prev
--- 	if r then 
--- 		self.actionRoot = r 
--- 		MOAIActionMgr.setRoot( self.actionRoot )
--- 	end
--- 	return current
--- end
 
 function Game:getActionRoot()
 	return self.actionRoot

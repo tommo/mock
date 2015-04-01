@@ -20,6 +20,17 @@ local function buildCallbackLayer( func )
 	layer:insertProp( dummyProp )
 	return layer
 end
+
+
+local DefaultFramebufferOptions = {
+	filter      = MOAITexture.GL_LINEAR,
+	clearDepth  = true,
+	colorFormat = false,
+	scale       = 1,
+	size        = 'relative',
+	autoResize  = true
+}
+
 --------------------------------------------------------------------
 CLASS: CameraManager ()
 	:MODEL{}
@@ -247,7 +258,7 @@ end
 
 function CameraPass:init( camera )
 	self.camera = camera
-	self.outputFramebuffer = camera:getMoaiFrameBuffer()
+	self.outputFramebuffer = camera:getOutputMoaiFrameBuffer()
 	if camera.hasImageEffect then
 		self.defaultFramebuffer = self:buildFrameBuffer()
 	else
@@ -361,17 +372,31 @@ function CameraPass:clearFrameBuffers()
 end
 
 function CameraPass:buildFrameBuffer( option )
-	local camera = self.camera
+	option = table.extend( table.simplecopy( DefaultFramebufferOptions ), option or {} )
+
 	local fb = MOAIFrameBufferTexture.new()
 	fb:setClearColor()
-	fb:setClearDepth( option and option.clearDpeth or false )
-	local w, h = camera:getViewportWndSize()
-	if option and option.size then w,h = unpack( option.size ) end
-	if option and option.scale then w, h = w*option.scale, h*option.scale end
+	fb:setClearDepth( option.clearDpeth or false )
+
 	local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
-	local colorFormat = option and option.colorFormat or nil
+	local colorFormat = option.colorFormat or nil
+	local filter      = option.filter or MOAITexture.GL_LINEAR
+	local autoResize  = option.autoResize
+
+	local w, h 
+	if option.size == 'relative' then
+		--relative framebuffer
+		w, h = self.camera:getViewportWndSize()
+	else
+		--fixed framebuffer
+		autoResize = false
+		w, h = unpack( option.size )
+	end
+	w, h = w*option.scale, h*option.scale
 	fb:init( w, h, colorFormat, depthFormat )
-	fb:setFilter( option and option.filter or MOAITexture.GL_LINEAR )
+	fb:setFilter( filter )
+	
+	fb.autoResize = autoResize
 	return fb
 end
 

@@ -2,22 +2,6 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-local defaultPhysicsWorldOption = {
-	gravity               = { 0, -10 },
-	unitsToMeters         = 0.01,
-	velocityIterations    = 6,
-	positionIterations    = 8,
-
-	angularSleepTolerance = 0,
-	linearSleepTolerance  = 0,
-	timeToSleep           = 0,
-
-	autoClearForces       = true,
-
-}
-
-
---------------------------------------------------------------------
 --SCENE
 --------------------------------------------------------------------
 CLASS: 
@@ -441,11 +425,7 @@ Scene.add = Scene.addEntity
 --------------------------------------------------------------------
 
 function Scene:setupBox2DWorld()
-	local option = game and game.physicsOption or DefaultPhysicsWorldOption
-	if not option then 
-		option = defaultWorldOption
-		self.physicsOption = option
-	end
+	local option = game and game.physicsOption or table.simplecopy( DefaultPhysicsWorldOption )
 
 	local world = MOAIBox2DWorld.new()
 
