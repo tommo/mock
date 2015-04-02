@@ -247,14 +247,14 @@ function installPhysicsPostUpdate(klass)
 
 	klass['physicsPostThread'] = function(self)
 		while true do
-			self:onPhysicsPostUpdate()
+			self:onPostPhysicsUpdate()
 			coroutine.yield()
 		end
 	end
 
 	-- This could be merged into physicsPostThread() but leave it here for
 	-- possible future updates
-	klass['onPhysicsPostUpdate'] = function(self)
+	klass['onPostPhysicsUpdate'] = function(self)
 		if self.callingQueue then 
 			for i,func in ipairs(self.callingQueue) do
 				func()
@@ -265,7 +265,7 @@ function installPhysicsPostUpdate(klass)
 	end
 
 	-- Called by user
-	klass['callOnNextUpdate'] = function(self, func)
+	klass['addPostPhysicsCallback'] = function(self, func)
 		if self.callingQueue then
 			table.insert(self.callingQueue, func)
 		else
@@ -278,6 +278,7 @@ function installPhysicsPostUpdate(klass)
 	klass['onStart'] = function(self)
 		originalOnStart(self)
 		-- add busy update for onPhysicsPostUpdate
-		self:addCoroutine( 'physicsPostThread' )
+		local coro = self:addCoroutine( 'physicsPostThread' )
+		self:setActionPriority(coro, 8)
 	end
 end
