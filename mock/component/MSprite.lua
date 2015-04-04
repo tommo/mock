@@ -27,9 +27,12 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: MSprite ( RenderComponent )
 	:MODEL {
+		'----';
 		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
 		Field 'default' :string() :selection( 'getClipNames' );
+		Field 'playFPS' :int();
 		Field 'autoPlay' :boolean();
+		Field 'autoPlayMode' :enum( EnumTimerMode );
 	}
 
 wrapWithMoaiPropMethods( MSprite, 'prop' )
@@ -43,10 +46,12 @@ function MSprite:__init()
 	self.driver      = MOAIAnim.new()
 	self.spriteData = false
 	self.currentClip = false
-	self.playFPS     = 60
+	self.playFPS     = 10
 	self.playSpeed   = 1
 	self.driver:reserveLinks( 3 ) --offset x & offset y & frame index	
 	self.featureMask = {}
+	self.autoPlay    = false
+	self.autoPlayMode= MOAITimer.LOOP 
 end
 
 function MSprite:onAttach( entity )
@@ -60,7 +65,7 @@ end
 
 function MSprite:onStart( entity )
 	if self.autoPlay and self.default then
-		self:play( self.default )
+		self:play( self.default, self.autoPlayMode )
 	end
 end
 
@@ -138,6 +143,22 @@ function MSprite:setShader( shaderPath )
 		end
 	end
 	self.prop:setShader( defaultShader )
+end
+
+
+function MSprite:setBillboard( billboard )
+	self.billboard = billboard
+	self.prop:setBillboard( billboard )
+end
+
+function MSprite:setDepthMask( enabled )
+	self.depthMask = enabled
+	self.prop:setDepthMask( enabled )
+end
+
+function MSprite:setDepthTest( mode )
+	self.depthTest = mode
+	self.prop:setDepthTest( mode )
 end
 
 
