@@ -60,15 +60,27 @@ CLASS: TextureRenderTarget ( RenderTarget )
 function TextureRenderTarget:__init()
 	self.mode = 'relative'
 	self.keepAspect = false
+	self.previousTextureSize = false
 end
 
 function TextureRenderTarget:onUpdateSize()
 	local w, h = self:getPixelSize()
-	--TODO:smarter framebuffer resizing
-	self.frameBuffer:init( w, h, self.colorFormat, self.depthFormat )
-
 	--remove offset
 	self.absPixelRect = { 0,0,w,h }
+
+	local needResize = false
+	if self.previousTextureSize then
+		--TODO:smarter framebuffer resizing
+		if self.previousTextureSize[1] ~= w or self.previousTextureSize[2] ~= h then
+			needResize = true
+		end
+	else
+		needResize = true
+	end
+
+	if not needResize then return end 
+	self.frameBuffer:init( w, h, self.colorFormat, self.depthFormat )
+	self.previousTextureSize = { w, h }
 end
 
 function TextureRenderTarget:onUpdateScale()

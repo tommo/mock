@@ -348,7 +348,7 @@ end
 --------------------------------------------------------------------
 --load asset of node
 --------------------------------------------------------------------
--- local loadingAsset = {} --TODO: a loading list avoid cyclic loading?
+local loadingAsset = table.weak_k() --TODO: a loading list avoid cyclic loading?
 
 function loadAsset( path, option )
 	if path == '' then return nil end
@@ -372,9 +372,10 @@ function loadAsset( path, option )
 
 	_stat( 'loading asset from:', path )
 	if policy ~= 'auto' and policy ~='force' then return nil end
-
 	if ( not option['skip_parent'] ) and node.parent then
-		loadAsset( node.parent )
+		if not loadingAsset[ node.parent ] then
+			loadAsset( node.parent )
+		end
 		if node.cached.asset then return node.cached.asset end --already preloaded		
 	end
 
@@ -385,7 +386,9 @@ function loadAsset( path, option )
 		_warn( 'no loader for asset:', atype )
 		return false
 	end
+	loadingAsset[ path ] = true
 	local asset, cached  = loader( node, option )	
+	loadingAsset[ path ] = nil
 	if asset then
 		if cached ~= false then
 			node.cached.asset = asset

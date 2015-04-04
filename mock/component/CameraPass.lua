@@ -9,7 +9,7 @@ function CameraPass:__init()
 	self.renderTarget  = false
 	self.renderTargets = {}
 	self.passes = {}
-	self.lastRenderTarget    = false
+	self.currentRenderTarget = false
 	self.defaultRenderTarget = false
 	self.outputRenderTarget  = false
 end
@@ -48,6 +48,10 @@ function CameraPass:getDefaultRenderTarget()
 	return self.defaultRenderTarget
 end
 
+function CameraPass:getCurrentRenderTarget()
+	return self.currentRenderTarget
+end
+
 function CameraPass:getOutputRenderTarget()
 	return self.outputRenderTarget
 end
@@ -79,7 +83,7 @@ function CameraPass:pushRenderTarget( renderTarget, option )
 	end
 
 	local renderTarget = renderTarget or self:getDefaultRenderTarget()
-	self.lastRenderTarget = renderTarget
+	self.currentRenderTarget = renderTarget
 	assert( isInstance( renderTarget, RenderTarget ) )
 	table.insert( self.passes, { 
 		tag          = 'render-target',
@@ -124,12 +128,18 @@ function CameraPass:requestRenderTarget( name, option )
 	local renderTarget = self.renderTargets[ name ]
 	if renderTarget then return renderTarget end
 	renderTarget = self:buildRenderTarget( option )
+	renderTarget.__name = name
 	self.renderTargets[ name ] = renderTarget
 	return renderTarget
 end
 
 function CameraPass:getRenderTarget( name )
 	return self.renderTargets[ name ]
+end
+
+function CameraPass:getRenderTargetTexture( name )
+	local target = self.renderTargets[ name ]
+	return target and target:getFrameBuffer()
 end
 
 function CameraPass:clearRenderTargets()
@@ -146,6 +156,7 @@ function CameraPass:buildRenderTarget( option, srcRenderTarget )
 	srcRenderTarget:addSubViewport( renderTarget )
 	return renderTarget
 end
+
 
 function CameraPass:buildDebugDrawLayer()
 	local camera   = self.camera
@@ -175,7 +186,7 @@ end
 
 function CameraPass:applyCameraToMoaiLayer( layer, option )	
 	local camera   = self.camera
-	layer:setViewport ( self.lastRenderTarget:getMoaiViewport() )
+	layer:setViewport ( self.currentRenderTarget:getMoaiViewport() )
 	layer:setCamera   ( camera._camera )
 	return layer
 end
@@ -191,8 +202,7 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 
 	local source   = sceneLayer.source
 	local layer    = MOAILayer.new()
-	local buffer   = self.lastRenderTarget
-
+	
 	layer.name     = sceneLayer.name
 	layer.priority = -1
 	layer.source   = source
@@ -203,7 +213,7 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 	if option and option.viewport then
 		layer:setViewport  ( option.viewport )
 	else
-		layer:setViewport  ( self:getDefaultRenderTarget():getMoaiViewport() )
+		layer:setViewport  ( self:getCurrentRenderTarget():getMoaiViewport() )
 	end
 
 	if option and option.transform then

@@ -83,6 +83,8 @@ function Camera:__init( option )
 end
 
 function Camera:_initDefault()
+	self:setOutputRenderTarget( false )
+	
 	self:setFOV( 90 )
 	local defaultNearPlane, defaultFarPlane = -10000, 10000
 	self:setNearPlane( defaultNearPlane )
@@ -97,8 +99,6 @@ function Camera:_initDefault()
 	self.passes = {}
 	self._enabled = true
 
-	self:setOutputRenderTarget( false )
-
 end
 
 function Camera:onAttach( entity )
@@ -112,6 +112,7 @@ end
 
 function Camera:onDetach( entity )
 	getCameraManager():unregister( self )
+	self.renderTarget:clear()
 end
 
 function Camera:setActive( active )
@@ -335,7 +336,7 @@ function Camera:getScreenScale()
 end
 
 function Camera:updateViewport()
-	-- self:updateZoom()
+	self:updateZoom()
 	emitSignal( 'camera.viewport_update', self )
 end
 
@@ -485,8 +486,13 @@ end
 
 --------------------------------------------------------------------
 --output image buffer support
-function Camera:getRenderTargetPath()
-	return self.renderTargetPath
+
+function Camera:getDefaultOutputRenderTarget()
+	return game:getMainRenderTarget()
+end
+
+function Camera:getOutputRenderTargetPath()
+	return self.outputRenderTargetPath
 end
 
 function Camera:setOutputRenderTargetPath( path )
@@ -496,7 +502,7 @@ end
 
 function Camera:setOutputRenderTarget( outputRenderTarget )
 	if not outputRenderTarget then
-		outputRenderTarget = game:getMainRenderTarget()
+		outputRenderTarget = self:getDefaultOutputRenderTarget()
 	end
 
 	self.outputRenderTarget = outputRenderTarget

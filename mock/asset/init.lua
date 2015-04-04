@@ -18,7 +18,7 @@ require 'mock.asset.Font'
 require 'mock.asset.TextStyle'
 
 --GRAPHICS ADV
-require 'mock.asset.FrameBufferTexture'
+require 'mock.asset.RenderTargetTexture'
 require 'mock.asset.Shader'
 
 --PARTICLE

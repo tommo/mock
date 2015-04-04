@@ -124,8 +124,10 @@ function CameraManager:_buildBufferTable( passQueue )
 
 	local bufferInfoTable = {}
 	
+	--TODO:replace with canvas context
 	currentRenderTarget = game:getMainRenderTarget()
-	currentBuffer      = currentRenderTarget:getFrameBuffer()
+	currentBuffer       = currentRenderTarget and currentRenderTarget:getFrameBuffer() or MOAIGfxDevice.getFrameBuffer()
+	
 	--collect batches
 	for i, entry in ipairs( passQueue ) do
 		local tag = entry.tag

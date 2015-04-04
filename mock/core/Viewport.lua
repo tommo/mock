@@ -53,7 +53,7 @@ function Viewport:__init( mode )
 	self.aspectRatio = 1
 
 	self.alignCenter = true
-	self.subViewports = table.weak_k()
+	self.subViewports = {}
 	self.parent = false
 
 	self.rect            = { 0,0,1,1 }
@@ -246,4 +246,11 @@ function Viewport:fitFramebuffer( fb )
 end
 
 function Viewport:resizeFramebuffer( fb )
+end
+
+function Viewport:clear()
+	for sub in pairs( self.subViewports ) do
+		sub.parent = false
+	end
+	self.subViewports = {}
 end
