@@ -483,9 +483,8 @@ function PolygonDeck:update()
 	local indexList   = self.indexList
 	local indexCount  = #indexList
 
-	local vbo = MOAIVertexBuffer.new ()
-	vbo:setFormat ( vertexFormat )
-	vbo:reserveVerts ( vertexCount )
+	local vbo = MOAIGfxBuffer.new ()
+	vbo:reserve ( vertexCount * vertexFormat:getVertexSize() )
 	for i = 1, vertexCount, 4 do
 		local x, y = vertexList[ i ], vertexList[ i + 1 ]
 		local u, v = vertexList[ i + 2 ], vertexList[ i + 3 ]
@@ -493,17 +492,13 @@ function PolygonDeck:update()
 		vbo:writeFloat ( u*us + u0,  v*vs +v0 )
 		vbo:writeColor32 ( 1, 1, 1 )
 	end
-	vbo:bless ()
 
-	-- local ibo = MOAIIndexBuffer.new ()
-	-- ibo:reserve ( indexCount )
-	-- for i = 1, indexCount, 2 do
-	-- 	local a, b = indexList[ i ], indexList[ i + 1 ]
-	-- 	ibo:setIndex( i, a, b )
-	-- end
-
-	mesh:setVertexBuffer ( vbo )
-	-- mesh:setIndexBuffer ( ibo )
+	mesh:setVertexBuffer ( vbo, vertexFormat )
+	mesh:setTotalElements ( vbo:countElements ( vertexFormat ))
+	local u = {vbo:computeBounds ( vertexFormat ) }
+	if u[1] then
+		mesh:setBounds ( unpack(u) )
+	end
 
 end
 
@@ -548,9 +543,8 @@ function CylinderDeck:update()
 	local indexList   = self.indexList
 	local indexCount  = #indexList
 
-	local vbo = MOAIVertexBuffer.new ()
-	vbo:setFormat ( vertexFormat )
-	vbo:reserveVerts ( vertexCount )
+	local vbo = MOAIGfxBuffer.new ()
+	vbo:reserve ( vertexCount * vertexFormat:getVertexSize() )
 	for i = 1, vertexCount, 4 do
 		local x, y = vertexList[ i ], vertexList[ i + 1 ]
 		local u, v = vertexList[ i + 2 ], vertexList[ i + 3 ]
@@ -558,17 +552,10 @@ function CylinderDeck:update()
 		vbo:writeFloat ( u*us + u0,  v*vs +v0 )
 		vbo:writeColor32 ( 1, 1, 1 )
 	end
-	vbo:bless ()
 
-	-- local ibo = MOAIIndexBuffer.new ()
-	-- ibo:reserve ( indexCount )
-	-- for i = 1, indexCount, 2 do
-	-- 	local a, b = indexList[ i ], indexList[ i + 1 ]
-	-- 	ibo:setIndex( i, a, b )
-	-- end
-
-	mesh:setVertexBuffer ( vbo )
-	-- mesh:setIndexBuffer ( ibo )
+	mesh:setVertexBuffer ( vbo, vertexFormat )
+	mesh:setTotalElements ( vbo:countElements ( vertexFormat ))
+	mesh:setBounds ( vbo:computeBounds ( vertexFormat ))
 
 end
 
