@@ -290,20 +290,11 @@ end
 
 function CameraPass:buildCallbackRenderLayer( func )
 	local camera   = self.camera
-
-	local layer = MOAILayer.new()
-
-	local viewport = MOAIViewport.new()
-	viewport:setSize( camera:getViewportWndRect() )
-	layer:setViewport( viewport )
-
 	local dummyProp = MOAIProp.new()
 	local dummyDeck = MOAIScriptDeck.new()
 	dummyProp:setDeck( dummyDeck )
 	dummyDeck:setDrawCallback( func )
-	dummyDeck:setRect( -10000, -10000, 10000, 10000 )
-	layer:insertProp( dummyProp )
-	return layer
+	return dummyProp
 end
 
 function CameraPass:pushGfxPass( passId )

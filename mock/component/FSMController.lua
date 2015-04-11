@@ -157,3 +157,4 @@ function FSMController:onThreadFSMUpdate()
 	end
 end
 
+registerComponent( 'FSMController', FSMController )

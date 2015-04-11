@@ -57,6 +57,9 @@ require 'mock.entity'
 ----Effects
 require 'mock.effect'
 
+----UI
+require 'mock.ui'
+
 ----tools
 require 'mock.tools'
 
