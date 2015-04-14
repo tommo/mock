@@ -197,8 +197,8 @@ end
 
 function Viewport:updateRelativeSize()
 	if not self.parent then 
-		return _warn( 'relative viewport will not work without a parent viewport' )
-		-- return _error( 'relative viewport will not work without a parent viewport' )
+		-- _warn( 'relative viewport will not work without a parent viewport' )
+		return
 	end
 	
 	local boundRect = expandRect( { self.parent:getAbsPixelRect() }, self.rect )

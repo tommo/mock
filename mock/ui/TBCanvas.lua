@@ -33,8 +33,7 @@ end
 
 function TBCanvas:onAttach( ent )
 	_affirmTBMgr()
-	ent:_attachTransform( self.canvas )
-	ent:_insertPropToLayer( self.canvas )
+	ent:_attachProp( self.canvas )
 	installInputListener( self )
 end
 

@@ -497,7 +497,9 @@ end
 
 function Camera:setOutputRenderTargetPath( path )
 	self.outputRenderTargetPath = path
-	return self:setOutputRenderTarget( mock.loadAsset( self.outputRenderTargetPath ))
+	local renderTargetTexture = mock.loadAsset( self.outputRenderTargetPath )
+	local target = renderTargetTexture and renderTargetTexture:getRenderTarget()
+	return self:setOutputRenderTarget( target )
 end
 
 function Camera:setOutputRenderTarget( outputRenderTarget )

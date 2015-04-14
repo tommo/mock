@@ -60,6 +60,9 @@ require 'mock.effect'
 ----UI
 require 'mock.ui'
 
+----Anim
+require 'mock.anim'
+
 ----tools
 require 'mock.tools'
 
