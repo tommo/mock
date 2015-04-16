@@ -7,6 +7,8 @@ require 'mock.asset.Data'
 --SCENE
 require 'mock.asset.Scene'
 require 'mock.asset.Prefab'
+require 'mock.asset.Proto'
+
 
 --GRAPHICS
 require 'mock.asset.TextureHelper'
@@ -48,3 +50,8 @@ require 'mock.asset.EffectNode'
 require 'mock.asset.EffectPack'
 
 require 'mock.asset.NamedTileset'
+
+
+--------------------------------------------------------------------
+require 'mock.asset.StrippedSceneSerializer'
+require 'mock.asset.SceneLegacy'

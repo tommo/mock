@@ -1,0 +1,2 @@
+CLASS: MultiTexture ()
+	:MODEL{}

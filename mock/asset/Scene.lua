@@ -1,8 +1,12 @@
 module 'mock'
 
+_SERIALIZER_VERSION = '2'
+
 registerSignals{
-	'scene.serialize',
-	'scene.deserialize',
+	'scene.pre_serialize',
+	'scene.pre_deserialize',
+	'scene.post_serialize',
+	'scene.post_deserialize',
 }
 
 --------------------------------------------------------------------
@@ -13,9 +17,29 @@ end
 local function componentSortFunc( a, b )
 	return ( a._componentID or 0 ) < ( b._componentID or 0 )
 end
---------------------------------------------------------------------
-local function collectEntity( entity, objMap )
+
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+CLASS: SceneSerializer ()
+
+function SceneSerializer:getProtoData( entity, objMap )
+	local id = objMap:map( entity )
+	local data = {
+		id = id,
+		components = {},
+		children = {},
+	}
+	--don't scan component/children
+	return data
+end
+
+
+function SceneSerializer:collectEntity( entity, objMap )
 	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
+	if entity.FLAG_PROTO_INSTANCE then		
+		return self:getProtoData( entity, objMap )
+	end
+
 	local components = {}
 	local children = {}
 
@@ -35,11 +59,12 @@ local function collectEntity( entity, objMap )
 	table.sort( childrenList, entitySortFunc )
 	
 	for i, child in ipairs( childrenList ) do
-		local childData = collectEntity( child, objMap )
+		local childData = self:collectEntity( child, objMap )
 		if childData then
 			table.insert( children, childData )
 		end
 	end
+
 	return {
 		id = objMap:map( entity ),
 		components = components,
@@ -47,60 +72,108 @@ local function collectEntity( entity, objMap )
 	}
 end
 
---------------------------------------------------------------------
-local function insertEntity( scn, parent, edata, objMap )
-	local id = edata['id']
-	local components = edata['components']
-	local children   = edata['children']
-
-	local entity = objMap[ id ][ 1 ]
-	
-	if scn then
-		scn:addEntity( entity )
-	elseif parent then
-		parent:addChild( entity )
+function SceneSerializer:serializeObject( obj, objMap )
+	if obj.FLAG_PROTO_INSTANCE then
+		return { 
+			__PROTO_INSTANCE_INFO = obj.FLAG_PROTO_INSTANCE
+		}
+	else
+		return _serializeObject( obj, objMap )
 	end
-
-	--components
-	for _, comId in ipairs( components ) do
-		local com = objMap[ comId ][ 1 ]
-		entity:attach( com )
-	end
-	
-	--chilcren
-	for i, childData in ipairs( children ) do
-		insertEntity( nil, entity, childData, objMap )
-	end
-
-	return entity
 end
 
-
---------------------------------------------------------------------
-function serializeScene( scene, option )
-	option = option or {}
-	emitSignal( 'scene.serialize', scene )
+function SceneSerializer:serializeScene( scene )
+	emitSignal( 'scene.pre_serialize', scene )
+	--make proto data
+	local output = { _assetType  = 'scene' }
 	local objMap = SerializeObjectMap()
+	self:preSerializeScene( scene, output )
+	
+	self:serializeEntities( scene.entities, output, objMap, scene )
+
+	output.meta  = scene.metaData or {}
+	self:postSerialize( scene, output, objMap )
+	emitSignal( 'scene.post_serialize', scene, output, objMap )
+	return output
+end
+
+function SceneSerializer:preSerializeScene( scene, data )
+end
+
+function SceneSerializer:postSerialize( scene, data, objMap )
+	--prefab
+	local prefabIdMap = {}
+	for obj, id in pairs( objMap.objects ) do
+		local prefabId = obj.__prefabId
+		if prefabId then
+			prefabIdMap[ id ] = prefabId
+		end
+	end
+	data.prefabId    = prefabIdMap
+	
+	--proto
+	local protos = {}
+	for obj, id in pairs( objMap.objects ) do
+		if obj.FLAG_PROTO_SOURCE then
+			local info = self:_serializeProto( obj, id )
+			table.insert( protos, info )
+		end			
+	end
+	data.protos = protos
+	
+	--dependency
+	data.asset_dependency = collectSceneAssetDependency( scene )
+end
+
+function SceneSerializer:_serializeProto( ent, id )
+	local protoData = self:serializeSingleEntity( ent )
+	local output    = MOAIDataBuffer.base64Encode(
+		encodeJSON( protoData )
+	)
+	local info = {
+		id         = id,
+		name       = ent:getName(),
+		timestamp  = ent.PROTO_TIMESTAMP or 0,
+		serialized = output
+	}
+	return info
+end
+
+function SceneSerializer:serializeSingleEntity( entity )
+	local entities = { [entity] = true }
+	local output, objMap = self:serializeEntities( entities )	
+	output.__VERSION = _SERIALIZER_VERSION
+	return output
+end
+
+function SceneSerializer:serializeEntities( entities, output, objMap, scene )
+	output = output or {}
+	objMap = objMap or SerializeObjectMap()
+
+	local entityDatas = {}
 	local entityList = {}
-	for e in pairs( scene.entities ) do
+	local map = {}
+
+	for e in pairs( entities ) do
 		if not e.parent then --1st level entity
 			table.insert( entityList, e )
 		end
 	end
+
+	objMap:flush()
+
 	table.sort( entityList, entitySortFunc )
 
-	local entities = {}
 	for i, e in ipairs( entityList ) do
-		local data = collectEntity( e, objMap )
-		if data then table.insert( entities, data ) end
+		local data = self:collectEntity( e, objMap )
+		if data then table.insert( entityDatas, data ) end
 	end
 
-	local map = {}
 	while true do
 		local newObjects = objMap:flush()
 		if next( newObjects ) then
 			for obj, id in pairs( newObjects )  do
-				map[ id ] = _serializeObject( obj, objMap )
+				map[ id ] = self:serializeObject( obj, objMap )
 			end
 		else
 			break
@@ -116,44 +189,71 @@ function serializeScene( scene, option )
 		end
 	end
 
-	--prefab
-	local prefabIdMap = {}
-	for obj, id in pairs( objMap.objects ) do
-		local prefabId = obj.__prefabId
-		if prefabId then
-			prefabIdMap[ id ] = prefabId
-		end
-	end
+	output.map         = map
+	output.entities    = entityDatas
+	output.guid        = guidMap
 
-	local result = {
-		_assetType  = 'scene',
-		meta        = scene.metaData or {},
-		map         = map,
-		entities    = entities,
-		guid        = guidMap,
-		prefabId    = prefabIdMap
-	}
-
-	if option.save_dependency_list then
-		result.asset_dependency = collectSceneAssetDependency( scene )
-	end
-	return result
+	return output, objMap
 end
 
 --------------------------------------------------------------------
-function deserializeScene( data, scn )
-	local objMap = {}
-	_deserializeObjectMap( data.map, objMap )
+---------------------------------------------------------------------
+CLASS: SceneDeserializer ()
+
+function SceneDeserializer:__init()
+end
+
+function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
+	local id = edata['id']
+	local components = edata['components']
+	local children   = edata['children']
+
+	local entity = objMap[ id ][ 1 ]
 	
-	if not scn then
-		scn = Scene()
-		scn:init()
+
+	if scene then
+		scene:addEntity( entity )
+	elseif parent then
+		parent:addChild( entity )
 	end
 
-	for i, edata in ipairs( data.entities ) do
-		insertEntity( scn, nil, edata, objMap )
+	if components then
+		--components
+		for _, comId in ipairs( components ) do
+			local com = objMap[ comId ][ 1 ]
+			entity:attach( com )
+		end
 	end
-	scn.metaData = data['meta'] or {}
+	
+	if children then
+		--chilcren
+		for i, childData in ipairs( children ) do
+			self:insertEntity( nil, entity, childData, objMap )
+		end
+	end
+
+	return entity
+end
+
+function SceneDeserializer:deserializeObject( obj, objMap )
+	return _deserializeObject( obj, objMap )
+end
+
+function SceneDeserializer:deserializeScene( data, scene )
+	local objMap = {}
+	
+	if not scene then
+		scene = Scene()
+		scene:init()
+	end
+
+	emitSignal( 'scene.pre_deserialize', scene, data, objMap )
+	self:preDeserializeScene( scene, data, objMap )
+
+	self:deserializeEntities( data, objMap, scene )
+
+	scene.metaData = data['meta'] or {}
+
 	if data['guid'] then
 		for id, guid in pairs( data['guid'] ) do
 			local obj = objMap[ id ][ 1 ]
@@ -161,6 +261,39 @@ function deserializeScene( data, scn )
 		end
 	end
 
+	self:postDeserializeScene( scene, data, objMap )
+	emitSignal( 'scene.post_deserialize', scene, data, objMap )
+	return scene
+end
+
+function SceneDeserializer:deserializeEntities( data, objMap, scene )
+	local map = data.map
+	objMap = objMap or {}
+	local protoInstances = {}
+	for id, objData in pairs( map ) do
+		local protoInfo = objData[ '__PROTO_INSTANCE_INFO' ]
+		if protoInfo then
+			protoInstances[ id ] = true
+			local instance = createProtoInstance( protoInfo )
+			objMap[ id ] = {
+				instance, objData
+			}
+		end
+	end
+
+	_deserializeObjectMap( map, objMap, protoInstances ) --ignore protoInstances
+
+	for i, edata in ipairs( data.entities ) do
+		self:insertEntity( scene, nil, edata, objMap )
+	end
+
+	return objMap
+end
+
+function SceneDeserializer:preDeserializeScene( scene, data, objMap )
+end
+
+function SceneDeserializer:postDeserializeScene( scene, data, objMap )
 	if data['prefabId'] then
 		for id, prefabId in pairs( data['prefabId'] ) do
 			local obj = objMap[ id ][ 1 ]
@@ -168,12 +301,45 @@ function deserializeScene( data, scn )
 		end
 	end
 
-	emitSignal( 'scene.deserialize', scn )
-	return scn
+	if data['protos'] then
+		for i, info in ipairs( data['protos'] ) do
+			id = info.id
+			local obj = objMap[ id ][ 1 ]
+			obj.FLAG_PROTO_SOURCE = true
+			obj.PROTO_TIMESTAMP = info.timestamp
+		end
+	end
 end
 
-function serializeSceneToFile( scn, path, option )
-	local data = serializeScene( scn, option )
+function SceneDeserializer:deserializeSingleEntity( data )
+	local objMap = self:deserializeEntities( data, nil, nil )
+	local rootId = data.entities[1]['id']
+	local rootEntry = objMap[ rootId ]
+	return rootEntry[ 1 ]
+end
+
+--------------------------------------------------------------------
+--API
+--------------------------------------------------------------------
+local _sceneSerializer = SceneSerializer()
+local _sceneDeserializer = SceneDeserializer()
+
+function setSceneSerializer( serializer, deserializer )
+	_sceneSerializer = serializer or _sceneSerializer
+	_sceneDeserializer = deserializer or _sceneDeserializer
+end
+--------------------------------------------------------------------
+
+function serializeScene( scene )
+	return _sceneSerializer:serializeScene( scene )
+end
+
+function deserializeScene( data, scene )
+	return _sceneDeserializer:deserializeScene( data, scene )	
+end
+
+function serializeSceneToFile( scene, path )
+	local data = serializeScene( scene )
 	local str  = encodeJSON( data )
 	local file = io.open( path, 'wb' )
 	if file then
@@ -186,38 +352,18 @@ function serializeSceneToFile( scn, path, option )
 	return true
 end
 
+
+
 --------------------------------------------------------------------
---PREFAB
---------------------------------------------------------------------
-function serializeEntity( obj )
-	local objMap = SerializeObjectMap()
-	for i, layer in ipairs( game:getLayers() ) do
-		objMap:map( layer.name )
-	end
-	local data = collectEntity( obj, objMap )	
-	local map = {}
-	while true do
-		local newObjects = objMap:flush()
-		if next( newObjects ) then
-			for obj, id in pairs( newObjects )  do
-				map[ id ] = _serializeObject( obj, objMap, 'noNewRef' )
-			end
-		else
-			break
-		end
-	end
-	return {				
-		map    = map,
-		body   = data
-	}
+function serializeEntity( ent )
+	return _sceneSerializer:serializeSingleEntity( ent )
 end
 
 function deserializeEntity( data )
-	local objMap = {}
-	_deserializeObjectMap( data.map, objMap )
-	return insertEntity( nil, nil, data.body, objMap )
+	return _sceneDeserializer:deserializeSingleEntity( data )
 end
 
+--------------------------------------------------------------------
 function loadSceneData( path )
 	local node = getAssetNode( path )
 	local data = node.cached.data
@@ -229,45 +375,18 @@ function loadSceneData( path )
 	return data
 end
 
-function _scanEntity( e, assetSet )
-	scanObjectAsset( e, assetSet )
-	if e.children then
-		for child in pairs( e.children ) do
-			_scanEntity( child, assetSet )
-		end
-	end
-	if e.components then
-		for com in pairs( e.components ) do
-			scanObjectAsset( com, assetSet )
-		end
-	end
-end
-
-function scanEntityAsset( e )
-	local assetSet = {}
-	_scanEntity( e, assetSet )
-	return assetSet
-end
-
-function scanSceneAsset( scn )
-	local assetSet = {}
-	for e in pairs( scn.entities ) do
-		if not e.parent then
-			_scanEntity( e, assetSet )
-		end
-	end
-	return assetSet
-end
 
 -------------------------------------------------------------------
+--Loader
+---------------------------------------------------------------------
 local function sceneLoader( node, option )
 	local data = loadSceneData( node:getNodePath() )
-	local scn  = option.scene or Scene()
+	local scene  = option.scene or Scene()
 	--configuration
-	scn:init()
-	scn.path = node:getNodePath()
+	scene:init()
+	scene.path = node:getNodePath()
 	--entities
-	deserializeScene( data, scn )
+	deserializeScene( data, scene )
 	local dep = data['asset_dependency']
 	if dep then
 		for assetPath in pairs( dep ) do
@@ -275,8 +394,12 @@ local function sceneLoader( node, option )
 		end
 	end
 
-	return scn, false --no cache
+	return scene, false --no cache
+end
+
+local function sceneUnloader( node )
+	
 end
 
 
-registerAssetLoader( 'scene', sceneLoader )
+registerAssetLoader( 'scene', sceneLoader, sceneUnloader )

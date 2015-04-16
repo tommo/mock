@@ -216,6 +216,16 @@ function Scene:setActionPriority( action, priority )
 	action:attach( group )
 end
 
+function Scene:setMetaData( key, data )
+	self.metaData[ key ] = data
+end
+
+function Scene:getMetaData( key, default )
+	local v = self.metaData[ key ]
+	if v == nil then return default end
+	return v
+end
+
 --------------------------------------------------------------------
 --TIMER
 --------------------------------------------------------------------

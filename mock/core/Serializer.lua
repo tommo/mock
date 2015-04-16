@@ -34,17 +34,22 @@ CLASS: SerializeObjectMap ()
 function SerializeObjectMap:__init()
 	self.newObjects = {}
 	self.objects    = {}
+	self.objectCount = {}
 	self.currentId  = 10000
 end
 
 function SerializeObjectMap:map( obj, noNewRef )
 	local id = self.objects[ obj ]
-	if id then return id end
+	if id then
+		self.objectCount[ obj ] = self.objectCount[ obj ] + 1
+		return id
+	end
 	if noNewRef then return nil end
 	id = self.currentId + 1
 	self.currentId = id
 	id = 'OBJ'..id
 	self.objects[ obj ] = id
+	self.objectCount[ obj ] = 1
 	self.newObjects[ obj ] = id
 	return id
 end
@@ -55,6 +60,15 @@ function SerializeObjectMap:flush()
 	return newObjects
 end
 
+function SerializeObjectMap:getObjectRefCount( obj )
+	return self.objectCount[ obj ] or 0
+end
+
+function SerializeObjectMap:hasObject( obj )
+	return self.objects[ obj ] or false
+end
+
+---------------------------------------------------------------------
 local _serializeObject, _serializeField
 
 function _serializeField( obj, f, data, objMap, noNewRef )
@@ -272,34 +286,36 @@ function _deserializeObject( obj, data, objMap )
 	return obj, objMap
 end
 
-local function _deserializeObjectMap( map, objMap, rootId, rootObj )
+local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	objMap = objMap or {}
-
+	objIgnored = objIgnored or {}
 	for id, objData in pairs( map ) do
-		local modelName = objData.model
-
-		if not modelName then --raw
-			objMap[ id ] = { objData.body, objData }
-		else
-			local model = Model.fromName( modelName )
-			if not model then
-				error( 'model not found for '.. objData.model )
-			end
-			local instance 
-			if rootObj and id == rootId then
-				instance = rootObj
+		if not objIgnored[ id ] then
+			local modelName = objData.model
+			if not modelName then --raw
+				objMap[ id ] = { objData.body, objData }
 			else
-				instance = model:newInstance()
+				local model = Model.fromName( modelName )
+				if not model then
+					error( 'model not found for '.. objData.model )
+				end
+				local instance 
+				if rootObj and id == rootId then
+					instance = rootObj
+				else
+					instance = model:newInstance()
+				end
+				objMap[ id ] = { instance, objData }
 			end
-			objMap[ id ] = { instance, objData }
 		end
-
 	end
 
 	for id, item in pairs( objMap ) do
-		local obj     = item[1]
-		local objData = item[2]
-		_deserializeObject( obj, objData, objMap )
+		if not objIgnored[ id ] then
+			local obj     = item[1]
+			local objData = item[2]
+			_deserializeObject( obj, objData, objMap )
+		end
 	end
 
 	return objMap
@@ -313,7 +329,7 @@ local function deserialize( obj, data, objMap )
 	local rootId = data.root
 	if not rootId then return nil end
 
-	objMap = _deserializeObjectMap( map, objMap, rootId, obj )
+	objMap = _deserializeObjectMap( map, objMap, false, rootId, obj )
 
 	local rootTarget = objMap[ rootId ]
 	return rootTarget[1]
@@ -323,7 +339,6 @@ end
 
 --------------------------------------------------------------------
 local deflate = false
-
 
 function serializeToString( obj )
 	local data = serialize( obj )
