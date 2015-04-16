@@ -69,8 +69,10 @@ end
 protoManager = ProtoManager()
 
 function createProtoInstance( path, name )
-	local proto, node = loadAsset( path )
+	local proto, node = loadAsset( path, { ['skip_parent'] = true } )
 	if proto then
+		-- print( debug.traceback() )
+		-- print( 'create instance', path )
 		return proto:createInstance( name )
 	else
 		_warn( 'proto not found:', path )

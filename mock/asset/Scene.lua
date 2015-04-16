@@ -207,7 +207,6 @@ function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
 	local id = edata['id']
 	local components = edata['components']
 	local children   = edata['children']
-
 	local entity = objMap[ id ][ 1 ]
 	
 
@@ -233,10 +232,6 @@ function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
 	end
 
 	return entity
-end
-
-function SceneDeserializer:deserializeObject( obj, objMap )
-	return _deserializeObject( obj, objMap )
 end
 
 function SceneDeserializer:deserializeScene( data, scene )
