@@ -286,7 +286,7 @@ function wrap(v,minv,maxv)
 	end
 end
 
-function approx_equal(a, b, epislon)
+function approxEqual(a, b, epislon)
 	epislon = epislon or 0.01
 	
 	if math.abs(a-b) < epislon then

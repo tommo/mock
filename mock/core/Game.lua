@@ -122,6 +122,7 @@ function Game:__init()
 	self.layers        = {}
 	self.gfx           = { w = 640, h = 480, viewportRect = {0,0,640,480} }
 	self.time          = 0
+	self.frame 				 = 0
 	self.mainScene     = Scene()
 
 	local l = self:addLayer( 'main' )
@@ -591,6 +592,10 @@ function Game:getTime()
 	return self.time
 end
 
+function Game:getFrame()
+	return self.frame
+end
+
 function Game:newSubClock()
 	return newClock(function()
 		return self.time
@@ -599,6 +604,7 @@ end
 
 function Game:onRootUpdate( delta )
 	self.time = self.time + delta
+	self.frame = self.frame + 1
 	emitSignal( 'game.update', delta )
 	if self.pendingLoading then
 		local loadingParams = self.pendingLoading
