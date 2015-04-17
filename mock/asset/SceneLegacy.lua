@@ -109,10 +109,10 @@ function deserializeEntityLegacy( data )
 	local protoInstances = {}
 	local map = data.map
 	for id, objData in pairs( map ) do
-		local protoInfo = objData[ '__PROTO_INSTANCE_INFO' ]
-		if protoInfo then
+		local protoPath = objData[ '__PROTO' ]
+		if protoPath then
 			protoInstances[ id ] = true
-			local instance = createProtoInstance( protoInfo )
+			local instance = createProtoInstance( protoPath )
 			objmap[ id ] = {
 				instance, objData
 			}

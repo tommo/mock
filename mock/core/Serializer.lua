@@ -29,6 +29,12 @@ local function isTupleValue( ft )
 		or ft == 'color'
 end
 
+
+local function makeId( refId, namespace )
+	return namespace and refId..':'..namespace or refId
+end
+
+
 --------------------------------------------------------------------
 CLASS: SerializeObjectMap ()
 function SerializeObjectMap:__init()
@@ -45,9 +51,13 @@ function SerializeObjectMap:map( obj, noNewRef )
 		return id
 	end
 	if noNewRef then return nil end
-	id = self.currentId + 1
-	self.currentId = id
-	id = 'OBJ'..id
+	if obj.__guid then
+		id = obj.__guid
+	else
+		id = self.currentId + 1
+		self.currentId = id
+		id = 'OBJ'..id
+	end
 	self.objects[ obj ] = id
 	self.objectCount[ obj ] = 1
 	self.newObjects[ obj ] = id
@@ -66,6 +76,28 @@ end
 
 function SerializeObjectMap:hasObject( obj )
 	return self.objects[ obj ] or false
+end
+
+
+--------------------------------------------------------------------
+CLASS: DeserializeObjectMap ()
+
+function DeserializeObjectMap:__init()
+	self.objects = {}
+end
+
+function DeserializeObjectMap:set( namespace, id, obj, data )
+	if namespace then
+		id = id .. ':' .. namespace
+	end
+	self.objects[ id ] = { obj, data }
+end
+
+function DeserializeObjectMap:get( namespace, id )
+	if namespace then
+		id = id .. ':' .. namespace
+	end
+	return self.objects[ id ]
 end
 
 ---------------------------------------------------------------------
@@ -185,7 +217,7 @@ end
 --------------------------------------------------------------------
 local _deserializeField, _deserializeObject
 
-function _deserializeField( obj, f, data, objMap )
+function _deserializeField( obj, f, data, objMap, namespace )
 	local id = f:getId()
 	local fieldData = data[ id ]
 	local ft = f:getType()
@@ -218,20 +250,20 @@ function _deserializeField( obj, f, data, objMap )
 		elseif f.__objtype == 'sub' then
 			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'string' then --need conversion?
-					local itemTarget = objMap[ itemData ]
+					local itemTarget = objMap[ makeId( itemData, namespace ) ]
 					array[ i ] = itemTarget[1]
 				else
-					local item = _deserializeObject( nil, itemData, objMap )
+					local item = _deserializeObject( nil, itemData, objMap, namespace )
 					array[ i ] = item
 				end
 			end
 		else
 			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'table' then --need conversion?
-					local item = _deserializeObject( nil, itemData, objMap )
+					local item = _deserializeObject( nil, itemData, objMap, namespace )
 					array[ i ] = item
 				else
-					local itemTarget = objMap[ itemData ]
+					local itemTarget = objMap[ makeId( itemData, namespace ) ]
 					array[ i ] = itemTarget[1]
 				end
 			end
@@ -241,15 +273,21 @@ function _deserializeField( obj, f, data, objMap )
 	end
 
 	if f.__objtype == 'sub' then
-		f:setValue( obj, _deserializeObject( nil, fieldData, objMap ) )
+		f:setValue( obj, _deserializeObject( nil, fieldData, objMap, namespace ) )
 	else --'ref'
-		local target = objMap[ fieldData ]
-		f:setValue( obj, target[1] )
+		local newid = makeId( fieldData, namespace )
+		local target = objMap[ newid ]
+		if not target then
+			_error( 'target not found', id )
+			f:setValue( obj, nil )
+		else
+			f:setValue( obj, target[1] )
+		end
 	end
 
 end
 
-function _deserializeObject( obj, data, objMap )
+function _deserializeObject( obj, data, objMap, namespace )
 	local model 
 	if obj then
 		model = getModel( obj )
@@ -270,17 +308,22 @@ function _deserializeObject( obj, data, objMap )
 		--TODO: assert obj class match
 	end
 
+	local ns0 = data['namespace']
+	if ns0 then
+		namespace = makeId( ns0, namespace )
+	end
+
 	local fields = model:getFieldList( true )
 	local body   = data.body
 	for _,f in ipairs( fields ) do
 		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
-			_deserializeField( obj, f, body, objMap )		
+			_deserializeField( obj, f, body, objMap, namespace )		
 		end
 	end
 
 	local __deserialize = obj.__deserialize
 	if __deserialize then
-		__deserialize( obj, data['extra'] )
+		__deserialize( obj, data['extra'], namespace )
 	end
 
 	return obj, objMap
@@ -289,11 +332,19 @@ end
 local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	objMap = objMap or {}
 	objIgnored = objIgnored or {}
+	objAliases = {}
 	for id, objData in pairs( map ) do
-		if not objIgnored[ id ] then
+		if not objIgnored[ id ] then			
 			local modelName = objData.model
-			if not modelName then --raw
-				objMap[ id ] = { objData.body, objData }
+			if not modelName then --alias/raw
+				local alias = objData['alias']
+				if alias then
+					local ns0 = objData['namespace']
+					if ns0 then alias = makeId( alias, ns0 ) end
+					objAliases[ id ] = alias
+				else
+					objMap[ id ] = { objData.body, objData }
+				end
 			else
 				local model = Model.fromName( modelName )
 				if not model then
@@ -310,8 +361,12 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 		end
 	end
 
+	for id, alias in pairs( objAliases ) do
+		objMap[ id ] = objMap[ alias ]
+	end
+
 	for id, item in pairs( objMap ) do
-		if not objIgnored[ id ] then
+		if not objIgnored[ id ] and not objAliases[id] then
 			local obj     = item[1]
 			local objData = item[2]
 			_deserializeObject( obj, objData, objMap )
@@ -493,3 +548,5 @@ _M._deserializeObjectMap = _deserializeObjectMap
 
 _M.isTupleValue  = isTupleValue
 _M.isAtomicValue = isAtomicValue
+
+_M.makeNameSpacedId = makeId

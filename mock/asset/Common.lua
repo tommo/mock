@@ -1,6 +1,6 @@
-module ('mock')
+module 'mock'
 
-function loadAssetDataTable(filename) --lua or json?
+function loadAssetDataTable( filename ) --lua or json?
 	-- _stat( 'loading json data table', filename )
 	if not filename then return nil end
 	local f = io.open( filename, 'r' )
@@ -26,6 +26,6 @@ function basicLoaders.text( node )
 end
 
 ----------REGISTER the loaders
-for assetType, loader in pairs(basicLoaders) do
+for assetType, loader in pairs( basicLoaders ) do
 	registerAssetLoader( assetType, loader )
 end
