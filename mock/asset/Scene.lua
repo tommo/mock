@@ -48,7 +48,7 @@ function SceneSerializer:getProtoData( entity, objMap )
 		id = id,
 		components = {},
 		children = {},
-		name = entity:getName(),
+		-- name = entity:getName(),
 	}
 	--don't scan component/children
 	return data
@@ -57,6 +57,9 @@ end
 
 function SceneSerializer:collectEntity( entity, objMap )
 	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
+	if entity.FLAG_PROTO_INSTANCE then 
+		return self:getProtoData( entity, objMap )
+	end
 
 	local components = {}
 	local children = {}
@@ -85,7 +88,7 @@ function SceneSerializer:collectEntity( entity, objMap )
 
 	return {
 		id = objMap:map( entity ),
-		name = entity:getName(),
+		-- name = entity:getName(),
 		components = components,
 		children   = children
 	}
@@ -292,16 +295,10 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 	for id, objData in pairs( map ) do
 		local protoPath = objData[ '__PROTO' ]
 		if protoPath then
-			entry = objMap[id]
+			local entry = objMap[id]
 			entry[1].FLAG_PROTO_INSTANCE = protoPath
-			-- protoInstances[ id ] = protoPath
 		end
 	end
-	-- for id, protoPath in pairs( protoInstances ) do
-	-- 	local entry = objMap[id]
-	-- 	local obj = entry[1]
-	-- 	obj.FLAG_PROTO_INSTANCE = protoPath
-	-- end
 
 	for i, edata in ipairs( data.entities ) do
 		self:insertEntity( scene, nil, edata, objMap )

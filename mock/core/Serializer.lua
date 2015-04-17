@@ -56,7 +56,7 @@ function SerializeObjectMap:map( obj, noNewRef )
 	else
 		id = self.currentId + 1
 		self.currentId = id
-		id = 'OBJ'..id
+		id = '!'..id
 	end
 	self.objects[ obj ] = id
 	self.objectCount[ obj ] = 1
@@ -278,7 +278,8 @@ function _deserializeField( obj, f, data, objMap, namespace )
 		local newid = makeId( fieldData, namespace )
 		local target = objMap[ newid ]
 		if not target then
-			_error( 'target not found', id )
+			table.foreach( objMap, print )
+			_error( 'target not found', newid )
 			f:setValue( obj, nil )
 		else
 			f:setValue( obj, target[1] )
@@ -333,6 +334,7 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	objMap = objMap or {}
 	objIgnored = objIgnored or {}
 	objAliases = {}
+
 	for id, objData in pairs( map ) do
 		if not objIgnored[ id ] then			
 			local modelName = objData.model
@@ -362,7 +364,13 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	end
 
 	for id, alias in pairs( objAliases ) do
-		objMap[ id ] = objMap[ alias ]
+		local origin = objMap[ alias ]
+		if not origin then
+			_error( 'alias not found', id, alias )
+			error()
+		end
+		objMap[ id ] = origin
+
 	end
 
 	for id, item in pairs( objMap ) do

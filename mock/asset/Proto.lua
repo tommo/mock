@@ -75,20 +75,21 @@ local function mergeProtoData( data, id )
 	local protoPath = objData[ '__PROTO' ]
 	local p0 = loadAsset( protoPath )
 	local data0 = p0.data
+	
+	local entityEntry = findEntityData( data, id )
+	
+	entityEntry0 = data0.entities[1]
+	local rootId = makeId( entityEntry0.id, id )
 
+	mergeEntityEntry( entityEntry, entityEntry0, id )
+	
 	mergeObjectMap( data.map,  data0.map, id  )
 	mergeGUIDMap  ( data.guid, data0.guid, id )
+	data.guid[ rootId ] = id
 
-	local entityEntry = findEntityData( data, id )
-	if not entityEntry then
-		table.print( data )
-		error()
-	end
-	entityEntry0 = data0.entities[1]
-	mergeEntityEntry( entityEntry, entityEntry0, id )
-	local rootId = makeId( entityEntry0.id, id )
-	objData['alias'] = rootId
-	data.map[ rootId ]['__PROTO'] = protoPath
+	data.map[ id ] = data.map[ rootId ]
+	data.map[ id ]['__PROTO'] = protoPath
+	data.map[ rootId ] = { alias = id }
 end
 
 
@@ -170,23 +171,13 @@ end
 function Proto:createInstance( overridedData, guid )
 	local instanceData = self:buildInstanceData( overridedData, guid )
 	local instance, objMap = deserializeEntity( instanceData )
-	local objMapInstance = {}
-	-- if instanceData['guid'] then
-	-- 	for id, guid in pairs( instanceData['guid'] ) do
-	-- 		local entry = objMap[ id ]
-	-- 		local obj = entry[ 1 ]
-	-- 		obj.__proto_guid = guid
-	-- 		objMapInstance[ guid ] = entry
-	-- 	end
-	-- end
-
 	instance.FLAG_PROTO_INSTANCE = self.id
 	if not overridedData then
 		local protoName = instance:getName()
 		instance:setName( protoName..'_Instance' )
 	end
 
-	return instance, objMapInstance
+	return instance
 end
 
 function Proto:setSource( src )
