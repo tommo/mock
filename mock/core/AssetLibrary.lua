@@ -56,7 +56,7 @@ function collectAssetGarbage()
 			-- reportLoadedMoaiTextures()			
 			-- reportAssetInCache()
 			-- reportHistogram()
-			reportTracingObject()
+			-- reportTracingObject()
 			releaseRetainAssets()
 		end
 		)

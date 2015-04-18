@@ -6,6 +6,8 @@ module 'mock'
 --  embbed compound type? eg. array of array
 --  MOAI model
 --------------------------------------------------------------------
+local NULL = {}
+
 local function getModel( obj )
 	local class = getClass( obj )
 	if not class then return nil end
@@ -154,7 +156,7 @@ function _serializeField( obj, f, data, objMap, noNewRef )
 end
 
 --------------------------------------------------------------------
-function _serializeObject( obj, objMap, noNewRef )
+function _serializeObject( obj, objMap, noNewRef, partialFields )
 	local tt = type(obj)
 	if tt == 'string' or tt == 'number' or tt == 'boolean' then
 		return { model = false, body = obj }
@@ -163,7 +165,18 @@ function _serializeObject( obj, objMap, noNewRef )
 	local model = getModel( obj )
 	if not model then return nil end
 
-	local fields = model:getFieldList( true )
+	local fields 
+
+	if partialFields then
+		fields = {}
+		for i, key in ipairs( partialFields ) do
+			local f = model:getField( key, true )
+			if f then table.insert( fields, f ) end
+		end
+	else
+		fields = model:getFieldList( true )	
+	end
+
 	---
 	local body = {}
 
@@ -288,7 +301,7 @@ function _deserializeField( obj, f, data, objMap, namespace )
 
 end
 
-function _deserializeObject( obj, data, objMap, namespace )
+function _deserializeObject( obj, data, objMap, namespace, partialFields )
 	local model 
 	if obj then
 		model = getModel( obj )
@@ -314,7 +327,17 @@ function _deserializeObject( obj, data, objMap, namespace )
 		namespace = makeId( ns0, namespace )
 	end
 
-	local fields = model:getFieldList( true )
+	local fields 
+	if partialFields then
+		fields = {}
+		for i, key in ipairs( partialFields ) do
+			local f = model:getField( key, true )
+			if f then table.insert( fields, f ) end
+		end
+	else
+		fields = model:getFieldList( true )	
+	end
+	
 	local body   = data.body
 	for _,f in ipairs( fields ) do
 		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
@@ -546,15 +569,23 @@ function createEmptySerialization( path, modelName )
 end
 
 
+--------------------------------------------------------------------
+--public API
 _M.serialize   = serialize
 _M.deserialize = deserialize
 _M.clone       = _cloneObject
-_M._serializeObject   = _serializeObject
-_M._deserializeObject = _deserializeObject
 
+--internal API
+_M._serializeObject      = _serializeObject
+_M._deserializeObject    = _deserializeObject
 _M._deserializeObjectMap = _deserializeObjectMap
 
-_M.isTupleValue  = isTupleValue
-_M.isAtomicValue = isAtomicValue
+_M._deserializeField     = _deserializeField
+_M._serializeField       = _serializeField
 
-_M.makeNameSpacedId = makeId
+_M.isTupleValue          = isTupleValue
+_M.isAtomicValue         = isAtomicValue
+
+_M.makeNameSpacedId      = makeId
+
+_M._NULL = NULL

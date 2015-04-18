@@ -23,7 +23,7 @@ CLASS: Entity ( Actor )
 		'----';
 		Field 'loc'       :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'       :type('vec3') :getset('Rot') :label('Rot');
-		Field 'scl'       :type('vec3') :getset('Scl') :label('Scl');
+		Field 'scl'       :type('vec3') :getset('Scl') :label('Scl') :meta{ step = 0.1 };
 		Field 'piv'       :type('vec3') :getset('Piv') :label('Piv');
 		'----';
 		Field 'color'    :type('color')  :getset('Color') ;

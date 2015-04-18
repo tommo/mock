@@ -55,9 +55,9 @@ function SceneSerializer:getProtoData( entity, objMap )
 end
 
 
-function SceneSerializer:collectEntity( entity, objMap )
+function SceneSerializer:collectEntity( entity, objMap, keepProto )
 	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
-	if entity.FLAG_PROTO_INSTANCE then 
+	if keepProto and entity.FLAG_PROTO_INSTANCE then 
 		return self:getProtoData( entity, objMap )
 	end
 
@@ -80,7 +80,7 @@ function SceneSerializer:collectEntity( entity, objMap )
 	table.sort( childrenList, entitySortFunc )
 	
 	for i, child in ipairs( childrenList ) do
-		local childData = self:collectEntity( child, objMap )
+		local childData = self:collectEntity( child, objMap, keepProto )
 		if childData then
 			table.insert( children, childData )
 		end
@@ -94,22 +94,50 @@ function SceneSerializer:collectEntity( entity, objMap )
 	}
 end
 
-function SceneSerializer:serializeObject( obj, objMap )
-	if obj.FLAG_PROTO_INSTANCE then
-		return { 
-			["__PROTO"] = obj.FLAG_PROTO_INSTANCE
-		}
-	else
-		return _serializeObject( obj, objMap )
+local function collectOverrideObjectData( objMap, obj, collected )
+	local fields = obj.__overrided_fields
+	if not fields then return end
+	local body = {}
+	local id = obj.__guid
+	local fieldList = {}
+	for k in pairs( fields ) do
+		table.insert( fieldList, k )
+	end
+
+	local partialData = _serializeObject( obj, objMap, true, fieldList )
+
+	local data = {
+		id   = id,
+		body = partialData.body,
+	}
+	local body = partialData.body
+	for i, k in ipairs( fieldList ) do
+		if body[k] == nil then body[k] = false end --null reference
+	end
+	table.insert( collected, data )
+
+end
+
+local function collectOverrideEntityData( objMap, entity, collected )
+	collectOverrideObjectData( objMap, entity, collected )
+	if entity.components then
+		for com in pairs( entity.components ) do
+			collectOverrideObjectData( objMap, com, collected )
+		end
+	end
+	if entity.children then
+		for child in pairs( entity.children ) do
+			collectOverrideEntityData( objMap, child, collected )
+		end
 	end
 end
 
-function SceneSerializer:serializeScene( scene )
+function SceneSerializer:serializeScene( scene, keepProto )
 	emitSignal( 'scene.pre_serialize', scene )
 	--make proto data
 	local output = { _assetType  = 'scene' }
 	local objMap = SerializeObjectMap()
-	self:preSerializeScene( scene, output )
+	self:preSerializeScene( scene, output, keepProto )
 	
 	local entityList = {}
 	for e in pairs( scene.entities ) do
@@ -119,19 +147,19 @@ function SceneSerializer:serializeScene( scene )
 	end
 	table.sort( entityList, entitySortFunc )
 
-	self:serializeEntities( entityList, output, objMap, scene )
+	self:serializeEntities( entityList, output, objMap, scene, keepProto )
 
 	output.meta  = scene.metaData or {}
-	self:postSerialize( scene, output, objMap )
-	emitSignal( 'scene.post_serialize', scene, output, objMap )
+	self:postSerialize( scene, output, objMap, keepProto )
+	emitSignal( 'scene.post_serialize', scene, output, objMap, keepProto )
 	output.__VERSION = _SERIALIZER_VERSION
 	return output
 end
 
-function SceneSerializer:preSerializeScene( scene, data )
+function SceneSerializer:preSerializeScene( scene, data, keepProto )
 end
 
-function SceneSerializer:postSerialize( scene, data, objMap )
+function SceneSerializer:postSerialize( scene, data, objMap, keepProto )
 	--prefab
 	local prefabIdMap = {}
 	for obj, id in pairs( objMap.objects ) do
@@ -143,21 +171,23 @@ function SceneSerializer:postSerialize( scene, data, objMap )
 	data.prefabId    = prefabIdMap
 	
 	--proto
-	local protos = {}
-	for obj, id in pairs( objMap.objects ) do
-		if obj.FLAG_PROTO_SOURCE then
-			local info = self:_serializeProto( obj, id )
-			table.insert( protos, info )
-		end			
+	if keepProto then
+		local protos = {}
+		for obj, id in pairs( objMap.objects ) do
+			if obj.FLAG_PROTO_SOURCE then
+				local info = self:_serializeProto( obj, id )
+				table.insert( protos, info )
+			end			
+		end
+		data.protos = protos
 	end
-	data.protos = protos
 	
 	--dependency
 	data.asset_dependency = collectSceneAssetDependency( scene )
 end
 
 function SceneSerializer:_serializeProto( ent, id )
-	local protoData = self:serializeSingleEntity( ent )
+	local protoData = self:serializeSingleEntity( ent, 'keepProto' )
 	local output    = MOAIDataBuffer.base64Encode(
 		encodeJSON( protoData )
 	)
@@ -170,35 +200,61 @@ function SceneSerializer:_serializeProto( ent, id )
 	return info
 end
 
-function SceneSerializer:serializeSingleEntity( entity )
-	local output, objMap = self:serializeEntities( {entity} )	
-	output.__VERSION = _SERIALIZER_VERSION
-	return output
-end
 
-function SceneSerializer:serializeEntities( entityList, output, objMap, scene )
+function SceneSerializer:serializeEntities( entityList, output, objMap, scene, keepProto )
 	output = output or {}
 	objMap = objMap or SerializeObjectMap()
 
 	local entityDatas = {}
 	local map = {}
 
+	local protoInstances = {}
+
+	--collect entity
 	for i, e in ipairs( entityList ) do
-		local data = self:collectEntity( e, objMap )
+		local data = self:collectEntity( e, objMap, keepProto )
 		if data then table.insert( entityDatas, data ) end
 	end
 
-	while true do
-		local newObjects = objMap:flush()
-		if next( newObjects ) then
+	--data
+	if keepProto then --proto support
+		while true do
+			local newObjects = objMap:flush()
+			if not next( newObjects ) then break end
 			for obj, id in pairs( newObjects )  do
-				map[ id ] = self:serializeObject( obj, objMap )
+				local protoPath = obj.FLAG_PROTO_INSTANCE
+				if protoPath then
+					map[ id ] = { 
+						["__PROTO"] = protoPath
+					}
+					protoInstances[ id ] = obj
+				else
+					map[ id ] = _serializeObject( obj, objMap )
+				end
 			end
-		else
-			break
 		end
-	end
 
+		--extract overrided data
+		for id, obj in pairs( protoInstances ) do
+			local overridedData = {}
+			collectOverrideEntityData( objMap, obj, overridedData )
+			if overridedData[1] then
+				local objData = map[id]
+				objData[ 'override' ] = overridedData
+			end
+		end
+
+	else --without proto support 
+		while true do
+			local newObjects = objMap:flush()
+			if not next( newObjects ) then break end
+			for obj, id in pairs( newObjects )  do
+				map[ id ] = _serializeObject( obj, objMap )
+			end
+		end
+
+	end
+	
 	--guid
 	local guidMap = {}
 	for obj, id in pairs( objMap.objects ) do
@@ -213,6 +269,13 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene )
 	output.guid        = guidMap
 
 	return output, objMap
+end
+
+
+function SceneSerializer:serializeSingleEntity( entity, keepProto )
+	local output, objMap = self:serializeEntities( {entity}, nil, nil, nil, keepProto )	
+	output.__VERSION = _SERIALIZER_VERSION
+	return output
 end
 
 --------------------------------------------------------------------
@@ -291,12 +354,26 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 	end
 
 	_deserializeObjectMap( map, objMap ) --ignore protoInstances
-		
+	
 	for id, objData in pairs( map ) do
 		local protoPath = objData[ '__PROTO' ]
 		if protoPath then
 			local entry = objMap[id]
-			entry[1].FLAG_PROTO_INSTANCE = protoPath
+			local obj = entry[1]
+			obj.FLAG_PROTO_INSTANCE = protoPath
+			local overrideList = objData[ 'override' ]
+			if overrideList then
+				for i, override in ipairs( overrideList ) do
+					local id    = override['id']
+					local entry = objMap[ id ]
+					local obj   = entry[1]
+					local overrideMarks = {}
+					for k in pairs( override['body'] ) do
+						overrideMarks[ k ] = true
+					end
+					obj.__overrided_fields = overrideMarks
+				end
+			end
 		end
 	end
 
@@ -362,16 +439,16 @@ function setSceneSerializer( serializer, deserializer )
 end
 --------------------------------------------------------------------
 
-function serializeScene( scene )
-	return _sceneSerializer:serializeScene( scene )
+function serializeScene( scene, keepProto )
+	return _sceneSerializer:serializeScene( scene, keepProto )
 end
 
 function deserializeScene( data, scene )
 	return _sceneDeserializer:deserializeScene( data, scene )	
 end
 
-function serializeSceneToFile( scene, path )
-	local data = serializeScene( scene )
+function serializeSceneToFile( scene, path, keepProto )
+	local data = serializeScene( scene, keepProto )
 	local str  = encodeJSON( data )
 	local file = io.open( path, 'wb' )
 	if file then

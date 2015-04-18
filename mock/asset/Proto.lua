@@ -3,6 +3,97 @@ module 'mock'
 local simplecopy = table.simplecopy
 local makeId     = makeNameSpacedId
 --------------------------------------------------------------------
+--Instance helper
+--------------------------------------------------------------------
+function findTopEntityProtoInstance( ent )
+	local protoInstance = nil
+	while ent do
+		if ent.FLAG_PROTO_INSTANCE then protoInstance = ent  end
+		ent = ent.parent
+	end
+	return protoInstance
+end
+
+function findEntityProtoInstance( ent )
+	while ent do
+		if ent.FLAG_PROTO_INSTANCE then return ent end
+		ent = ent.parent
+	end
+	return nil
+end
+
+function findProtoInstance( obj )
+	if isInstance( obj, Entity ) then
+		return findEntityProtoInstance( obj )
+	end
+	if obj._entity then
+		return findEntityProtoInstance( obj._entity )
+	end
+	return nil
+end
+
+function findTopProtoInstance( obj )
+	if isInstance( obj, Entity ) then
+		return findTopEntityProtoInstance( obj )
+	end
+	if obj._entity then
+		return findTopEntityProtoInstance( obj._entity )
+	end
+	return nil
+end
+
+
+
+function markProtoInstanceOverrided( obj, fid )
+	local protoInstance = findProtoInstance( obj )
+	if not protoInstance then return false end
+
+	local overridedFields = obj.__overrided_fields
+	if not overridedFields then
+		overridedFields = {}
+		obj.__overrided_fields = overridedFields
+	end
+
+	if not overridedFields[ fid ] then
+		overridedFields[ fid ] = true
+		return true
+	end
+
+	return false
+end
+
+function isProtoInstanceOverrided( obj, fid )
+	local protoInstance = findProtoInstance( obj )
+	if not protoInstance then return false end
+	overrided = overrided ~= false
+	local overridedFields = obj.__overrided_fields
+	return overridedFields and overridedFields[ fid ] and true or false
+end
+
+
+function resetProtoInstanceOverridedField( obj, fid )
+	local protoInstance = findTopProtoInstance( obj )
+	if not protoInstance then return false end
+
+	local overridedFields = obj.__overrided_fields
+	if not overridedFields then return false end
+	if not overridedFields[ fid ] then return false end
+
+	local protoPath = protoInstance.FLAG_PROTO_INSTANCE
+	local proto = mock.loadAsset( protoPath )
+	proto:resetInstanceField( protoInstance, obj, fid )
+	
+	return true
+end
+
+function clearProtoInstanceOverrideState( obj )
+	obj.__overrided_fields = nil
+end
+
+
+--------------------------------------------------------------------
+--Proto
+--------------------------------------------------------------------
 CLASS: Proto ()
 	:MODEL{}
 
@@ -36,21 +127,27 @@ local function findEntityData( data, id )
 	return false
 end
 
-local function mergeEntityEntry( entry, entry0, namespace )
+local function mergeEntityEntry( entry, entry0, namespace, deleted )
 	local components = entry.components
 	for i, cid in ipairs( entry0.components ) do
-		components[i] = makeId( cid, namespace )
+		local newId = makeId( cid, namespace )
+		if not( deleted and deleted[ newId ] ) then
+			table.insert( components, newId )
+		end
 	end
 	local children = entry.children
 	for i, childEntry in ipairs( entry0.children ) do
 		local cid = childEntry.id
-		local newChildEntry = {
-			id = makeId( cid, namespace ),
-			children = {},
-			components = {}
-		}
-		children[i] = newChildEntry
-		mergeEntityEntry( newChildEntry, childEntry, namespace )
+		local newId = makeId( cid, namespace )
+		if not( deleted and deleted[ newId ] ) then
+			local newChildEntry = {
+				id = newId,
+				children = {},
+				components = {}
+			}
+			table.insert( children, newChildEntry )
+			mergeEntityEntry( newChildEntry, childEntry, namespace )
+		end
 	end
 end
 
@@ -60,6 +157,11 @@ local function mergeObjectMap( map, map0, namespace )
 		local newData = simplecopy( data )
 		newData.namespace = namespace
 		map[ newid ]   = newData
+		if newData.__PROTO then
+			newData['override'] = nil
+			newData['delete']   = nil
+			newData['insert']   = nil
+		end
 	end
 end
 
@@ -70,26 +172,77 @@ local function mergeGUIDMap( map, map0, namespace )
 	end
 end
 
+local function getActualData( dataMap, id, namespace )
+	local data = dataMap[ id ]
+	local alias
+	while data do
+		alias = data[ 'alias' ]
+		if alias then
+			data = dataMap[ makeId( alias, namespace ) ]
+		else
+			return data
+		end
+	end
+	error( 'invalid alias:'..alias )
+end
+
 local function mergeProtoData( data, id )
 	local objData   = data.map[ id ]
 	local protoPath = objData[ '__PROTO' ]
 	local p0 = loadAsset( protoPath )
 	local data0 = p0.data
+
+	local overrideList = objData['override']
+	local deleteList   = objData['delete']
 	
-	local entityEntry = findEntityData( data, id )
+	local deleteSet = false
+	if deleteList then
+		deleteSet = {}
+		for i, id in ipairs( deleteList ) do
+			deleteSet[ id ] = true
+		end
+	end
+	local entityEntry = findEntityData( data, id )	
 	
 	entityEntry0 = data0.entities[1]
 	local rootId = makeId( entityEntry0.id, id )
 
-	mergeEntityEntry( entityEntry, entityEntry0, id )
+	mergeEntityEntry( entityEntry, entityEntry0, id, deleteSet )
 	
 	mergeObjectMap( data.map,  data0.map, id  )
 	mergeGUIDMap  ( data.guid, data0.guid, id )
 	data.guid[ rootId ] = id
 
-	data.map[ id ] = data.map[ rootId ]
-	data.map[ id ]['__PROTO'] = protoPath
-	data.map[ rootId ] = { alias = id }
+	local map = data.map
+	map[ id ] = map[ rootId ]
+	map[ id ]['__PROTO']  = protoPath
+	map[ id ]['override'] = overrideList
+	map[ id ]['delete']   = deleteList
+	-- map[ id ]['insert']   = deleteList
+	map[ rootId ] = { alias = id }
+
+	--overrid
+	local namespace = id
+	if overrideList then
+		for i, override in pairs( overrideList ) do
+			local id       = override[ 'id' ]
+			local overBody = override[ 'body' ]
+			if overBody then
+				local oldData = getActualData( map, id, namespace )
+
+				local oldBody = oldData.body
+				if not oldBody then
+					table.print( map[id] )
+				end
+				local newBody = simplecopy( oldBody )
+				for k, v in pairs( overBody ) do
+					newBody[ k ] = v
+				end
+				map[id].body = newBody				
+			end
+		end
+	end
+
 end
 
 
@@ -172,16 +325,89 @@ function Proto:createInstance( overridedData, guid )
 	local instanceData = self:buildInstanceData( overridedData, guid )
 	local instance, objMap = deserializeEntity( instanceData )
 	instance.FLAG_PROTO_INSTANCE = self.id
-	if not overridedData then
-		local protoName = instance:getName()
-		instance:setName( protoName..'_Instance' )
-	end
+	
+	-- if not overridedData then
+	-- 	local protoName = instance:getName()
+	-- 	instance:setName( protoName..'_Instance' )
+	-- end
 
 	return instance
 end
 
 function Proto:setSource( src )
 	self.source = src
+end
+
+
+local function _collectEntity( ent, objMap )
+	local guid = ent.__guid
+	if not guid then return end
+	objMap[ guid ] = { ent, false }
+	for child in pairs( ent.children ) do
+		_collectEntity( child, objMap )
+	end
+	for com in pairs( ent.components ) do
+		local guid = com.__guid
+		if guid then
+			objMap[ guid ] = { com, false }
+		end
+	end
+end
+
+function Proto:resetInstanceField( instance, subObject, fieldId )
+	local protoData = self:getData()
+	local namespace = instance.__guid
+	
+	local objMap = {}
+	local objAliases = {}
+
+	--fill the raw object in objMap first
+	for id, objData in pairs( protoData.map ) do
+		local modelName = objData.model
+		if not modelName then --alias/raw
+			local alias = objData['alias']
+			if alias then
+				local ns0 = objData['namespace']
+				if ns0 then alias = makeId( alias, ns0 ) end
+				objAliases[ id ] = alias
+			else
+				objMap[ id ] = { objData.body, objData }
+			end
+		end
+	end
+
+	--collect objects
+	_collectEntity( instance, objMap )
+	
+	for id, alias in pairs( objAliases ) do
+		local origin = objMap[ makeId( alias, namespace ) ]
+		if origin then
+			objMap[ id ] = origin
+		else
+			_warn( 'alias not found', id, alias )
+		end
+	end
+
+	--find model&field
+	local subId
+	if subObject == instance then --root object
+		subId = protoData[ 'entities' ][1]['id']
+		print( 'root', subId )
+	else
+		--strip namespace?
+		subId = subObject.__guid
+		local idx = subId:find( namespace )
+		subId = subId:sub( 1, idx - 2 )
+	end
+
+	local subData = protoData.map[ subId ].body
+	local model = Model.fromObject( subObject )
+	local field = model:getField( fieldId, true )
+	if field then
+		_deserializeField( subObject, field, subData, objMap, namespace )
+	end
+	--remove mark
+	subObject.__overrided_fields[ fieldId ] = nil
 end
 
 --------------------------------------------------------------------
