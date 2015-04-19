@@ -5,10 +5,11 @@ local makeId     = makeNameSpacedId
 --------------------------------------------------------------------
 --Instance helper
 --------------------------------------------------------------------
+
 function findTopEntityProtoInstance( ent )
 	local protoInstance = nil
 	while ent do
-		if ent.FLAG_PROTO_INSTANCE then protoInstance = ent  end
+		if ent.PROTO_INSTANCE_STATE then protoInstance = ent  end
 		ent = ent.parent
 	end
 	return protoInstance
@@ -16,7 +17,7 @@ end
 
 function findEntityProtoInstance( ent )
 	while ent do
-		if ent.FLAG_PROTO_INSTANCE then return ent end
+		if ent.PROTO_INSTANCE_STATE then return ent end
 		ent = ent.parent
 	end
 	return nil
@@ -41,8 +42,6 @@ function findTopProtoInstance( obj )
 	end
 	return nil
 end
-
-
 
 function markProtoInstanceOverrided( obj, fid )
 	local protoInstance = findProtoInstance( obj )
@@ -79,7 +78,8 @@ function resetProtoInstanceOverridedField( obj, fid )
 	if not overridedFields then return false end
 	if not overridedFields[ fid ] then return false end
 
-	local protoPath = protoInstance.FLAG_PROTO_INSTANCE
+	local protoState = protoInstance.PROTO_INSTANCE_STATE
+	local protoPath  = protoState.proto
 	local proto = mock.loadAsset( protoPath )
 	proto:resetInstanceField( protoInstance, obj, fid )
 	
@@ -146,7 +146,7 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted )
 				components = {}
 			}
 			table.insert( children, newChildEntry )
-			mergeEntityEntry( newChildEntry, childEntry, namespace )
+			mergeEntityEntry( newChildEntry, childEntry, namespace, deleted )
 		end
 	end
 end
@@ -324,13 +324,9 @@ end
 function Proto:createInstance( overridedData, guid )
 	local instanceData = self:buildInstanceData( overridedData, guid )
 	local instance, objMap = deserializeEntity( instanceData )
-	instance.FLAG_PROTO_INSTANCE = self.id
-	
-	-- if not overridedData then
-	-- 	local protoName = instance:getName()
-	-- 	instance:setName( protoName..'_Instance' )
-	-- end
-
+	instance.PROTO_INSTANCE_STATE ={
+		proto = self.id
+	}
 	return instance
 end
 
@@ -378,7 +374,7 @@ function Proto:resetInstanceField( instance, subObject, fieldId )
 
 	--collect objects
 	_collectEntity( instance, objMap )
-	
+
 	for id, alias in pairs( objAliases ) do
 		local origin = objMap[ makeId( alias, namespace ) ]
 		if origin then
