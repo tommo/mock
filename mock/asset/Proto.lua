@@ -127,7 +127,9 @@ local function findEntityData( data, id )
 	return false
 end
 
-local function mergeEntityEntry( entry, entry0, namespace, deleted )
+local function mergeEntityEntry( entry, entry0, namespace, deleted, added )
+	local localAdded = added and added[ entry['id'] ]
+
 	local components = entry.components
 	for i, cid in ipairs( entry0.components ) do
 		local newId = makeId( cid, namespace )
@@ -135,6 +137,13 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted )
 			table.insert( components, newId )
 		end
 	end
+
+	if localAdded and localAdded.components then
+		for i, cid in ipairs( localAdded.components ) do
+			table.insert( components, cid )
+		end
+	end
+
 	local children = entry.children
 	for i, childEntry in ipairs( entry0.children ) do
 		local cid = childEntry.id
@@ -149,6 +158,13 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted )
 			mergeEntityEntry( newChildEntry, childEntry, namespace, deleted )
 		end
 	end
+
+	if localAdded and localAdded.children then
+		for i, data in ipairs( localAdded.children ) do
+			table.insert( children, data )
+		end
+	end
+
 end
 
 local function mergeObjectMap( map, map0, namespace )
@@ -157,18 +173,24 @@ local function mergeObjectMap( map, map0, namespace )
 		local newData = simplecopy( data )
 		newData.namespace = namespace
 		map[ newid ]   = newData
-		if newData.__PROTO then
-			newData['override'] = nil
-			newData['delete']   = nil
-			newData['insert']   = nil
+		if newData['__PROTO'] then
+			newData['__PROTO']   = nil
+			newData['overrided'] = nil
+			newData['deleted']   = nil
+			newData['added']     = nil
+			if not newData['super_proto'] then
+				newData['super_proto'] = {}
+			end
+			table.insert( newData['super_proto'], 1, newData[ '__PROTO' ]	)
 		end
 	end
 end
 
 local function mergeGUIDMap( map, map0, namespace )
 	for id, guid in pairs( map0 ) do
-		local newid = makeId( id, namespace )
-		map[ newid ]   = newid
+		local newid   = makeId( id, namespace )
+		local newGuid = makeId( guid, namespace )
+		map[ newid ]   = newGuid
 	end
 end
 
@@ -183,17 +205,22 @@ local function getActualData( dataMap, id, namespace )
 			return data
 		end
 	end
-	error( 'invalid alias:'..alias )
+	_warn( 'invalid alias:', alias, id, namespace )
+	return false
 end
 
 local function mergeProtoData( data, id )
+	local entityEntry = findEntityData( data, id )
+	if not entityEntry then return false end
+
 	local objData   = data.map[ id ]
 	local protoPath = objData[ '__PROTO' ]
 	local p0 = loadAsset( protoPath )
 	local data0 = p0.data
 
-	local overrideList = objData['override']
-	local deleteList   = objData['delete']
+	local overrideMap  = objData['overrided']
+	local deleteList   = objData['deleted']
+	local addSet       = objData['added']
 	
 	local deleteSet = false
 	if deleteList then
@@ -202,54 +229,85 @@ local function mergeProtoData( data, id )
 			deleteSet[ id ] = true
 		end
 	end
-	local entityEntry = findEntityData( data, id )	
-	
+
 	entityEntry0 = data0.entities[1]
 	local rootId = makeId( entityEntry0.id, id )
 
-	mergeEntityEntry( entityEntry, entityEntry0, id, deleteSet )
+	mergeEntityEntry( entityEntry, entityEntry0, id, deleteSet, addSet )
 	
 	mergeObjectMap( data.map,  data0.map, id  )
 	mergeGUIDMap  ( data.guid, data0.guid, id )
-	data.guid[ rootId ] = id
+
 
 	local map = data.map
 	map[ id ] = map[ rootId ]
-	map[ id ]['__PROTO']  = protoPath
-	map[ id ]['override'] = overrideList
-	map[ id ]['delete']   = deleteList
-	-- map[ id ]['insert']   = deleteList
+	map[ id ]['__PROTO']   = protoPath
+	map[ id ]['overrided'] = overrideMap
+	map[ id ]['deleted']   = deleteList
+	map[ id ]['added']     = addList
 	map[ rootId ] = { alias = id }
-
+	
+	data.guid[ rootId ] = id
+	
 	--overrid
 	local namespace = id
-	if overrideList then
-		for i, override in pairs( overrideList ) do
-			local id       = override[ 'id' ]
-			local overBody = override[ 'body' ]
+	if overrideMap  then
+		for id, overBody in pairs( overrideMap ) do
 			if overBody then
 				local oldData = getActualData( map, id, namespace )
-
-				local oldBody = oldData.body
-				if not oldBody then
-					table.print( map[id] )
+				if oldData then
+					local oldBody = oldData.body
+					if not oldBody then
+						table.print( map[id] )
+						print('?????')
+					end
+					local newBody = simplecopy( oldBody )
+					for k, v in pairs( overBody ) do
+						newBody[ k ] = v
+					end
+					map[id].body = newBody				
 				end
-				local newBody = simplecopy( oldBody )
-				for k, v in pairs( overBody ) do
-					newBody[ k ] = v
-				end
-				map[id].body = newBody				
 			end
 		end
 	end
 
+	return true
 end
 
+--nested proto instance needs some RETRY
+local function mergeProtoDataList( data, instanceIdList )
+	local set = {}
+	for i, id in ipairs( instanceIdList ) do
+		set[id] = true
+	end
+	while true do
+		local progress = false
+		local rest = {}
+		for id in pairs( set ) do
+			if not mergeProtoData( data, id ) then
+				rest[ id ] = true
+			else
+				progress = true
+			end
+		end
+		if not next( rest ) then --job done
+			return true
+		end
+		if not progress then --error
+			table.print( rest )
+			error( 'failed to insert proto instance' )
+		end
+		set = rest --retry insertion
+	end
+end
 
-_M.mergeProtoData = mergeProtoData
+_M.mergeProtoData     = mergeProtoData
+_M.mergeProtoDataList = mergeProtoDataList
 
+local _proto_id = 0
 function Proto:buildInstanceData( overridedData, guid )
-	local rootId = guid or "__root__"
+	local rootId = guid or "__instance_".._proto_id
+	_proto_id = _proto_id + 1
 	return {
 		entities = {
 			{ id = rootId,
@@ -266,30 +324,6 @@ function Proto:buildInstanceData( overridedData, guid )
 
 		}
 	}
-	-- if not overridedData then return self.data end
-	-- local data = self.data
-	-- local newData = simplecopy( data )
-
-	-- --only data.map needs process 		
-	-- local newDataMap = simplecopy( data.map )
-	-- newData.map = newDataMap
-	-- for id, overridedBodyData in pairs( overridedData ) do
-	-- 	local originalObjectData = newDataMap[id]
-	-- 	if originalObjectData then
-	-- 		local newObjectData = simplecopy( originalObjectData )
-	-- 		local originalBody  = originalObjectData.body
-	-- 		local newBody       = simplecopy( originalBody )
-	-- 		newObjectData.body  = newBody
-	-- 		newDataMap[ id ]    = newObjectData
-	-- 		for k, v in pairs( overridedBodyData ) do
-	-- 			newBody[ k ] = v
-	-- 		end
-	-- 	else
-	-- 	--object removed, skip
-	-- 	end
-	-- end
-
-	-- return newData
 end
 
 function Proto:getData()
@@ -307,13 +341,11 @@ function Proto:loadData( dataPath )
 	local protoInstances = {}
 	for id, objData in pairs( data.map )  do
 		if objData[ '__PROTO' ] then
-			protoInstances[id] = objData
+			table.insert( protoInstances, id )
 		end
 	end
 
-	for id, objData in pairs( protoInstances ) do
-		mergeProtoData( data, id )
-	end
+	mergeProtoDataList( data, protoInstances )
 
 	self.data      = data
 	self.ready     = true

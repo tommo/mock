@@ -43,7 +43,24 @@ function SerializeObjectMap:__init()
 	self.newObjects = {}
 	self.objects    = {}
 	self.objectCount = {}
+	self.internalObjects = {}
 	self.currentId  = 10000
+end
+
+function SerializeObjectMap:mapInternal( obj, noNewRef )
+	local id = self:map( obj, noNewRef )
+	if not id then return nil end
+	self:makeInternal( obj )
+	return id
+end
+
+function SerializeObjectMap:makeInternal( obj )
+	self.internalObjects[ obj ] = true
+	self.newObjects[ obj ] = nil
+end
+
+function SerializeObjectMap:isInternal( obj )
+	return self.internalObjects[ obj ] ~= nil
 end
 
 function SerializeObjectMap:map( obj, noNewRef )
@@ -66,9 +83,16 @@ function SerializeObjectMap:map( obj, noNewRef )
 	return id
 end
 
-function SerializeObjectMap:flush()
+function SerializeObjectMap:flush( obj )
 	local newObjects = self.newObjects
-	self.newObjects = {}
+	if obj then
+		if newObjects[ obj ] then
+			newObjects[ obj ] = nil
+			return obj
+		end
+	else
+		self.newObjects = {}
+	end
 	return newObjects
 end
 
@@ -90,14 +114,14 @@ end
 
 function DeserializeObjectMap:set( namespace, id, obj, data )
 	if namespace then
-		id = id .. ':' .. namespace
+		id = makeId( id, namespace )
 	end
 	self.objects[ id ] = { obj, data }
 end
 
 function DeserializeObjectMap:get( namespace, id )
 	if namespace then
-		id = id .. ':' .. namespace
+		id = makeId( id, namespace )
 	end
 	return self.objects[ id ]
 end
@@ -227,6 +251,12 @@ local function serialize( obj, objMap )
 	}
 end
 
+local function getObjectWithNamespace( objMap, id, namespace )
+	if not namespace then return objMap[ id ] end
+	local newId = makeId( id, namespace )
+	return objMap[ newId ] or objMap[ id ]
+end
+
 --------------------------------------------------------------------
 local _deserializeField, _deserializeObject
 
@@ -263,7 +293,7 @@ function _deserializeField( obj, f, data, objMap, namespace )
 		elseif f.__objtype == 'sub' then
 			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'string' then --need conversion?
-					local itemTarget = objMap[ makeId( itemData, namespace ) ]
+					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
 					array[ i ] = itemTarget[1]
 				else
 					local item = _deserializeObject( nil, itemData, objMap, namespace )
@@ -276,7 +306,7 @@ function _deserializeField( obj, f, data, objMap, namespace )
 					local item = _deserializeObject( nil, itemData, objMap, namespace )
 					array[ i ] = item
 				else
-					local itemTarget = objMap[ makeId( itemData, namespace ) ]
+					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
 					array[ i ] = itemTarget[1]
 				end
 			end
@@ -288,10 +318,8 @@ function _deserializeField( obj, f, data, objMap, namespace )
 	if f.__objtype == 'sub' then
 		f:setValue( obj, _deserializeObject( nil, fieldData, objMap, namespace ) )
 	else --'ref'
-		local newid = makeId( fieldData, namespace )
-		local target = objMap[ newid ]
+		local target = getObjectWithNamespace( objMap, fieldData, namespace )
 		if not target then
-			table.foreach( objMap, print )
 			_error( 'target not found', newid )
 			f:setValue( obj, nil )
 		else

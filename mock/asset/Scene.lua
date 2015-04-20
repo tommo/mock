@@ -44,91 +44,6 @@ local makeId     = makeNameSpacedId
 ---------------------------------------------------------------------
 CLASS: SceneSerializer ()
 
-function SceneSerializer:getProtoData( entity, objMap )
-	local id = objMap:map( entity )
-	local data = {
-		id = id,
-		components = {},
-		children = {},
-		-- name = entity:getName(),
-	}
-	--don't scan component/children
-	return data
-end
-
-function SceneSerializer:collectProtoEntity( entity, objMap, isRoot )
-	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
-
-	local components = {}
-	local children = {}
-
-	for i, com in ipairs( entity:getSortedComponentList() ) do
-		if not com.FLAG_INTERNAL then
-			table.insert( components, objMap:map( com ) )
-		end
-	end
-
-	local childrenList = {}
-	local i = 1
-	for e in pairs( entity.children ) do
-		childrenList[i] = e
-		i = i + 1
-	end
-	
-	table.sort( childrenList, entitySortFunc )
-	
-	for i, child in ipairs( childrenList ) do
-		local childData = self:collectEntity( child, objMap, keepProto )
-		if childData then
-			table.insert( children, childData )
-		end
-	end
-
-	return {
-		id = objMap:map( entity ),
-		components = components,
-		children   = children
-	}
-end
-
-function SceneSerializer:collectEntity( entity, objMap, keepProto )
-	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
-	if keepProto and entity.PROTO_INSTANCE_STATE then 
-		return self:collectProtoEntity( entity, objMap, true )		
-	end
-
-	local components = {}
-	local children = {}
-
-	for i, com in ipairs( entity:getSortedComponentList() ) do
-		if not com.FLAG_INTERNAL then
-			table.insert( components, objMap:map( com ) )
-		end
-	end
-
-	local childrenList = {}
-	local i = 1
-	for e in pairs( entity.children ) do
-		childrenList[i] = e
-		i = i + 1
-	end
-	
-	table.sort( childrenList, entitySortFunc )
-	
-	for i, child in ipairs( childrenList ) do
-		local childData = self:collectEntity( child, objMap, keepProto )
-		if childData then
-			table.insert( children, childData )
-		end
-	end
-
-	return {
-		id = objMap:map( entity ),
-		-- name = entity:getName(),
-		components = components,
-		children   = children
-	}
-end
 
 local function collectOverrideObjectData( objMap, obj, collected )
 	local fields = obj.__overrided_fields
@@ -141,16 +56,12 @@ local function collectOverrideObjectData( objMap, obj, collected )
 	end
 
 	local partialData = _serializeObject( obj, objMap, true, fieldList )
-
-	local data = {
-		id   = id,
-		body = partialData.body,
-	}
 	local body = partialData.body
 	for i, k in ipairs( fieldList ) do
 		if body[k] == nil then body[k] = false end --null reference
 	end
-	table.insert( collected, data )
+
+	collected[ id ] = partialData.body
 end
 
 local function collectOverrideEntityData( objMap, entity, collected )
@@ -162,70 +73,197 @@ local function collectOverrideEntityData( objMap, entity, collected )
 	end
 	if entity.children then
 		for child in pairs( entity.children ) do
-			collectOverrideEntityData( objMap, child, collected )
+			--proto instance data will get collected in another process
+			if not child.PROTO_INSTANCE_STATE then 
+				collectOverrideEntityData( objMap, child, collected )
+			end
 		end
 	end
 end
 
-local function _collectDeletedSubEntityData( entity, protoEntry, deleted, namespace )
-	local childrenIds = {}
-	for child in pairs( entity.children ) do
-		local guid = child.__guid
-		if guid then
-			childrenIds[ guid ] = child
-		end
-	end
 
-	--find deleted entity
-	for i, childEntry in ipairs( protoEntry.children ) do
-		local id = childEntry.id
-		local id2 = makeId( id, namespace )
-		local child = childrenIds[ id2 ]
-		if not child then
-			table.insert( deleted, id2 )
-		else
-			_collectDeletedSubEntityData(  child, childEntry, deleted, namespace )
-		end
-	end
+function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, namespace, modification, protoInfo )
+	local deleted   = modification.deleted
+	local added     = modification.added
 
-	--find new entity
-
-	--find deleted components
+	local newComponents = {}
+	local newChildren   = {}
+	--find component variation
 	local comIds = {}
-	for com in pairs( entity.components ) do
-		local guid = com.__guid
-		if guid then
-			comIds[ guid ] = com
-		end
-	end
 	for i, comEntry in ipairs( protoEntry.components ) do
 		local id  = comEntry
-		local id2 = makeId( id, namespace )
-		if not comIds[ id2 ] then
-			table.insert( deleted, id2 )
+		comIds[ makeId( id, namespace ) ] = { false, comEntry }
+	end
+	for i, com in ipairs( entity:getSortedComponentList() ) do
+		if not com.FLAG_INTERNAL then
+			local guid = objMap:map( com )
+			local c = comIds[ guid ]
+			if c == nil then --new component
+				table.insert( newComponents, guid )
+			else
+				c[ 1 ] = true
+				objMap:makeInternal( com )
+			end
 		end
 	end
-	--find new components
-end
 
-local function collectDeletedSubEntityData( objMap, entity, collected )
-	local protoState = entity.PROTO_INSTANCE_STATE 
-	local protoPath = protoState.proto
-	local proto     = loadAsset( protoPath )
-	local protoData = proto:getData()
+	--find children variation
+	local childrenIds = {}
+	for i, childEntry in ipairs( protoEntry.children ) do
+		local id = childEntry.id
+		local newId = makeId( id, namespace )
+		childrenIds[ newId ] = { false, childEntry }
+	end
 
-	local namespace = entity.__guid
-
-	-- local deleted = {}
-	local deleted = collected
-	local added   = {}
-	local protoEntry = protoData.entities[1]
-
-	_collectDeletedSubEntityData( entity, protoEntry, deleted, namespace )
+	local childrenList = {}
+	for e in pairs( entity.children ) do
+		table.insert( childrenList, e )
+	end
 	
+	table.sort( childrenList, entitySortFunc )
+	
+	for i, child in ipairs( childrenList ) do
+		local guid = objMap:map( child )
+		local c = childrenIds[ guid ]
+		if c == nil then --new object
+			local data = self:collectEntityWithProto( child, objMap, protoInfo )
+			if data then table.insert( newChildren, data ) end
+		else
+			c[1] = true
+			local childEntry = c[2]
+			objMap:makeInternal( child )
+			self:_collecteProtoEntity( child, objMap, childEntry, namespace, modification, protoInfo )
+		end
+	end
+
+	--deleted
+	for id, result in pairs( comIds ) do
+		if not result[1] then
+			table.insert( deleted, id )
+		end
+	end
+
+	for id, result in pairs( childrenIds ) do
+		if not result[1] then			
+			table.insert( deleted, id )
+		end
+	end
+
+	--new
+	local localAdded = {}
+	if next( newChildren ) then
+		localAdded.children = newChildren
+	end
+	if next( newComponents ) then
+		localAdded.components = newComponents
+	end
+	if next( localAdded ) then
+		added[ entity.__guid ] = localAdded
+	end
+
 end
 
+function SceneSerializer:collectEntityWithProto( entity, objMap, protoInfo )
+	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
+	--proto instance
+	local protoState = entity.PROTO_INSTANCE_STATE
+	if protoState then
+		local id = objMap:map( entity )
 
+		local protoPath = protoState.proto
+		local proto     = loadAsset( protoPath )
+		local protoData = proto:getData()
+
+		-- local deleted = {}
+		local localModification = {
+			deleted   = {},
+			added     = {}
+		}
+		protoInfo[ id ] = {
+			id    = id,
+			obj   = entity,
+			proto = protoPath,
+			modification = localModification
+		}
+		local protoEntry = protoData.entities[1]
+		local namespace = entity.__guid
+		self:_collecteProtoEntity( entity, objMap, protoEntry, namespace, localModification, protoInfo )
+
+		return {
+			id = id,
+			components = {},
+			children   = {}
+		}
+	end
+
+	--normal entity
+	local components = {}
+	local children = {}
+
+	for i, com in ipairs( entity:getSortedComponentList() ) do
+		if not com.FLAG_INTERNAL then
+			table.insert( components, objMap:map( com ) )
+		end
+	end
+
+	local childrenList = {}
+	local i = 1
+	for e in pairs( entity.children ) do
+		childrenList[i] = e
+		i = i + 1
+	end
+	
+	table.sort( childrenList, entitySortFunc )
+	
+	for i, child in ipairs( childrenList ) do
+		local childData = self:collectEntityWithProto( child, objMap, protoInfo )
+		if childData then
+			table.insert( children, childData )
+		end
+	end
+
+	return {
+		id = objMap:map( entity ),
+		components = components,
+		children   = children
+	}
+end
+
+function SceneSerializer:collectEntity( entity, objMap )
+	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
+
+	local components = {}
+	local children = {}
+
+	for i, com in ipairs( entity:getSortedComponentList() ) do
+		if not com.FLAG_INTERNAL then
+			table.insert( components, objMap:map( com ) )
+		end
+	end
+
+	local childrenList = {}
+	local i = 1
+	for e in pairs( entity.children ) do
+		childrenList[i] = e
+		i = i + 1
+	end
+	
+	table.sort( childrenList, entitySortFunc )
+	
+	for i, child in ipairs( childrenList ) do
+		local childData = self:collectEntity( child, objMap, keepProto )
+		if childData then
+			table.insert( children, childData )
+		end
+	end
+
+	return {
+		id = objMap:map( entity ),
+		-- name = entity:getName(),
+		components = components,
+		children   = children
+	}
+end
 
 function SceneSerializer:serializeScene( scene, keepProto )
 	emitSignal( 'scene.pre_serialize', scene )
@@ -235,8 +273,9 @@ function SceneSerializer:serializeScene( scene, keepProto )
 	self:preSerializeScene( scene, output, keepProto )
 	
 	local entityList = {}
+	--scan top level entity
 	for e in pairs( scene.entities ) do
-		if not e.parent then --1st level entity
+		if not e.parent then 
 			table.insert( entityList, e )
 		end
 	end
@@ -245,8 +284,10 @@ function SceneSerializer:serializeScene( scene, keepProto )
 	self:serializeEntities( entityList, output, objMap, scene, keepProto )
 
 	output.meta  = scene.metaData or {}
+
 	self:postSerialize( scene, output, objMap, keepProto )
 	emitSignal( 'scene.post_serialize', scene, output, objMap, keepProto )
+	
 	output.__VERSION = _SERIALIZER_VERSION
 	return output
 end
@@ -295,7 +336,6 @@ function SceneSerializer:_serializeProto( ent, id )
 	return info
 end
 
-
 function SceneSerializer:serializeEntities( entityList, output, objMap, scene, keepProto )
 	output = output or {}
 	objMap = objMap or SerializeObjectMap()
@@ -305,53 +345,60 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 
 	local protoInstances = {}
 
-	--collect entity
-	for i, e in ipairs( entityList ) do
-		local data = self:collectEntity( e, objMap, keepProto )
-		if data then table.insert( entityDatas, data ) end
-	end
 
-	--data
 	if keepProto then --proto support
+		--collect entity	
+		local protoInfo = {}
+		for i, e in ipairs( entityList ) do
+			local data = self:collectEntityWithProto( e, objMap, protoInfo )
+			if data then table.insert( entityDatas, data ) end
+		end
+
+		--data
 		while true do
 			local newObjects = objMap:flush()
 			if not next( newObjects ) then break end
 			for obj, id in pairs( newObjects )  do
-				local protoState = obj.PROTO_INSTANCE_STATE
-				local protoPath = protoState.proto
-				if protoPath then
-					map[ id ] = { 
-						["__PROTO"] = protoPath
-					}
-					protoInstances[ id ] = obj
-				else
-					map[ id ] = _serializeObject( obj, objMap )
-				end
+				map[ id ] = _serializeObject( obj, objMap )			
 			end
 		end
 
-		--extract overrided data
-		for id, obj in pairs( protoInstances ) do
-			--find overrided fields
+		--proto structure altering
+		for id, info in pairs( protoInfo ) do
+			local objData = {
+				["__PROTO"] = info.proto,
+			}
+			local modification = info.modification
+			if next( modification.deleted) then
+				objData['deleted']  = modification.deleted
+			end
+			if next( modification.added ) then
+				objData['added']  = modification.added
+			end
+			map[ id ] = objData
+		end
+
+		--find overrided fields
+		for id, info in pairs( protoInfo ) do
+			local obj = info.obj
 			local overridedData = {}
 			collectOverrideEntityData( objMap, obj, overridedData )
 			if next(overridedData) then
 				local objData = map[id]
-				objData[ 'override' ] = overridedData
+				objData[ 'overrided' ] = overridedData
 			end
-			--find removed sub object
-			local deletedData = {}
-			collectDeletedSubEntityData( objMap, obj, deletedData )
-			if next( deletedData ) then
-				local objData = map[id]
-				objData[ 'delete' ] = deletedData
-			end
-			--find new added sub object
-			-- collect
+
 		end
 
 
 	else --without proto support 
+		--collect entity	
+		for i, e in ipairs( entityList ) do
+			local data = self:collectEntity( e, objMap )
+			if data then table.insert( entityDatas, data ) end
+		end
+
+		--build data
 		while true do
 			local newObjects = objMap:flush()
 			if not next( newObjects ) then break end
@@ -364,10 +411,13 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 	
 	--guid
 	local guidMap = {}
+	local internalObjects = objMap.internalObjects
 	for obj, id in pairs( objMap.objects ) do
-		local guid = obj.__guid
-		if guid then
-			guidMap[ id ] = guid
+		if not internalObjects[ obj ] then
+			local guid = obj.__guid
+			if guid then
+				guidMap[ id ] = guid
+			end
 		end
 	end
 
@@ -378,9 +428,9 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 	return output, objMap
 end
 
-
 function SceneSerializer:serializeSingleEntity( entity, keepProto )
 	local output, objMap = self:serializeEntities( {entity}, nil, nil, nil, keepProto )	
+
 	output.__VERSION = _SERIALIZER_VERSION
 	return output
 end
@@ -450,15 +500,12 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 	-- pre-load proto instance
 	local protoInstances = {}
 	for id, objData in pairs( map ) do
-		local protoPath = objData[ '__PROTO' ]
-		if protoPath then
-			protoInstances[ id ] = protoPath
+		if objData[ '__PROTO' ] then
+			table.insert( protoInstances, id )
 		end
 	end
 
-	for id in pairs( protoInstances ) do
-		mergeProtoData( data, id )
-	end
+	mergeProtoDataList( data, protoInstances )
 
 	_deserializeObjectMap( map, objMap ) --ignore protoInstances
 	
@@ -470,20 +517,28 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 			obj.PROTO_INSTANCE_STATE = {
 				proto = protoPath
 			}
-			local overrideList = objData[ 'override' ]
-			if overrideList then
-				for i, override in ipairs( overrideList ) do
-					local id    = override['id']
+			local overrideMap = objData[ 'overrided' ]
+			if overrideMap then
+				for id, overrided in pairs( overrideMap ) do
 					local entry = objMap[ id ]
-					local obj   = entry[1]
-					local overrideMarks = {}
-					for k in pairs( override['body'] ) do
-						overrideMarks[ k ] = true
+					if entry then
+						local obj   = entry[1]
+						local overrideMarks = {}
+						for k in pairs( overrided ) do
+							overrideMarks[ k ] = true
+						end
+						obj.__overrided_fields = overrideMarks
+					else
+						_warn( 'overrided object not found', id )
 					end
-					obj.__overrided_fields = overrideMarks
 				end
 			end
 		end
+		-- local superProtoPaths = objData['super_proto']
+		-- if superProtoPaths then
+		-- 	if obj.PROTO_INSTANCE_STATE then
+		-- 	end
+		-- end
 	end
 
 	for i, edata in ipairs( data.entities ) do
@@ -526,12 +581,9 @@ function SceneDeserializer:deserializeSingleEntity( data, option )
 	local objMap = self:deserializeEntities( data, nil, nil )
 	local rootId = data.entities[1]['id']
 	local rootEntry = objMap[ rootId ]
-	local skip_guid = option and option.skip_guid or false
-	if (not skip_guid ) and data['guid'] then
-		for id, guid in pairs( data['guid'] ) do
-			local obj = objMap[ id ][ 1 ]
-			obj.__guid = guid
-		end
+	for id, guid in pairs( data['guid'] ) do
+		local obj = objMap[ id ][ 1 ]
+		obj.__guid = guid
 	end
 	return rootEntry[ 1 ], objMap
 end
