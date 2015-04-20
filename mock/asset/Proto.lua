@@ -238,17 +238,18 @@ local function mergeProtoData( data, id )
 	mergeObjectMap( data.map,  data0.map, id  )
 	mergeGUIDMap  ( data.guid, data0.guid, id )
 
-
 	local map = data.map
+	
+	-- print( rootId, '=>', id  )
+
 	map[ id ] = map[ rootId ]
 	map[ id ]['__PROTO']   = protoPath
 	map[ id ]['overrided'] = overrideMap
 	map[ id ]['deleted']   = deleteList
-	map[ id ]['added']     = addList
+	map[ id ]['added']     = addSet
 	map[ rootId ] = { alias = id }
 	
 	data.guid[ rootId ] = id
-	
 	--overrid
 	local namespace = id
 	if overrideMap  then
@@ -412,7 +413,7 @@ function Proto:resetInstanceField( instance, subObject, fieldId )
 		if origin then
 			objMap[ id ] = origin
 		else
-			_warn( 'alias not found', id, alias )
+			_warn( 'alias not found', id, alias, namespace )
 		end
 	end
 
@@ -420,7 +421,6 @@ function Proto:resetInstanceField( instance, subObject, fieldId )
 	local subId
 	if subObject == instance then --root object
 		subId = protoData[ 'entities' ][1]['id']
-		print( 'root', subId )
 	else
 		--strip namespace?
 		subId = subObject.__guid

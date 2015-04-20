@@ -395,6 +395,7 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 					local ns0 = objData['namespace']
 					if ns0 then alias = makeId( alias, ns0 ) end
 					objAliases[ id ] = alias
+					objMap[ id ] = alias
 				else
 					objMap[ id ] = { objData.body, objData }
 				end
@@ -415,13 +416,21 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	end
 
 	for id, alias in pairs( objAliases ) do
-		local origin = objMap[ alias ]
+		local origin
+		while alias do
+			origin = objMap[ alias ]
+			if type( origin ) == 'string' then
+				alias = origin
+			else
+				break
+			end
+		end
 		if not origin then
+			table.simpleprint( objMap )
 			_error( 'alias not found', id, alias )
 			error()
 		end
 		objMap[ id ] = origin
-
 	end
 
 	for id, item in pairs( objMap ) do
