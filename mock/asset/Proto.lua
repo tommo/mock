@@ -44,9 +44,7 @@ function findTopProtoInstance( obj )
 end
 
 function markProtoInstanceOverrided( obj, fid )
-	local protoInstance = findProtoInstance( obj )
-	if not protoInstance then return false end
-
+	if not obj.__proto_history then return false end
 	local overridedFields = obj.__overrided_fields
 	if not overridedFields then
 		overridedFields = {}
@@ -69,9 +67,8 @@ function isProtoInstanceOverrided( obj, fid )
 	return overridedFields and overridedFields[ fid ] and true or false
 end
 
-
 function resetProtoInstanceOverridedField( obj, fid )
-	local protoInstance = findTopProtoInstance( obj )
+	local protoInstance = findProtoInstance( obj )
 	if not protoInstance then return false end
 
 	local overridedFields = obj.__overrided_fields
@@ -155,7 +152,7 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted, added )
 				components = {}
 			}
 			table.insert( children, newChildEntry )
-			mergeEntityEntry( newChildEntry, childEntry, namespace, deleted )
+			mergeEntityEntry( newChildEntry, childEntry, namespace, deleted, added )
 		end
 	end
 
@@ -167,21 +164,28 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted, added )
 
 end
 
-local function mergeObjectMap( map, map0, namespace )
+local function mergeObjectMap( map, map0, namespace, protoPath )
 	for id, data in pairs( map0 ) do
 		local newid = makeId( id, namespace )
 		local newData = simplecopy( data )
-		newData.namespace = namespace
+		if data.namespace then
+			newData.namespace = makeId( data.namespace, namespace )
+		else
+			newData.namespace = namespace
+		end
 		map[ newid ]   = newData
-		if newData['__PROTO'] then
-			newData['__PROTO']   = nil
-			newData['overrided'] = nil
-			newData['deleted']   = nil
-			newData['added']     = nil
-			if not newData['super_proto'] then
-				newData['super_proto'] = {}
+		if data.model then
+			if not newData['proto_history'] then
+				newData['proto_history'] = {}
 			end
-			table.insert( newData['super_proto'], 1, newData[ '__PROTO' ]	)
+			table.insert( newData['proto_history'], protoPath )
+			if newData['__PROTO'] then --remove previous proto data
+				newData['__PROTO']   = nil
+				newData['overrided'] = nil
+				newData['deleted']   = nil
+				newData['added']     = nil
+				table.insert( newData['proto_history'], newData[ '__PROTO' ]	)
+			end
 		end
 	end
 end
@@ -192,6 +196,7 @@ local function mergeGUIDMap( map, map0, namespace )
 		local newGuid = makeId( guid, namespace )
 		map[ newid ]   = newGuid
 	end
+
 end
 
 local function getActualData( dataMap, id, namespace )
@@ -235,7 +240,7 @@ local function mergeProtoData( data, id )
 
 	mergeEntityEntry( entityEntry, entityEntry0, id, deleteSet, addSet )
 	
-	mergeObjectMap( data.map,  data0.map, id  )
+	mergeObjectMap( data.map,  data0.map, id, protoPath )
 	mergeGUIDMap  ( data.guid, data0.guid, id )
 
 	local map = data.map
@@ -249,7 +254,13 @@ local function mergeProtoData( data, id )
 	map[ id ]['added']     = addSet
 	map[ rootId ] = { alias = id }
 	
-	data.guid[ rootId ] = id
+	local guids = data.guid
+	for id0, guid0 in pairs( guids ) do
+		if guid0 == rootId then
+			guids[id0] = nil
+		end
+	end
+	guids[ rootId ] = id
 	--overrid
 	local namespace = id
 	if overrideMap  then
@@ -292,7 +303,7 @@ local function mergeProtoDataList( data, instanceIdList )
 			end
 		end
 		if not next( rest ) then --job done
-			return true
+			break
 		end
 		if not progress then --error
 			table.print( rest )
@@ -300,15 +311,16 @@ local function mergeProtoDataList( data, instanceIdList )
 		end
 		set = rest --retry insertion
 	end
+	return true
 end
 
 _M.mergeProtoData     = mergeProtoData
 _M.mergeProtoDataList = mergeProtoDataList
 
-local _proto_id = 0
+local _proto_id = 5
 function Proto:buildInstanceData( overridedData, guid )
 	local rootId = guid or "__instance_".._proto_id
-	_proto_id = _proto_id + 1
+	_proto_id = _proto_id - 1
 	return {
 		entities = {
 			{ id = rootId,

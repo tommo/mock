@@ -125,10 +125,12 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 	for i, child in ipairs( childrenList ) do
 		local guid = objMap:map( child )
 		local c = childrenIds[ guid ]
-		if c == nil then --new object
+		if c == nil then
+			--new object
 			local data = self:collectEntityWithProto( child, objMap, protoInfo )
 			if data then table.insert( newChildren, data ) end
 		else
+			--sub object
 			c[1] = true
 			local childEntry = c[2]
 			objMap:makeInternal( child )
@@ -507,9 +509,15 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 
 	mergeProtoDataList( data, protoInstances )
 
-	_deserializeObjectMap( map, objMap ) --ignore protoInstances
-	
+	local _, aliases = _deserializeObjectMap( map, objMap ) --ignore protoInstances
+
 	for id, objData in pairs( map ) do
+		local protoHistory = objData[ 'proto_history' ]
+		if protoHistory then
+			local entry = objMap[id]
+			local obj = entry[1]
+			obj.__proto_history = protoHistory
+		end
 		local protoPath = objData[ '__PROTO' ]
 		if protoPath then
 			local entry = objMap[id]
@@ -527,30 +535,22 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 						for k in pairs( overrided ) do
 							overrideMarks[ k ] = true
 						end
-						obj.__overrided_fields = overrideMarks
+						if obj.__proto_history then
+							obj.__overrided_fields = overrideMarks
+						end
 					else
 						_warn( 'overrided object not found', id )
 					end
 				end
 			end
 		end
-		-- local superProtoPaths = objData['super_proto']
-		-- if superProtoPaths then
-		-- 	if obj.PROTO_INSTANCE_STATE then
-		-- 	end
-		-- end
+
 	end
 
 	for i, edata in ipairs( data.entities ) do
 		self:insertEntity( scene, nil, edata, objMap )
 	end
-	return objMap
-end
 
-function SceneDeserializer:preDeserializeScene( scene, data, objMap )
-end
-
-function SceneDeserializer:postDeserializeScene( scene, data, objMap )
 	if data['guid'] then
 		for id, guid in pairs( data['guid'] ) do
 			local obj = objMap[ id ][ 1 ]
@@ -560,6 +560,13 @@ function SceneDeserializer:postDeserializeScene( scene, data, objMap )
 		end
 	end
 
+	return objMap
+end
+
+function SceneDeserializer:preDeserializeScene( scene, data, objMap )
+end
+
+function SceneDeserializer:postDeserializeScene( scene, data, objMap )
 	if data['prefabId'] then
 		for id, prefabId in pairs( data['prefabId'] ) do
 			local obj = objMap[ id ][ 1 ]
@@ -581,10 +588,6 @@ function SceneDeserializer:deserializeSingleEntity( data, option )
 	local objMap = self:deserializeEntities( data, nil, nil )
 	local rootId = data.entities[1]['id']
 	local rootEntry = objMap[ rootId ]
-	for id, guid in pairs( data['guid'] ) do
-		local obj = objMap[ id ][ 1 ]
-		obj.__guid = guid
-	end
 	return rootEntry[ 1 ], objMap
 end
 

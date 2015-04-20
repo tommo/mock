@@ -391,7 +391,7 @@ function TextureGroup:loadTexture( instance )
 		local pixmapPath = node:getObjectFile( 'pixmap' )
 		local tex = self:_loadSingleTexture( pixmapPath, instance:getPath() )
 		instance._texture = tex
-		tex._ownerObject = instnace
+		tex._ownerObject = instance
 	end
 end
 

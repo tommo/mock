@@ -426,7 +426,7 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 			end
 		end
 		if not origin then
-			table.simpleprint( objMap )
+			table.print( objMap )
 			_error( 'alias not found', id, alias )
 			error()
 		end
