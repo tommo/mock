@@ -434,7 +434,7 @@ function SceneSerializer:serializeSingleEntity( entity, keepProto )
 	local output, objMap = self:serializeEntities( {entity}, nil, nil, nil, keepProto )	
 
 	output.__VERSION = _SERIALIZER_VERSION
-	return output
+	return output, objMap
 end
 
 --------------------------------------------------------------------
@@ -627,31 +627,40 @@ end
 
 --------------------------------------------------------------------
 function makeEntityCopyData( ent )
-	local data = serializeEntity( ent, 'keepProto' )
+	local data, objMap = serializeEntity( ent, 'keepProto' )
 	local rootId = data.entities[1]['id']
-	local guids = data.guid
-	data.guid = {} --remove guids
+	local newGuids = {}
+	local objects = objMap.objects
+	for obj, id in pairs( objects ) do
+		if type( obj ) == 'table' and obj.PROTO_INSTANCE_STATE then
+			newGuids[ id ] = id
+		end
+	end
+	data.guid = newGuids
 	return {
-		root = rootId,
-		data = encodeJSON( data )
+		guid = newGuids,
+		data = encodeJSON( data ),
 		}
 end
 
-function makeEntityPasteData( copyData, newId )
-	local rootId = copyData[ 'root' ]
+function makeEntityPasteData( copyData, idGenerator )
+	local guids   = copyData['guid']
 	local json   = copyData[ 'data' ]
-	json = json:gsub( rootId, newId )
+	for guid in pairs( guids ) do
+		local newId = idGenerator()
+		json = json:gsub( guid, newId )
+	end
 	local entityData = decodeJSON( json )
 	return entityData
 end
 
-function makeEntityCloneData( ent, newId )
+function makeEntityCloneData( ent, idGenerator )
 	local copyData = makeEntityCopyData( ent )
-	return makeEntityPasteData( copyData, newId )
+	return makeEntityPasteData( copyData, idGenerator )
 end
 
-function copyAndPasteEntity( ent, newId )
-	local pasteData = makeEntityCloneData( ent, newId )
+function copyAndPasteEntity( ent, idGenerator )
+	local pasteData = makeEntityCloneData( ent, idGenerator )
 	local created = mock.deserializeEntity( pasteData )
 	return created
 end
@@ -659,8 +668,8 @@ end
 
 --------------------------------------------------------------------
 function serializeEntity( ent, keepProto )
-	local data = _sceneSerializer:serializeSingleEntity( ent, keepProto )
-	return data
+	local data, objMap = _sceneSerializer:serializeSingleEntity( ent, keepProto )
+	return data, objMap
 end
 
 function deserializeEntity( data )

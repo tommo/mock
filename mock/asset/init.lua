@@ -22,6 +22,7 @@ require 'mock.asset.TextStyle'
 --GRAPHICS ADV
 require 'mock.asset.RenderTargetTexture'
 require 'mock.asset.Shader'
+require 'mock.asset.DeckPack'
 
 --PARTICLE
 require 'mock.asset.Particle'

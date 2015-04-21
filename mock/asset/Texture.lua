@@ -69,6 +69,7 @@ Texture	:MODEL{
 		'----';		
 		Field 'scale'     ;
 		Field 'processor' :asset('texture_processor');
+		Field 'allowPacked' :boolean();
 	}
 
 function Texture:__init( path )
@@ -87,7 +88,9 @@ function Texture:__init( path )
 	self.rotated       = false
 	self.prebuiltAtlasPath = false
 	self.atlasId       = false
-	self.scale  = -1
+	self.scale         = -1
+	self.allowPacked   = true
+	
 end
 
 function Texture:getSize()
