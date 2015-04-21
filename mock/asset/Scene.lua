@@ -38,6 +38,10 @@ local function componentSortFunc( a, b )
 	return ( a._componentID or 0 ) < ( b._componentID or 0 )
 end
 
+local function idSortFunc( a, b )
+	return ( a.id or '') < ( b.id or '' )
+end
+
 local makeId     = makeNameSpacedId
 
 ---------------------------------------------------------------------
@@ -315,8 +319,9 @@ function SceneSerializer:postSerialize( scene, data, objMap, keepProto )
 			if obj.FLAG_PROTO_SOURCE then
 				local info = self:_serializeProto( obj, id )
 				table.insert( protos, info )
-			end			
+			end
 		end
+		table.sort( protos, idSortFunc )
 		data.protos = protos
 	end
 	
@@ -389,8 +394,8 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 				local objData = map[id]
 				objData[ 'overrided' ] = overridedData
 			end
-
 		end
+		print( 'collected protoinfo', table.len( protoInfo ))
 
 
 	else --without proto support 
@@ -535,9 +540,7 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 						for k in pairs( overrided ) do
 							overrideMarks[ k ] = true
 						end
-						if obj.__proto_history then
-							obj.__overrided_fields = overrideMarks
-						end
+						obj.__overrided_fields = overrideMarks
 					else
 						_warn( 'overrided object not found', id )
 					end
