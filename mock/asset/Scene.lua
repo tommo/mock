@@ -625,6 +625,36 @@ function serializeSceneToFile( scene, path, keepProto )
 	return true
 end
 
+--------------------------------------------------------------------
+function makeEntityCopyData( ent )
+	local data = serializeEntity( ent, 'keepProto' )
+	local rootId = data.entities[1]['id']
+	local guids = data.guid
+	data.guid = {} --remove guids
+	return {
+		root = rootId,
+		data = encodeJSON( data )
+		}
+end
+
+function makeEntityPasteData( copyData, newId )
+	local rootId = copyData[ 'root' ]
+	local json   = copyData[ 'data' ]
+	json = json:gsub( rootId, newId )
+	local entityData = decodeJSON( json )
+	return entityData
+end
+
+function makeEntityCloneData( ent, newId )
+	local copyData = makeEntityCopyData( ent )
+	return makeEntityPasteData( copyData, newId )
+end
+
+function copyAndPasteEntity( ent, newId )
+	local pasteData = makeEntityCloneData( ent, newId )
+	local created = mock.deserializeEntity( pasteData )
+	return created
+end
 
 
 --------------------------------------------------------------------
@@ -633,8 +663,8 @@ function serializeEntity( ent, keepProto )
 	return data
 end
 
-function deserializeEntity( data, option )
-	return _sceneDeserializer:deserializeSingleEntity( data, option )
+function deserializeEntity( data )
+	return _sceneDeserializer:deserializeSingleEntity( data )
 end
 
 --------------------------------------------------------------------
