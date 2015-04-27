@@ -447,7 +447,14 @@ function Scene:setupBox2DWorld()
 		self.physicsOption = option
 	end
 
-	local world = MOAIBox2DWorld.new()
+	local world
+	if option.world and _G[option.world] then
+		
+		local worldClass = rawget(_G, option.world)
+		world = worldClass.new()
+	else
+		world = MOAIBox2DWorld.new()
+	end
 
 	if option.gravity then
 		world:setGravity ( unpack(option.gravity) )
@@ -467,6 +474,7 @@ function Scene:setupBox2DWorld()
 	world:setAngularSleepTolerance ( option.angularSleepTolerance )
 	world:setLinearSleepTolerance  ( option.linearSleepTolerance )
 	self.b2world = world
+
 	local ground = world:addBody( MOAIBox2DBody.STATIC )
 	self.b2ground = ground
 

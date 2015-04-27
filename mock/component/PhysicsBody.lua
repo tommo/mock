@@ -275,8 +275,8 @@ function installPhysicsPostUpdate(klass)
 	end
 
 	local originalOnStart = klass['onStart']
-	klass['onStart'] = function(self)
-		originalOnStart(self)
+	klass['onStart'] = function(self, ...)
+		originalOnStart(self, ...)
 		-- add busy update for onPhysicsPostUpdate
 		local coro = self:addCoroutine( 'physicsPostThread' )
 		self:setActionPriority(coro, 8)

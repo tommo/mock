@@ -59,7 +59,7 @@ function PhysicsShape:updateMaterial()
 	shape:setFriction     ( material.friction )
 	shape:setRestitution  ( material.restitution )
 	shape:setSensor       ( material.isSensor )
-	shape:setFilter       ( material.categoryBits or 0, material.maskBits or 0xffff, material.group or 0 )
+	shape:setFilter       ( material.categoryBits or 1, material.maskBits or 0xffff, material.group or 1 )
 	self.parentBody:updateMass()
 end
 

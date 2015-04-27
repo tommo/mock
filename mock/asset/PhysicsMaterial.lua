@@ -50,7 +50,7 @@ end
 
 --------------------------------------------------------------------
 local function loadPhysicsMaterial( node )
-	local data   = mock.loadAssetDataTable( node:getObjectFile('config') )
+	local data   = mock.loadAssetDataTable( node:getObjectFile('def') )
 	local config = mock.deserialize( nil, data )	
 	return config
 end
