@@ -27,6 +27,16 @@ function CameraPass:init( camera )
 	self:onInit()
 end
 
+function CameraPass:release()
+	self:onRelease()
+end
+
+function CameraPass:onRelease()
+	for key, renderTarget in pairs( self.renderTargets ) do
+		renderTarget:clear()
+	end
+end
+
 function CameraPass:build()
 	self.passes = {}
 	self:onBuild()
@@ -193,13 +203,13 @@ end
 
 function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )	
 	local camera   = self.camera
-	if not camera:isLayerIncluded( sceneLayer.name ) then return false end
+	local allowEditorLayer = option and option.allowEditorLayer
+	if not camera:isLayerIncluded( sceneLayer.name, allowEditorLayer ) then return false end
 	local includeLayer = option and option.include
 	local excludeLayer = option and option.exclude
 	
 	if includeLayer and not table.index( includeLayer, sceneLayer.name ) then return false end
 	if excludeLayer and table.index( excludeLayer, sceneLayer.name ) then return false end
-
 	local source   = sceneLayer.source
 	local layer    = MOAILayer.new()
 	

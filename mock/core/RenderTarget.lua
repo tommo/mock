@@ -88,7 +88,6 @@ end
 
 function TextureRenderTarget:initFrameBuffer( option )
 	option = table.extend( table.simplecopy( DefaultFrameBufferOptions ), option or {} )
-
 	local frameBuffer = MOAIFrameBufferTexture.new()
 	self.frameBuffer = frameBuffer
 
@@ -105,4 +104,10 @@ function TextureRenderTarget:initFrameBuffer( option )
 	frameBuffer:setFilter( filter )
 end
 
+function TextureRenderTarget:clear()
+	if self.frameBuffer then
+		self.frameBuffer:release()
+	end
+	TextureRenderTarget.__super.clear( self )
+end
 

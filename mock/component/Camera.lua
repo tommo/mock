@@ -112,6 +112,9 @@ end
 
 function Camera:onDetach( entity )
 	getCameraManager():unregister( self )
+	for i, pass in ipairs(self.passes) do
+		pass:release()
+	end
 	self.renderTarget:clear()
 end
 
@@ -158,13 +161,16 @@ function Camera:addPass( pass )
 end
 
 --------------------------------------------------------------------
-function Camera:isLayerIncluded( name )
-		return self:_isLayerIncluded( name ) or (not self:_isLayerExcluded( name ))
+function Camera:isLayerIncluded( name, allowEditorLayer )
+		return self:_isLayerIncluded( name, allowEditorLayer ) or (not self:_isLayerExcluded( name, allowEditorLayer ))
 end 
 
 --internal use
-function Camera:_isLayerIncluded( name )
-	if name == '_GII_EDITOR_LAYER' and not self.__allowEditorLayer then return false end
+function Camera:_isLayerIncluded( name, allowEditorLayer )
+	if allowEditorLayer == nil then
+		allowEditorLayer =  self.__allowEditorLayer
+	end
+	if name == '_GII_EDITOR_LAYER' and not allowEditorLayer then return false end
 	if self.includedLayers == 'all' then return nil end
 	for i, n in ipairs( self.includedLayers ) do
 		if n == name then return true end
@@ -173,8 +179,11 @@ function Camera:_isLayerIncluded( name )
 end
 
 --internal use
-function Camera:_isLayerExcluded( name )
-	if name == '_GII_EDITOR_LAYER' and not self.__allowEditorLayer then return true end
+function Camera:_isLayerExcluded( name, allowEditorLayer )
+	if allowEditorLayer == nil then
+		allowEditorLayer =  self.__allowEditorLayer
+	end
+	if name == '_GII_EDITOR_LAYER' and not allowEditorLayer then return true end
 	if self.excludedLayers == 'all' then return true end
 	if not self.excludedLayers then return false end
 	for i, n in ipairs( self.excludedLayers ) do
@@ -320,6 +329,10 @@ end
 
 function Camera:worldToWnd( x, y, z )
 	return self.dummyLayer:worldToWnd( x, y, z )
+end
+
+function Camera:worldToView( x, y, z )
+	return self.dummyLayer:worldToView( x, y, z )
 end
 
 function Camera:getScreenRect() --todo: kill me

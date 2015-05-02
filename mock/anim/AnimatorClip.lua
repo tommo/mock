@@ -1,26 +1,32 @@
 module 'mock'
 
+local insert = table.insert
+
+--------------------------------------------------------------------
 CLASS: AnimatorKey ()
-CLASS: AnimatorTrack ()
+CLASS: AnimatorClipSubNode ()
+CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
+CLASS: AnimatorTrack ( AnimatorClipSubNode )
 CLASS: AnimatorClip ()
 
 --------------------------------------------------------------------
 AnimatorKey
 :MODEL{		
-		Field 'pos'    :int() :range(0)  :getset('Pos');
-		Field 'length' :int() :range(0)  :getset('Length');
-		Field 'tweenMode'      :enum( EnumAnimCurveTweenMode );
-		Field 'tweenAnglePre'  :enum( EnumAnimCurveTweenMode ) :no_edit();		
-		Field 'tweenAnglePost' :enum( EnumAnimCurveTweenMode ) :no_edit();		
+		Field 'pos'    :float() :range(0)  :getset('Pos')      :meta{ decimals = 3, step = 0.01 };
+		Field 'length' :float() :range(0)  :getset('Length')   :meta{ decimals = 3, step = 0.01 };
+		Field 'tweenMode'      :enum( EnumAnimCurveTweenMode ) :no_edit();
+		Field 'tweenAnglePre'  :enum( EnumAnimCurveTweenMode ) :no_edit();
+		Field 'tweenAnglePost' :enum( EnumAnimCurveTweenMode ) :no_edit();
 		Field 'parent' :type( AnimatorTrack ) :no_edit();		
+		'----';
 	}
 
 function AnimatorKey:__init()
 	self.pos    = 0
-	self.length = 10
+	self.length = 0.1
 	----
 	self.tweenMode = 0 --LINEAR
-	self.tweenAnglePre  = 0
+	self.tweenAnglePre  = 180
 	self.tweenAnglePost = 0
 end
 
@@ -41,7 +47,7 @@ function AnimatorKey:findNextKey( allowWrap )
 	local pos0 = self.pos
 	local pos = false
 	local res = nil
-	for i, e in ipairs( keys ) do
+	for i, k in ipairs( keys ) do
 		local pos1 = e.pos
 		if e ~= self and pos1 > pos0  then
 			if not pos or pos > pos1 then
@@ -62,6 +68,7 @@ function AnimatorKey:start( state, pos )
 end
 
 function AnimatorKey:setPos( pos )
+	assert( type( pos ) == 'number' )
 	self.pos = pos
 end
 
@@ -73,8 +80,8 @@ function AnimatorKey:getPos()
 	return self.pos
 end
 
-function AnimatorKey:getKeyFramePos()
-	return self.pos
+function AnimatorKey:getPosMS()
+	return math.floor( self.pos*1000 )
 end
 
 function AnimatorKey:setLength( length )
@@ -98,18 +105,31 @@ function AnimatorKey:getAction()
 	return track and track.parent
 end
 
-function AnimatorKey:getRootConfig()
-	local track = self.parent
-	if track then
-		local action = track.parent
-		if action then return action.parent end
-	end
-	return nil
+function AnimatorKey:getClip()
+	-- local track = self.parent
+	-- if track then
+	-- 	return track:getClip()
+	-- end
+	-- return nil
+	return self.parentClip
 end
 
 function AnimatorKey:setTweenMode( mode )
 	self.tweenMode = mode
 end
+
+function AnimatorKey:setTweenAnglePre( angle )
+	self.tweenAnglePre = 180 - angle
+end
+
+function AnimatorKey:setTweenAnglePost( angle )
+	self.tweenAnglePost = angle
+end
+
+function AnimatorKey:executeEvent( state, time )
+end
+
+
 
 --------------------------------------------------------------------
 --VIRTUAL
@@ -121,20 +141,127 @@ function AnimatorKey:toString()
 	return 'key'
 end
 
+--------------------------------------------------------------------
+AnimatorClipSubNode
+:MODEL{
+	Field 'name' :string();
+	Field 'parent' :type( AnimatorClipSubNode ) :no_edit();
+	Field 'children' :array( AnimatorClipSubNode ) :no_edit();
+	Field 'parentClip' :type( AnimatorClip ) :no_edit();
+}
+
+function AnimatorClipSubNode:__init()
+	self.parent = false
+	self.children = {}
+	self.parentClip = false
+end
+
+function AnimatorClipSubNode:build( context )
+	self:buildChildren( context )
+end
+
+function AnimatorClipSubNode:isPlayable()
+	return false
+end
+
+function AnimatorClipSubNode:buildChildren( context )
+	for _, child in ipairs( self.children ) do
+		child:build( context )
+		if child:isPlayable() then
+			context:addPlayableTrack( child )
+		end
+	end
+end
+
+function AnimatorClipSubNode:getAllChildren( list )
+	list = list or {} 
+	for _, child in ipairs( self.children ) do
+		insert( list, child )
+		child:getAllChildren( list )
+	end
+	return list
+end
+
+function AnimatorClipSubNode:getIcon()
+	return 'normal'
+end
+
+function AnimatorClipSubNode:addChild( node )
+	assert( not node.parent )
+	node.parent = self
+	node.parentClip = self.parentClip
+	insert( self.children, node )
+end
+
+function AnimatorClipSubNode:removeChild( node )
+	local idx = table.index( self.children, node )
+	if idx then
+		table.remove( self.children, idx )
+	end
+end
+
+function AnimatorClipSubNode:getChildren()
+	return self.children
+end
+
+function AnimatorClipSubNode:getParent()
+	return self.parent
+end
+
+function AnimatorClipSubNode:getRoot()
+	local p = self
+	while true do
+		local pp = p.parent
+		if not pp then return p end
+		p = pp
+	end
+end
+
+function AnimatorClipSubNode:getClip()
+	-- local root = self:getRoot()
+	-- return root.clip
+	return self.parentClip
+end
+
+function AnimatorClipSubNode:toString()
+	return 'unknown'
+end
+
+--load from deserialize
+function AnimatorClipSubNode:_load()
+	self:onLoad()
+	for _, child in ipairs( self.children ) do
+		child:_load()
+	end
+end
+
+function AnimatorClipSubNode:onLoad()
+end
+
+updateAllSubClasses( AnimatorClipSubNode )
+
+--------------------------------------------------------------------
+AnimatorTrackGroup
+:MODEL{
+}
+
+function AnimatorTrackGroup:getIcon()
+	return 'group'
+end
 
 --------------------------------------------------------------------
 AnimatorTrack
 :MODEL{
-		Field 'name' :string();		
 		Field 'keys' :array( AnimatorKey ) :no_edit() :sub();		
-		Field 'parent' :type( AnimatorClip ) :no_edit();
 		Field 'enabled' :boolean();
+		Field 'targetPath'  :no_edit() :get( 'serializeTargetPath' ) :set( 'deserializeTargetPath' );
 	}
 
 function AnimatorTrack:__init()
 	self.name = 'track'
 	self.keys = {}
 	self.enabled = true
+	self.targetPath = AnimatorTargetPath()
 end
 
 function AnimatorTrack:getType()
@@ -149,24 +276,37 @@ function AnimatorTrack:getAction()
 	return self.parent
 end
 
-function AnimatorTrack:getRootConfig()
-	local action = self.parent
-	return action and action.parent
+function AnimatorTrack:setTargetPath( path )
+	self.targetPath = path
 end
+
+function AnimatorTrack:serializeTargetPath()
+	local data = self.targetPath:serialize()
+	local jsonData = MOAIJsonParser.encode( data )
+	return jsonData
+end
+
+function AnimatorTrack:deserializeTargetPath( jsonData )
+	local data = MOAIJsonParser.decode( jsonData )
+	self.targetPath = AnimatorTargetPath()
+	self.targetPath:deserialize( data )
+end
+
 --------------------------------------------------------------------
 
-function AnimatorTrack:addKey( pos, evType )
-	evType = evType or self:getDefaultKeyType()
-	local ev = self:createKey( evType )
-	table.insert( self.keys, ev )
-	ev.parent = self
-	ev.pos = pos or 0
-	return ev
+function AnimatorTrack:addKey( pos, keyType )
+	keyType = keyType or self:getDefaultKeyType()
+	local key = self:createKey( keyType )
+	insert( self.keys, key )
+	key.parent = self
+	key:setPos( pos or 0 )
+	return key
 end
 
-function AnimatorTrack:removeKey( ev )
-	for i, e in ipairs( self.keys ) do
-		if e == ev then 
+function AnimatorTrack:removeKey( key )
+	for i, k in ipairs( self.keys ) do
+		if e == key then 
+			key.parent = false
 			table.remove( self.keys, i )
 			return true
 		 end
@@ -174,12 +314,12 @@ function AnimatorTrack:removeKey( ev )
 	return false
 end
 
-function AnimatorTrack:cloneKey( ev )
-	local newEv = mock.clone( ev )
-	table.insert( self.keys, newEv )
-	newEv.parent = self
-	newEv.pos = ev.pos + ev.length
-	return newEv	
+function AnimatorTrack:cloneKey( key )
+	local newKey = mock.clone( key )
+	insert( self.keys, newKey )
+	newKey.parent = self
+	newKey.pos = key.pos + key.length
+	return newKey	
 end
 
 local function _sortKey( o1, o2 )
@@ -192,8 +332,8 @@ end
 
 function AnimatorTrack:calcLength()
 	local l = 0
-	for i, e in ipairs( self.keys ) do
-		local l1 = e:getEnd()
+	for i, k in ipairs( self.keys ) do
+		local l1 = k:getEnd()
 		if l1>l then l = l1 end
 	end
 	return l
@@ -274,118 +414,131 @@ end
 function AnimatorTrack:apply2( state, t0, t1 )
 end
 
+function AnimatorTrack:build( context )
+end
+
+function AnimatorTrack:onStateLoad( state )
+end
+
+--------------------------------------------------------------------
+CLASS: AnimatorClipBuildContext ()
+function AnimatorClipBuildContext:__init()
+	self.length         = 0
+	self.playableTracks = {}
+	self.eventKeys      = {}
+	self.attrLinkInfo   = {}
+	self.attrLinkCount  = 0
+end
+
+function AnimatorClipBuildContext:updateLength( l )
+	self.length = math.max( l, self.length )
+end
+
+function AnimatorClipBuildContext:reserveAttrLinks( track, count )
+	local base = self.attrLinkCount + 1
+	self.attrLinkCount = self.attrLinkCount + count
+	return base
+end
+
+function AnimatorClipBuildContext:addPlayableTrack( track )
+	self.playableTracks[ track ] = true
+end
+
+function AnimatorClipBuildContext:addEventKey( key )
+	insert( self.eventKeys, key )
+end
+
+function AnimatorClipBuildContext:addEventKeyList( keys )
+	for i, key in ipairs( keys ) do
+		self:addEventKey( key )
+	end
+end
+
+
+function AnimatorClipBuildContext:finish()
+	--build keyframe for key events
+	local keyPoints = {}
+	local keySet    = {}
+	local keyMap    = {}
+	for i, eventKey in ipairs( self.eventKeys ) do
+		local pos = eventKey:getPosMS()
+		if pos<0 then pos = 0 end
+		local t = keySet[ pos ]
+		if not t then 
+			t = {}
+			keySet[ pos ] = t
+			insert( keyPoints, pos )
+		end
+		insert( t, eventKey )
+	end
+
+	table.sort( keyPoints )
+	local eventCurve = MOAIAnimCurve.new()
+	eventCurve:reserveKeys( #keyPoints )
+	for i, pos in ipairs( keyPoints ) do
+		local time = pos/1000 --ms convert to second
+		eventCurve:setKey( i, time, i ) 
+		keyMap[ i ] = keySet[ pos ]
+	end
+
+	self.keyEventMap  = keyMap
+	self.eventCurve   = eventCurve
+
+end
+
 --------------------------------------------------------------------
 AnimatorClip	:MODEL{
 		Field 'name' :string();		
 		Field 'loop' :boolean();
 		Field 'length' :int();
-		Field 'tracks' :array( AnimatorTrack ) :no_edit() :sub();		
 		Field 'inherited' :boolean() :no_edit();
+		Field 'root' :type( AnimatorClipSubNode ) :no_edit();
 		'----';
 		Field 'comment' :string();
 	}
 
 function AnimatorClip:__init()
 	self.name      = 'action'
-	self.tracks    = {}
+	
+	self.root      = AnimatorTrackGroup()
+	self.root.parentClip = self
+
 	self.stateData = false
 	self.loop      = false
 	self.length    = -1
+
+	self.builtContext = false
+
 	self.inherited = false
 end
 
-function AnimatorClip:addTrack( t )
-	local track = t or AnimatorTrack()
-	table.insert( self.tracks, track )
-	track.parent = self
-	return track
+function AnimatorClip:getRoot()
+	return self.root
 end
 
-function AnimatorClip:removeTrack( track )
-	for i, t in ipairs( self.tracks ) do
-		if t == track then return table.remove( self.tracks, i )  end
-	end	
+function AnimatorClip:getTrackList()
+	return self.root:getAllChildren()
 end
 
-function AnimatorClip:findTrack( name, trackType )
-	for i, t in ipairs( self.tracks ) do
-		if t.name == name then
-			if not trackType or t:getType() == trackType then return t end
-		end
-	end
+function AnimatorClip:clearPrebuiltContext()
+	self.builtContext = false
 end
 
-function AnimatorClip:findTrackByType( trackType )
-	for i, t in ipairs( self.tracks ) do
-		if t:getType() == trackType then return t end
-	end
-	return nil
+function AnimatorClip:getBuiltContext()
+	if not self.builtContext then self:prebuild() end
+	return self.builtContext
 end
 
-function AnimatorClip:calcLength()
-	local length = 0
-	for i, track in ipairs( self.tracks ) do
-		track:buildStateData( stateData )
-		local l = track:calcLength()
-		if l>length then length = l end
-	end
-	return length
+function AnimatorClip:prebuild()
+	local playableTrackList = {}
+	local buildContext = AnimatorClipBuildContext()
+	self.root:build( buildContext )
+	buildContext:finish()
+	self.builtContext = buildContext
 end
 
 --------------------------------------------------------------------
-function AnimatorClip:getStateData()	
-	return self.stateData or self:buildStateData()
-end
-
-function AnimatorClip:buildStateData()
-	stateData = {}
-	stateData.length   = self:calcLength()
-	stateData.keyCurve = self:_buildKeyCurve()
-	self.stateData = stateData
-	return stateData
-end
-
-function AnimatorClip:clearStateData()
-	for i, track in ipairs( self.tracks ) do
-		track:clearStateData( stateData )
-	end
-	self.stateData = false
-end
-
-function AnimatorClip:_buildKeyCurve()
-	local spanPoints = {}
-	local spanSet    = {}
-	local spanList   = {}
-	for i, track in ipairs( self.tracks ) do
-		track:sortKeys()
-		if track:hasKeyFrames() then
-			for i, key in ipairs( track.keys ) do
-				local pos = key:getKeyFramePos()
-				if pos<0 then pos = 0 end
-				local t = spanSet[ pos ]
-				if not t then 
-					t = {}
-					spanSet[ pos ] = t
-					table.insert( spanPoints, pos )
-				end
-				table.insert( t, key )
-			end
-		end
-	end
-	table.sort( spanPoints )
-	local curve = MOAIAnimCurve.new()
-	curve:reserveKeys( #spanPoints )
-	for i, pos in ipairs( spanPoints ) do
-		local time = pos/1000 --ms convert to second
-		curve:setKey( i, time, i ) 
-		spanList[ i ] = spanSet[ pos ]
-	end
-	self.spanList = spanList
-	return curve
-end
-
 --------------------------------------------------------------------
-
 local _TrackTypes = {}
 function getAnimatorTrackTypeTable()
 	return _TrackTypes

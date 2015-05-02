@@ -148,6 +148,11 @@ function FMODProjectLoader( node )
 	return proj
 end
 
+function FMODProjectUnloader( node )
+	
+end
+
+
 function FMODGroupLoader( node )
 	local p = node.parent
 	local pAsset, pNode = loadAsset( p )
@@ -167,6 +172,8 @@ function FMODEventLoader( node )
 	return group and group:getEvent( node:getName() )
 end
 
-registerAssetLoader( 'fmod_project', FMODProjectLoader )
+
+
+registerAssetLoader( 'fmod_project', FMODProjectLoader, FMODProjectUnloader )
 registerAssetLoader( 'fmod_event', FMODEventLoader )
 registerAssetLoader( 'fmod_group', FMODGroupLoader )

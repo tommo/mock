@@ -3,22 +3,22 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: Animator ( mock.Behaviour )
 	:MODEL{
-		Field 'config'       :asset('Animator') :getset( 'Config' );
-		Field 'defaultClip'  :string();
+		Field 'data'         :asset('animator_data') :getset( 'DataPath' );
+		Field 'default'      :string() :selection( 'getClipNames' );
 		Field 'autoPlay'     :boolean();
-		Field 'loop'         :boolean();
+		Field 'autoPlayMode' :enum( EnumTimerMode );
 	}
 
 function Animator:__init()
-	self.config      = false
+	self.dataPath    = false
+	self.data        = false
 	self.default     = 'default'
 	self.activeState = false
 	self.throttle    = 1
 	self.scale       = 1
+	self.autoPlay    = true
+	self.autoPlayMode= MOAITimer.LOOP 
 	self.params      = {}
-
-	self.clipEventCallbacks = false
-	self.pendingClips = false
 end
 
 --------------------------------------------------------------------
@@ -26,19 +26,28 @@ function Animator:onAttach( entity )
 end
 --------------------------------------------------------------------
 
-function Animator:setConfig( configPath )
-	self.configPath = configPath
-	self.config = mock.loadAsset( configPath )
-	self:updateConfig()
+function Animator:setDataPath( dataPath )
+	self.dataPath = dataPath
+	self.data = mock.loadAsset( dataPath )
 end
 
-function Animator:getConfig()
-	return self.configPath
+function Animator:getDataPath()
+	return self.dataPath
 end
 
-function Animator:updateConfig()
-	local config = self.config
-	if not config then return end
+function Animator:getData()
+	return self.data
+end
+
+function Animator:getClipNames()
+	local data = self.data
+	if not data then return nil end
+	local result = {}
+	for _, clip in ipairs( data.clips ) do
+		local name = clip.name
+		table.insert( result, { name, name } )
+	end
+	return result
 end
 
 --------------------------------------------------------------------
@@ -61,8 +70,8 @@ end
 --Track access
 --------------------------------------------------------------------
 function Animator:getClip( clipName )
-	if not self.config then return nil end
-	return self.config:getClip( clipName )
+	if not self.data then return nil end
+	return self.data:getClip( clipName )
 end
 
 function Animator:findTrack( clipName, trackName, trackType )
@@ -86,39 +95,40 @@ end
 --------------------------------------------------------------------
 --playback
 function Animator:hasClip( name )
-	if not self.config then
+	if not self.data then
 		return false
 	end
-	return self.config:getClip( name ) and true or false
+	return self.data:getClip( name ) and true or false
+end
+
+function Animator:_loadClip( clip )
+	self:stop()
+	self:setThrottle( 1 )
+	local state = AnimatorState()
+	state:loadClip( self, clip )
+	self.activeState = state
+	return state
 end
 
 function Animator:setClip( name )
-	if not self.config then
-		_warn('Animator has no config')
+	if not self.data then
+		_warn('Animator has no data')
 		return false
 	end
-	local clip = self.config:getClip( name )
+	local clip = self.data:getClip( name )
 	if not clip then
 		_warn( 'Animator has no clip', name )
 		return false
 	end
-	self:stop()
-	self:setThrottle( 1 )
-	local clipState = AnimatorState( self, clip )
-	self.activeState = clipState
-	return clipState
+	return self:_loadClip( clip )
 end
 
-function Animator:play( name )
+function Animator:play( name, mode )
 	local state = self:setClip( name )
-	self.pendingClips = false
-	if state then	state:start()	end
-	return state
-end
-
-function Animator:playSequence( first, ... )
-	local state = self:play( first )
-	self.pendingClips = { ... }
+	if state then	
+		state:setMode( mode )
+		state:start()
+	end
 	return state
 end
 
@@ -145,9 +155,9 @@ end
 
 -----
 function Animator:onStart( ent )	
-	if self.autoPlay and self.default and self.config then
+	if self.autoPlay and self.default and self.data then
 		if self.default == '' then return end
-		self:play( self.default )
+		self:play( self.default, self.autoPlayMode )
 	end
 	mock.Behaviour.onStart( self, ent )
 end
@@ -155,80 +165,6 @@ end
 function Animator:onDetach( ent )
 	self:stop()
 	return mock.Behaviour.onDetach( self, ent )
-end
-
---------------------------------------------------------------------
-function Animator:processClipEvent( evtype, ev, time, state )	
-	if self.clipEventCallbacks then
-		for i, callback in ipairs( self.clipEventCallbacks ) do
-			callback( self, evtype, ev, time, state )
-		end
-	end
-end
-
-function Animator:addClipEventCallback( cb )
-	local callbacks = self.clipEventCallbacks
-	if not callbacks then
-		callbacks = {}
-		self.clipEventCallbacks = callbacks
-	end
-	table.insert( callbacks, cb )
-end
-
-function Animator:removeClipEventCallback( cb )
-	for i, v in ipairs( self.clipEventCallbacks ) do
-		if v == cb then
-			return table.remove( self.clipEventCallbacks, i )
-		end
-	end
-end
-
---------------------------------------------------------------------
-function Animator:processStateEvent( evtype, timesExecuted )	
-	if evtype == 'stop' then
-		if self.pendingClips then
-			local nextClip = table.remove( self.pendingClips, 1 )
-			if nextClip then
-				local state = self:setClip( nextClip )
-				if state then	state:start()	end
-			else
-				self.pendingClips = false
-			end
-		end
-	end
-
-	if self.stateEventCallbacks then
-		for i, callback in ipairs( self.stateEventCallbacks ) do
-			callback( self, evtype, timesExecuted )
-		end
-	end
-
-end
-
-function Animator:addStateEventCallback( cb )
-	local callbacks = self.stateEventCallbacks
-	if not callbacks then
-		callbacks = {}
-		self.stateEventCallbacks = callbacks
-	end
-	table.insert( callbacks, cb )
-end
-
-function Animator:removeStateEventCallback( cb )
-	for i, v in ipairs( self.stateEventCallbacks ) do
-		if v == cb then
-			return table.remove( self.stateEventCallbacks, i )
-		end
-	end
-end
-
---------------------------------------------------------------------
---EVENT ACTION:
-
-function Animator:playAnim( clip, loop, resetPose )
-end
-
-function Animator:stopAnim( resetPose )
 end
 
 --------------------------------------------------------------------

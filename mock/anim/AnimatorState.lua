@@ -1,186 +1,119 @@
 module 'mock'
 
+local function _onAnimUpdate( anim )
+	local t = anim:getTime()
+	local state = anim.source
+	return state:onUpdate( t )
+end
+
+local function _onAnimKeyFrame( timer, keyId, timesExecuted, time, value )
+	local state  = timer.source
+	local keys   = state.keyEventMap[ keyId ]
+	local time   = timer:getTime()
+	for i, key in ipairs( keys ) do
+		key:executeEvent( state, time )
+	end
+end
+
 --------------------------------------------------------------------
 CLASS: AnimatorState ()
 	:MODEL{}
 
-local function _actionEventListener( timer, key, timesExecuted, time, value )
-	local state  = timer.state
-	local action = state.action
-	local spans  = action.spanList[ key ]
-	local target = state.target
-	local time   = timer:getTime()
-	for i, ev in ipairs( spans ) do
-		ev:start( state, time )
-		target:processActionEvent( 'event', ev, time, state )
-	end
-end
-
-local function _StateStopListener( timer, timesExecuted )
-	timer.state.target:processStateEvent( 'stop', timesExecuted )
-	timer.state.over   = true
-end
-
-local function _stateLoopListener( timer, timesExecuted )
-	timer.state.target:processStateEvent( 'loop', timesExecuted )
-end
-
-function AnimatorState:__init( target, action )
-	self.active = false
-	self.over   = false
-	self.action = action
-	self.target = target
-	
-	local stateData = action:getStateData()
-
-	local timer = MOAIManualTimer.new()
-	self.timer  = timer
-	timer:setCurve( stateData.keyCurve )
-	timer:setListener( MOAITimer.EVENT_TIMER_KEYFRAME, _actionEventListener )
-	timer:setListener( MOAITimer.EVENT_TIMER_LOOP, _stateLoopListener )
-	timer:setListener( MOAITimer.EVENT_TIMER_END_SPAN, _StateStopListener )
-	timer.state = self
-	if action.loop then
-		timer:setMode( MOAITimer.LOOP )
-	else
-		timer:setMode( MOAITimer.NORMAL )
-	end
-	local length = action.length or 0
-	if length<=0 then
-		length = stateData.length
-	end
-	length = length/1000
-	timer:setSpan( length )
-	
-	self.loop   = action.loop
-	self.length = length	
+function AnimatorState:__init()
+	self.anim = MOAIAnim.new()
+	self.anim.source = self
+	self.anim:setListener( MOAIAnim.EVENT_ACTION_POST_UPDATE, _onAnimUpdate )
+	self.anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
+	self.trackContexts = {}
+	self.updateListenerTracks = {}
+	self.attrLinks = {}
+	self.attrLinkCount = 0
 	self.throttle = 1
 end
 
---------------------------------------------------------------------
-function AnimatorState:start()
-	local action = self.action
-	if not action then return end
-	if self.active then return end
-	self.active = true
-	for i, t in ipairs( action.tracks ) do
-		if t.enabled then
-			t:start( self )
-		end
-	end	
-	self.timer:start()
-	self.timer:throttle( self.throttle )
-	self.target:processActionEvent( 'start', nil, 0, self )
+function AnimatorState:setThrottle( t )
+	self.throttle = t
+	self.anim:throttle( t )
 end
 
-function AnimatorState:doStep( step )
-	self.timer:doStep( step )
-	local t1 = self.timer:getTime()
-	-- printf( 'dostep %s %d %d', tostring(self), step*100, t1*100 )
-	local action = self.action
-	if not action then return end
-	for i, track in ipairs( action.tracks ) do
-		if track.enabled then
-			track:apply( self, t1 )
-		end
-	end	
+function AnimatorState:start()
+	self.anim:start()
 end
 
 function AnimatorState:stop()
-	local action = self.action
-	if not action then return end
-	if not self.active then return end
-	self.active = false
-	self.target:processActionEvent( 'stop', nil, self:getTime(), self )
-	for i, t in ipairs( action.tracks ) do
-		if t.enabled then
-			t:stop( self )
-		end
-	end	
-	self.timer:stop()
+	self.anim:stop()
+end
+
+function AnimatorState:setMode( mode )
+	self.anim:setMode( mode )
 end
 
 function AnimatorState:pause( paused )
-	local action = self.action
-	if not action then return end
-	if not self.active then return end
-	self.timer:pause( paused )
-	for i, t in ipairs( action.tracks ) do
-		if t.enabled then
-			t:pause( self, paused )
-		end
-	end	
+	self.anim:pause( paused )
 end
 
-function AnimatorState:apply( a, b )
-	if b then
-		local t0, t1 = a, b
-		self.timer:setTime( t1 )
-		local action = self.action
-		if not action then return end
-		for i, track in ipairs( action.tracks ) do
-			if track.enabled then
-				track:apply2( self, t0, t1 )
-			end
-		end
-	else
-		local t0, t1 = a, a
-		self.timer:setTime( t1 )
-		t1 = self.timer:getTime()
-		local action = self.action
-		if not action then return end
-		for i, track in ipairs( action.tracks ) do
-			if track.enabled then
-				track:apply( self, t1 )
-			end
-		end
-	end	
-	self.timer:forceUpdate()
-end
-
-function AnimatorState:isDone()
-	return self.timer:isDone()
-end
-
-function AnimatorState:isActive()
-	return self.timer:isDone()
-end
-
-function AnimatorState:isPaused()
-	return self.timer:isPaused()
+function AnimatorState:resume()
+	self.anim:resume()
 end
 
 function AnimatorState:getTime()
-	return self.timer:getTime()
+	return self.anim:getTime()
 end
 
-function AnimatorState:getTimer()
-	return self.timer
+function AnimatorState:apply( t )
+	local anim = self.anim
+	local t0 = anim:getTime()
+	anim:setTime( t )
+	anim:apply( t0, t )
+	t = anim:getTime()
+	self:onUpdate( t )
 end
 
-function AnimatorState:setThrottle( th )
-	local action = self.action
-	if not action then return end
-
-	th = th or 1
-	self.throttle = th
-	self.timer:throttle( th )
-	for i, t in ipairs( action.tracks ) do
-		t:setThrottle( self, th )
-	end	
+function AnimatorState:onUpdate( t )
+	for track, target in pairs( self.updateListenerTracks ) do
+		track:apply( self, target, t )
+	end
 end
 
---------------------------------------------------------------------
-function AnimatorState:setTrackActive( track )
-	--todo
+function AnimatorState:loadClip( animator, clip )
+	self.animator    = animator
+	self.targetRoot  = animator._entity
+	self.targetScene = self.targetRoot.scene
+	self.clip        = clip
+
+	local anim = self.anim
+	local context = clip:getBuiltContext()
+	anim:setSpan( context.length )
+	
+	local trackContexts = self.trackContexts
+	for track in pairs( context.playableTracks ) do
+		track:onStateLoad( self )
+	end
+
+	anim:reserveLinks( self.attrLinkCount )
+	for i, linkInfo in ipairs( self.attrLinks ) do
+		local track, curve, target, attrId, asDelta  = unpack( linkInfo )
+		anim:setLink( i, curve, target, attrId, asDelta )
+	end
+
+	--event key
+	anim:setCurve( context.eventCurve )
+	self.keyEventMap = context.keyEventMap
+
 end
 
---------------------------------------------------------------------
-function AnimatorState:findTrack( typeName )
-	local action = self.action
-	return action and  action:findTrack( typeName )
+function AnimatorState:addUpdateListenerTrack( track, target )
+	self.updateListenerTracks[ track ] = target
 end
 
--- --------------------------------------------------------------------
--- function AnimatorState:setListener( actionEvent, listener )
+function AnimatorState:addAttrLink( track, curve, target, id, asDelta )
+	self.attrLinkCount = self.attrLinkCount + 1
+	self.attrLinks[ self.attrLinkCount ] = { track, curve, target, id, asDelta or false }
+end
+
+function AnimatorState:findTarget( targetPath )
+	local obj = targetPath:get( self.targetRoot, self.targetScene )
+	return obj
+end
+-- function AnimatorState:addEventKey( track )
 -- end

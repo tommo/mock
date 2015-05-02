@@ -1,4 +1,29 @@
 module 'mock'
+--------------------------------------------------------------------
+CLASS: AnimatorKeyNumber ( AnimatorKey )
+	:MODEL{
+		Field 'value'   :number()
+	}
+function AnimatorKeyNumber:__init()
+	self.length = 0
+	self.value = 0
+end
+
+function AnimatorKeyNumber:isResizable()
+	return false
+end
+
+function AnimatorKeyNumber:toString()
+	return tostring( self.value )
+end
+
+function AnimatorKeyNumber:setValue( v )
+	self.value = v
+end
+
+function AnimatorKeyNumber:getCurveValue()
+	return self.value
+end
 
 --------------------------------------------------------------------
 CLASS: AnimatorKeyBoolean ( AnimatorKey )
@@ -9,7 +34,7 @@ CLASS: AnimatorKeyBoolean ( AnimatorKey )
 function AnimatorKeyBoolean:__init()
 	self.length = 0
 	self.value  = true
-	self.tweenMode = 1
+	self.tweenMode = 1 --constant
 end
 
 function AnimatorKeyBoolean:isResizable()
@@ -31,31 +56,3 @@ end
 function AnimatorKeyBoolean:getCurveValue()
 	return self.value and 100 or 0
 end
-
---------------------------------------------------------------------
-CLASS: AnimatorTrackBoolean ( AnimatorTrack )
-	:MODEL{
-}
-
-function AnimatorTrackBoolean:__init()
-	self.name = 'boolean'
-	self.tweenMode = 0 --always constant 
-end
-
-function AnimatorTrackBoolean:getType()
-	return 'boolean'
-end
-
-function AnimatorTrackBoolean:createKey()
-	return AnimatorKeyBoolean()
-end
-
-function AnimatorTrackBoolean:toString()
-	return '<bool>' .. tostring( self.name )
-end
-
-
-
---------------------------------------------------------------------
-registerAnimatorTrackType( 'boolean', AnimatorTrackBoolean )
-

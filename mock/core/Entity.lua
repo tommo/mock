@@ -443,6 +443,19 @@ function Entity:addInternalChild( e, layer )
 	return self:addChild( e, layer )
 end
 
+function Entity:isChildOf( e )
+	local parent = self.parent
+	while parent do
+		if parent == e then return true end
+		parent = parent.parent
+	end
+	return false
+end
+
+function Entity:hasChild( e )
+	return e:isChildOf( self )
+end
+
 function Entity:getChildren()
 	return self.children
 end

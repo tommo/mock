@@ -362,7 +362,7 @@ function Proto:loadData( dataPath )
 
 	self.data      = data
 	self.ready     = true
-
+	self.rootId    = data.entities[1]['id']
 	self.loading = false
 end
 

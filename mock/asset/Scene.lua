@@ -395,7 +395,6 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 				objData[ 'overrided' ] = overridedData
 			end
 		end
-		print( 'collected protoinfo', table.len( protoInfo ))
 
 
 	else --without proto support 
