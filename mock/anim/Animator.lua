@@ -1,7 +1,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: Animator ( mock.Behaviour )
+CLASS: Animator ( Component )
 	:MODEL{
 		Field 'data'         :asset('animator_data') :getset( 'DataPath' );
 		Field 'default'      :string() :selection( 'getClipNames' );
@@ -159,12 +159,10 @@ function Animator:onStart( ent )
 		if self.default == '' then return end
 		self:play( self.default, self.autoPlayMode )
 	end
-	mock.Behaviour.onStart( self, ent )
 end
 
 function Animator:onDetach( ent )
 	self:stop()
-	return mock.Behaviour.onDetach( self, ent )
 end
 
 --------------------------------------------------------------------

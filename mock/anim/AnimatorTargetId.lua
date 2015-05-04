@@ -87,6 +87,8 @@ function AnimatorTargetPath:deserialize( data )
 			id = AnimatorChildEntityId()
 		elseif tag == 'global' then
 			id = AnimatorGlobalEntityId()
+		elseif tag == 'this' then
+			id = AnimatorThisEntityId()
 		end
 		id:deserialize( idData[2] )
 		ids[ i ] = id
@@ -138,8 +140,12 @@ function AnimatorTargetPath.buildForEntity( target, relativeTo )
 			current = current.parent
 			if current == relativeTo then break end
 		end
+	elseif target == relativeTo then
+		local id = AnimatorThisEntityId.buildForObject( target )
+		path:prependId( id )
 	else --absolute path
 		--TODO
+		error('TODO')
 	end
 
 	return path
@@ -311,6 +317,29 @@ function AnimatorGlobalEntityId:get( entity, scene )
 	end
 	return false
 end
+
+--------------------------------------------------------------------
+CLASS: AnimatorThisEntityId( AnimatorChildEntityId )
+function AnimatorThisEntityId:getTag()
+	return 'this'
+end
+
+function AnimatorThisEntityId:get( entity, scene )
+	return entity
+end
+
+function AnimatorThisEntityId:getTargetClass()
+	return self.targetClas
+end
+
+function AnimatorThisEntityId.buildForObject( obj )
+	local id = AnimatorThisEntityId()
+	id.id = obj.__guid
+	id.targetClas = obj.__class
+	id.name = obj:getName()
+	return id
+end
+
 
 -- function AnimatorGlobalEntityId.buildForObject( obj )
 -- 	local id = AnimatorGlobalEntityId()

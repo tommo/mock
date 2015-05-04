@@ -30,7 +30,7 @@ CLASS: MSprite ( RenderComponent )
 		'----';
 		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
 		Field 'default' :string() :selection( 'getClipNames' );
-		Field 'playFPS' :int();
+		Field 'playFPS' :int() :getset('FPS');
 		Field 'autoPlay' :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );
 	}
@@ -89,7 +89,6 @@ function MSprite:setSprite( path )
 	end
 
 end
-
 -- function MSprite:_updateFeatureMask()
 -- 	if not self.deckInstance then return end
 -- 	local instance = self.deckInstance
@@ -256,7 +255,9 @@ end
 function MSprite:setSpeed( speed )
 	speed = speed or 1
 	self.playSpeed = speed
-	self.driver:setSpeed( speed * self.playFPS )
+	if self.driver then
+		self.driver:setSpeed( speed * self.playFPS )
+	end
 end
 
 function MSprite:getSpeed()
@@ -327,3 +328,19 @@ end
 function MSprite:isVisible()
 	return self.prop:isVisible()
 end
+
+
+--------------------------------------------------------------------
+CLASS: AnimatorKeyMSpritePlayback ( AnimatorKey )
+	:MODEL{
+		Field 'clip'  :string() :selection( 'getClipSelection' );
+		Field 'playMode' :enum( EnumTimerMode );
+		Field 'FPS'   :int();
+	}
+
+
+--------------------------------------------------------------------
+CLASS: AnimatorTrackMSpritePlayback ( AnimatorTrack )
+	:MODEL{
+	}
+

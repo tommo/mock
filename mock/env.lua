@@ -60,6 +60,9 @@ require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 require 'mock.gui'
 
 ----------------Builtin Components
+require 'mock.anim'
+
+--------------------------------------------------------------------
 require 'mock.component'
 require 'mock.entity'
 
@@ -69,8 +72,6 @@ require 'mock.effect'
 ----UI
 require 'mock.ui'
 
-----Anim
-require 'mock.anim'
 
 ----tools
 require 'mock.tools'
