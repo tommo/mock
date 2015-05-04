@@ -37,16 +37,8 @@ function AnimatorKeyBoolean:__init()
 	self.tweenMode = 1 --constant
 end
 
-function AnimatorKeyBoolean:isResizable()
-	return true
-end
-
-function AnimatorKeyBoolean:start( state, pos )	
-	state.target:tell( self.message, self )
-end
-
 function AnimatorKeyBoolean:toString()
-	return tostring( self.message )
+	return tostring( self.value )
 end
 
 function AnimatorKeyBoolean:setValue( v )
@@ -54,5 +46,40 @@ function AnimatorKeyBoolean:setValue( v )
 end
 
 function AnimatorKeyBoolean:getCurveValue()
-	return self.value and 100 or 0
+	return self.value and 1 or 0
 end
+
+
+--------------------------------------------------------------------
+CLASS: AnimatorKeyString ( AnimatorKey )
+	:MODEL{
+		Field 'tweenMode' :no_edit();
+		Field 'value'   :string()
+	}
+function AnimatorKeyString:__init()
+	self.length = 0
+	self.value  = ''
+	self.tweenMode = 1 --constant
+end
+
+function AnimatorKeyString:isResizable()
+	return true
+end
+
+function AnimatorKeyString:start( state, pos )	
+	state.target:tell( self.message, self )
+end
+
+function AnimatorKeyString:toString()
+	return tostring( self.value )
+end
+
+function AnimatorKeyString:setValue( v )
+	self.value = v and true or false
+end
+
+function AnimatorKeyString:getCurveValue()
+	return self.value and 1 or 0
+end
+
+

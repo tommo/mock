@@ -1,7 +1,4 @@
 module 'mock'
--- --------------------------------------------------------------------
--- CLASS: AnimatorTrackFieldParentObject ( AnimatorTrackGroup )
---------------------------------------------------------------------
 CLASS: AnimatorTrackField ( AnimatorTrack )
 	:MODEL{
 		Field 'fieldId' :string();
@@ -19,6 +16,10 @@ function AnimatorTrackField:initFromObject( obj, fieldId, relativeTo )
 	self.targetField = model:getField( fieldId )
 	self.fieldId = fieldId
 	self:setTargetPath( path )
+	self:onInit()
+end
+
+function AnimatorTrackField:onInit()
 end
 
 function AnimatorTrackField:isMatched( obj, fieldId, relativeTo )
@@ -26,16 +27,7 @@ function AnimatorTrackField:isMatched( obj, fieldId, relativeTo )
 end
 
 function AnimatorTrackField:getType()
-	return 'field'
-end
-
-function AnimatorTrackField:createKey()
-	local key = AnimatorKeyNumber()
-	return key
-end
-
-function AnimatorTrackField:getTargetValue( obj )
-	return self.targetField.getValue( obj )
+	return 'field<unknown>'
 end
 
 function AnimatorTrackField:toString()
@@ -58,7 +50,8 @@ function AnimatorTrackField:isPlayable()
 end
 
 function AnimatorTrackField:onStateLoad( state )
-	local target = state:findTarget( self.targetPath )
+	local rootEntity, scene = state:getTargetRoot()
+	local target = self.targetPath:get( rootEntity, scene )
 	state:addUpdateListenerTrack( self, target )
 end
 
@@ -66,4 +59,16 @@ function AnimatorTrackField:onLoad()
 	local clas = self.targetPath:getTargetClass()
 	local model = Model.fromClass( clas )
 	self.targetField = assert(model:getField( self.fieldId ) )
+end
+
+function AnimatorTrackField:onCollectObjectRecordingState( animator, retainedState )
+	local rootEntity, scene = animator._entity, animator._entity.scene
+	local target = self.targetPath:get( rootEntity, scene )
+	retainedState:markFieldRecording( target, self.fieldId )
+end
+
+function AnimatorTrackField:onRestoreObjectRecordingState( animator, retainedState )
+	local rootEntity, scene = animator._entity, animator._entity.scene
+	local target = self.targetPath:get( rootEntity, scene )
+	retainedState:restoreFieldRecording( target, self.fieldId )
 end

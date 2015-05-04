@@ -577,6 +577,16 @@ function Model:getField( name, findInSuperClass )
 	return nil
 end
 
+function Model:getFieldType( name, findInSuperClass )
+	local field = self:getField( findInSuperClass )
+	if field then
+		return field:getType()
+	else
+		return nil
+	end
+end
+
+
 local function _collectFields( model, includeSuperFields, list, dict )
 	list = list or {}
 	dict = dict or {}

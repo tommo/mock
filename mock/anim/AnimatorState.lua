@@ -115,5 +115,10 @@ function AnimatorState:findTarget( targetPath )
 	local obj = targetPath:get( self.targetRoot, self.targetScene )
 	return obj
 end
+
+function AnimatorState:getTargetRoot()
+	return self.targetRoot, self.targetScene
+end
+
 -- function AnimatorState:addEventKey( track )
 -- end

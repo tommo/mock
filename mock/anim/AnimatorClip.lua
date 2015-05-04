@@ -21,11 +21,11 @@ AnimatorKey
 		'----';
 	}
 
-function AnimatorKey:__init()
-	self.pos    = 0
-	self.length = 0.1
+function AnimatorKey:__init( pos, tweenMode )
+	self.pos    = pos or 0
+	self.length = 0
 	----
-	self.tweenMode = 0 --LINEAR
+	self.tweenMode = tweenMode or 0 --LINEAR
 	self.tweenAnglePre  = 180
 	self.tweenAnglePost = 0
 end
@@ -164,6 +164,10 @@ function AnimatorClipSubNode:isPlayable()
 	return false
 end
 
+function AnimatorClipSubNode:hasCurve()
+	return false
+end
+
 function AnimatorClipSubNode:buildChildren( context )
 	for _, child in ipairs( self.children ) do
 		child:build( context )
@@ -238,6 +242,27 @@ end
 function AnimatorClipSubNode:onLoad()
 end
 
+function AnimatorClipSubNode:collectObjectRecordingState( animator, recordingState )
+	for i, child in ipairs( self.children ) do
+		child:collectObjectRecordingState( animator, recordingState )
+	end
+	self:onCollectObjectRecordingState( animator, recordingState )
+end
+
+function AnimatorClipSubNode:restoreObjectRecordingState( animator, recordingState )
+	for i, child in ipairs( self.children ) do
+		child:restoreObjectRecordingState( animator, recordingState )
+	end
+	self:onRestoreObjectRecordingState( animator, recordingState )
+end
+
+
+function AnimatorClipSubNode:onCollectObjectRecordingState( animator, recordingState )
+end
+
+function AnimatorClipSubNode:onRestoreObjectRecordingState( animator, recordingState )
+end
+
 updateAllSubClasses( AnimatorClipSubNode )
 
 --------------------------------------------------------------------
@@ -293,13 +318,14 @@ function AnimatorTrack:deserializeTargetPath( jsonData )
 end
 
 --------------------------------------------------------------------
+function AnimatorTrack:createKey( pos, ... )
+	--you can return multiple keys
+	error( 'implement this')
+end
 
-function AnimatorTrack:addKey( pos, keyType )
-	keyType = keyType or self:getDefaultKeyType()
-	local key = self:createKey( keyType )
+function AnimatorTrack:addKey( key )
 	insert( self.keys, key )
 	key.parent = self
-	key:setPos( pos or 0 )
 	return key
 end
 
@@ -356,20 +382,6 @@ end
 --whether build keyframe using key from the track
 function AnimatorTrack:hasKeyFrames() 
 	return true
-end
-
---Key Factory
-function AnimatorTrack:createKey()
-	return AnimatorKey()
-end
-
---for multiple key type support
-function AnimatorTrack:getKeyTypes()
-	return false
-end
-
-function AnimatorTrack:getDefaultKeyType()
-	return false
 end
 
 function AnimatorTrack:buildCurve()
@@ -535,8 +547,57 @@ function AnimatorClip:prebuild()
 	self.root:build( buildContext )
 	buildContext:finish()
 	self.builtContext = buildContext
+	self.length = buildContext.length
 end
 
+function AnimatorClip:getLength()
+	return self.length
+end
+
+function AnimatorClip:collectObjectRecordingState( animator, state )
+	local state = state or AnimatorRecordingState( animator )
+	self.root:collectObjectRecordingState( animator, state )
+	return state
+end
+
+--------------------------------------------------------------------
+CLASS: AnimatorRecordingState ()
+
+function AnimatorRecordingState:__init( animator )
+	self.states = {}
+	self.animator = animator
+end
+
+function AnimatorRecordingState:markFieldRecording( obj, fieldId )
+	--TODO:support non field recording state
+	local state = self.states[ obj ]
+	if not state then
+		state = {}
+		self.states[ obj ] = state
+	end
+	local model = Model.fromObject( obj )
+	if state[ fieldId ] then return end
+	state[ fieldId ] = { model:getFieldValue( obj, fieldId ) }
+end
+
+function AnimatorRecordingState:applyRetainedState()
+	for obj, state in pairs( self.states ) do
+		local model = Model.fromObject( obj )
+		for fieldId, boxedValue in pairs( state ) do
+			model:setFieldValue( obj, fieldId, unpack( boxedValue ) )
+		end
+	end
+end
+
+function AnimatorRecordingState:restoreFieldRecording( obj, fieldId )
+	local state = self.states[ obj ]
+	if not state then return end
+	local model = Model.fromObject( obj )
+	local boxedValue = state[ fieldId ]
+	if not boxedValue then return end
+	model:setFieldValue( obj, fieldId, unpack( boxedValue ) )
+	state[ fieldId ] = nil
+end
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 local _TrackTypes = {}
