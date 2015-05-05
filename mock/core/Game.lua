@@ -430,7 +430,7 @@ function Game:initGraphics( fromEditor )
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
-	self:setClearColor( 0.1, 0.1, 0.1, 1 )
+	self:setClearColor( 0, 0, 0, 1 )
 end
 
 function Game:getViewportScale()

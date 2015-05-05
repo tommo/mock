@@ -44,7 +44,10 @@ function SoundListener:setVectorUp( x,y,z )
 	self.up = { x,y,z }
 	self._listener:setVectorUp( x,y,z )
 end
+
 registerComponent( 'SoundListener', SoundListener )
+
+
 
 --------------------------------------------------------------------
 --SOUND SOURCE

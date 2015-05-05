@@ -12,6 +12,7 @@ require 'mock.anim.AnimatorState'
 require 'mock.anim.AnimatorClip'
 require 'mock.anim.AnimatorData'
 require 'mock.anim.Animator'
+require 'mock.anim.AnimatorEditorSupport'
 
 --------------------------------------------------------------------
 require 'mock.anim.AnimatorKeyCommon'
@@ -22,6 +23,8 @@ require 'mock.anim.AnimatorTrackAttr'
 --------------------------------------------------------------------
 require 'mock.anim.tracks.AnimatorTrackMessage'
 
+--------------------------------------------------------------------
+require 'mock.anim.CustomAnimatorTrack'
 
 --------------------------------------------------------------------
 require 'mock.anim.AnimatorTrackField'

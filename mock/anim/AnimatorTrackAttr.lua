@@ -26,7 +26,8 @@ function AnimatorTrackAttr:build( context )
 end
 
 function AnimatorTrackAttr:onStateLoad( state, context )
-	local target = state.target:getProp() --TODO:real target
+	local rootEntity, scene = state:getTargetRoot()
+	local target = self.targetPath:get( rootEntity, scene )
 	state:addAttrLink( self, self.curve, target, self.targetAttrId, self.asDelta )
 end
 

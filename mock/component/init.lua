@@ -50,6 +50,7 @@ require 'mock.component.MsgRedirector'
 --------------------------------------------------------------------
 ---- Audio
 require 'mock.component.Audio'
+require 'mock.component.AudioAnimatorTrack'
 
 
 --------------------------------------------------------------------
@@ -62,7 +63,10 @@ require 'mock.component.PhysicsTriggerArea'
 --------------------------------------------------------------------
 ---- Extended
 require 'mock.component.AuroraSprite'
+
 require 'mock.component.MSprite'
+require 'mock.component.MSpriteAnimatorTrack'
+
 require 'mock.component.SpineSpriteBase'
 require 'mock.component.SpineSprite'
 require 'mock.component.SpineSpriteSimple'
@@ -78,8 +82,10 @@ require 'mock.component.EffectEmitter'
 
 --------------------------------------------------------------------
 require 'mock.component.Layout'
+
 --------------------------------------------------------------------
 --EFFECTS
 require 'mock.component.CameraImageEffectGrayScale'
 require 'mock.component.CameraImageEffectInvert'
 require 'mock.component.CameraImageEffectColorGrading'
+

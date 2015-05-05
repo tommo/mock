@@ -114,8 +114,6 @@ end
 CLASS: GeometryBoxOutline ( GeometryComponent )
 	:MODEL{
 		Field 'size' :type( 'vec3' ) :getset( 'Size' );
-		Field 'h';
-		Field 'd';
 	}
 registerComponent( 'GeometryBoxOutline', GeometryBoxOutline )
 

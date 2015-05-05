@@ -340,6 +340,9 @@ function AnimatorThisEntityId.buildForObject( obj )
 	return id
 end
 
+function AnimatorThisEntityId:toString()
+	return '<this>'
+end
 
 -- function AnimatorGlobalEntityId.buildForObject( obj )
 -- 	local id = AnimatorGlobalEntityId()

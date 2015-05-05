@@ -164,6 +164,14 @@ function AnimatorClipSubNode:isPlayable()
 	return false
 end
 
+function AnimatorClipSubNode:isPreviewable()
+	return true
+end
+
+function AnimatorClipSubNode:canDelete()
+	return true
+end
+
 function AnimatorClipSubNode:hasCurve()
 	return false
 end
@@ -317,6 +325,18 @@ function AnimatorTrack:deserializeTargetPath( jsonData )
 	self.targetPath:deserialize( data )
 end
 
+function AnimatorTrack:getTargetObject( rootEntity, scene )
+	if not self.targetPath then return nil end
+	scene = scene or ( rootEntity and rootEntity.scene )
+	if not ( rootEntity or scene ) then return nil end
+	return self.targetPath:get( rootEntity, scene )
+end
+
+function AnimatorTrack:getEditorTargetObject()
+	local rootEntity, rootScene = getAnimatorEditorTarget()
+	return self:getTargetObject( rootEntity, rootScene )
+end
+
 --------------------------------------------------------------------
 function AnimatorTrack:createKey( pos, ... )
 	--you can return multiple keys
@@ -466,7 +486,6 @@ function AnimatorClipBuildContext:addEventKeyList( keys )
 	end
 end
 
-
 function AnimatorClipBuildContext:finish()
 	--build keyframe for key events
 	local keyPoints = {}
@@ -597,29 +616,4 @@ function AnimatorRecordingState:restoreFieldRecording( obj, fieldId )
 	if not boxedValue then return end
 	model:setFieldValue( obj, fieldId, unpack( boxedValue ) )
 	state[ fieldId ] = nil
-end
---------------------------------------------------------------------
---------------------------------------------------------------------
-local _TrackTypes = {}
-function getAnimatorTrackTypeTable()
-	return _TrackTypes
-end
-
-function registerAnimatorTrackType( name, trackClas, eventTypes )
-	if _TrackTypes[ name ] then
-		_warn( 'duplicated action track type', name )
-	end
-	_TrackTypes[ name ] = {
-		clas = trackClas,
-		eventTypes = eventTypes
-	}
-end
-
-function getAnimatorTrackType( name )
-	local entry = _TrackTypes[ name ]
-	return entry and entry.clas
-end
-
-function getAnimatorTrackEventTypes( name )
-
 end
