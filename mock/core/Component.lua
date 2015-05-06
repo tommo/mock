@@ -42,10 +42,6 @@ function Component:com( id )
 	return self._entity:com( id )
 end
 
-function Component:getScene()
-	return self._entity.scene
-end
-
 --------------------------------------------------------------------
 --Scene
 --------------------------------------------------------------------

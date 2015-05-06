@@ -343,6 +343,35 @@ function Entity:hasComponent( clas )
 	return false
 end
 
+function Entity:getAllComponentsOf( id )
+
+	local components = {}
+	if not self.components then return components end
+
+	local tt = type(id)
+	if tt == 'string' then
+		for com, comType in pairs( self.components ) do
+			while comType do
+				if comType.__name == name then 
+					table.insert(components, com)
+					break
+				end		
+				comType = comType.__super
+			end
+		end
+	elseif tt == 'table' then
+		for com, comType in pairs( self.components ) do
+			if comType == clas then 
+				table.insert(components, com) 
+			elseif isClass( comType ) and comType:isSubclass( clas ) then 
+				table.insert(components, com) 
+			end
+		end
+	end
+
+	return components
+end
+
 --------------------------------------------------------------------
 ------- Attributes Links
 --------------------------------------------------------------------

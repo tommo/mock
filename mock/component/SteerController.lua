@@ -37,11 +37,14 @@ function PhysicsBodySteerController:clearBehaviours()
 end
 
 function PhysicsBodySteerController:pause()
-	self._controller:pause()
+	self._controller:pause(true)
+
+	self._controller:setLinearVelocity(0, 0, 0)
+	self._controller:setAngularVelocity(0)
 end
 
 function PhysicsBodySteerController:resume()
-	self._controller:resume()
+	self._controller:pause(false)
 end
 
 function PhysicsBodySteerController:getLimiter()
