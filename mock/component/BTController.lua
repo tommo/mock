@@ -871,14 +871,16 @@ end
 
 function BTController:onUpdate( dt )
 	local tree = self.tree
-	if not tree then return end
+	if not tree then return false end
 	local context = self.context
 	local running = context:updateRunningNodes( dt )
 	if not running and self._evaluateCountDown <= 0 then
 		self._evaluateCountDown = self._evaluateInterval
 		context:executeTree( self.tree )
+		return true
 	else
 		self._evaluateCountDown = self._evaluateCountDown - 1
+		return false
 	end
 end
 
