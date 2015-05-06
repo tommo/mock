@@ -2,6 +2,7 @@ module 'mock'
 
 --------------------------------------------------------------------
 DefaultPhysicsWorldOption = {
+	world                 = "EWBox2DWorld",
 	gravity               = { 0, -10 },
 	unitsToMeters         = 0.01,
 	velocityIterations    = 6,
