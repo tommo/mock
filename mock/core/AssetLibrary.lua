@@ -376,6 +376,10 @@ function loadAsset( path, option )
 	
 	local atype  = node.type
 	local loaderConfig = AssetLoaderConfigs[ atype ]
+	if not loaderConfig then
+		_warn( 'no loader config for asset', atype, path )
+		return false
+	end
 	if node.parent and ( not loaderConfig.skip_parent or option['skip_parent'] ) then
 		if not loadingAsset[ node.parent ] then
 			loadAsset( node.parent )
@@ -386,7 +390,7 @@ function loadAsset( path, option )
 	--load from file
 	local loader = loaderConfig.loader
 	if not loader then
-		_warn( 'no loader for asset:', atype )
+		_warn( 'no loader for asset:', atype, path )
 		return false
 	end
 	loadingAsset[ path ] = true
