@@ -2,22 +2,6 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-local defaultPhysicsWorldOption = {
-	gravity               = { 0, -10 },
-	unitsToMeters         = 0.01,
-	velocityIterations    = 6,
-	positionIterations    = 8,
-
-	angularSleepTolerance = 0,
-	linearSleepTolerance  = 0,
-	timeToSleep           = 0,
-
-	autoClearForces       = true,
-
-}
-
-
---------------------------------------------------------------------
 --SCENE
 --------------------------------------------------------------------
 CLASS: 
@@ -232,6 +216,16 @@ function Scene:setActionPriority( action, priority )
 	action:attach( group )
 end
 
+function Scene:setMetaData( key, data )
+	self.metaData[ key ] = data
+end
+
+function Scene:getMetaData( key, default )
+	local v = self.metaData[ key ]
+	if v == nil then return default end
+	return v
+end
+
 --------------------------------------------------------------------
 --TIMER
 --------------------------------------------------------------------
@@ -441,11 +435,7 @@ Scene.add = Scene.addEntity
 --------------------------------------------------------------------
 
 function Scene:setupBox2DWorld()
-	local option = game and game.physicsOption or DefaultPhysicsWorldOption
-	if not option then 
-		option = defaultWorldOption
-		self.physicsOption = option
-	end
+	local option = game and game.physicsOption or table.simplecopy( DefaultPhysicsWorldOption )
 
 	local world
 	if option.world and _G[option.world] then

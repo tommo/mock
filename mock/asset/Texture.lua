@@ -69,6 +69,7 @@ Texture	:MODEL{
 		'----';		
 		Field 'scale'     ;
 		Field 'processor' :asset('texture_processor');
+		Field 'allowPacked' :boolean();
 	}
 
 function Texture:__init( path )
@@ -87,7 +88,9 @@ function Texture:__init( path )
 	self.rotated       = false
 	self.prebuiltAtlasPath = false
 	self.atlasId       = false
-	self.scale  = -1
+	self.scale         = -1
+	self.allowPacked   = true
+	
 end
 
 function Texture:getSize()
@@ -391,7 +394,7 @@ function TextureGroup:loadTexture( instance )
 		local pixmapPath = node:getObjectFile( 'pixmap' )
 		local tex = self:_loadSingleTexture( pixmapPath, instance:getPath() )
 		instance._texture = tex
-		tex._ownerObject = instnace
+		tex._ownerObject = instance
 	end
 end
 
@@ -477,7 +480,7 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 		task:start()	
 	else
 		tex:load( filePath, transform, debugName )
-		tex:affirm()
+		-- tex:affirm()
 		if tex:getSize() <= 0 then
 			_warn( 'failed load texture file:', filePath, debugName )
 			tex:load( getTexturePlaceHolderImage() )

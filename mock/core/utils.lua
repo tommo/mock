@@ -148,6 +148,12 @@ function table.extractvalues( t )
 	return r
 end
 
+function table.simpleprint(t) 
+	for k,v in pairs( t ) do
+		print( k, v )
+	end
+end
+
 function table.print(t) 
 	return print( table.show( t ) )
 end

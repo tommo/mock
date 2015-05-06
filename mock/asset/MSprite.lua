@@ -7,7 +7,8 @@ local function MSpriteLoader( node )
 			.modules <uvquad[...]>
 			.frames  <deck_quadlist>
 	]]	
-	local data = loadAssetDataTable( node:getObjectFile('def') )
+	local defFile = node:getObjectFile('def')
+	local data = loadAssetDataTable( defFile )
 	local textures = {}
 	local texRects = {}
 	local uvRects  = {}
@@ -26,10 +27,10 @@ local function MSpriteLoader( node )
 		count = count+1
 		if count>1 then error("multiple image not supported") end
 
-		local imgFile = node:getSiblingPath( name )
-		local tex, texNode = loadAsset( imgFile )
+		local texNodePath = node:getChildPath( node:getBaseName() .. '_texture' )
+		local tex, texNode = loadAsset( texNodePath )
 		if not tex then 
-			_error( 'cannot load sprite texture', imgFile )
+			_error( 'cannot load sprite texture', texNodePath )
 			return nil
 		end
 		local mtex, uvRect = tex:getMoaiTextureUV() 

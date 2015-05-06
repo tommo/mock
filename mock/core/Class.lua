@@ -463,6 +463,10 @@ function findClass( term )
 	end
 end
 
+function getClassByName( fullname )
+	return globalClassRegistry[ fullname ]
+end
+
 function validateAllClasses()
 	--TODO
 	return true
@@ -558,7 +562,6 @@ function Model:getMeta()
 	return rawget( self.__src_class, '__meta' )
 end
 
-
 function Model:getField( name, findInSuperClass )
 	local fields = self.__fields
 	if fields then 
@@ -574,6 +577,16 @@ function Model:getField( name, findInSuperClass )
 	return nil
 end
 
+function Model:getFieldType( name, findInSuperClass )
+	local field = self:getField( findInSuperClass )
+	if field then
+		return field:getType()
+	else
+		return nil
+	end
+end
+
+
 local function _collectFields( model, includeSuperFields, list, dict )
 	list = list or {}
 	dict = dict or {}
@@ -586,7 +599,7 @@ local function _collectFields( model, includeSuperFields, list, dict )
 		for i, f in ipairs( fields ) do
 			local id = f.__id
 			local i0 = dict[id]
-			if i0 and f~=separatorField then --override
+			if i0 and f ~= separatorField then --override
 				list[i0] = f
 			else
 				local n = #list
@@ -719,6 +732,10 @@ end
 
 --type shortcut
 function Field:number()
+	return self:type('number')
+end
+
+function Field:float()
 	return self:type('number')
 end
 

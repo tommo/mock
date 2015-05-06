@@ -1,4 +1,5 @@
 module 'mock'
+
 --------------------------------------------------------------------
 CLASS: Prefab ()
 
@@ -14,7 +15,7 @@ function Prefab:createInstance()
 		_stat('loading empty prefab')
 		instance = Entity()
 	else
-		instance = deserializeEntity( data )
+		instance = deserializeEntityLegacy( data )
 	end
 	instance.__prefabId = self.id or true
 	return instance

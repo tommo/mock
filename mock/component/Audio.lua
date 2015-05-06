@@ -44,7 +44,10 @@ function SoundListener:setVectorUp( x,y,z )
 	self.up = { x,y,z }
 	self._listener:setVectorUp( x,y,z )
 end
+
 registerComponent( 'SoundListener', SoundListener )
+
+
 
 --------------------------------------------------------------------
 --SOUND SOURCE
@@ -112,17 +115,24 @@ function SoundSource:_addInstance( evt, follow )
 	return evt
 end
 
+local event2IDCache = table.weak_k()
 
 local function _affirmFmodEvent( event )
 	if not event then return nil end
+	local id = event2IDCache[ event ]
+	if id ~= nil then return id end
 	if type( event ) == 'string' then
 		event, node = loadAsset( event ) 
-		if node and node.type == 'fmod_event' then return event:getFullName() end
+		if node and node.type == 'fmod_event' then id = event:getFullName() end
 	else
-		return event:getFullName()
+		id = event:getFullName()
 	end
-	_error( 'unknown sound event type:', event )
-	return nil
+	event2IDCache[ event ] = id or false
+	return id
+end
+
+local function clearFmodEventIDCache()
+	event2IDCache = table.weak_k()
 end
 
 function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )

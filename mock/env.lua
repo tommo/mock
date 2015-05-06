@@ -36,7 +36,16 @@ end
 
 module( 'mock.env', package.seeall )
 
-print( 'LUA Version:', _VERSION )
+-- print( 'LUA Version:', _VERSION )
+
+-- setmetatable( _G, { 
+-- 	__index = function(t, k)
+-- 		if k:find( 'MOAI' ) then return end
+-- 		print('getting empty global:', k )
+-- 		print(debug.traceback())
+-- 		return nil
+-- 	end
+-- })
 
 require 'mock.core'
 --------------------------------------------------------------------
@@ -51,11 +60,18 @@ require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 require 'mock.gui'
 
 ----------------Builtin Components
+require 'mock.anim'
+
+--------------------------------------------------------------------
 require 'mock.component'
 require 'mock.entity'
 
 ----Effects
 require 'mock.effect'
+
+----UI
+require 'mock.ui'
+
 
 ----tools
 require 'mock.tools'

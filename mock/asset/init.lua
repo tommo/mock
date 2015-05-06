@@ -7,6 +7,8 @@ require 'mock.asset.Data'
 --SCENE
 require 'mock.asset.Scene'
 require 'mock.asset.Prefab'
+require 'mock.asset.Proto'
+
 
 --GRAPHICS
 require 'mock.asset.TextureHelper'
@@ -18,8 +20,9 @@ require 'mock.asset.Font'
 require 'mock.asset.TextStyle'
 
 --GRAPHICS ADV
-require 'mock.asset.FrameBuffer'
+require 'mock.asset.RenderTargetTexture'
 require 'mock.asset.Shader'
+require 'mock.asset.DeckPack'
 
 --PARTICLE
 require 'mock.asset.Particle'
@@ -48,3 +51,8 @@ require 'mock.asset.EffectNode'
 require 'mock.asset.EffectPack'
 
 require 'mock.asset.NamedTileset'
+
+
+--------------------------------------------------------------------
+require 'mock.asset.StrippedSceneSerializer'
+require 'mock.asset.SceneLegacy'

@@ -6,6 +6,8 @@ module 'mock'
 --  embbed compound type? eg. array of array
 --  MOAI model
 --------------------------------------------------------------------
+local NULL = {}
+
 local function getModel( obj )
 	local class = getClass( obj )
 	if not class then return nil end
@@ -29,32 +31,102 @@ local function isTupleValue( ft )
 		or ft == 'color'
 end
 
+
+local function makeId( refId, namespace )
+	return namespace and refId..':'..namespace or refId
+end
+
+
 --------------------------------------------------------------------
 CLASS: SerializeObjectMap ()
 function SerializeObjectMap:__init()
 	self.newObjects = {}
 	self.objects    = {}
+	self.objectCount = {}
+	self.internalObjects = {}
 	self.currentId  = 10000
+end
+
+function SerializeObjectMap:mapInternal( obj, noNewRef )
+	local id = self:map( obj, noNewRef )
+	if not id then return nil end
+	self:makeInternal( obj )
+	return id
+end
+
+function SerializeObjectMap:makeInternal( obj )
+	self.internalObjects[ obj ] = true
+	self.newObjects[ obj ] = nil
+end
+
+function SerializeObjectMap:isInternal( obj )
+	return self.internalObjects[ obj ] ~= nil
 end
 
 function SerializeObjectMap:map( obj, noNewRef )
 	local id = self.objects[ obj ]
-	if id then return id end
+	if id then
+		self.objectCount[ obj ] = self.objectCount[ obj ] + 1
+		return id
+	end
 	if noNewRef then return nil end
-	id = self.currentId + 1
-	self.currentId = id
-	id = 'OBJ'..id
+	if obj.__guid then
+		id = obj.__guid
+	else
+		id = self.currentId + 1
+		self.currentId = id
+		id = '!'..id
+	end
 	self.objects[ obj ] = id
+	self.objectCount[ obj ] = 1
 	self.newObjects[ obj ] = id
 	return id
 end
 
-function SerializeObjectMap:flush()
+function SerializeObjectMap:flush( obj )
 	local newObjects = self.newObjects
-	self.newObjects = {}
+	if obj then
+		if newObjects[ obj ] then
+			newObjects[ obj ] = nil
+			return obj
+		end
+	else
+		self.newObjects = {}
+	end
 	return newObjects
 end
 
+function SerializeObjectMap:getObjectRefCount( obj )
+	return self.objectCount[ obj ] or 0
+end
+
+function SerializeObjectMap:hasObject( obj )
+	return self.objects[ obj ] or false
+end
+
+
+--------------------------------------------------------------------
+CLASS: DeserializeObjectMap ()
+
+function DeserializeObjectMap:__init()
+	self.objects = {}
+end
+
+function DeserializeObjectMap:set( namespace, id, obj, data )
+	if namespace then
+		id = makeId( id, namespace )
+	end
+	self.objects[ id ] = { obj, data }
+end
+
+function DeserializeObjectMap:get( namespace, id )
+	if namespace then
+		id = makeId( id, namespace )
+	end
+	return self.objects[ id ]
+end
+
+---------------------------------------------------------------------
 local _serializeObject, _serializeField
 
 function _serializeField( obj, f, data, objMap, noNewRef )
@@ -108,7 +180,7 @@ function _serializeField( obj, f, data, objMap, noNewRef )
 end
 
 --------------------------------------------------------------------
-function _serializeObject( obj, objMap, noNewRef )
+function _serializeObject( obj, objMap, noNewRef, partialFields )
 	local tt = type(obj)
 	if tt == 'string' or tt == 'number' or tt == 'boolean' then
 		return { model = false, body = obj }
@@ -117,7 +189,18 @@ function _serializeObject( obj, objMap, noNewRef )
 	local model = getModel( obj )
 	if not model then return nil end
 
-	local fields = model:getFieldList( true )
+	local fields 
+
+	if partialFields then
+		fields = {}
+		for i, key in ipairs( partialFields ) do
+			local f = model:getField( key, true )
+			if f then table.insert( fields, f ) end
+		end
+	else
+		fields = model:getFieldList( true )	
+	end
+
 	---
 	local body = {}
 
@@ -168,10 +251,16 @@ local function serialize( obj, objMap )
 	}
 end
 
+local function getObjectWithNamespace( objMap, id, namespace )
+	if not namespace then return objMap[ id ] end
+	local newId = makeId( id, namespace )
+	return objMap[ newId ] or objMap[ id ]
+end
+
 --------------------------------------------------------------------
 local _deserializeField, _deserializeObject
 
-function _deserializeField( obj, f, data, objMap )
+function _deserializeField( obj, f, data, objMap, namespace )
 	local id = f:getId()
 	local fieldData = data[ id ]
 	local ft = f:getType()
@@ -204,20 +293,20 @@ function _deserializeField( obj, f, data, objMap )
 		elseif f.__objtype == 'sub' then
 			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'string' then --need conversion?
-					local itemTarget = objMap[ itemData ]
+					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
 					array[ i ] = itemTarget[1]
 				else
-					local item = _deserializeObject( nil, itemData, objMap )
+					local item = _deserializeObject( nil, itemData, objMap, namespace )
 					array[ i ] = item
 				end
 			end
 		else
 			for i, itemData in pairs( fieldData ) do
 				if type( itemData ) == 'table' then --need conversion?
-					local item = _deserializeObject( nil, itemData, objMap )
+					local item = _deserializeObject( nil, itemData, objMap, namespace )
 					array[ i ] = item
 				else
-					local itemTarget = objMap[ itemData ]
+					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
 					array[ i ] = itemTarget[1]
 				end
 			end
@@ -227,15 +316,20 @@ function _deserializeField( obj, f, data, objMap )
 	end
 
 	if f.__objtype == 'sub' then
-		f:setValue( obj, _deserializeObject( nil, fieldData, objMap ) )
+		f:setValue( obj, _deserializeObject( nil, fieldData, objMap, namespace ) )
 	else --'ref'
-		local target = objMap[ fieldData ]
-		f:setValue( obj, target[1] )
+		local target = getObjectWithNamespace( objMap, fieldData, namespace )
+		if not target then
+			_error( 'target not found', newid )
+			f:setValue( obj, nil )
+		else
+			f:setValue( obj, target[1] )
+		end
 	end
 
 end
 
-function _deserializeObject( obj, data, objMap )
+function _deserializeObject( obj, data, objMap, namespace, partialFields )
 	local model 
 	if obj then
 		model = getModel( obj )
@@ -256,50 +350,95 @@ function _deserializeObject( obj, data, objMap )
 		--TODO: assert obj class match
 	end
 
-	local fields = model:getFieldList( true )
+	local ns0 = data['namespace']
+	if ns0 then
+		namespace = makeId( ns0, namespace )
+	end
+
+	local fields 
+	if partialFields then
+		fields = {}
+		for i, key in ipairs( partialFields ) do
+			local f = model:getField( key, true )
+			if f then table.insert( fields, f ) end
+		end
+	else
+		fields = model:getFieldList( true )	
+	end
+	
 	local body   = data.body
 	for _,f in ipairs( fields ) do
 		if not ( f:getMeta( 'no_save', false ) or f:getType() == '@action' ) then
-			_deserializeField( obj, f, body, objMap )		
+			_deserializeField( obj, f, body, objMap, namespace )		
 		end
 	end
 
 	local __deserialize = obj.__deserialize
 	if __deserialize then
-		__deserialize( obj, data['extra'] )
+		__deserialize( obj, data['extra'], namespace )
 	end
 
 	return obj, objMap
 end
 
-local function _deserializeObjectMap( map, objMap, rootId, rootObj )
+local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	objMap = objMap or {}
+	objIgnored = objIgnored or {}
+	objAliases = {}
 
 	for id, objData in pairs( map ) do
-		local modelName = objData.model
-
-		if not modelName then --raw
-			objMap[ id ] = { objData.body, objData }
-		else
-			local model = Model.fromName( modelName )
-			if not model then
-				error( 'model not found for '.. objData.model )
-			end
-			local instance 
-			if rootObj and id == rootId then
-				instance = rootObj
+		if not objIgnored[ id ] then			
+			local modelName = objData.model
+			if not modelName then --alias/raw
+				local alias = objData['alias']
+				if alias then
+					local ns0 = objData['namespace']
+					if ns0 then alias = makeId( alias, ns0 ) end
+					objAliases[ id ] = alias
+					objMap[ id ] = alias
+				else
+					objMap[ id ] = { objData.body, objData }
+				end
 			else
-				instance = model:newInstance()
+				local model = Model.fromName( modelName )
+				if not model then
+					error( 'model not found for '.. objData.model )
+				end
+				local instance 
+				if rootObj and id == rootId then
+					instance = rootObj
+				else
+					instance = model:newInstance()
+				end
+				objMap[ id ] = { instance, objData }
 			end
-			objMap[ id ] = { instance, objData }
 		end
+	end
 
+	for id, alias in pairs( objAliases ) do
+		local origin
+		while alias do
+			origin = objMap[ alias ]
+			if type( origin ) == 'string' then
+				alias = origin
+			else
+				break
+			end
+		end
+		if not origin then
+			table.print( objMap )
+			_error( 'alias not found', id, alias )
+			error()
+		end
+		objMap[ id ] = origin
 	end
 
 	for id, item in pairs( objMap ) do
-		local obj     = item[1]
-		local objData = item[2]
-		_deserializeObject( obj, objData, objMap )
+		if not objIgnored[ id ] and not objAliases[id] then
+			local obj     = item[1]
+			local objData = item[2]
+			_deserializeObject( obj, objData, objMap )
+		end
 	end
 
 	return objMap
@@ -313,7 +452,7 @@ local function deserialize( obj, data, objMap )
 	local rootId = data.root
 	if not rootId then return nil end
 
-	objMap = _deserializeObjectMap( map, objMap, rootId, obj )
+	objMap = _deserializeObjectMap( map, objMap, false, rootId, obj )
 
 	local rootTarget = objMap[ rootId ]
 	return rootTarget[1]
@@ -323,7 +462,6 @@ end
 
 --------------------------------------------------------------------
 local deflate = false
-
 
 function serializeToString( obj )
 	local data = serialize( obj )
@@ -468,13 +606,23 @@ function createEmptySerialization( path, modelName )
 end
 
 
+--------------------------------------------------------------------
+--public API
 _M.serialize   = serialize
 _M.deserialize = deserialize
 _M.clone       = _cloneObject
-_M._serializeObject   = _serializeObject
-_M._deserializeObject = _deserializeObject
 
+--internal API
+_M._serializeObject      = _serializeObject
+_M._deserializeObject    = _deserializeObject
 _M._deserializeObjectMap = _deserializeObjectMap
 
-_M.isTupleValue  = isTupleValue
-_M.isAtomicValue = isAtomicValue
+_M._deserializeField     = _deserializeField
+_M._serializeField       = _serializeField
+
+_M.isTupleValue          = isTupleValue
+_M.isAtomicValue         = isAtomicValue
+
+_M.makeNameSpacedId      = makeId
+
+_M._NULL = NULL

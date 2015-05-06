@@ -56,7 +56,7 @@ function collectAssetGarbage()
 			-- reportLoadedMoaiTextures()			
 			-- reportAssetInCache()
 			-- reportHistogram()
-			reportTracingObject()
+			-- reportTracingObject()
 			releaseRetainAssets()
 		end
 		)
@@ -91,8 +91,7 @@ local AssetLibrary = {}
 local AssetSearchCache = {}
 
 --asset loaders
-local AssetLoaders   = {}
-local AssetUnloaders = {}
+local AssetLoaderConfigs = {}
 
 ---env
 local AssetBasePath   = false
@@ -270,12 +269,14 @@ end
 
 --------------------------------------------------------------------
 --loader: func( assetType, filePath )
-function registerAssetLoader( assetType, loader, unloader )
+function registerAssetLoader( assetType, loader, unloader, option )
 	assert( loader )
-	AssetLoaders[ assetType ]   = loader
-	if unloader then
-		AssetUnloaders[ assetType ] = unloader
-	end
+	option = option or {}
+	AssetLoaderConfigs[ assetType ] = {
+		loader     = loader,
+		unloader   = unloader or false,
+		skip_parent = option['skip_parent'] or false,
+	}
 end
 
 --------------------------------------------------------------------
@@ -348,7 +349,7 @@ end
 --------------------------------------------------------------------
 --load asset of node
 --------------------------------------------------------------------
--- local loadingAsset = {} --TODO: a loading list avoid cyclic loading?
+local loadingAsset = table.weak_k() --TODO: a loading list avoid cyclic loading?
 
 function loadAsset( path, option )
 	if path == '' then return nil end
@@ -372,20 +373,25 @@ function loadAsset( path, option )
 
 	_stat( 'loading asset from:', path )
 	if policy ~= 'auto' and policy ~='force' then return nil end
-
-	if ( not option['skip_parent'] ) and node.parent then
-		loadAsset( node.parent )
+	
+	local atype  = node.type
+	local loaderConfig = AssetLoaderConfigs[ atype ]
+	if node.parent and ( not loaderConfig.skip_parent or option['skip_parent'] ) then
+		if not loadingAsset[ node.parent ] then
+			loadAsset( node.parent )
+		end
 		if node.cached.asset then return node.cached.asset end --already preloaded		
 	end
 
 	--load from file
-	local atype  = node.type
-	local loader = AssetLoaders[ atype ]
+	local loader = loaderConfig.loader
 	if not loader then
 		_warn( 'no loader for asset:', atype )
 		return false
 	end
+	loadingAsset[ path ] = true
 	local asset, cached  = loader( node, option )	
+	loadingAsset[ path ] = nil
 	if asset then
 		if cached ~= false then
 			node.cached.asset = asset
@@ -420,7 +426,8 @@ function releaseAsset( path )
 	local node = getAssetNode( path )
 	if node then
 		local atype  = node.type
-		local unloader = AssetUnloaders[ atype ]
+		local assetLoaderConfig =  AssetLoaderConfigs[ atype ]
+		local unloader = assetLoaderConfig and assetLoaderConfig.unloader
 		if unloader then
 			unloader( node, asset )
 		end

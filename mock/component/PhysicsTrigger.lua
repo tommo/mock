@@ -24,7 +24,7 @@ local function _triggerCollisionHandler( phase, fixA, fixB, arb )
 end
 
 --------------------------------------------------------------------
-CLASS: TriggerObjectBase (mock.Component)
+CLASS: TriggerObjectBase ( mock.Component )
 	:MODEL{
 		Field 'enterMessage' :string();
 		Field 'exitMessage' :string();

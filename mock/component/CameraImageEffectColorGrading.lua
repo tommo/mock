@@ -41,7 +41,7 @@ local function buildLUTShader()
 
 		void main () {
 			LOWP vec4 pixel = texture2D ( sampler, uvVarying );
-			vec4 gradedPixel = sampleAs3DTexture( samplerLUT, pixel.rgb, 16.0 );
+			vec4 gradedPixel = sampleAs3DTexture( samplerLUT, pixel.rgb, 32.0 );
 			gradedPixel.a = pixel.a;
 			gl_FragColor = gradedPixel;
 		}

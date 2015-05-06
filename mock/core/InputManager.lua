@@ -642,15 +642,6 @@ end
 
 
 
-------------Expose Event Sender for input mockup
-_sendTouchEvent     = sendTouchEvent
-_sendMouseEvent     = sendMouseEvent
-_sendKeyEvent       = sendKeyEvent
-_sendMotionEvent    = sendMotionEvent
-_sendJoystickEvent  = sendJoystickEvent
-_sendLevelEvent     = sendLevelEvent
-
-
 -----------ENTRY
 function InputDevice:init()
 	if self.virtual then return end

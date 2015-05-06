@@ -43,6 +43,15 @@ function ParseContextProto:init()
 	self.currentParent = false
 end
 
+local function printBTScriptNode( n, indent )
+	io.write( string.rep( '\t', indent or 0 ) )
+	print( string.format( '%s : %s', tostring( n.type ), tostring( n.value ) ))
+	for i, child in ipairs( n.children ) do
+		printBTScriptNode( child, (indent or 0) + 1 )
+	end
+end
+
+
 function ParseContextProto:addLineChild()
 	local node = { type = false, children = {}, indent = self.currentIndent }
 	node.parent = self.currentLineHead
@@ -94,22 +103,37 @@ function ParseContextProto:matchIndent( indent )
 	return self:add()
 end
 
+function ParseContextProto:setErrorInfo( info )
+	self.errorInfo = info
+end
+
 function ParseContextProto:set( type, value )
 	if not self.currentLineHead then
 		self.currentLineHead = self.currentNode
 	else
 		self:addLineChild()
+		if self.decorateState == 'decorating' then
+			self.currentParent = self.currentNode
+			self.decorateState = 'decorated'
+		elseif self.decorateState == 'decorated' then
+			self:setErrorInfo( 'decorator node can only have ONE target node' )
+			return false
+		end
 	end
 	self.currentNode.type     = type
 	self.currentNode.value    = value
+	return true
 end
 
 function ParseContextProto:parseCommon( content, pos, type, symbol )
 	-- local content = content:sub( pos )
 	local s, e, match = string.find( content, '^'..symbol..'%s*([%w_.]+)%s*', pos )
 	if not s then	return pos end
-	self:set( type, match )
-	return e + 1
+	if self:set( type, match ) then
+		return e + 1
+	else
+		return pos
+	end
 end
 
 
@@ -117,8 +141,12 @@ function ParseContextProto:parseDecorator( content, pos, type, symbol )
 	-- local content = content:sub( pos )
 	local s, e, match = string.find( content, '^'..symbol..'%s*', pos )
 	if not s then	return pos end
-	self:set( type, type )
-	return e + 1
+	if self:set( type, type ) then
+		self.decorateState = 'decorating'
+		return e + 1
+	else
+		return pos
+	end
 end
 
 function ParseContextProto:parse_condition ( content, pos )
@@ -178,7 +206,7 @@ function ParseContextProto:parse_decorator_repeat ( content, pos )
 end
 
 function ParseContextProto:parse_commented ( content, pos )
-	local s, e, match = string.find( content, '^//%s*', pos )
+	local s, e, match = string.find( content, '^//.*', pos )
 	if s then
 		self.currentNode.commented = true
 		return e + 1
@@ -195,6 +223,7 @@ end
 
 function ParseContextProto:parseLine( lineNo, l )
 	self.currentLineHead = false
+	self.decorateState = false
 	local i = calcIndent( l )
 	self:matchIndent( i )
 	local pos = i + 1
@@ -220,9 +249,17 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_commented( l, pos )
 		pos = self:parse_spaces( l, pos )
 		if pos0 == pos then 
+			if self.errorInfo then
+				print( self.errorInfo )
+			end
 			local info = string.format( 'syntax error @ %d:%d', lineNo, pos )
 			print( info )
 			error( 'fail parsing') end
+	end
+	if self.decorateState == 'decorating'  then
+		print( 'decorator node must have ONE sub node')
+		string.format( 'syntax error @ %d:%d', lineNo, pos )
+		error( 'fail parsing')
 	end
 	return true
 end
@@ -272,21 +309,36 @@ function loadBTScript( src )
 		return false
 	end
 	outputNode = stripNode( outputNode )
-	-- table.print( outputNode )
 	local tree = BehaviorTree()
 	tree:load( outputNode )
 	return tree
 end
 
-
-local function BTScriptLoader( node )
-	local path = node:getObjectFile('def')
+function loadBTScriptFromFile( path )
 	local f = io.open( path, 'r' )
 	if f then
 		local src = f:read( '*a' )
 		return loadBTScript( src )
 	end
 	return false
+end
+
+function parseBTScriptFile( path )
+	local f = io.open( path, 'r' )
+	if f then
+		local src = f:read( '*a' )
+		local context = setmetatable( {}, ParseContextMT )
+		local outputNode = context:parseSource( src )
+		if outputNode then 
+			printBTScriptNode( outputNode )
+		end
+	end
+	return false
+end
+
+local function BTScriptLoader( node )
+	local path = node:getObjectFile('def')
+	return loadBTScriptFromFile( path )
 end
 
 --------------------------------------------------------------------

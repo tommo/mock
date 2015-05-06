@@ -27,9 +27,12 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: MSprite ( RenderComponent )
 	:MODEL {
+		'----';
 		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
 		Field 'default' :string() :selection( 'getClipNames' );
+		Field 'playFPS' :int() :getset('FPS');
 		Field 'autoPlay' :boolean();
+		Field 'autoPlayMode' :enum( EnumTimerMode );
 	}
 
 wrapWithMoaiPropMethods( MSprite, 'prop' )
@@ -40,13 +43,15 @@ mock.registerEntityWithComponent( 'MSprite', MSprite )
 
 function MSprite:__init()
 	self.prop        = MOAIProp.new()
-	self.driver      = MOAIAnim.new()
+	self.animState      = MOAIAnim.new()
 	self.spriteData = false
 	self.currentClip = false
-	self.playFPS     = 60
+	self.playFPS     = 10
 	self.playSpeed   = 1
-	self.driver:reserveLinks( 3 ) --offset x & offset y & frame index	
+	self.animState:reserveLinks( 3 ) --offset x & offset y & frame index	
 	self.featureMask = {}
+	self.autoPlay    = false
+	self.autoPlayMode= MOAITimer.LOOP 
 end
 
 function MSprite:onAttach( entity )
@@ -60,7 +65,7 @@ end
 
 function MSprite:onStart( entity )
 	if self.autoPlay and self.default then
-		self:play( self.default )
+		self:play( self.default, self.autoPlayMode )
 	end
 end
 
@@ -84,7 +89,6 @@ function MSprite:setSprite( path )
 	end
 
 end
-
 -- function MSprite:_updateFeatureMask()
 -- 	if not self.deckInstance then return end
 -- 	local instance = self.deckInstance
@@ -141,6 +145,22 @@ function MSprite:setShader( shaderPath )
 end
 
 
+function MSprite:setBillboard( billboard )
+	self.billboard = billboard
+	self.prop:setBillboard( billboard )
+end
+
+function MSprite:setDepthMask( enabled )
+	self.depthMask = enabled
+	self.prop:setDepthMask( enabled )
+end
+
+function MSprite:setDepthTest( mode )
+	self.depthTest = mode
+	self.prop:setDepthTest( mode )
+end
+
+
 function MSprite:getSprite()
 	return self.spritePath
 end
@@ -193,32 +213,15 @@ end
 
 function MSprite:setClip( name, mode )
 	if self.currentClip and self.currentClip.name == name then return false end
+	local animState, clip = self:createAnimState( name, mode )
+	if not animState then return false end
 
-	local clip = self:getClip( name )
-	if not clip then 
-		_error( 'animation clip not found:'..name )
-		return
-	end
+	if self.animState then self.animState:stop() end
 	self.currentClip=clip
-	if self.driver then self.driver:stop() end
-	---bind animcurve to driver
-	local driver       = MOAIAnim.new()
-	local indexCurve   = clip.indexCurve
-	local offsetXCurve = clip.offsetXCurve
-	local offsetYCurve = clip.offsetYCurve
-
-	driver:reserveLinks( 3 )
-	driver:setLink( 1, indexCurve,   self.prop, MOAIProp.ATTR_INDEX )
-	-- driver:setLink( 2, offsetXCurve, self.prop, MOAIProp.ATTR_X_LOC )
-	-- driver:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )
-	driver:setMode( mode or clip.mode or MOAITimer.NORMAL )
-
-	self.driver = driver
-
+	self.animState = animState
 	self:setFPS(self.playFPS)
 	self:apply( 0 )
 	self:setTime( 0 )
-
 	return true
 end
 
@@ -235,7 +238,29 @@ end
 function MSprite:setSpeed( speed )
 	speed = speed or 1
 	self.playSpeed = speed
-	self.driver:setSpeed( speed * self.playFPS )
+	if self.animState then
+		self.animState:setSpeed( speed * self.playFPS )
+	end
+end
+
+function MSprite:createAnimState( clipName, mode )
+	local clip = self:getClip( clipName )
+	if not clip then 
+		_error( 'animation clip not found:'..clipName )
+		return false
+	end	
+	---bind animcurve to animState
+	local animState       = MOAIAnim.new()
+	local indexCurve   = clip.indexCurve
+	local offsetXCurve = clip.offsetXCurve
+	local offsetYCurve = clip.offsetYCurve
+
+	animState:reserveLinks( 3 )
+	animState:setLink( 1, indexCurve,   self.prop, MOAIProp.ATTR_INDEX )
+	-- animState:setLink( 2, offsetXCurve, self.prop, MOAIProp.ATTR_X_LOC )
+	-- animState:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )
+	animState:setMode( mode or clip.mode or MOAITimer.NORMAL )
+	return animState, clip
 end
 
 function MSprite:getSpeed()
@@ -243,11 +268,11 @@ function MSprite:getSpeed()
 end
 
 function MSprite:setTime( time )
-	return self.driver:setTime( time )
+	return self.animState:setTime( time )
 end
 
 function MSprite:apply( time )
-	return self.driver:apply( time / self.playFPS )
+	return self.animState:apply( time / self.playFPS )
 end
 
 -----------Play control
@@ -266,8 +291,8 @@ function MSprite:resetAndPlay( clipName, mode )
 end
 
 function MSprite:start()
-	self.driver:start()
-	return self.driver
+	self.animState:start()
+	return self.animState
 end
 
 function MSprite:reset()
@@ -275,23 +300,19 @@ function MSprite:reset()
 end
 
 function MSprite:stop( reset )
-	self.driver:stop()
+	self.animState:stop()
 	if reset then return self:reset() end
 end
 
 function MSprite:pause( paused )
-	self.driver:pause( paused )
+	self.animState:pause( paused )
 end
 
 function MSprite:isPaused()
 end
 
-function MSprite:wait()
-	return MOAICoroutine.blockOnAction( self.driver )
-end
-
 function MSprite:isPlaying()
-	return self.driver:isBusy()
+	return self.animState:isBusy()
 end
 
 function MSprite:setBlend( b )
@@ -306,3 +327,13 @@ end
 function MSprite:isVisible()
 	return self.prop:isVisible()
 end
+
+function MSprite:drawBounds()
+	GIIHelper.setVertexTransform( self.prop )
+	local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
+	MOAIDraw.drawRect( x1,y1,x2,y2 )
+end
+
+
+
+

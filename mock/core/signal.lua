@@ -135,7 +135,7 @@ end
 local function connectGlobalSignalFunc( sigName, func )
 	local sig = getGlobalSignal( sigName )
 	signalConnectFunc( sig, func )
-	return s
+	return sig
 end
 
 local function connectGlobalSignalMethod( sigName, obj, methodname )
@@ -166,7 +166,6 @@ _G.signalEmit            = signalEmit
 _G.signalDisconnect      = signalDisconnect
 
 --------------------------------------------------------------------
-_G.connectSignal         = connectSignalFunc
 _G.registerSignal        = registerGlobalSignal
 _G.registerGlobalSignal  = registerGlobalSignal
 _G.registerSignals       = registerGlobalSignals

@@ -30,6 +30,10 @@ require 'mock.core.InputSignal'
 ----audio
 require 'mock.core.Audio'
 
+----basic
+require 'mock.core.Viewport'
+require 'mock.core.RenderTarget'
+
 ----game
 require 'mock.core.Entity'
 require 'mock.core.Component'

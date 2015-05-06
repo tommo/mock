@@ -2,7 +2,7 @@ module 'mock'
 
 CLASS: TexturePlane ( RenderComponent )
 	:MODEL{
-		Field 'texture' :asset('texture;framebuffer') :getset( 'Texture' );
+		Field 'texture' :asset('texture;render_target') :getset( 'Texture' );
 		Field 'size'    :type('vec2') :getset('Size');
 		'----';
 		Field 'resetSize' :action( 'resetSize' );
@@ -112,3 +112,9 @@ function TexturePlane:setShader( shaderPath )
 	self.prop:setShader( defaultShader )
 end
 
+--------------------------------------------------------------------
+function TexturePlane:drawBounds()
+	GIIHelper.setVertexTransform( self.prop )
+	local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
+	MOAIDraw.drawRect( x1,y1,x2,y2 )
+end
