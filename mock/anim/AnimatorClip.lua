@@ -351,7 +351,7 @@ end
 
 function AnimatorTrack:removeKey( key )
 	for i, k in ipairs( self.keys ) do
-		if e == key then 
+		if k == key then 
 			key.parent = false
 			table.remove( self.keys, i )
 			return true
@@ -419,6 +419,18 @@ function AnimatorTrack:buildCurve()
 		curve:setKeyParam( i, key:getTweenCurveNormal() )
 	end
 	return curve
+end
+
+function AnimatorTrack:buildIdCurve()
+	self:sortKeys()
+	local idCurve = MOAIAnimCurve.new()
+	local keys = self.keys
+	idCurve:reserveKeys( #keys )
+	for i, key in ipairs( keys ) do
+		local t = key:getPos()
+		idCurve:setKey( i, t, i, MOAIEaseType.FLAT )
+	end
+	return idCurve
 end
 
 --(pre)build

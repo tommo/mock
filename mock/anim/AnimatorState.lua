@@ -8,7 +8,7 @@ end
 
 local function _onAnimKeyFrame( timer, keyId, timesExecuted, time, value )
 	local state  = timer.source
-	local keys   = state.keyEventMap[ keyId ]
+	local keys= state.keyEventMap[ keyId ]
 	local time   = timer:getTime()
 	for i, key in ipairs( keys ) do
 		key:executeEvent( state, time )
@@ -29,6 +29,7 @@ function AnimatorState:__init()
 	self.attrLinks = {}
 	self.attrLinkCount = 0
 	self.throttle = 1
+	self.trackTargets = {}
 end
 
 function AnimatorState:setThrottle( t )
@@ -85,7 +86,6 @@ function AnimatorState:loadClip( animator, clip )
 	local context = clip:getBuiltContext()
 	anim:setSpan( context.length )
 	
-	local trackContexts = self.trackContexts
 	for track in pairs( context.playableTracks ) do
 		track:onStateLoad( self )
 	end
@@ -118,6 +118,14 @@ end
 
 function AnimatorState:getTargetRoot()
 	return self.targetRoot, self.targetScene
+end
+
+function AnimatorState:setTrackTarget( track, target )
+	self.trackTargets[ track ] = target
+end
+
+function AnimatorState:getTrackTarget( track )
+	return self.trackTargets[ track ]
 end
 
 -- function AnimatorState:addEventKey( track )

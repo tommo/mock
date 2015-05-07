@@ -53,7 +53,6 @@ end
 --------------------------------------------------------------------
 CLASS: AnimatorKeyString ( AnimatorKey )
 	:MODEL{
-		Field 'tweenMode' :no_edit();
 		Field 'value'   :string()
 	}
 function AnimatorKeyString:__init()
@@ -63,11 +62,7 @@ function AnimatorKeyString:__init()
 end
 
 function AnimatorKeyString:isResizable()
-	return true
-end
-
-function AnimatorKeyString:start( state, pos )	
-	state.target:tell( self.message, self )
+	return false
 end
 
 function AnimatorKeyString:toString()
@@ -75,11 +70,9 @@ function AnimatorKeyString:toString()
 end
 
 function AnimatorKeyString:setValue( v )
-	self.value = v and true or false
+	self.value = v and tostring( v ) or ''
 end
 
 function AnimatorKeyString:getCurveValue()
 	return self.value and 1 or 0
 end
-
-

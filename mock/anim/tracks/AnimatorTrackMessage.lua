@@ -6,7 +6,9 @@ CLASS: AnimatorKeyMessage ( AnimatorKey )
 		Field 'message' :string();
 		Field 'arg'     :string();
 }
-function AnimatorKeyMessage:executeEvent( state, time )
+function AnimatorKeyMessage:executeEvent( state, t )
+	local track = self.parent
+	local target = state:getTrackTarget( track )
 	state.target:tell( self.message, self.arg )
 end
 
@@ -34,4 +36,11 @@ end
 
 function AnimatorTrackMessage:build( context )
 	context:addEventKeyList( self.keys )
+	context:updateLength( self:calcLength() )
+end
+
+function AnimatorTrackMessage:onStateLoad( state )
+	local rootEntity, scene = state:getTargetRoot()
+	local target = self.targetPath:get( rootEntity, scene )
+	state:setTrackTarget( self, target )
 end

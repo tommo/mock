@@ -2,7 +2,7 @@ module 'mock'
 
 CLASS: DeckComponent( RenderComponent )
 	:MODEL{
-		Field 'deck'  :asset('deck2d\\..*')        :getset('Deck'),
+		Field 'deck'  :asset('deck2d\\..*') :getset('Deck'),
 		Field 'index' :int() :range(0) :getset( 'Index' );
 	}
 

@@ -1,6 +1,7 @@
 module 'mock'
 
-CLASS: AnimatorTrackFieldBoolean ( AnimatorTrackField )
+--------------------------------------------------------------------
+CLASS: AnimatorTrackFieldBoolean ( AnimatorTrackFieldDiscrete )
 
 function AnimatorTrackFieldBoolean:createKey( pos, context )
 	local key = AnimatorKeyBoolean()
@@ -12,9 +13,4 @@ end
 
 function AnimatorTrackFieldBoolean:getIcon()
 	return 'track_boolean'
-end
-
-function AnimatorTrackFieldBoolean:apply( state, target, t )
-	local value = self.curve:getValueAtTime( t )
-	return self.targetField:setValue( target, value == 1 )
 end

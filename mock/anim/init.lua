@@ -28,13 +28,14 @@ require 'mock.anim.CustomAnimatorTrack'
 
 --------------------------------------------------------------------
 require 'mock.anim.AnimatorTrackField'
-	require 'mock.anim.AnimatorTrackFieldNumber'
-	require 'mock.anim.AnimatorTrackFieldBoolean'
-	-- require 'mock.anim.AnimatorTrackFieldString'
-	-- require 'mock.anim.AnimatorTrackFieldEnum'
+	require 'mock.anim.AnimatorTrackFieldNumber'	
 	require 'mock.anim.AnimatorTrackFieldVec'
 	require 'mock.anim.AnimatorTrackFieldColor'
-	-- require 'mock.anim.AnimatorTrackFieldAsset'
+	require 'mock.anim.AnimatorTrackFieldDiscrete'
+	require 'mock.anim.AnimatorTrackFieldBoolean'
+	require 'mock.anim.AnimatorTrackFieldString'
+	require 'mock.anim.AnimatorTrackFieldEnum'
+	require 'mock.anim.AnimatorTrackFieldAsset'
 	-- require 'mock.anim.AnimatorTrackFieldObjRef'
 
 	function getAnimatorTrackFieldClass( ftype )

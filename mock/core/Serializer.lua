@@ -22,6 +22,7 @@ local function isAtomicValue( ft )
 		or ft == 'boolean' 
 		or ft == '@enum'
 		or ft == '@asset'
+		or ft == 'variable'
 end
 
 local function isTupleValue( ft )

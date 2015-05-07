@@ -61,6 +61,10 @@ function AnimatorTrackField:onLoad()
 	self.targetField = assert(model:getField( self.fieldId ) )
 end
 
+function AnimatorTrackField:getTragetField()
+	return self.targetField
+end
+
 function AnimatorTrackField:onCollectObjectRecordingState( animator, retainedState )
 	local rootEntity, scene = animator._entity, animator._entity.scene
 	local target = self.targetPath:get( rootEntity, scene )
