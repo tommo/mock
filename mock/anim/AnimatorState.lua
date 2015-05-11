@@ -30,6 +30,7 @@ function AnimatorState:__init()
 	self.attrLinkCount = 0
 	self.throttle = 1
 	self.trackTargets = {}
+	self.stopping = false
 end
 
 function AnimatorState:setThrottle( t )
@@ -42,11 +43,32 @@ function AnimatorState:start()
 end
 
 function AnimatorState:stop()
+	self.stopping = true
 	self.anim:stop()
 end
 
+function AnimatorState:isActive()
+	return self.anim:isActive()
+end
+
+function AnimatorState:isDone()
+	return self.anim:isDone()
+end 
+
+function AnimatorState:isPaused()
+	return self.anim:isPaused()
+end 
+
+function AnimatorState:isBusy()
+	return self.anim:isBusy()
+end 
+
+function AnimatorState:isDone()
+	return self.anim:isDone()
+end 
+
 function AnimatorState:setMode( mode )
-	self.anim:setMode( mode )
+	self.anim:setMode( mode or MOAITimer.NORMAL )
 end
 
 function AnimatorState:pause( paused )
@@ -72,6 +94,7 @@ end
 
 function AnimatorState:onUpdate( t )
 	for track, target in pairs( self.updateListenerTracks ) do
+		if self.stopping then return end --edge case: new clip started in apply
 		track:apply( self, target, t )
 	end
 end
