@@ -29,10 +29,14 @@ CLASS: MSprite ( RenderComponent )
 	:MODEL {
 		'----';
 		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
-		Field 'default' :string() :selection( 'getClipNames' );
+		Field 'default' :string() :selection( 'getClipNames' ) :set('setDefaultClip');
 		Field 'playFPS' :int() :getset('FPS');
 		Field 'autoPlay' :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );
+		'----';
+		Field 'flipX' :boolean() :set( 'setFlipX' );
+		Field 'flipY' :boolean() :set( 'setFlipY' );
+
 	}
 
 wrapWithMoaiPropMethods( MSprite, 'prop' )
@@ -52,6 +56,8 @@ function MSprite:__init()
 	self.featureMask = {}
 	self.autoPlay    = false
 	self.autoPlayMode= MOAITimer.LOOP 
+	self.flipX = false
+	self.flipY = false
 end
 
 function MSprite:onAttach( entity )
@@ -211,8 +217,15 @@ function MSprite:getClipLength( name )
 	if clip then return clip.length * self.playFPS end
 end
 
+function MSprite:setDefaultClip( clipName )
+	self.default = clipName
+	if clipName then
+		self:setClip( clipName )
+	end
+end
+
 function MSprite:setClip( name, mode )
-	if self.currentClip and self.currentClip.name == name then return false end
+	-- if self.currentClip and self.currentClip.name == name then return true end
 	local animState, clip = self:createAnimState( name, mode )
 	if not animState then return false end
 
@@ -223,6 +236,17 @@ function MSprite:setClip( name, mode )
 	self:apply( 0 )
 	self:setTime( 0 )
 	return true
+end
+
+--------------------------------------------------------------------
+function MSprite:setFlipY( flip )
+	self.flipY = flip
+	setSclY( self.prop, flip and -1 or 1 )
+end
+
+function MSprite:setFlipX( flip )
+	self.flipX = flip
+	setSclX( self.prop, flip and -1 or 1 )
 end
 
 -----------

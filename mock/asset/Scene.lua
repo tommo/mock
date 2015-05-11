@@ -555,7 +555,8 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 
 	if data['guid'] then
 		for id, guid in pairs( data['guid'] ) do
-			local obj = objMap[ id ][ 1 ]
+			local entry = objMap[ id ]
+			local obj = entry and entry[1]
 			if obj then
 				obj.__guid = guid
 			end

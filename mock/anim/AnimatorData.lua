@@ -27,10 +27,14 @@ function AnimatorData:setSpine( path )
 	self.spinePath = path
 end
 
-function AnimatorData:addClip( name )
+function AnimatorData:createClip( name )
 	if not self.clips then self.clips = {} end
 	local clip = AnimatorClip()
 	clip.name = name
+	return self:addClip( clip )	
+end
+
+function AnimatorData:addClip( clip )
 	table.insert( self.clips, clip )
 	clip.parent = self
 	return clip

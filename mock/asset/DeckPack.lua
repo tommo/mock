@@ -61,7 +61,7 @@ function MQuadDeck:__init()
 end
 
 function MQuadDeck:createMoaiDeck()
-	local mesh = MOAIMesh.new ()	
+	local mesh = MOAITileMesh.new ()	
 	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
 	return mesh
 end
