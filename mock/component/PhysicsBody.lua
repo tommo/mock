@@ -6,6 +6,7 @@ CLASS: PhysicsBody ( mock.Component )
 		Field 'bodyDef'      :asset( 'physics_body_def' ) :getset( 'BodyDef' );
 		'----';
 		Field 'mass'         :getset( 'Mass' );
+		Field 'useEntityTransform'  :boolean();
 		Field 'updateMassFromShape' :boolean();
 		Field 'Calc Mass'    :action('calcMass');
 	}
@@ -23,6 +24,8 @@ function PhysicsBody:__init()
 	self.body   = false
 	self.joints = {}
 	self.mass    = 1
+	---
+	self.useEntityTransform = false
 end
 
 
@@ -67,7 +70,7 @@ end
 
 function PhysicsBody:onStart( entity )
 	local body = self.body
-	if self:getType() ~= 'static' then
+	if self:getType() ~= 'static' and (not self.useEntityTransform) then
 		body:clearAttrLink( MOAIProp.ATTR_X_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
