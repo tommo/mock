@@ -404,6 +404,12 @@ function major4Direction(rotDir)
 	return major4Direction2(x, y)
 end
 
+function reflection(ix, iy, nx, ny)
+	local dp = dotProduct(ix, iy, nx, ny)
+	local rx = ix - 2 * nx * dp
+	local ry = iy - 2 * ny * dp
+	return rx, ry
+end
 
 --gemometry related
 

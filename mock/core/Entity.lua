@@ -869,6 +869,10 @@ function Entity:setWorldLoc( x,y,z )
 	return self._prop:setWorldLoc( x, y, z )
 end
 
+function Entity:setWorldRot( dir )
+	return self._prop:setWorldRot( dir )
+end
+
 function Entity:wndToWorld( x, y, z )
 	return self.layer:wndToWorld( x, y, z )
 end
