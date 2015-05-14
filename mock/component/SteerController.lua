@@ -36,6 +36,14 @@ function PhysicsBodySteerController:clearBehaviours()
 	self._controller:clearBehaviours()
 end
 
+function PhysicsBodySteerController:setLinearVelocity(x, y, z)
+	self._controller:setLinearVelocity(x, y, z or 0)
+end
+
+function PhysicsBodySteerController:setAngularVelocity(v)
+	self._controller:setAngularVelocity(v)
+end
+
 function PhysicsBodySteerController:pause()
 	self._controller:pause(true)
 
