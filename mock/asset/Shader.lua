@@ -172,7 +172,16 @@ function ShaderProgram:buildFromSource( vshSource, fshSource )
 					prog:setGlobal( idx, idx, MOAIShaderProgram.GLOBAL_WORLD_VIEW_PROJ_NORM )
 				elseif tt == 'GLOBAL_WORLD_VIEW_PROJ' then
 					prog:declareUniform( idx, name, MOAIShaderProgram.UNIFORM_MATRIX_F4 )
-					prog:setGlobal( idx, idx, MOAIShaderProgram.GLOBAL_WORLD_VIEW_PROJ )				
+					prog:setGlobal( idx, idx, MOAIShaderProgram.GLOBAL_WORLD_VIEW_PROJ )
+				elseif tt == 'GLOBAL_WORLD_INV' then
+					prog:declareUniform( idx, name, MOAIShaderProgram.UNIFORM_MATRIX_F4 )
+					prog:setGlobal( idx, idx, MOAIShaderProgram.GLOBAL_WORLD_INV )				
+				elseif tt == 'GLOBAL_WORLD_VIEW_INV' then
+					prog:declareUniform( idx, name, MOAIShaderProgram.UNIFORM_MATRIX_F4 )
+					prog:setGlobal( idx, idx, MOAIShaderProgram.GLOBAL_WORLD_VIEW_INV )				
+				elseif tt == 'GLOBAL_WORLD_VIEW_PROJ_INV' then
+					prog:declareUniform( idx, name, MOAIShaderProgram.UNIFORM_MATRIX_F4 )
+					prog:setGlobal( idx, idx, MOAIShaderProgram.GLOBAL_WORLD_VIEW_PROJ_INV )				
 				else
 					error( 'unkown shader global uniform type:' .. tostring( tt ) )
 				end

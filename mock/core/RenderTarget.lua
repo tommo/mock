@@ -65,6 +65,8 @@ end
 
 function TextureRenderTarget:onUpdateSize()
 	local w, h = self:getPixelSize()
+	w = w * ( self.scale or 1 )
+	h = h * ( self.scale or 1 )
 	--remove offset
 	self.absPixelRect = { 0,0,w,h }
 
@@ -79,6 +81,7 @@ function TextureRenderTarget:onUpdateSize()
 	end
 
 	if not needResize then return end 
+
 	self.frameBuffer:init( w, h, self.colorFormat, self.depthFormat )
 	self.previousTextureSize = { w, h }
 end
@@ -97,9 +100,11 @@ function TextureRenderTarget:initFrameBuffer( option )
 	local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
 	local colorFormat = option.colorFormat or nil
 	local filter      = option.filter or MOAITexture.GL_LINEAR
+	local scale       = option.scale or 1
 	
 	self.colorFormat = colorFormat
 	self.depthFormat = depthFormat
+	self.scale       = scale
 
 	frameBuffer:setFilter( filter )
 end
