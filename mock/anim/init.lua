@@ -61,3 +61,11 @@ require 'mock.anim.AnimatorTrackField'
 		return false
 	end
 --------------------------------------------------------------------
+
+--------------------------------------------------------------------
+--builtin custom track
+--------------------------------------------------------------------
+require 'mock.anim.AnimatorAnimatorTrack'
+require 'mock.anim.EntityMsgAnimatorTrack'
+
+require 'mock.anim.ScriptAnimatorTrack'

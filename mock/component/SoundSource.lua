@@ -14,6 +14,7 @@ function SoundSource:__init()
 	self.eventNamePrefix = false
 	self.is3D = true
 	self.loopSound = true
+	self.defaultClipPath = false
 end
 
 function SoundSource:onAttach( entity )

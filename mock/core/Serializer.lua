@@ -273,7 +273,7 @@ function _deserializeField( obj, f, data, objMap, namespace )
 	end
 
 	if f.__is_tuple or isTupleValue( ft ) then --compound
-		if fieldData then
+		if type( fieldData ) == 'table' then
 			f:setValue( obj, unpack( fieldData ) )
 		end
 		return

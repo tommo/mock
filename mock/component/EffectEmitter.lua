@@ -45,8 +45,8 @@ function EffectEmitter:onAttach( entity )
 end
 
 function EffectEmitter:onDetach( entity )
-	entity:_detachProp( self.prop )
 	self:stop()
+	entity:_detachProp( self.prop )
 end
 
 function EffectEmitter:onStart()

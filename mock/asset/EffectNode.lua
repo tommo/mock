@@ -10,6 +10,7 @@ CLASS: EffectState ()
 --------------------------------------------------------------------
 EffectNode :MODEL {
 		Field 'name'     :string();
+		Field 'delay'    :number();
 		Field 'children' :array( EffectNode ) :no_edit();
 		Field 'parent'   :type( EffectNode ) :no_edit();
 		Field '_hidden'  :boolean() :no_edit();
@@ -19,6 +20,7 @@ function EffectNode:__init()
 	self._built   = false
 	self._hidden  = false
 	self.parent   = false
+	self.delay    = 0
 	self.children = {}
 	self.name     = self:getDefaultName()
 end
@@ -33,6 +35,10 @@ end
 
 function EffectNode:setName( n )
 	self.name = n
+end
+
+function EffectNode:getDelay()
+	return self.delay
 end
 
 function EffectNode:findChild( name )
@@ -294,6 +300,7 @@ function EffectState:__init( emitter, config )
 	self._trans  =  trans 
 	self._config = config
 	self._updateListeners = {}
+	self._delayedUpdateListeners = {}
 	self._activeNodes = {}
 
 	local root = config:getRootNode()
@@ -361,8 +368,32 @@ function EffectState:getTimer()
 	return self.timer
 end
 
-function EffectState:attachAction( action )
-	self.timer:addChild( action )
+local function _delayTimerCallback( timer )
+	local parent = timer.parentAction
+	if parent and parent:isActive() then
+		parent:addChild( timer.nextAction )
+	else
+		timer.nextAction:start()
+	end
+end
+
+local function makeDelayAction( parent, delay, action )
+	local timer = MOAITimer.new()
+	timer:setSpan( delay )
+	timer.parentAction = parent or false
+	timer.nextAction   = action
+	timer:setListener( MOAIAction.EVENT_STOP, _delayTimerCallback )
+	if parent then
+		parent:addChild( timer )
+	end
+end
+
+function EffectState:attachAction( action, delay )
+	if delay and delay > 0 then
+		delayedAction = makeDelayAction( self.timer, delay, action )
+	else
+		self.timer:addChild( action )
+	end
 	return action
 end
 
@@ -405,17 +436,30 @@ function EffectState:addActiveNode( node )
 end
 
 function EffectState:addUpdateListener( node )
-	self._updateListeners[ node ] = true
+	local delay = node:getDelay()
+	if delay and delay > 0 then
+		self._delayedUpdateListeners[ node ] = delay
+	else
+		self._updateListeners[ node ] = true
+	end
 end
 
 function EffectState:removeUpdatingListener( node )
 	self._updateListeners[ node ] = nil
+	self._delayedUpdateListeners[ node ] = nil
 end
 
 function EffectState:update( dt )
-	self.elapsed = self.elapsed + dt
-	for k in pairs( self._updateListeners ) do
-		k:onUpdate( self, dt )
+	local elapsed = self.elapsed + dt 
+	self.elapsed = elapsed
+	for node, delay in pairs( self._delayedUpdateListeners ) do
+		if delay and elapsed > delay then
+			self._updateListeners[ node ] = true
+			self._delayedUpdateListeners[ node ] = false --NIL?
+		end
+	end
+	for node in pairs( self._updateListeners ) do
+		node:onUpdate( self, dt, elapsed )
 	end
 	if self.duration then
 		if self.elapsed >= self.duration then

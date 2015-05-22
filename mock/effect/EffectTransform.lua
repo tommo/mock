@@ -52,6 +52,7 @@ function EffectMove:onLoad( fxState )
 end
 
 function EffectMove:onUpdate( fxState, dt )
+	--TODO: delay support
 	local trans = fxState[ self ]
 	local sx,sy = trans:getScl()
 	local speed = self.speed
@@ -89,6 +90,7 @@ function EffectRotate:onLoad( fxState )
 end
 
 function EffectRotate:onUpdate( fxState, dt )
+	--TODO: delay support
 	local trans = fxState[ self ]
 	local speed = self.speed
 	if not trans then return end

@@ -22,6 +22,12 @@ end
 --------------------------------------------------------------------
 --for object animator track creation
 local CustomAnimatorTrackTypes = {}
+local CommonCustomAnimatorTrackTypes = {}
+
+function registerCommonCustomAnimatorTrackType( id, clas )
+	CommonCustomAnimatorTrackTypes[ id ] = clas
+end
+
 function registerCustomAnimatorTrackType( objClas, id, clas )
 	assert( objClas )
 	assert( clas )
@@ -50,6 +56,9 @@ end
 function getCustomAnimatorTrackTypes( objClas )
 	local collected = {}
 	_collectCustomAnimatorTrackTypes( objClas, collected )
+	for k,v in pairs( CommonCustomAnimatorTrackTypes ) do
+		collected[ k ] = v
+	end
 	return collected
 end
 

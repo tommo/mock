@@ -51,7 +51,7 @@ require 'mock.component.MsgRedirector'
 ---- Audio
 require 'mock.component.SoundSource'
 require 'mock.component.SoundListener'
-require 'mock.component.AudioAnimatorTrack'
+require 'mock.component.SoundSourceAnimatorTrack'
 
 
 --------------------------------------------------------------------

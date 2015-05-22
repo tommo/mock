@@ -34,8 +34,10 @@ function MSpriteAnimatorTrack:getIcon()
 end
 
 function MSpriteAnimatorTrack:toString()
-	return 'MSprite'
+	local pathText = self.targetPath:toString()
+	return pathText..'<clips>'
 end
+
 
 function MSpriteAnimatorTrack:createKey( pos, context )
 	local key = MSpriteAnimatorKey()
