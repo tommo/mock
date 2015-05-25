@@ -85,6 +85,14 @@ function AnimatorTrackFieldColor:build( context ) --building shared data
 	context:updateLength( self:calcLength() )
 end
 
+function AnimatorTrackFieldColor:isEmpty()
+	return
+		self:getComponentTrack(1):isEmpty() and
+		self:getComponentTrack(2):isEmpty() and
+		self:getComponentTrack(3):isEmpty() and
+		self:getComponentTrack(4):isEmpty()
+end
+
 function AnimatorTrackFieldColor:calcLength()
 	local length = math.max( 
 		self:getComponentTrack(1):calcLength(), 

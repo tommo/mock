@@ -72,6 +72,13 @@ function AnimatorTrackFieldVecCommon:apply( state, target, t )
 	return self.targetField:setValue( target, x, y, z )
 end
 
+function AnimatorTrackFieldVecCommon:isEmpty()
+	return
+		self:getComponentTrack(1):isEmpty() and
+		self:getComponentTrack(2):isEmpty() and
+		self:getComponentTrack(3):isEmpty()
+end
+
 function AnimatorTrackFieldVecCommon:build( context ) --building shared data
 	self.curveX = self:getComponentTrack( 1 ):buildCurve()
 	self.curveY = self:getComponentTrack( 2 ):buildCurve()
@@ -137,6 +144,12 @@ function AnimatorTrackFieldVec3:getIcon()
 	return 'track_vec3'
 end
 
+function AnimatorTrackFieldVec3:isEmpty()
+	return
+		self:getComponentTrack(1):isEmpty() and
+		self:getComponentTrack(2):isEmpty() and
+		self:getComponentTrack(3):isEmpty()
+end
 
 --------------------------------------------------------------------
 CLASS: AnimatorTrackFieldVec2 ( AnimatorTrackFieldVecCommon )
@@ -164,6 +177,12 @@ function AnimatorTrackFieldVec2:build( context ) --building shared data
 	self.curveX = self:getComponentTrack( 1 ):buildCurve()
 	self.curveY = self:getComponentTrack( 2 ):buildCurve()
 	context:updateLength( self:calcLength() )
+end
+
+function AnimatorTrackFieldVec2:isEmpty()
+	return
+		self:getComponentTrack(1):isEmpty() and
+		self:getComponentTrack(2):isEmpty()
 end
 
 function AnimatorTrackFieldVec2:calcLength()

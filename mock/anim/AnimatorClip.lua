@@ -160,6 +160,10 @@ function AnimatorClipSubNode:build( context )
 	self:buildChildren( context )
 end
 
+function AnimatorClipSubNode:isEmpty()
+	return true
+end
+
 function AnimatorClipSubNode:isPlayable()
 	return false
 end
@@ -179,7 +183,7 @@ end
 function AnimatorClipSubNode:buildChildren( context )
 	for _, child in ipairs( self.children ) do
 		child:build( context )
-		if child:isPlayable() then
+		if child:isPlayable() and (not child:isEmpty()) then
 			context:addPlayableTrack( child )
 		end
 	end
@@ -307,6 +311,10 @@ end
 
 function AnimatorTrack:getAction()
 	return self.parent
+end
+
+function AnimatorTrack:isEmpty()
+	return next(self.keys) == nil
 end
 
 function AnimatorTrack:setTargetPath( path )
