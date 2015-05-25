@@ -31,6 +31,7 @@ function AnimatorState:__init()
 	self.throttle = 1
 	self.trackTargets = {}
 	self.stopping = false
+	self.previewing = false
 end
 
 function AnimatorState:setThrottle( t )
@@ -109,14 +110,19 @@ function AnimatorState:loadClip( animator, clip )
 	local context = clip:getBuiltContext()
 	anim:setSpan( context.length )
 	
+	local previewing = self.previewing
 	for track in pairs( context.playableTracks ) do
-		track:onStateLoad( self )
+		if ( not previewing ) or track:isPreviewable() then
+			track:onStateLoad( self )
+		end
 	end
 
 	anim:reserveLinks( self.attrLinkCount )
 	for i, linkInfo in ipairs( self.attrLinks ) do
 		local track, curve, target, attrId, asDelta  = unpack( linkInfo )
-		anim:setLink( i, curve, target, attrId, asDelta )
+		if ( not previewing ) or track:isPreviewable() then
+			anim:setLink( i, curve, target, attrId, asDelta )
+		end
 	end
 
 	--event key

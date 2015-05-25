@@ -56,7 +56,7 @@ end
 function getCustomAnimatorTrackTypes( objClas )
 	local collected = {}
 	_collectCustomAnimatorTrackTypes( objClas, collected )
-	for k,v in pairs( CommonCustomAnimatorTrackTypes ) do
+	for k, v in pairs( CommonCustomAnimatorTrackTypes ) do
 		collected[ k ] = v
 	end
 	return collected
@@ -68,6 +68,7 @@ function getCustomAnimatorTrackTypesForObject( obj )
 end 
 
 local function _hasCustomAnimatorTrack( clas )
+	if next( CommonCustomAnimatorTrackTypes ) then return true end
 	local super = clas.__super
 	if super then
 		if _hasCustomAnimatorTrack( super ) then

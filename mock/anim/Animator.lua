@@ -101,10 +101,11 @@ function Animator:hasClip( name )
 	return self.data:getClip( name ) and true or false
 end
 
-function Animator:_loadClip( clip )
+function Animator:_loadClip( clip, previewing )
 	self:stop()
 	self:setThrottle( 1 )
 	local state = AnimatorState()
+	state.previewing = previewing or false
 	state:loadClip( self, clip )
 	self.activeState = state
 	return state

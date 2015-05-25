@@ -62,10 +62,12 @@ function SoundSourceAnimatorTrack:apply( state, playContext, t )
 		local key = self.keys[ newId ]
 		playContext[2] = newId
 		local clip = key.clip
-		if soundSource.is3D then
-			soundSource:playEvent3D( clip, soundSource.follow )
-		else
-			soundSource:playEvent3D( clip )
+		if clip then
+			if soundSource.is3D then
+				soundSource:playEvent3D( clip, soundSource.follow )
+			else
+				soundSource:playEvent3D( clip )
+			end
 		end
 	end
 end

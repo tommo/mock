@@ -52,6 +52,9 @@ function ScriptAnimatorTrack:toString()
 	return pathText..':(Script)'
 end
 
+function ScriptAnimatorTrack:isPreviewable()
+	return false
+end
 
 function ScriptAnimatorTrack:createKey( pos, context )
 	local key = ScriptAnimatorKey()

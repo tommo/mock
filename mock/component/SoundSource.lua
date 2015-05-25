@@ -74,7 +74,11 @@ local function _affirmFmodEvent( event )
 	if id ~= nil then return id end
 	if type( event ) == 'string' then
 		event, node = loadAsset( event ) 
-		if node and node.type == 'fmod_event' then id = event:getFullName() end
+		if node and node.type == 'fmod_event' then 
+			id = event:getFullName()
+		else
+			return nil
+		end
 	else
 		id = event:getFullName()
 	end
