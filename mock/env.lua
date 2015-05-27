@@ -72,7 +72,6 @@ require 'mock.effect'
 ----UI
 require 'mock.ui'
 
-
 ----tools
 require 'mock.tools'
 
@@ -81,6 +80,10 @@ require 'mock.prefabs.PlaceHolder'
 
 ---preset
 require 'mock.preset.simpleAnimation'
+
+----STORY
+require 'mock.story'
+
 
 
 --------------------------------------------------------------------
