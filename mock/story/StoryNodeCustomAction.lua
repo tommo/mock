@@ -1,2 +1,5 @@
 module 'mock'
--- StoryNodeCustomAction
+CLASS: StoryNodeCustomAction ( StoryNode )
+ 	:MODEL{}
+
+registerStoryNodeType( 'ACTION', StoryNodeCustomAction )

@@ -1,61 +1,100 @@
 module 'mock'
 
 --------------------------------------------------------------------
+local storyNodeTypeRegistry = {}
+function registerStoryNodeType( tag, clas )
+	storyNodeTypeRegistry[ tag ] = clas
+end
+
+--------------------------------------------------------------------
 CLASS: StoryGraph ()
 	:MODEL{}
 
 function StoryGraph:__init()
-	self.rootGroup = StoryNodeGroup()
+	self:initRoot()
 end
 
-function StoryGraph:_loadStoryNode( nodeData, group, nodeDict )
+function StoryGraph:initRoot()
+	self.rootGroup = StoryScopedGroup()
+	self.rootGroup.id = '__root'
+	self.rootGroup.text = '__root'
+end
+
+function StoryGraph:_loadStoryNode( nodeData, group, scope, nodeDict )
 	local ntype = nodeData[ 'type' ]
 	local node
-	local hasChildren = false
-	if ntype == 'REF' or ntype == 'GROUP' then
+	local isGroup = false
+	if ntype == 'REF' then
+		node = StoryScopedGroup()
+		node.scope = scope
+		isGroup = true
+
+	elseif ntype == 'GROUP' then
 		node = StoryNodeGroup()
-		hasChildren = true
+		node.scope = scope
+		scope = node
+		isGroup = true
+
 	else
-		node = StoryNode() --todo: subclass
+		local nodeClas = storyNodeTypeRegistry[ ntype ]
+		if nodeClas then
+			node = nodeClas()
+		else
+			_warn( 'unknown story node type', ntype, nodeData['fullId'] )
+			node = StoryNode()
+		end
+		node.scope = scope
 	end
+
 	node.type    = ntype
-	node.id      = nodeData[ 'fullId' ]
+	node.id      = nodeData[ 'fullId' ] or 'unknown'
 	node.text    = nodeData[ 'text' ]
 	-- node.groupId = nodeData [ 'group' ]
-	if hasChildren then
+	if isGroup then
 		for _, childData in ipairs( nodeData[ 'children' ] ) do
-			self:_loadStoryNode( childData, node, nodeDict )
+			self:_loadStoryNode( childData, node, scope, nodeDict )
 		end
 	end
 	group:addChild( node )
 	nodeDict[ node.id ] = node --for edge reference
 	node.graph = self
-	node:onLoad( nodeData )
+	node.data  = nodeData
 	return node
 end
 
 function StoryGraph:load( data )
-	self.rootGroup = StoryNodeGroup()
+	self:initRoot()
 
 	local nodeDict = {}
 	local root = self.rootGroup
 	--nodes
 	for _, nodeData in ipairs( data[ 'rootNodes' ] ) do
-		self:_loadStoryNode( nodeData, root, nodeDict )
+		self:_loadStoryNode( nodeData, root, root, nodeDict )
 	end
 
 	--edges/routes
-	for _, edgeData in ipairs( data[ 'edges' ] ) do
-		local srcId = edgeData[ 'src' ]
-		local dstId = edgeData[ 'dst' ]
-		local srcNode = nodeDict[ srcId ]
-		local dstNode = nodeDict[ dstId ]
-		local route = StoryRoute( srcNode, dstNode )
-		route.text = edgeData[ 'text' ]
-		route.graph = self
-		route:onLoad( edgeData )
+	for _, edgeData in ipairs( data[ 'edges' ] ) do		
+		if edgeData['type'] == 'COMMENT' then
+			--PASS
+		else
+			local srcId = edgeData[ 'src' ]
+			local dstId = edgeData[ 'dst' ]
+			local srcNode = nodeDict[ srcId ]
+			local dstNode = nodeDict[ dstId ]
+			if srcNode:isDecorator() then
+				srcNode:apply( dstNode )
+			else
+				local route = StoryRoute( srcNode, dstNode )
+				route.type  = edgeData[ 'type' ]
+				route.text = edgeData[ 'text' ]
+				route.graph = self
+				route:onLoad( edgeData )
+			end
+		end
 	end
-
+	root.nodeData = {}
+	root:loadNodeData()
+	
 end
 
 function StoryGraph:getRoot()
@@ -71,15 +110,30 @@ function StoryNode:__init()
 	self.text = ''
 	self.routesOut = {}
 	self.routesIn  = {}
+	self.decorators = {}
 	self.type = 'node'
+	self.scope = false
+	self.group = false
+end
+
+function StoryNode:getScope()
+	return self.scope
+end
+
+function StoryNode:getId()
+	return self.id
+end
+
+function StoryNode:getText()
+	return self.text
 end
 
 function StoryNode:getType()
 	return self.type
 end
 
-function StoryNode:update( thread )
-
+function StoryNode:isDecorator()
+	return false
 end
 
 function StoryNode:getNextNode()
@@ -89,19 +143,51 @@ function StoryNode:getNextNode()
 end
 
 function StoryNode:toString()
-	return '<'..self:getType()..'>'..self.id .. '['.. self.text..']'
+	return '[' .. self.id .. '<'..self:getType()..'>]\t'.. self.text
+end
+
+function StoryNode:calcNextNode( state, prevNodeResult )
+	local nextNodes = {}
+	for i, routeOut in ipairs( self.routesOut ) do
+		local dst = routeOut.nodeDst
+		if routeOut.type == 'NOT' then
+			if not prevNodeResult then
+				table.insert( nextNodes, dst )
+			end
+		else
+			if prevNodeResult ~= false then
+				table.insert( nextNodes, dst )
+			end
+		end
+	end
+	return nextNodes
 end
 
 function StoryNode:onLoad( nodeData )
 end
 
+function StoryNode:onStateEnter( state )
+	print( '-> ', self:toString() )
+end
 
+function StoryNode:onStateUpdate( state )
+	return 'ok'
+end
+
+function StoryNode:onStateExit( state )
+end
+
+function StoryNode:loadNodeData()
+	self:onLoad( self.nodeData )
+end
 --------------------------------------------------------------------
 CLASS: StoryNodeGroup ( StoryNode )
 	:MODEL{}
 
 function StoryNodeGroup:__init()
 	self.children = {}
+	self.startNodes = {}
+	self.inputNodes = {}
 end
 
 function StoryNodeGroup:addChild( node )
@@ -119,6 +205,71 @@ function StoryNodeGroup:findChildrenByType( typeId )
 	return found
 end
 
+function StoryNodeGroup:onStateEnter( state )
+	--start all START node
+	--add INPUT node into trigger pool
+	for startNode in pairs( self.startNodes ) do
+		state:enterStoryNode( startNode )
+	end
+	for inputNode in pairs( self.inputNodes ) do
+		state:addInputNode( inputNode )
+	end
+
+end
+
+function StoryNodeGroup:onLoad( nodeData )
+	local startNodes = {}
+	local inputNodes = {}
+	for _, child in ipairs( self.children ) do
+		local t = child:getType()
+		if t == 'START' then
+			startNodes[ child ] = true
+		elseif t == 'INPUT' then
+			inputNodes[ child ] = true
+		end
+	end
+	self.startNodes = startNodes
+	self.inputNodes = inputNodes
+end
+
+function StoryNodeGroup:onStateUpdate( state )
+	return 'running'
+end
+
+function StoryNodeGroup:loadNodeData()
+	for i, child in ipairs( self.children ) do
+		child:loadNodeData()
+	end
+	self:onLoad( self.nodeData )
+end
+
+--------------------------------------------------------------------
+CLASS: StoryScopedGroup ( StoryNodeGroup )
+	:MODEL{}
+
+function StoryScopedGroup:__init()
+end
+
+function StoryScopedGroup:getType()
+	return 'ScopedGroup'
+end
+
+---------------------------------------------------------------------
+CLASS: StoryDecoratorNode ( StoryNode )
+	:MODEL{}
+
+function StoryDecoratorNode:isDecorator()
+	return true
+end
+
+function StoryDecoratorNode:apply( dstNode )
+	table.insert( dstNode.decorators , self )
+	self:onApply( dstNode )
+end
+
+function StoryDecoratorNode:onApply( dstNode )
+end
+
 --------------------------------------------------------------------
 CLASS: StoryRoute ()
 	:MODEL{}
@@ -127,13 +278,20 @@ function StoryRoute:__init( nodeSrc, nodeDst )
 	self.text = ''
 	self.nodeSrc = nodeSrc
 	self.nodeDst = nodeDst
+	self.type  = 'NORMAL'
 	table.insert( nodeSrc.routesOut, self ) 
 	table.insert( nodeDst.routesIn,  self ) 
+end
+
+function StoryRoute:getType()
+	return self.type
 end
 
 function StoryRoute:onLoad( data )
 end
 
+--------------------------------------------------------------------
+--ASSET Loader
 --------------------------------------------------------------------
 local function StoryGraphLoader( node )
 	local path = node:getObjectFile('def')

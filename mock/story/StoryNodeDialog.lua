@@ -1,8 +1,12 @@
 module 'mock'
-
+--------------------------------------------------------------------
 CLASS: StoryNodeDialog ( StoryNode )
 	:MODEL{}
 
-function StoryNodeDialog:getText()
-	return self.label
-end
+--------------------------------------------------------------------
+CLASS: StoryNodeDialogQuick ( StoryNode )
+	:MODEL{}
+
+
+registerStoryNodeType( 'DIALOG', StoryNodeDialog )
+registerStoryNodeType( 'DIALOG_Q', StoryNodeDialogQuick )
