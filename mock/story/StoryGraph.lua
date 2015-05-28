@@ -11,6 +11,7 @@ CLASS: StoryGraph ()
 	:MODEL{}
 
 function StoryGraph:__init()
+	self.defaultRoleId = '_NOBODY'
 	self:initRoot()
 end
 
@@ -18,6 +19,12 @@ function StoryGraph:initRoot()
 	self.rootGroup = StoryScopedGroup()
 	self.rootGroup.id = '__root'
 	self.rootGroup.text = '__root'
+	self.rootGroup.role = self.defaultRoleId
+
+end
+
+function StoryGraph:getDefaultRole()
+	return self.defaultRoleId
 end
 
 function StoryGraph:_loadStoryNode( nodeData, group, scope, nodeDict )
@@ -114,6 +121,11 @@ function StoryNode:__init()
 	self.type = 'node'
 	self.scope = false
 	self.group = false
+	self.role  = false
+end
+
+function StoryNode:getRole()
+	return self.role or self.group:getRole()
 end
 
 function StoryNode:getScope()
@@ -166,7 +178,7 @@ end
 function StoryNode:onLoad( nodeData )
 end
 
-function StoryNode:onStateEnter( state )
+function StoryNode:onStateEnter( state, prevNode, prevResult )
 	print( '-> ', self:toString() )
 end
 
@@ -178,6 +190,7 @@ function StoryNode:onStateExit( state )
 end
 
 function StoryNode:loadNodeData()
+	self.role = self.role or self:getRole()
 	self:onLoad( self.nodeData )
 end
 --------------------------------------------------------------------
@@ -205,16 +218,15 @@ function StoryNodeGroup:findChildrenByType( typeId )
 	return found
 end
 
-function StoryNodeGroup:onStateEnter( state )
+function StoryNodeGroup:onStateEnter( state, prevNode, prevResult )
 	--start all START node
 	--add INPUT node into trigger pool
 	for startNode in pairs( self.startNodes ) do
-		state:enterStoryNode( startNode )
+		state:enterStoryNode( startNode, nil, nil )
 	end
 	for inputNode in pairs( self.inputNodes ) do
 		state:addInputNode( inputNode )
 	end
-
 end
 
 function StoryNodeGroup:onLoad( nodeData )
@@ -237,6 +249,7 @@ function StoryNodeGroup:onStateUpdate( state )
 end
 
 function StoryNodeGroup:loadNodeData()
+	self.role = self.role or self:getRole()
 	for i, child in ipairs( self.children ) do
 		child:loadNodeData()
 	end

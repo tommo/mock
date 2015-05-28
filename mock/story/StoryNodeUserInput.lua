@@ -6,7 +6,6 @@ CLASS: StoryNodeUserInput ( StoryNode )
 
 function StoryNodeUserInput:__init()
 	self.tag  = 'UNKNOWN'
-	self.role = false
 end
 
 function StoryNodeUserInput:onLoad( nodeData )

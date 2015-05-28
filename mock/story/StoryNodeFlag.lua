@@ -18,9 +18,7 @@ function StoryNodeFlag:onStateUpdate( state )
 end
 
 function StoryNodeFlag:onStateExit( state )
-	-- print( 'exit', self:toString() )
 end
-
 
 function StoryNodeFlag:onLoad( nodeData )
 	--TODO:parse expression
@@ -71,7 +69,7 @@ function StoryNodeFlagSet:__init()
 	self.setterFunc = false
 end
 
-function StoryNodeFlagSet:onStateEnter( state )
+function StoryNodeFlagSet:onStateEnter( state, prevNode, prevResult )
 	self.setterFunc( state )
 end
 
@@ -112,7 +110,7 @@ function StoryNodeFlagRemove:__init()
 	self.removerFunc = false
 end
 
-function StoryNodeFlagRemove:onStateEnter( state )
+function StoryNodeFlagRemove:onStateEnter( state, prevNode, prevResult )
 	self.removerFunc( state )
 end
 

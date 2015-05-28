@@ -11,17 +11,17 @@ function StoryState:__init( owner )
 	self.owner       = owner
 	self.subStates   = {}
 	self.inputNodes  = {}
-	self.nodeVisitCount = {}
+	self.nodeContexts = {}
 end
 
 function StoryState:isActive()
 	return self.active
 end
 
-function StoryState:start( storyNode, prevNodeResult )
+function StoryState:start( storyNode, prevNode, prevNodeResult )
 	self.currentNode = storyNode
 	self.active = true
-	storyNode:onStateEnter( self, prevNodeResult )
+	storyNode:onStateEnter( self, prevNode, prevNodeResult )
 	return self:update()
 end
 
@@ -48,11 +48,13 @@ function StoryState:update()
 	if self.currentNodeEnded then --group ended
 		result = 'ok'
 	else
-		result = self.currentNode:onStateUpdate( self )
-		--- node is still running
-		if result == 'running' then return true end
-		--- node is done
+		result = self.currentNode:onStateUpdate( self )		
 	end
+
+	--- node is still running
+	if result == 'running' then return true end
+	--- node is done
+	if result == 'stop' then return false end
 
 	currentNode:onStateExit( self, result )
 	self.active = false
@@ -60,7 +62,7 @@ function StoryState:update()
 	local nextNodes = currentNode:calcNextNode( self, result )
 	if nextNodes then
 		for i, nextNode in ipairs( nextNodes ) do
-			self.parentState:enterStoryNode( nextNode, result )
+			self.parentState:enterStoryNode( nextNode, currentNode, result )
 		end
 	end
 
@@ -68,10 +70,10 @@ function StoryState:update()
 	return false
 end
 
-function StoryState:enterStoryNode( storyNode, prevNodeResult )
+function StoryState:enterStoryNode( storyNode, prevNode, prevNodeResult )
 	local state = StoryState( self.owner )
 	state.parentState = self
-	if state:start( storyNode, prevNodeResult ) then
+	if state:start( storyNode, prevNode, prevNodeResult ) then
 		self.subStates[ state ] = true
 	end
 end
@@ -85,15 +87,14 @@ function StoryState:endGroup()
 	self.parentState.currentNodeEnded = true
 end
 
---node visit count: for route merge node( AND/OR )
-function StoryState:addNodeVisitCount( node )
-	self.nodeVisitCount[ node ] = ( self.nodeVisitCount[ node ] or 0 ) + 1
+function StoryState:getNodeContext( node, affirm )
+	local context = self.nodeContexts[ node ]
+	if not context and affirm ~= false then
+		context = {}
+		self.nodeContexts[ node ] = context
+	end
+	return context
 end
-
-function StoryState:getNodeVisitCount( node )
-	return self.nodeVisitCount[ node ] or 0
-end
-
 
 function StoryState:getLocalFlagDict( node )
 	return self.owner:affirmFlagDict( node.group.id )
@@ -118,7 +119,7 @@ end
 --------------------------------------------------------------------
 CLASS: StoryController ( Component )
 	:MODEL{
-		Field 'story' :getset( 'StoryPath' );
+		Field 'story' :asset( 'story' ) :getset( 'StoryPath' );
 	}
 
 function StoryController:__init()
@@ -126,7 +127,7 @@ function StoryController:__init()
 	self.globalFlagDict = FlagDict()
 	self.storyPath = false
 	self.storyGraph = false
-	self.defaultRoleId = 'NOBODY'
+	self.defaultRoleId = '_NOBODY'
 end
 
 function StoryController:getStoryPath()
@@ -171,6 +172,7 @@ end
 function StoryController:onStart( entity )
 	self.inputTriggerMap = {}
 	if self.storyGraph then
+		self.defaultRoleId = self.storyGraph:getDefaultRole()
 		local entryNode = self.storyGraph:getRoot()
 		self.rootState = StoryState( self )
 		self.rootState:start( entryNode )
@@ -198,7 +200,7 @@ function StoryController:acceptInput( roleId, tag, data )
 				and nodeRoleId == roleId
 				and not ( node.data and node.data~=data )
 			then
-				state:enterStoryNode( node )
+				state:enterStoryNode( node, nil, nil )
 			end
 		end
 	end
@@ -212,4 +214,7 @@ function StoryController:serializeState()
 	local data = {}
 	return data
 end
+
+--------------------------------------------------------------------
+registerComponent( 'StoryController', StoryController )
 

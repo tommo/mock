@@ -17,6 +17,7 @@ CLASS: TextLabel ( RenderComponent )
 		Field 'size'          :type('vec2') :getset( 'Size' );
 		Field 'alignment'     :enum( EnumTextAlignment )  :set('setAlignment')  :label('align H');
 		Field 'alignmentV'    :enum( EnumTextAlignmentV ) :set('setAlignmentV') :label('align V');
+		Field 'lineSpacing'   :set('setLineSpacing') :label('line spacing');
 		Field 'wordBreak'     :boolean()  :set('setWordBreak') :label('break word');
 	}
 
@@ -35,6 +36,7 @@ function TextLabel:__init(  )
 	self.rectLimit = true
 	self:useDeckShader()	
 	self.wordBreak = false
+	self.lineSpacing = 0
 	-- self:useFontShader()
 end
 
@@ -58,9 +60,14 @@ function TextLabel:setBlend( b )
 end
 
 function TextLabel:setWordBreak( wbreak )
-		self.wordBreak = wbreak
-		self.box:setWordBreak( wbreak and MOAITextLabel.WORD_BREAK_CHAR or MOAITextLabel.WORD_BREAK_NONE )
-	end
+	self.wordBreak = wbreak
+	self.box:setWordBreak( wbreak and MOAITextLabel.WORD_BREAK_CHAR or MOAITextLabel.WORD_BREAK_NONE )
+end
+
+function TextLabel:setLineSpacing( spacing )
+	self.lineSpacing = spacing
+	self.box:setLineSpacing( spacing or 0 )
+end
 
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
 function TextLabel:setShader( shaderPath )
