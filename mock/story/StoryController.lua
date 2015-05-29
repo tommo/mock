@@ -96,6 +96,20 @@ function StoryState:getNodeContext( node, affirm )
 	return context
 end
 
+function StoryState:getFlagAccessors( node )
+	local localDict  = self:getLocalFlagDict( node )
+	local scopeDict  = self:getScopeFlagDict( node )
+	local globalDict = self:getGlobalFlagDict()
+	return localDict:getAccessor(), scopeDict:getAccessor(), globalDict:getAccessor()
+end
+
+function StoryState:getFlagDict( scopeName, node )
+	if scopeName == 'scope' then return self:getScopeFlagDict( node ) end
+	if scopeName == 'global' then return self:getGlobalFlagDict() end
+	if scopeName == 'local' then return self:getLocalFlagDict( node ) end
+	return self:getLocalFlagDict( node )
+end
+
 function StoryState:getLocalFlagDict( node )
 	return self.owner:affirmFlagDict( node.group.id )
 end

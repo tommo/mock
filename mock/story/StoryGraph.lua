@@ -148,11 +148,6 @@ function StoryNode:isDecorator()
 	return false
 end
 
-function StoryNode:getNextNode()
-	local routeOut = self.routesOut[1]
-	if routeOut then return routeOut.nodeDst end
-	return nil
-end
 
 function StoryNode:toString()
 	return '[' .. self.id .. '<'..self:getType()..'>]\t'.. self.text
@@ -301,6 +296,7 @@ function StoryRoute:getType()
 end
 
 function StoryRoute:onLoad( data )
+	self.valueNumber = tonumber( self.text ) or false
 end
 
 --------------------------------------------------------------------

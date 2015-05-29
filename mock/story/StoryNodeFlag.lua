@@ -1,5 +1,39 @@
 module 'mock'
 
+
+local function makeFlagExpr( node, text, chunkName )
+	--'$/$$' to name space
+	text = text:gsub( '%$%$', '_GLOBAL_.' )
+	text = text:gsub( '%$',  '_SCOPE_.'  )
+	local src = string.format( 'return (%s)', text )
+	local evalFunc, err = loadstring( src, chunkName )
+	if not evalFunc then
+		print( src )
+		print( err )
+		error( 'failed parsing Flag expression' )
+	end
+
+	local builtinSymbolsMT = {}
+	local builtinSymbols = setmetatable(
+		{
+			_GLOBAL_ = {},
+			_SCOPE_  = {}
+		}, builtinSymbolsMT )
+
+	setfenv( evalFunc, builtinSymbols )
+
+	local exprFunc = function( state )
+		local l, s, g = state:getFlagAccessors( node )
+		builtinSymbolsMT.__index = assert( l )
+		builtinSymbols._SCOPE_   = assert( s )
+		builtinSymbols._GLOBAL_  = assert( g )
+		return evalFunc()
+	end
+
+	return exprFunc
+end
+
+--------------------------------------------------------------------
 CLASS: StoryNodeFlag ( StoryNode )
 	:MODEL{}
 
@@ -8,8 +42,8 @@ function StoryNodeFlag:__init()
 end
 
 function StoryNodeFlag:onStateUpdate( state )
-	local flag = self.exprFunc( state )
-	if flag then
+	local succ, flag = pcall( self.exprFunc, state )
+	if succ and flag then
 		if self.hasYesRoute then return true end
 	else
 		if self.hasNotRoute then return false end
@@ -17,36 +51,8 @@ function StoryNodeFlag:onStateUpdate( state )
 	return 'running' --block until flag changed
 end
 
-function StoryNodeFlag:onStateExit( state )
-end
-
 function StoryNodeFlag:onLoad( nodeData )
-	--TODO:parse expression
-	local text = self.text
-	local scope, flagName
-	if text:startwith( '$$' ) then
-		scope = 'global'
-		flagName = text:sub(3)
-	elseif text:startwith( '$' ) then
-		scope = 'scope'
-		flagName = text:sub(2)
-	else
-		scope = 'local'
-		flagName = text
-	end
-	
-	self.exprFunc = function( state )
-		local dict
-		if scope == 'local' then
-			dict = state:getLocalFlagDict( self )
-		elseif scope == 'global' then
-			dict = state:getGlobalFlagDict()
-		elseif scope == 'scope' then
-			dict = state:getScopeFlagDict( self )
-		end
-		local value = dict:get( flagName )
-		return value
-	end
+	self.exprFunc = makeFlagExpr( self, self.text )
 
 	local hasNotRoute, hasYesRoute = false, false
 	for i, r in pairs( self.routesOut ) do
@@ -62,6 +68,115 @@ end
 
 
 --------------------------------------------------------------------
+local function parseSingleFlagSetter( node, text, value )	
+	--match single flag
+	local prefix, flagName = text:match( '^%s*(%$?%$?)([%w_]+)%s*$' )
+	if not prefix then return false end
+	local scope
+	if prefix == '$$' then		
+		node.setterFunc = function( state )
+			local dict
+			dict = state:getGlobalFlagDict()
+			dict:set( flagName, value )
+		end	
+	elseif prefix == '$' then
+		node.setterFunc = function( state )
+			local dict
+			dict = state:getScopeFlagDict( node )
+			dict:set( flagName, value )
+		end
+	else		
+		node.setterFunc = function( state )
+			local dict
+			dict = state:getLocalFlagDict( node )
+			dict:set( flagName, value )
+		end
+	end
+	return true
+end
+
+
+local function parseSimpleFlagSetter( node, text )
+	-- flagname =/+=/-=/*=/ /= / constant
+	local prefix, flagName, op, expr
+		= text:match( '^%s*(%$?%$?)([%w_]+)%s*([&|%+%-%*/=]*)%s*(.*)$' )
+	if not prefix then return false end
+	local scope = 'local'
+	if prefix == '$$' then		
+		scope = 'global'
+	elseif prefix == '$' then
+		scope = 'scope'
+	end
+
+	local exprFunc = makeFlagExpr( node, expr )
+	local setterFunc
+	print( prefix, flagName, op, expr )
+	if op == '+=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value0 = tonumber( dict:get( flagName ) ) or 0
+			local value = tonumber( exprFunc( state ) ) or 0
+			return dict:set( flagName, value0 + value )
+		end
+	elseif op == '-=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value0 = tonumber( dict:get( flagName ) ) or 0
+			local value = tonumber( exprFunc( state ) ) or 0
+			return dict:set( flagName, value0 - value )
+		end
+	elseif op == '*=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value0 = tonumber( dict:get( flagName ) ) or 0
+			local value = tonumber( exprFunc( state ) ) or 0
+			return dict:set( flagName, value0 * value )
+		end
+	elseif op == '/=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value0 = tonumber( dict:get( flagName ) ) or 0
+			local value = tonumber( exprFunc( state ) ) or 1
+			return dict:set( flagName, value0 / value )
+		end
+	elseif op == '&=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value0 = dict:get( flagName )
+			local value = exprFunc( state )
+			return dict:set( flagName, value0 and value )
+		end
+	elseif op == '|=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value0 = dict:get( flagName )
+			local value = exprFunc( state )
+			return dict:set( flagName, value0 or value )
+		end
+	elseif op == '=' then
+		setterFunc = function( state )
+			local dict = state:getFlagDict( scope, node )
+			local value = exprFunc( state )
+			return dict:set( flagName, value )
+		end
+	else
+		error( 'invalid flag operation:'..op )
+		return false
+	end
+	node.setterFunc = setterFunc
+	return true
+end
+
+
+local function parserFlagSetter( node, text )
+	if parseSingleFlagSetter( node, text, true ) then return true end	
+	if parseSimpleFlagSetter( node, text ) then return true end	
+	print( node.id, text )
+	error( 'invalid flag setter synatx' )
+	return false
+end
+
+--------------------------------------------------------------------
 CLASS: StoryNodeFlagSet ( StoryNode )
 	:MODEL{}
 
@@ -74,31 +189,7 @@ function StoryNodeFlagSet:onStateEnter( state, prevNode, prevResult )
 end
 
 function StoryNodeFlagSet:onLoad( nodeData )
-	--TODO:parse expression
-	local text = self.text
-	local scope, flagName
-	if text:startwith( '$$' ) then
-		scope = 'global'
-		flagName = text:sub(3)
-	elseif text:startwith( '$' ) then
-		scope = 'scope'
-		flagName = text:sub(2)
-	else
-		scope = 'local'
-		flagName = text
-	end
-	
-	self.setterFunc = function( state )
-		local dict
-		if scope == 'local' then
-			dict = state:getLocalFlagDict( self )
-		elseif scope == 'global' then
-			dict = state:getGlobalFlagDict()
-		elseif scope == 'scope' then
-			dict = state:getScopeFlagDict( self )
-		end
-		dict:set( flagName, true )
-	end
+	parserFlagSetter( self, self.text )
 end
 
 
@@ -107,41 +198,29 @@ CLASS: StoryNodeFlagRemove ( StoryNode )
 	:MODEL{}
 
 function StoryNodeFlagRemove:__init()
-	self.removerFunc = false
+	self.setterFunc = false
 end
 
 function StoryNodeFlagRemove:onStateEnter( state, prevNode, prevResult )
-	self.removerFunc( state )
+	self.setterFunc( state )
 end
 
 function StoryNodeFlagRemove:onLoad( nodeData )
-	--TODO:parse expression
-	local text = self.text
-	local scope, flagName
-	if text:startwith( '$$' ) then
-		scope = 'global'
-		flagName = text:sub(3)
-	elseif text:startwith( '$' ) then
-		scope = 'scope'
-		flagName = text:sub(2)
-	else
-		scope = 'local'
-		flagName = text
-	end
-	
-	self.removerFunc = function( state )
-		local dict
-		if scope == 'local' then
-			dict = state:getLocalFlagDict( self )
-		elseif scope == 'global' then
-			dict = state:getGlobalFlagDict()
-		elseif scope == 'scope' then
-			dict = state:getScopeFlagDict( self )
-		end
-		dict:set( flagName, false )
-	end
+	if parseSingleFlagSetter( self, self.text, false ) then return true end
+	print( self.id, self.text )
+	error( 'invalid flag remover synatx' )
 end
 
 registerStoryNodeType( 'FLAG', StoryNodeFlag  )
 registerStoryNodeType( 'FLAG_SET', StoryNodeFlagSet  )
 registerStoryNodeType( 'FLAG_REMOVE', StoryNodeFlagRemove  )
+
+--------------------------------------------------------------------
+CLASS: StoryNodeAssert ( StoryNodeFlag )
+	:MODEL{}
+
+function StoryNodeAssert:__init()
+	self.exprFunc = false
+end
+
+registerStoryNodeType( 'ASSERT', StoryNodeAssert  )

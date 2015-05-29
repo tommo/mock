@@ -6,6 +6,19 @@ CLASS: FlagDict ()
 
 function FlagDict:__init()
 	self.flags = {}
+	self.accessorMT = {
+		__index = function( t, k )
+			return self:get( k )
+		end,
+		__newindex = function( t, k, v )			
+			return self:set( k, v )
+		end
+	}
+	self.accessor = setmetatable( {}, self.accessorMT )
+end
+
+function FlagDict:getAccessor()
+	return self.accessor
 end
 
 function FlagDict:get( id )

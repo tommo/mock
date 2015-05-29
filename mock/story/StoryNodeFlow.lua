@@ -9,6 +9,14 @@ function StoryNodeStart:onStateEnter( state, prevNode, prevResult )
 end
 
 --------------------------------------------------------------------
+CLASS: StoryNodeStop ( StoryNode )
+	:MODEL{}
+
+function StoryNodeStop:onStateUpdate()
+	return 'stop'
+end
+
+--------------------------------------------------------------------
 CLASS: StoryNodeEnd ( StoryNode )
 	:MODEL{}
 
@@ -94,6 +102,31 @@ function StoryNodeLimit:onLoad()
 	self.routeLimit = limit
 end
 
+
+--------------------------------------------------------------------
+CLASS: StoryNodeRand ( StoryNode )
+	:MODEL{}
+
+function StoryNodeRand:calcNextNode( state, prevNodeResult )
+	local selectedRoute = probselect( self.selection )
+	if selectedRoute then
+		return { selectedRoute.nodeDst }
+	end
+	return {}
+end
+
+function StoryNodeRand:onLoad( nodeData )
+	local selection = {}
+	for i, routeOut in ipairs( self.routesOut ) do
+		if routeOut.type ~= 'NOT' then
+			local weight = routeOut.valueNumber or 10
+			selection[ i ] = { weight, routeOut }
+		end
+	end
+	self.selection = selection
+end
+
+
 --------------------------------------------------------------------
 CLASS: StoryNodeComment ( StoryNode )
 	:MODEL{}
@@ -103,11 +136,14 @@ CLASS: StoryNodeComment ( StoryNode )
 --------------------------------------------------------------------
 registerStoryNodeType( 'START', StoryNodeStart )
 registerStoryNodeType( 'END',   StoryNodeEnd   )
+registerStoryNodeType( 'STOP',  StoryNodeStop  )
 
 registerStoryNodeType( 'HUB',   StoryNodeHub   )
 
 registerStoryNodeType( 'AND',   StoryNodeAND   )
 registerStoryNodeType( 'LIMIT',    StoryNodeLimit    )
+
+registerStoryNodeType( 'RAND',   StoryNodeRand   )
 
 registerStoryNodeType( 'COMMENT', StoryNodeComment )
 
