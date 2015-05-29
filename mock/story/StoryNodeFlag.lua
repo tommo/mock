@@ -110,7 +110,6 @@ local function parseSimpleFlagSetter( node, text )
 
 	local exprFunc = makeFlagExpr( node, expr )
 	local setterFunc
-	print( prefix, flagName, op, expr )
 	if op == '+=' then
 		setterFunc = function( state )
 			local dict = state:getFlagDict( scope, node )
@@ -219,8 +218,12 @@ registerStoryNodeType( 'FLAG_REMOVE', StoryNodeFlagRemove  )
 CLASS: StoryNodeAssert ( StoryNodeFlag )
 	:MODEL{}
 
-function StoryNodeAssert:__init()
-	self.exprFunc = false
+function StoryNodeAssert:onStateUpdate()
+	local succ, flag = pcall( self.exprFunc, state )
+	if succ and flag then return 'ok' end
+	_error( 'ERROR:Story Flag Assert Failed.', self.text )
+	return 'stop'
 end
+
 
 registerStoryNodeType( 'ASSERT', StoryNodeAssert  )

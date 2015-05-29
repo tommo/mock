@@ -132,10 +132,12 @@ function StoryState:getGlobalFlagDict()
 end
 
 function StoryState:deserializeState( data )
+	--TODO
 end
 
 function StoryState:serializeState()
 	local data = {}
+	--TODO
 	return data
 end
 
@@ -231,10 +233,12 @@ function StoryController:acceptInput( roleId, tag, data )
 end
 
 function StoryController:deserializeState( data )
+	--TODO
 end
 
 function StoryController:serializeState()
 	local data = {}
+	--TODO
 	return data
 end
 

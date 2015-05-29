@@ -16,6 +16,7 @@ function StoryNodeStop:onStateUpdate()
 	return 'stop'
 end
 
+
 --------------------------------------------------------------------
 CLASS: StoryNodeEnd ( StoryNode )
 	:MODEL{}
