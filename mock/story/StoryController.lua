@@ -83,8 +83,17 @@ function StoryState:addInputNode( inputNode )
 	self.owner:addInputNode( self, inputNode )
 end
 
-function StoryState:endGroup()
-	self.parentState.currentNodeEnded = true
+function StoryState:endGroup( groupNode )
+	if self.parentState and self.parentState.currentNode == groupNode then
+		self.parentState.currentNodeEnded = true
+	else
+		local nextNodes = groupNode:calcNextNode( self, nil )
+		if nextNodes then
+			for i, nextNode in ipairs( nextNodes ) do
+				self.parentState:enterStoryNode( nextNode, groupNode, nil )
+			end
+		end
+	end
 end
 
 function StoryState:getNodeContext( node, affirm )

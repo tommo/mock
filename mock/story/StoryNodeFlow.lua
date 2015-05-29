@@ -22,8 +22,8 @@ CLASS: StoryNodeEnd ( StoryNode )
 
 function StoryNodeEnd:onStateUpdate( state )
 	--stop current scope
-	state:endGroup()
-	return 'ok'
+	state:endGroup( self.group )
+	return 'stop'
 end
 
 --------------------------------------------------------------------
