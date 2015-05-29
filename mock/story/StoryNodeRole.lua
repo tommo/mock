@@ -7,8 +7,8 @@ function StoryNodeRole:onLoad( data )
 end
 
 function StoryNodeRole:onApply( dstNode )
-	-- print('apply role', dstNode, self )
-	dstNode.role = self.text
+	-- print('apply role', dstNode, self.text )
+	dstNode.roleId = self.text
 end
 
 registerStoryNodeType( 'ROLE', StoryNodeRole )

@@ -1,13 +1,20 @@
 module 'mock'
 
+--------------------------------------------------------------------
+--System
 require 'mock.story.StoryGraph'
-require 'mock.story.StoryRole'
 
 require 'mock.story.FlagDict'
-require 'mock.story.StoryController'
+require 'mock.story.StoryContext'
+
 require 'mock.story.StoryRoleController'
 
 --------------------------------------------------------------------
+--Global Manager
+require 'mock.story.StoryManager'
+
+--------------------------------------------------------------------
+--Nodes
 require 'mock.story.StoryNodeFlow'
 require 'mock.story.StoryNodeFlag'
 require 'mock.story.StoryNodeCustomAction'

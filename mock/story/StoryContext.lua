@@ -141,47 +141,83 @@ function StoryState:serializeState()
 	return data
 end
 
+function StoryState:getRoleControllers( roleId )
+	return self.owner:getRoleControllers( roleId )
+end
+
 --------------------------------------------------------------------
-CLASS: StoryController ( Component )
+CLASS: StoryContext ( Component )
 	:MODEL{
 		Field 'story' :asset( 'story' ) :getset( 'StoryPath' );
 	}
 
-function StoryController:__init()
+function StoryContext:__init()
 	self.flagDicts = {}
-	self.globalFlagDict = FlagDict()
+	self.globalFlagDict = FlagDict( self, '__GLOBAL' )
 	self.storyPath = false
 	self.storyGraph = false
 	self.defaultRoleId = '_NOBODY'
+	self.inputTriggerMap = {}
+	self.flagTriggerMap  = {}
 end
 
-function StoryController:getStoryPath()
+function StoryContext:getStoryPath()
 	return self.storyPath
 end
 
-function StoryController:setStoryPath( path )
+function StoryContext:setStoryPath( path )
 	self.storyPath = path
 	self.storyGraph = loadAsset( path )
 end
 
-function StoryController:affirmFlagDict( id )
+function StoryContext:affirmFlagDict( id )
 	local flagDict = self.flagDicts[ id ]
 	if not flagDict then
-		flagDict = FlagDict()
+		flagDict = FlagDict( self, id )
 		self.flagDicts[ id ] = flagDict
 	end
 	return flagDict
 end
 
-function StoryController:getFlagDict( id )
+function StoryContext:getFlagDict( id )
 	return self.flagDicts[ id ]
 end
 
-function StoryController:getGlobalFlagDict()
+function StoryContext:getGlobalFlagDict()
 	return self.globalFlagDict
 end
 
-function StoryController:addInputNode( state, node )
+----
+function StoryContext:onFlagChanged( nodeId, id )
+	--TODO: lazy update support?
+	self.needUpdate = true
+end
+
+----
+function StoryContext:reset()
+	self.inputTriggerMap = {}
+	self.roleControllers = {}
+end
+
+function StoryContext:start()
+	self:reset()
+
+	if self.storyGraph then
+		self.defaultRoleId = self.storyGraph:getDefaultRole()
+		local entryNode = self.storyGraph:getRoot()
+		self.rootState = StoryState( self )
+		self.rootState:start( entryNode )
+	end
+	self.needUpdate = true
+end
+
+function StoryContext:tryUpdate( force )
+	if self.needUpdate or force then
+		self.rootState:update()
+	end
+end
+----
+function StoryContext:addInputNode( state, node )
 	local triggers = self.inputTriggerMap[ state ]
 	if not triggers then
 		triggers = {}
@@ -190,37 +226,18 @@ function StoryController:addInputNode( state, node )
 	table.insert( triggers, node )
 end
 
-function StoryController:clearInputNode( state )
+function StoryContext:clearInputNode( state )
 	self.inputTriggerMap[ state ] = nil
 end
 
-function StoryController:onStart( entity )
-	self.inputTriggerMap = {}
-	if self.storyGraph then
-		self.defaultRoleId = self.storyGraph:getDefaultRole()
-		local entryNode = self.storyGraph:getRoot()
-		self.rootState = StoryState( self )
-		self.rootState:start( entryNode )
-	end
-	self:addCoroutine('actionUpdate')
-end
-
-function StoryController:actionUpdate()
-	if not self.rootState then return end
-	while self.rootState:isActive() do
-		coroutine.yield()
-		self.rootState:update()
-	end
-end
-
-function StoryController:acceptInput( roleId, tag, data )
+function StoryContext:sendInput( roleId, tag, data )
 	local defaultRoleId = self.defaultRoleId
 	roleId = roleId or defaultRoleId
 
 	for state, triggers in pairs( self.inputTriggerMap ) do
 		for _, node in ipairs( triggers ) do
 			local nodeTag = node.tag
-			local nodeRoleId = node.role or defaultRoleId
+			local nodeRoleId = node:getRoleId() or defaultRoleId
 			if node.tag == tag
 				and nodeRoleId == roleId
 				and not ( node.data and node.data~=data )
@@ -232,16 +249,41 @@ function StoryController:acceptInput( roleId, tag, data )
 
 end
 
-function StoryController:deserializeState( data )
+----
+function StoryContext:registerRoleController( controller )
+	local roleId = controller:getRoleId()
+	local roles = self.roleControllers[ roleId ]
+	if not roles then
+		roles = {}
+		self.roleControllers[ roleId ] = roles
+	end
+	table.insert( roles, controller )
+end
+
+function StoryContext:removeRoleController( controller )
+	local roleId = controller:getRoleId()
+	local roles = self.roleControllers[ roleId ]
+	if not roles then return end
+	for i, r in ipairs( roles ) do
+		if r == controller then
+			table.remove( roles, i )
+			return
+		end
+	end
+end
+
+function StoryContext:getRoleControllers( roleId )
+	local roles = self.roleControllers[ roleId ]
+	return roles or {}
+end
+
+----
+function StoryContext:deserializeState( data )
 	--TODO
 end
 
-function StoryController:serializeState()
+function StoryContext:serializeState()
 	local data = {}
 	--TODO
 	return data
 end
-
---------------------------------------------------------------------
-registerComponent( 'StoryController', StoryController )
-

@@ -4,7 +4,7 @@ module 'mock'
 CLASS: FlagDict ()
 	:MODEL{}
 
-function FlagDict:__init()
+function FlagDict:__init( owner, scopeId )
 	self.flags = {}
 	self.accessorMT = {
 		__index = function( t, k )
@@ -15,6 +15,8 @@ function FlagDict:__init()
 		end
 	}
 	self.accessor = setmetatable( {}, self.accessorMT )
+	self.owner   = owner
+	self.scopeId = scopeId
 end
 
 function FlagDict:getAccessor()
@@ -48,6 +50,7 @@ function FlagDict:set( id, value )
 	local tt = type( value )
 	assert( tt == 'number' or tt =='boolean' or tt =='nil' )
 	self.flags[ id ] = value
+	self.owner:onFlagChanged( self.scopeId, id, value )
 end
 
 function FlagDict:remove( id )

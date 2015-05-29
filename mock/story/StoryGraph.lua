@@ -19,7 +19,7 @@ function StoryGraph:initRoot()
 	self.rootGroup = StoryScopedGroup()
 	self.rootGroup.id = '__root'
 	self.rootGroup.text = '__root'
-	self.rootGroup.role = self.defaultRoleId
+	self.rootGroup.roleId = self.defaultRoleId
 
 end
 
@@ -121,11 +121,11 @@ function StoryNode:__init()
 	self.type = 'node'
 	self.scope = false
 	self.group = false
-	self.role  = false
+	self.roleId  = false
 end
 
-function StoryNode:getRole()
-	return self.role or self.group:getRole()
+function StoryNode:getRoleId()
+	return self.roleId or self.group:getRoleId()
 end
 
 function StoryNode:getScope()
@@ -174,7 +174,7 @@ function StoryNode:onLoad( nodeData )
 end
 
 function StoryNode:onStateEnter( state, prevNode, prevResult )
-	print( '-> ', self:toString() )
+	-- print( '-> ', self:toString() )
 end
 
 function StoryNode:onStateUpdate( state )
@@ -185,7 +185,7 @@ function StoryNode:onStateExit( state )
 end
 
 function StoryNode:loadNodeData()
-	self.role = self.role or self:getRole()
+	self.roleId = self.roleId or self:getRoleId()
 	self:onLoad( self.nodeData )
 end
 --------------------------------------------------------------------
@@ -244,7 +244,7 @@ function StoryNodeGroup:onStateUpdate( state )
 end
 
 function StoryNodeGroup:loadNodeData()
-	self.role = self.role or self:getRole()
+	self.roleId = self.roleId or self:getRoleId()
 	for i, child in ipairs( self.children ) do
 		child:loadNodeData()
 	end
