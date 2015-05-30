@@ -34,12 +34,12 @@ function StoryGraph:_loadStoryNode( nodeData, group, scope, nodeDict )
 	if ntype == 'REF' then
 		node = StoryScopedGroup()
 		node.scope = scope
+		scope = node
 		isGroup = true
 
 	elseif ntype == 'GROUP' then
 		node = StoryNodeGroup()
 		node.scope = scope
-		scope = node
 		isGroup = true
 
 	else

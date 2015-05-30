@@ -5,6 +5,7 @@ local function makeFlagExpr( node, text, chunkName )
 	--'$/$$' to name space
 	text = text:gsub( '%$%$', '_GLOBAL_.' )
 	text = text:gsub( '%$',  '_SCOPE_.'  )
+	if text == '' then text = 'nil' end
 	local src = string.format( 'return (%s)', text )
 	local evalFunc, err = loadstring( src, chunkName )
 	if not evalFunc then

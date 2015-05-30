@@ -11,6 +11,14 @@ function StoryManager:__init()
 	self.activeContext = false
 end
 
+function StoryManager:init()
+	--TEST:
+	local context = self:createContext()
+	context:setActive()
+	context:setStoryPath( 'story/basic.story' )
+	context:start()
+end
+
 function StoryManager:update()
 	for _, context in ipairs( self.contexts ) do
 		context:tryUpdate()
@@ -60,6 +68,7 @@ function StoryManager:getRoleControllers( roleId )
 end
 
 function StoryManager:sendInput( roleId, tag, data )
+	print( 'input event', roleId, tag, data )
 	if self.activeContext then
 		self.activeContext:sendInput( roleId, tag, data )
 	end
@@ -79,6 +88,11 @@ local storyManager = StoryManager()
 function getStoryManager()
 	return storyManager
 end
+
+
+connectGlobalSignalFunc( 'game.init', function()
+	storyManager:init()
+end )
 
 connectGlobalSignalFunc( 'game.update', function()
 	storyManager:update()

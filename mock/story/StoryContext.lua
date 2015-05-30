@@ -250,7 +250,6 @@ end
 function StoryContext:sendInput( roleId, tag, data )
 	local defaultRoleId = self.defaultRoleId
 	roleId = roleId or defaultRoleId
-
 	for state, triggers in pairs( self.inputTriggerMap ) do
 		for _, node in ipairs( triggers ) do
 			local nodeTag = node.tag
