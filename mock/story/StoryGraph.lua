@@ -196,6 +196,7 @@ function StoryNodeGroup:__init()
 	self.children = {}
 	self.startNodes = {}
 	self.inputNodes = {}
+	self.sceneEventNodes = {}
 end
 
 function StoryNodeGroup:addChild( node )
@@ -220,23 +221,30 @@ function StoryNodeGroup:onStateEnter( state, prevNode, prevResult )
 		state:enterStoryNode( startNode, nil, nil )
 	end
 	for inputNode in pairs( self.inputNodes ) do
-		state:addInputNode( inputNode )
+		state:addInputTrigger( inputNode )
+	end
+	for sceneEventNode in pairs( self.sceneEventNodes ) do
+		state:addSceneEventTrigger( sceneEventNode )
 	end
 end
 
 function StoryNodeGroup:onLoad( nodeData )
 	local startNodes = {}
 	local inputNodes = {}
+	local sceneEventNodes = {}
 	for _, child in ipairs( self.children ) do
 		local t = child:getType()
 		if t == 'START' then
 			startNodes[ child ] = true
 		elseif t == 'INPUT' then
 			inputNodes[ child ] = true
+		elseif t == 'SCN' then
+			sceneEventNodes[ child ] = true
 		end
 	end
 	self.startNodes = startNodes
 	self.inputNodes = inputNodes
+	self.sceneEventNodes = sceneEventNodes
 end
 
 function StoryNodeGroup:onStateUpdate( state )

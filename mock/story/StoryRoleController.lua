@@ -8,7 +8,6 @@ CLASS: StoryRoleController ( Component )
 registerComponent( 'StoryRoleController', StoryRoleController )
 
 function StoryRoleController:__init()
-	self.ownerContext = false
 end
 
 function StoryRoleController:getRoleId()
@@ -17,7 +16,7 @@ end
 
 function StoryRoleController:setRoleId( id )
 	self.roleId = id
-	self:updateRegistry()
+	self:_updateRegistry()
 end
 
 
@@ -28,18 +27,11 @@ end
 
 function StoryRoleController:_updateRegistry()
 	self:_removeFromRegistry()
-	local context = self:getStoryManager():getActiveContext()
-	if context then
-		self.context = context 
-		context:registerRoleController( self )
-	end
+	self:getStoryManager():registerRoleController( self )
 end
 
 function StoryRoleController:_removeFromRegistry()
-	if self.ownerContext then
-		self.ownerContext:removeRoleController( self )
-		self.ownerContext = false
-	end
+	self:getStoryManager():unregisterRoleController( self )
 end
 
 function StoryRoleController:onAttach( ent )
@@ -51,7 +43,7 @@ function StoryRoleController:onDetach( ent )
 end
 
 function StoryRoleController:getContext()
-	return self.ownerContext or false
+	return self:getStoryManager():getActiveContext()
 end
 
 function StoryRoleController:getStoryManager()
@@ -59,8 +51,7 @@ function StoryRoleController:getStoryManager()
 end
 
 function StoryRoleController:sendInput( tag, data )
-	local context = self:getContext()
-	context:sendInput( self.roleId, tag, data )
+	self:getStoryManager():sendInput( self.roleId, tag, data )
 end
 
 function StoryRoleController:acceptStoryMessage( msg, node )
@@ -69,4 +60,5 @@ function StoryRoleController:acceptStoryMessage( msg, node )
 end
 
 function StoryRoleController:onStoryMessage( msg, node )
+	-- print( msg, node )
 end

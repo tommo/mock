@@ -1,0 +1,74 @@
+module 'mock'
+
+CLASS: BehaviourScript ( mock.Behaviour )
+	:MODEL{
+		Field 'comment' :string();
+		Field 'script' :string() :widget('codebox');
+
+}
+
+registerComponent( 'BehaviourScript', BehaviourScript )
+
+local defaultScript = [[
+-- adhoc script
+-- usable variable: self( mock.Behaviour ),  entity( mock.Entity )
+--
+
+function onThread()
+end
+
+--function onMsg( msg, data )
+--end
+
+]]
+
+local scriptHeader = [[
+local self, entity = ...
+]]
+
+local scriptTail = [[
+]]
+
+function BehaviourScript:__init()
+	self.comment = ''
+	self.script = defaultScript
+end
+
+function BehaviourScript:onStart( ent )
+	self:loadScript( ent )
+	Behaviour.onStart( self, ent )
+end
+
+function BehaviourScript:loadScript( ent )
+	self.delegate = false
+	local finalScript = scriptHeader .. self.script .. scriptTail
+	local loader, err = loadstring( finalScript, 'behaviour-script' )
+	if not loader then return _error( err ) end
+	local delegate = setmetatable( {}, { __index = _G } )
+	setfenv( loader, delegate )
+	local succ = pcall( loader, self, ent )
+	if succ then
+		self.delegate = delegate
+	end
+	self.onThread = delegate.onThread
+	if delegate.onMsg then
+		self.msgListener = delegate.onMsg
+		ent:addMsgListener( self.msgListener )
+	end
+end
+
+function BehaviourScript:onDetach( ent )
+	if self.msgListener then
+		ent:removeMsgListener( self.msgListener )
+	end
+end
+
+--------------------------------------------------------------------
+function BehaviourScript:installInputListener( option )
+	return installInputListener( self.delegate, option )
+end
+
+function BehaviourScript:uninstallInputListener()
+	return uninstallInputListener( self.delegate )
+end
+

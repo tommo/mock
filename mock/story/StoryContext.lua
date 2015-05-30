@@ -6,7 +6,7 @@ CLASS: StoryState ()
 
 function StoryState:__init( owner )
 	self.currentNode      = false
-	self.currentNodeEnded = false
+	self.forceEnded = false
 	self.active      = false
 	self.owner       = owner
 	self.subStates   = {}
@@ -20,6 +20,7 @@ end
 
 function StoryState:start( storyNode, prevNode, prevNodeResult )
 	self.currentNode = storyNode
+	self.owner:pendUpdate()
 	self.active = true
 	storyNode:onStateEnter( self, prevNode, prevNodeResult )
 	return self:update()
@@ -45,7 +46,7 @@ function StoryState:update()
 	local currentNode = self.currentNode
 	
 	local result
-	if self.currentNodeEnded then --group ended
+	if self.forceEnded then --group ended
 		result = 'ok'
 	else
 		result = self.currentNode:onStateUpdate( self )		
@@ -66,7 +67,8 @@ function StoryState:update()
 		end
 	end
 
-	owner:clearInputNode( self )
+	owner:clearInputTriggers( self )
+	owner:clearSceneEventTriggers( self )
 	return false
 end
 
@@ -75,17 +77,21 @@ function StoryState:enterStoryNode( storyNode, prevNode, prevNodeResult )
 	state.parentState = self
 	if state:start( storyNode, prevNode, prevNodeResult ) then
 		self.subStates[ state ] = true
-	end
+	end	
 end
 
 --Input trigger node
-function StoryState:addInputNode( inputNode )
-	self.owner:addInputNode( self, inputNode )
+function StoryState:addInputTrigger( inputNode )
+	self.owner:addInputTrigger( self, inputNode )
+end
+
+function StoryState:addSceneEventTrigger( sceneEventNode )
+	self.owner:addSceneEventTrigger( self, sceneEventNode )
 end
 
 function StoryState:endGroup( groupNode )
 	if self.parentState and self.parentState.currentNode == groupNode then
-		self.parentState.currentNodeEnded = true
+		self.parentState:forceEnd()
 	else
 		local nextNodes = groupNode:calcNextNode( self, nil )
 		if nextNodes then
@@ -94,6 +100,10 @@ function StoryState:endGroup( groupNode )
 			end
 		end
 	end
+end
+
+function StoryState:forceEnd()
+	self.forceEnded = true
 end
 
 function StoryState:getNodeContext( node, affirm )
@@ -159,6 +169,8 @@ function StoryContext:__init()
 	self.defaultRoleId = '_NOBODY'
 	self.inputTriggerMap = {}
 	self.flagTriggerMap  = {}
+	self.sceneTriggerMap = {}
+
 end
 
 function StoryContext:getStoryPath()
@@ -190,7 +202,7 @@ end
 ----
 function StoryContext:onFlagChanged( nodeId, id )
 	--TODO: lazy update support?
-	self.needUpdate = true
+	self:pendUpdate()
 end
 
 ----
@@ -208,6 +220,11 @@ function StoryContext:start()
 		self.rootState = StoryState( self )
 		self.rootState:start( entryNode )
 	end
+
+	self:pendUpdate()
+end
+
+function StoryContext:pendUpdate()
 	self.needUpdate = true
 end
 
@@ -217,7 +234,7 @@ function StoryContext:tryUpdate( force )
 	end
 end
 ----
-function StoryContext:addInputNode( state, node )
+function StoryContext:addInputTrigger( state, node )
 	local triggers = self.inputTriggerMap[ state ]
 	if not triggers then
 		triggers = {}
@@ -226,7 +243,7 @@ function StoryContext:addInputNode( state, node )
 	table.insert( triggers, node )
 end
 
-function StoryContext:clearInputNode( state )
+function StoryContext:clearInputTriggers( state )
 	self.inputTriggerMap[ state ] = nil
 end
 
@@ -249,35 +266,62 @@ function StoryContext:sendInput( roleId, tag, data )
 
 end
 
-----
-function StoryContext:registerRoleController( controller )
-	local roleId = controller:getRoleId()
-	local roles = self.roleControllers[ roleId ]
-	if not roles then
-		roles = {}
-		self.roleControllers[ roleId ] = roles
+--------------------------------------------------------------------
+function StoryContext:addSceneEventTrigger( state, sceneEventNode )	
+	local triggers = self.sceneTriggerMap[ state ]
+	if not triggers then
+		triggers = {}
+		self.sceneTriggerMap[ state ] = triggers
 	end
-	table.insert( roles, controller )
+	triggers[ sceneEventNode ] = false
 end
 
-function StoryContext:removeRoleController( controller )
-	local roleId = controller:getRoleId()
-	local roles = self.roleControllers[ roleId ]
-	if not roles then return end
-	for i, r in ipairs( roles ) do
-		if r == controller then
-			table.remove( roles, i )
-			return
-		end
-	end
+function StoryContext:clearSceneEventTriggers( state )
+	self.sceneTriggerMap[ state ] = nil
 end
+
+function StoryContext:sendSceneEvent( sceneId, event )
+	if not sceneId then return end
+	-- print( 'context:', 'scene event', sceneId, event )
+	for state, triggers in pairs( self.sceneTriggerMap ) do
+		for sceneEventNode, subState in pairs( triggers ) do
+			if sceneEventNode.sceneId == sceneId then
+				if subState then
+					if event == 'exit' then
+						if subState then
+							subState:forceEnd()
+						end
+						triggers[ sceneEventNode ] = nil
+					end
+				else
+					if event == 'enter' then
+						local newSubState = state:enterStoryNode( sceneEventNode, nil, nil )
+						triggers[ sceneEventNode ] = newSubState
+					end
+				end
+			end --if
+		end -- for
+	end
+
+end
+
+--------------------------------------------------------------------
 
 function StoryContext:getRoleControllers( roleId )
-	local roles = self.roleControllers[ roleId ]
-	return roles or {}
+	return getStoryManager():getRoleControllers( roleId )
 end
 
-----
+
+function StoryContext:isActive()
+	return getStoryManager():getActiveContext() == self
+end
+
+function StoryContext:setActive()
+	getStoryManager():setActiveContext( self )
+end
+
+--------------------------------------------------------------------
+
 function StoryContext:deserializeState( data )
 	--TODO
 end

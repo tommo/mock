@@ -8,7 +8,6 @@ function StoryNodeDialog:onStateEnter( state )
 	for i, role in ipairs( roles ) do
 		role:acceptStoryMessage( 'command.dialog', self )
 	end
-	print( 'dialog', self.text )
 end
 
 --------------------------------------------------------------------

@@ -38,6 +38,8 @@ function Scene:__init( option )
 	self.b2ground        = false
 	self.actionPriorityGroups = {}
 
+	self.config          = {}
+
 	return self
 end
 
