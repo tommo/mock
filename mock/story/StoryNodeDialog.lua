@@ -15,7 +15,7 @@ CLASS: StoryNodeDialogQuick ( StoryNode )
 	:MODEL{}
 
 function StoryNodeDialogQuick:onStateEnter( state )
-	local roles = state:getRoleControllers()
+	local roles = state:getRoleControllers( self:getRoleId() )
 	for i, role in ipairs( roles ) do
 		role:acceptStoryMessage( 'command.dialog_quick', self )
 	end

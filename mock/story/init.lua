@@ -9,7 +9,6 @@ require 'mock.story.StoryContext'
 
 require 'mock.story.StoryRoleController'
 require 'mock.story.StorySceneController'
-require 'mock.story.LocalStoryContext'
 
 --------------------------------------------------------------------
 --Global Manager

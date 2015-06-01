@@ -241,10 +241,17 @@ function StoryContext:addInputTrigger( state, node )
 		self.inputTriggerMap[ state ] = triggers
 	end
 	table.insert( triggers, node )
+	node:onStart( state )
 end
 
 function StoryContext:clearInputTriggers( state )
-	self.inputTriggerMap[ state ] = nil
+	local triggers = self.inputTriggerMap[ state ]
+	if triggers then
+		for _, node in ipairs( triggers ) do
+			node:onStop( state )
+		end
+		self.inputTriggerMap[ state ] = nil
+	end
 end
 
 function StoryContext:sendInput( roleId, tag, data )

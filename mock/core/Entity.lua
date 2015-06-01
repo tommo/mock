@@ -540,6 +540,17 @@ function Entity:findChild( name, deep )
 	return nil
 end
 
+function Entity:findChildByClass( clas, deep )
+	for child in pairs( self.children ) do
+		if child:isInstance( clas ) then return child end
+		if deep then
+			local c = child:findChildByClass( clas, deep )
+			if c then return c end
+		end
+	end
+	return nil
+end
+
 function Entity:findChildByPath( path )
 	local e = self
 	for part in string.gsplit( path, '/' ) do

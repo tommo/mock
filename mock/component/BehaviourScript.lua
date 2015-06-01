@@ -46,9 +46,22 @@ function BehaviourScript:loadScript( ent )
 	if not loader then return _error( err ) end
 	local delegate = setmetatable( {}, { __index = _G } )
 	setfenv( loader, delegate )
-	local succ = pcall( loader, self, ent )
+	
+	local errMsg, tracebackMsg
+	local function _onError( msg )
+		errMsg = msg
+		tracebackMsg = debug.traceback(2)
+	end
+	local succ = xpcall( function() loader( self, ent ) end, _onError )
 	if succ then
 		self.delegate = delegate
+	else
+		return _error( 'failed loading behaviour script' )
+	end
+
+	local onStart = delegate.onStart
+	if onStart then
+		onStart( ent )
 	end
 	self.onThread = delegate.onThread
 	if delegate.onMsg then
@@ -58,6 +71,10 @@ function BehaviourScript:loadScript( ent )
 end
 
 function BehaviourScript:onDetach( ent )
+	if self.delegate then
+		local onDetach = self.delegate.onDetach
+		if onDetach then onDetach( ent ) end
+	end
 	if self.msgListener then
 		ent:removeMsgListener( self.msgListener )
 	end

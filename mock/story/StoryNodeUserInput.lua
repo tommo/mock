@@ -6,6 +6,31 @@ CLASS: StoryNodeUserInput ( StoryNode )
 
 function StoryNodeUserInput:__init()
 	self.tag  = 'UNKNOWN'
+	self.data = false
+end
+
+function StoryNodeUserInput:onStart( state )
+	local roleId =  self:getRoleId()
+	local roles = state:getRoleControllers( self:getRoleId() )
+	for i, role in ipairs( roles ) do
+		role:acceptStoryMessage( 'input.start', self )
+	end
+end
+
+function StoryNodeUserInput:onStop( state )
+	local roleId =  self:getRoleId()
+	local roles = state:getRoleControllers( self:getRoleId() )
+	for i, role in ipairs( roles ) do
+		role:acceptStoryMessage( 'input.stop', self )
+	end
+end
+
+function StoryNodeUserInput:getTag()
+	return self.tag
+end
+
+function StoryNodeUserInput:getData()
+	return self.data
 end
 
 function StoryNodeUserInput:onLoad( nodeData )
@@ -17,6 +42,7 @@ function StoryNodeUserInput:onLoad( nodeData )
 	end
 	self.tag  = tag
 	self.data = data
+
 end
 
 registerStoryNodeType( 'INPUT', StoryNodeUserInput )
