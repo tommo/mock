@@ -25,6 +25,7 @@ function Scene:__init( option )
 	self.pendingDestroy  = {}
 	self.laterDestroy    = {}
 	self.pendingCall     = {}
+	self.pendingDetach   = {}
 
 	self.updateListeners = {}
 	self.metaData        = {} 
@@ -176,6 +177,15 @@ function Scene:threadMain( dt )
 		end
 		
 		--executeDestroyQueue()
+		local pendingDetach = self.pendingDetach
+		self.pendingDetach = {}
+		for com in pairs( pendingDetach ) do
+			local ent = com._entity
+			if ent then
+				ent:detach( com )
+			end
+		end
+
 		local pendingDestroy = self.pendingDestroy
 		self.pendingDestroy = {}
 		for entity in pairs( pendingDestroy ) do

@@ -285,6 +285,12 @@ function Entity:detachAll()
 	end
 end
 
+function Entity:detachLater( com )
+	if self.scene then
+		self.scene.pendingDetach[ com ] = true
+	end
+end
+
 function Entity:getComponents()
 	return self.components
 end
