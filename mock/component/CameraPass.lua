@@ -332,6 +332,22 @@ function CameraPass:pushSceneRenderPass( option )
 end
 
 
+function CameraPass:pushEditorLayerPass()
+	local camera = self.camera
+	local scene  = camera.scene
+
+	for id, sceneLayer in ipairs( scene.layers ) do
+		local name  = sceneLayer.name
+		if name == '_GII_EDITOR_LAYER' then
+			local p = self:buildSceneLayerRenderLayer( sceneLayer, { allowEditorLayer = true } )
+			if p then
+				self:pushRenderLayer( p )
+			end
+			break
+		end
+	end
+end
+
 function CameraPass:buildImageEffects()
 	if not self.camera.hasImageEffect then return end
 	
@@ -381,10 +397,16 @@ function SceneCameraPass:onBuild()
 		self:pushRenderTarget( fb0, { clearColor = self.clearColor } )
 	end
 	self:pushSceneRenderPass()
+
 	local debugLayer = self:buildDebugDrawLayer()
 	if debugLayer then
 		self:pushRenderLayer( debugLayer )
 	end
+
+	if camera:isEditorCamera() then
+		self:pushEditorLayerPass()
+	end
+
 end
 
 --------------------------------------------------------------------

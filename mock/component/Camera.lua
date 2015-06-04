@@ -161,15 +161,16 @@ function Camera:addPass( pass )
 end
 
 --------------------------------------------------------------------
+function Camera:isEditorCamera()
+	return false
+end
+
 function Camera:isLayerIncluded( name, allowEditorLayer )
 		return self:_isLayerIncluded( name, allowEditorLayer ) or (not self:_isLayerExcluded( name, allowEditorLayer ))
 end 
 
 --internal use
 function Camera:_isLayerIncluded( name, allowEditorLayer )
-	if allowEditorLayer == nil then
-		allowEditorLayer =  self.__allowEditorLayer
-	end
 	if name == '_GII_EDITOR_LAYER' and not allowEditorLayer then return false end
 	if self.includedLayers == 'all' then return nil end
 	for i, n in ipairs( self.includedLayers ) do
