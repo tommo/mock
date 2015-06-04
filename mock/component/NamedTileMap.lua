@@ -16,8 +16,8 @@ end
 
 function NamedTileGrid:setSize( w, h, tw, th, ox, oy, cw, ch )
 	self.grid:setSize( w, h, tw, th, ox, oy, cw, ch  )
-	self.width = width
-	self.height = height	
+	self.width = w
+	self.height = h	
 end
 
 
@@ -52,9 +52,12 @@ function NamedTileGrid:loadTiles( data )
 	local nameToId = data[ 'nameToId' ]
 	local nameToId2 = self.nameToId
 	local w, h = data[ 'width' ], data[ 'height' ]
+
 	if w ~= self.width or h ~= self.height then
 		_warn( 'tilemap size mismatch' )
-		return false
+		-- return false
+		w = self.width
+		h = self.height
 	end
 
 	loadMOAIGridTiles( self.grid, data['tiles'] )
@@ -68,6 +71,7 @@ function NamedTileGrid:loadTiles( data )
 	--conversion
 	if notMatch then
 		local conversionTable = {}
+		conversionTable[0] = 0
 		for k, id1 in pairs( nameToId ) do
 			local id2 = nameToId2[ k ] or 0
 			if id2 == 0 then _warn( 'symbol not found in tileset' ) end
@@ -76,7 +80,13 @@ function NamedTileGrid:loadTiles( data )
 		local grid = self.grid
 		for y = 1, h do
 			for x = 1, w do
-				grid:setTile( x, y, conversionTable[ grid:getTile( x, y ) ] )
+				local id0 = grid:getTile( x, y )
+				local id1 = conversionTable[ id0 ]
+				if not id1 then
+					_warn( 'cannot find tile conversion', id0 )
+					id1 = 0
+				end
+				grid:setTile( x, y, id1 )
 			end
 		end
 	end
