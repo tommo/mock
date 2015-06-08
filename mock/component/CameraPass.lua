@@ -417,7 +417,7 @@ function CallbackCameraPass:onBuild()
 	local function callback( ... )
 		return self:onDraw( ... )
 	end
-	self:pushPass( self:buildCallbackRenderLayer( callback ) )
+	self:pushRenderLayer( self:buildCallbackRenderLayer( callback ) )
 end
 
 function CallbackCameraPass:onDraw( ... )

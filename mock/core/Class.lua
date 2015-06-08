@@ -104,6 +104,10 @@ function BaseClass:MODEL( t )
 	return self
 end
 
+function BaseClass:DEPRECATED( msg )
+	self.__deprecated = { msg = msg }
+end
+
 function BaseClass:MEMBER( t )
 	for k, v in pairs( t ) do
 		self[k] = v

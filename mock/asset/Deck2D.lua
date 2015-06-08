@@ -167,6 +167,14 @@ function Tileset:__init()
 	self.spacing = 0
 end
 
+function Tileset:getTileSize()
+	return self.tw, self.th
+end
+
+function Tileset:getTileCount()
+	return self.col * self.row
+end
+
 function Tileset:createMoaiDeck()
 	local deck = MOAITileDeck2D.new()
 	return deck

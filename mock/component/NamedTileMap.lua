@@ -1,7 +1,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: NamedTileGrid ()
+CLASS: NamedTileGrid ( TileMapGrid )
 	:MODEL{}
 
 function NamedTileGrid:__init( grid )
@@ -109,62 +109,6 @@ function NamedTileGrid:saveTiles()
 end
 
 --------------------------------------------------------------------
-CLASS: NamedTileMap ( mock.RenderComponent )
-	:MODEL{}
-
-function NamedTileMap:__init( grid )
-	self.prop = MOAIProp.new()
-	self.grid = NamedTileGrid( grid )
-	self.prop:setGrid( self.grid:getMoaiGrid() )
-end
-
-function NamedTileMap:setSize( ... )
-	self.grid:setSize( ... )
-end
-
-function NamedTileMap:onAttach( ent )
-	ent:_attachProp( self.prop, 'render' )
-end
-
-function NamedTileMap:onDetach( ent )
-	ent:_detachProp( self.prop )
-end
-
-function NamedTileMap:getGrid()
-	return self.grid
-end
-
-function NamedTileMap:saveTiles()
-	return self.grid:saveTiles()
-end
-
-function NamedTileMap:loadTiles( data )
-	return self.grid:loadTiles( data )
-end
-
-function NamedTileMap:setTileset( tileset )
-	self.tileset   = tileset
-	self.grid:setTileset( tileset )
-	self.prop:setDeck( tileset:getMoaiDeck() )
-end
-
-function NamedTileMap:getTile( x,y )
-	return self.grid:getTile( x, y )
-end
-
-function NamedTileMap:setTile( x, y, name )
-	return self.grid:setTile( x, y, name )
-end
-
-function NamedTileMap:fill( name )
-	return self.grid:fill( name )
-end
-
-mock.registerComponent( 'NamedTileMap', NamedTileMap )
-
-
-
---------------------------------------------------------------------
 CLASS: NamedTileGroup ()
 
 function NamedTileGroup:__init()
@@ -239,7 +183,6 @@ function NamedTileset:load( data, texture )
 	end
 end
 
-
 --------------------------------------------------------------------
 CLASS: NamedTilesetPack()
 function NamedTilesetPack:__init()
@@ -265,4 +208,72 @@ function NamedTilesetPack:load( json, texpath )
 		self.tilesets[ tilesetData[ 'name' ] ] = tileset
 	end
 end
+
+
+--------------------------------------------------------------------
+CLASS: NamedTileMapLayer ( TileMapLayer )
+	:MODEL{}
+
+function NamedTileMapLayer:__init( grid )
+	self.prop = MOAIProp.new()
+	self.grid = NamedTileGrid( grid )
+	self.prop:setGrid( self.grid:getMoaiGrid() )
+end
+
+function NamedTileMapLayer:setSize( ... )
+	self.grid:setSize( ... )
+end
+
+function NamedTileMapLayer:onAttach( ent )
+	ent:_attachProp( self.prop, 'render' )
+end
+
+function NamedTileMapLayer:onDetach( ent )
+	ent:_detachProp( self.prop )
+end
+
+function NamedTileMapLayer:getGrid()
+	return self.grid
+end
+
+function NamedTileMapLayer:saveTiles()
+	return self.grid:saveTiles()
+end
+
+function NamedTileMapLayer:loadTiles( data )
+	return self.grid:loadTiles( data )
+end
+
+function NamedTileMapLayer:setTileset( tileset )
+	self.tileset   = tileset
+	self.grid:setTileset( tileset )
+	self.prop:setDeck( tileset:getMoaiDeck() )
+end
+
+function NamedTileMapLayer:getTile( x,y )
+	return self.grid:getTile( x, y )
+end
+
+function NamedTileMapLayer:setTile( x, y, name )
+	return self.grid:setTile( x, y, name )
+end
+
+function NamedTileMapLayer:fill( name )
+	return self.grid:fill( name )
+end
+
+
+--------------------------------------------------------------------
+
+----------------------------------------------------------------------
+-- CLASS: TileMapParam (TileMapParam)
+-- :MODEL {
+-- 	Field 'defaultTileset' :asset('named_tileset');
+-- }
+
+-- CLASS: NamedTileMap ()
+-- 	:MODEL{}
+
+-- registerComponent( 'NamedTileMap', NamedTileMap )
+
 
