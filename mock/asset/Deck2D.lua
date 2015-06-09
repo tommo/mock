@@ -175,6 +175,10 @@ function Tileset:getTileCount()
 	return self.col * self.row
 end
 
+function Tileset:getTileDimension()
+	return self.col, self.row
+end
+
 function Tileset:createMoaiDeck()
 	local deck = MOAITileDeck2D.new()
 	return deck
@@ -188,7 +192,6 @@ function Tileset:reset()
 	self.h = h
 	self:update()
 end
-
 
 function Tileset:update()
 	local texW, texH = self.w, self.h
@@ -221,6 +224,15 @@ function Tileset:update()
 		tw/texW * du,      th/texH * dv
 		)
 	
+end
+
+function Tileset:buildPreviewGrid()
+	local grid = MOAIGrid.new()
+	return grid
+end
+
+function Tileset:getRawRect( id )
+	return 0,0,1,1 --TODO
 end
 
 --------------------------------------------------------------------

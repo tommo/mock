@@ -163,6 +163,10 @@ function Entity:destroyWithChildrenNow()
 	self:destroyNow()
 end
 
+function Entity:destroyAllNow()
+	return self:destroyWithChildrenNow()
+end
+
 function Entity:destroyNow()
 	local scene     = self.scene
 	local onDestroy = self.onDestroy
@@ -999,6 +1003,7 @@ function Entity:inside( x, y, z, pad, checkChildren )
 end
 
 function Entity:pick( x, y, z, pad )
+	if self.FLAG_EDITOR_OBJECT or self.FLAG_INTERNAL then return nil end
 	for child in pairs(self.children) do
 		local e = child:pick(x,y,z,pad)
 		if e then return e end

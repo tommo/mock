@@ -20,14 +20,13 @@ function NamedTileGrid:setSize( w, h, tw, th, ox, oy, cw, ch )
 	self.height = h	
 end
 
-
 function NamedTileGrid:getTile( x, y ) -- name
 	local id = self.gird:getTile( x, y )
 	return self.idToName[ id ]
 end
 
 function NamedTileGrid:setTile( x, y, name )
-	local id = self.nameToId[ name ] or 0
+	local id = name and self.nameToId[ name ] or 0
 	return self.grid:setTile( x, y, id )
 end
 
@@ -40,6 +39,10 @@ function NamedTileGrid:setTileset( tileset )
 	self.tileset = tileset
 	self.nameToId = self.tileset.nameToId
 	self.idToName = self.tileset.idToName
+end
+
+function NamedTileGrid:tileIdToGridId( tileId )
+	return self.nameToId[ tileId ] or false
 end
 
 function NamedTileGrid:getMoaiGrid()
@@ -108,172 +111,101 @@ function NamedTileGrid:saveTiles()
 	return output
 end
 
---------------------------------------------------------------------
-CLASS: NamedTileGroup ()
-
-function NamedTileGroup:__init()
-	self.nameToId = {}
-	self.idToName = {}
-	self.tileType = 'C'
-end
-
-
---------------------------------------------------------------------
-CLASS: NamedTileset ( Deck2D )
-	:MODEL{}
-
-function NamedTileset:__init()
-	self.nameToTile = {}
-	self.nameToId = {}
-	self.idToName = {}
-	self.tileWidth = 0
-	self.tileHeight = 0
-end
-
-function NamedTileset:getTileSize()
-	return self.tileWidth, self.tileHeight
-end
-
-function NamedTileset:createMoaiDeck()
-	local deck = MOAIGfxQuadDeck2D.new()
-	return deck
-end
-
-function NamedTileset:load( data, texture )
-	self.name = data['name']
-	self.rawName = data['raw_name']
-	self.nameToId = {}
-	self.idToName = {}
-	self.groups = {}
-	self.tileWidth, self.tileHeight = unpack( data['size'] )
-
-	local count = 0
-	for i, groupData in pairs( data[ 'groups' ] ) do
-		local name = groupData[ 'name' ]
-		group = NamedTileGroup()
-		group.tileType = groupData[ 'type' ]
-		group.alt      = groupData[ 'alt'  ]
-		group.name     = groupData[ 'name' ]
-		self.groups[ name ] = group
-		for _, tileData in pairs( groupData[ 'tiles' ] ) do
-			local itemName = tileData[ 'name' ]
-			local baseName = tileData[ 'basename' ]
-			count = count + 1
-			local index = count
-			tileData.index = index
-			group.nameToId[ baseName ] = index
-			group.idToName[ index ] = baseName
-			self.nameToId[ itemName ] = index
-			self.idToName[ index ] = itemName
-			self.nameToTile[ itemName ] = tileData
-		end
-	end
-	
-	local deck = self:getMoaiDeck()
-	deck:reserve( count )
-	deck:setTexture( texture )
-	local texW, texH = texture:getSize()
-	for k, tile in pairs( self.nameToTile ) do
-		local i = tile.index
-		local x,y,tw,th = unpack( tile['rect'] )
-		local x0, y0, x1, y1 = unpack( tile[ 'deck_rect' ] )
-		local u0,v0,u1,v1 = x / texW, y / texH, ( x + tw )/texW, ( y + th )/texH
-		deck:setRect( i, x0, y0, x1, y1 )
-		deck:setUVRect( i, u0, v1, u1, v0 )
-	end
-end
-
---------------------------------------------------------------------
-CLASS: NamedTilesetPack()
-function NamedTilesetPack:__init()
-	self.tilesets = {}
-end
-
-function NamedTilesetPack:getTileset( name )
-	return self.tilesets[ name ]
-end
-
-function NamedTilesetPack:load( json, texpath )
-	local texture = MOAITexture.new()
-	texture:load( texpath )
-	local data = loadAssetDataTable( json )
-	self.tilesets    = {}
-	self.nameToTile = {}
-	local count = 0
-	local setNameToId = {}
-	local setIdToName = {}
-	for k, tilesetData in pairs( data[ 'themes' ] ) do
-		local tileset = NamedTileset()
-		tileset:load( tilesetData, texture )
-		self.tilesets[ tilesetData[ 'name' ] ] = tileset
-	end
-end
-
 
 --------------------------------------------------------------------
 CLASS: NamedTileMapLayer ( TileMapLayer )
 	:MODEL{}
 
-function NamedTileMapLayer:__init( grid )
+function NamedTileMapLayer:__init()	
+end
+
+function NamedTileMapLayer:onInit()
+	local tileset = loadAsset( self:getTilesetPath() )
 	self.prop = MOAIProp.new()
-	self.grid = NamedTileGrid( grid )
-	self.prop:setGrid( self.grid:getMoaiGrid() )
+	self.mapGrid = NamedTileGrid()
+	self.mapGrid:setTileset( tileset )
+	self.prop:setGrid( self.mapGrid:getMoaiGrid() )
+	self.prop:setDeck( tileset:getMoaiDeck() )
+	
+	self.mapGrid:setSize( self.width, self.height, self.tileWidth, self.tileHeight, 0, 0, 1, 1 )
+
 end
 
-function NamedTileMapLayer:setSize( ... )
-	self.grid:setSize( ... )
+function NamedTileMapLayer:worldToModel( x, y )
+	return self.prop:worldToModel( x, y )
 end
 
-function NamedTileMapLayer:onAttach( ent )
-	ent:_attachProp( self.prop, 'render' )
+
+function NamedTileMapLayer:setBlend( b )
+	setPropBlend( self.prop, b )
 end
 
-function NamedTileMapLayer:onDetach( ent )
-	ent:_detachProp( self.prop )
+function NamedTileMapLayer:setShader( shaderPath )
+	if shaderPath then
+		local shader = mock.loadAsset( shaderPath )
+		if shader then
+			local moaiShader = shader:getMoaiShader()
+			return self.prop:setShader( moaiShader )
+		end
+	end
+	self.prop:setShader( defaultShader )
+end
+
+function NamedTileMapLayer:setVisible( f )
+	self.prop:setVisible( f )
+end
+
+function NamedTileMapLayer:isVisible()
+	return self.prop:getAttr( MOAIProp.ATTR_VISIBLE ) ~= 0
+end
+
+function NamedTileMapLayer:setBillboard( billboard )
+	self.prop:setBillboard( billboard )
+end
+
+function NamedTileMapLayer:setDepthMask( enabled )
+	self.prop:setDepthMask( enabled )
+end
+
+function NamedTileMapLayer:setDepthTest( mode )
+	self.prop:setDepthTest( mode )
 end
 
 function NamedTileMapLayer:getGrid()
-	return self.grid
+	return self.mapGrid
 end
 
-function NamedTileMapLayer:saveTiles()
-	return self.grid:saveTiles()
+function NamedTileMapLayer:getMoaiGrid()
+	return self:getGrid():getMoaiGrid()
 end
 
-function NamedTileMapLayer:loadTiles( data )
-	return self.grid:loadTiles( data )
-end
 
-function NamedTileMapLayer:setTileset( tileset )
-	self.tileset   = tileset
-	self.grid:setTileset( tileset )
-	self.prop:setDeck( tileset:getMoaiDeck() )
+function NamedTileMapLayer:getType()
+	return 'named_layer'
 end
 
 function NamedTileMapLayer:getTile( x,y )
-	return self.grid:getTile( x, y )
+	return self.mapGrid:getTile( x, y )
 end
 
 function NamedTileMapLayer:setTile( x, y, name )
-	return self.grid:setTile( x, y, name )
+	return self.mapGrid:setTile( x, y, name )
+end
+
+function NamedTileMapLayer:removeTile( x, y )
+	self.mapGrid:setTile( x, y, false )
 end
 
 function NamedTileMapLayer:fill( name )
-	return self.grid:fill( name )
+	return self.mapGrid:fill( name )
 end
 
+function NamedTileMapLayer:onParentAttach( ent )
+	ent:_attachProp( self.prop, 'render' )
+end
 
---------------------------------------------------------------------
-
-----------------------------------------------------------------------
--- CLASS: TileMapParam (TileMapParam)
--- :MODEL {
--- 	Field 'defaultTileset' :asset('named_tileset');
--- }
-
--- CLASS: NamedTileMap ()
--- 	:MODEL{}
-
--- registerComponent( 'NamedTileMap', NamedTileMap )
+function NamedTileMapLayer:onParentDetach( ent )
+	ent:_detachProp( self.prop )
+end
 
 
