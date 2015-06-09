@@ -15,6 +15,16 @@ function PhysicsShape:__init()
 	self.parentBody = false
 end
 
+function PhysicsShape:clone(original)
+	original = original or self
+
+	-- make copy from derived class
+	local copy = self.__class()
+	copy:setMaterial(original:getMaterial())
+	copy.loc = { original.loc[1], original.loc[2] }
+	return copy
+end
+
 function PhysicsShape:setLoc( x,y )
 	self.loc = { x or 0, y or 0 }
 	self:updateShape()
@@ -24,7 +34,7 @@ function PhysicsShape:getLoc()
 	return unpack( self.loc )
 end
 
-function PhysicsBody:getBox2DWorld()
+function PhysicsShape:getBox2DWorld()
 	return self:getScene():getBox2DWorld()
 end
 
@@ -118,9 +128,25 @@ function PhysicsShape:createShape( body )
 	return shape
 end
 
+function PhysicsShape:setCollisionHandler(handler, phaseMask, categoryMask)
+
+	self.handlerData = {
+		func = handler,
+		phaseMask = phaseMask,
+		categoryMask = categoryMask
+	}
+
+	self.shape:setCollisionHandler(handler, phaseMask, categoryMask)
+end
+
+function PhysicsShape:getCollisionHandler()
+	if self.handlerData then
+		return self.handlerData.func, self.handlerData.phaseMask, self.handlerData.categoryMask
+	end
+end
+
 _wrapMethods( PhysicsShape, 'shape', {
 	'getFilter',
-	'setCollisionHandler',
 	'setDensity',
 	'setFilter',
 	'setFriction',
@@ -145,6 +171,17 @@ function PhysicsShapeBox:__init()
 	self.w = 100
 	self.h = 100
 	self.rotation = 0
+end
+
+function PhysicsShapeBox:clone(original)
+	local copy = PhysicsShapeBox.__super.clone(self, original)
+
+	original = original or self
+	copy.w = original.w
+	copy.h = original.h
+	copy.rotation = original.rotation
+
+	return copy
 end
 
 function PhysicsShapeBox:createShape( body )	
@@ -206,6 +243,16 @@ function PhysicsShapeCircle:__init()
 	self.radius = 100
 end
 
+function PhysicsShapeCircle:clone(original)
+	local copy = PhysicsShapeCircle.__super.clone(self, original)
+
+	original = original or self
+	copy.radius = original.radius
+
+	return copy
+end
+
+
 function PhysicsShapeCircle:createShape( body )	
 	local x, y = self:getLoc()
 	local shape = body:addCircle( x, y, self.radius )
@@ -247,6 +294,18 @@ function PhysicsShapePie:__init()
 	self.endAngle = 390
 	self.tessellation = 6
 	self.radius = 50
+end
+
+function PhysicsShapePie:clone(original)
+	local copy = PhysicsShapePie.__super.clone(self, original)
+
+	original = original or self
+	copy.startAngle = original.startAngle
+	copy.endAngle = original.endAngle
+	copy.tessellation = original.tessellation
+	copy.radius = original.radius
+
+	return copy
 end
 
 function PhysicsShapePie:angleWrap()
