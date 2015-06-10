@@ -2,16 +2,99 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-CLASS: NamedTileset ( Deck2D )
+local squareValueToPattern = {
+	[ 1 ] = 'sw',
+	[ 2 ] = 'se',
+	[ 4 ] = 'nw',
+	[ 8 ] = 'ne',
+	[ 1 + 2 ] = 's',
+	[ 4 + 8 ] = 'n',
+	[ 1 + 4 ] = 'w',
+	[ 2 + 8 ] = 'e',
+	[ 1 + 8 ] = 'ew',
+	[ 2 + 4 ] = 'we',
+	[ 1 + 2 + 4 ] = '-ne',
+	[ 2 + 1 + 8 ] = '-nw',
+	[ 4 + 1 + 8 ] = '-se',
+	[ 8 + 2 + 4 ] = '-sw',
+	[ 8 + 2 + 4 + 1 ] = 'c',
+}
+
+--------------------------------------------------------------------
+CLASS: NamedTileMapTerrainBrush ( TileMapTerrainBrush )
+	:MODEL{}
+
+
+function NamedTileMapTerrainBrush:__init()
+	self.prefix = 'unknown'
+end
+
+function NamedTileMapTerrainBrush:paint( room, tx, ty )
+	room.codeGrid:setTile( tx, ty, 1 )
+	self:updateNeighbors( room, tx, ty )
+end
+
+function NamedTileMapTerrainBrush:remove( room, tx, ty )
+	room.codeGrid:setTile( tx, ty, 0 )
+	self:updateNeighbors( room, tx, ty )
+end
+
+function NamedTileMapTerrainBrush:updateNeighbors( room, x, y  )
+	self:updateTile( room, x, y )
+	self:updateTile( room, x + 1, y )
+	self:updateTile( room, x + 1, y + 1 )
+	self:updateTile( room, x, y + 1 )
+end
+
+function NamedTileMapTerrainBrush:updateTile( room, x, y )
+	local w, h = room:getSize()
+	if x < 1 or x > w then return false end
+	if y < 1 or y > h then return false end
+	local wallMap   = room.wallMap
+	local sq = self:getSquareValue( room, x, y )
+	local p = squareValueToPattern[ sq ] or false
+	if p then
+		wallMap:setTile( x, y, self.prefix..'.'..p )
+	else
+		wallMap:setTile( x, y, false )
+	end
+end
+
+function NamedTileMapTerrainBrush:isSolid( room, x, y )	
+	local w, h = room:getSize()
+	if x < 1 or x > w then return true end
+	if y < 1 or y > h then return true end
+	local c = room:getCodeTile( x, y )
+	return c == 1
+end
+
+function NamedTileMapTerrainBrush:getSquareValue( room, x, y )
+	local n = 0
+	if self:isSolid( room, x-1, y-1 ) then n = n + 8 end
+	if self:isSolid( room, x,   y-1 ) then n = n + 4 end
+	if self:isSolid( room, x-1, y   ) then n = n + 2 end
+	if self:isSolid( room, x  , y   ) then n = n + 1 end
+	return n
+end
+
+
+
+--------------------------------------------------------------------
+CLASS: NamedTileset ( Tileset )
 	:MODEL{}
 
 function NamedTileset:__init()
 	self.nameToTile = {}
 	self.nameToId = {}
 	self.idToName = {}
+	self.terrainBrushes = {}
 	self.tileWidth = 0
 	self.tileHeight = 0
 	self.tileCount  = 0
+end
+
+function NamedTileset:getTerrainBrushes()
+	return self.terrainBrushes
 end
 
 function NamedTileset:getTileSize()
@@ -21,6 +104,14 @@ end
 function NamedTileset:createMoaiDeck()
 	local deck = MOAIGfxQuadDeck2D.new()
 	return deck
+end
+
+function NamedTileset:buildTerrainBrush( tileGroup )
+	local brush = NamedTileMapTerrainBrush()
+	brush.prefix = tileGroup.name
+	brush.name = tileGroup.name
+	table.insert( self.terrainBrushes, brush )
+	return brush
 end
 
 function NamedTileset:load( data, texture )
@@ -38,6 +129,9 @@ function NamedTileset:load( data, texture )
 		group.tileType = groupData[ 'type' ]
 		group.alt      = groupData[ 'alt'  ]
 		group.name     = groupData[ 'name' ]
+		if groupData[ 'type' ] == 'T' then
+			self:buildTerrainBrush( group )
+		end
 		self.groups[ name ] = group
 		for _, tileData in pairs( groupData[ 'tiles' ] ) do
 			local itemName = tileData[ 'name' ]
@@ -105,6 +199,10 @@ function NamedTileset:getRawRect( id )
 	local tileData = self.nameToTile( id )
 	if tileData then return unpack( tileData['raw_rect'] ) end
 	return nil
+end
+
+function NamedTileset:getNamedTileMapTerrainBrushes()
+	return self.terrainBrushes
 end
 
 --------------------------------------------------------------------

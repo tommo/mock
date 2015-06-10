@@ -1,5 +1,6 @@
 module 'mock'
 
+
 --generic tilemap
 --------------------------------------------------------------------
 CLASS: TileMapGrid ()
@@ -90,6 +91,7 @@ function TileMapLayer:__init()
 	self.tileWidth  = 1
 	self.tileHeight = 1
 	self.tilesetPath = false
+	self.tileset = false
 
 end
 
@@ -99,6 +101,7 @@ function TileMapLayer:init( parentMap, tilesetPath )
 	self.tileWidth  = parentMap.tileWidth
 	self.tileHeight = parentMap.tileHeight
 	self.tilesetPath  = tilesetPath
+	self.tileset      = loadAsset( tilesetPath )
 	self:onInit()
 end
 

@@ -235,6 +235,29 @@ function Tileset:getRawRect( id )
 	return 0,0,1,1 --TODO
 end
 
+function Tileset:getTerrainBrushes()
+	return {}
+end
+
+--------------------------------------------------------------------
+CLASS: TileMapTerrainBrush ()
+	:MODEL{}
+
+function TileMapTerrainBrush:__init()
+	self.name = 'terrain'
+end
+
+function TileMapTerrainBrush:paint( layer, x, y )
+end
+
+function TileMapTerrainBrush:remove( layer, x, y )
+end
+
+function TileMapTerrainBrush:getName()
+	return self.name
+end
+
+
 --------------------------------------------------------------------
 CLASS: QuadArray ( Deck2D )
 	:MODEL {

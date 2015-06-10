@@ -120,7 +120,7 @@ function NamedTileMapLayer:__init()
 end
 
 function NamedTileMapLayer:onInit()
-	local tileset = loadAsset( self:getTilesetPath() )
+	local tileset = self.tileset
 	self.prop = MOAIProp.new()
 	self.mapGrid = NamedTileGrid()
 	self.mapGrid:setTileset( tileset )
