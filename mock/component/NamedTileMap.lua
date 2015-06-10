@@ -21,7 +21,7 @@ function NamedTileGrid:setSize( w, h, tw, th, ox, oy, cw, ch )
 end
 
 function NamedTileGrid:getTile( x, y ) -- name
-	local id = self.gird:getTile( x, y )
+	local id = self.grid:getTile( x, y )
 	return self.idToName[ id ]
 end
 
@@ -179,13 +179,18 @@ function NamedTileMapLayer:getMoaiGrid()
 	return self:getGrid():getMoaiGrid()
 end
 
-
 function NamedTileMapLayer:getType()
 	return 'named_layer'
 end
 
 function NamedTileMapLayer:getTile( x,y )
 	return self.mapGrid:getTile( x, y )
+end
+
+function NamedTileMapLayer:getTileData( x, y )
+	local name = self.mapGrid:getTile( x, y )
+	local data = self.tileset and self.tileset:getTileDataByName( name )	
+	return data
 end
 
 function NamedTileMapLayer:setTile( x, y, name )

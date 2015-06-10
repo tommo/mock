@@ -175,6 +175,10 @@ function Tileset:getTileCount()
 	return self.col * self.row
 end
 
+function Tileset:getTileData( id )
+	return false
+end
+
 function Tileset:getTileDimension()
 	return self.col, self.row
 end

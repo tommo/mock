@@ -130,6 +130,10 @@ function TileMapLayer:getTilesetPath()
 	return self.tilesetPath
 end
 
+function TileMapLayer:getTileset()
+	return self.tileset
+end
+
 function TileMapLayer:getMap()
 	return self.parentMap
 end
@@ -192,6 +196,13 @@ end
 
 function TileMapLayer:getTile( x,y )
 	return self.mapGrid:getTile( x, y )
+end
+
+function TileMapLayer:getTileData( x, y )
+	local id = self.mapGrid:getTile( x, y )
+	local tileset = self:getTileset()
+	if not tileset then return nil end
+	return tileset:getTileData( id )
 end
 
 function TileMapLayer:setTile( x, y, id )

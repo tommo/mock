@@ -1,6 +1,21 @@
 module 'mock'
 
+local function bit(p)
+  return 2 ^ p  -- 1-based indexing
+end
 
+-- Typical call:  if hasbit(x, bit(3)) then ...
+local function hasbit(x, p)
+  return x % (p + p) >= p       
+end
+
+local function setbit(x, p)
+  return hasbit(x, p) and x or x + p
+end
+
+local function clearbit(x, p)
+  return hasbit(x, p) and x - p or x
+end
 --------------------------------------------------------------------
 local squareValueToPattern = {
 	[ 1 ] = 'sw',
@@ -20,6 +35,11 @@ local squareValueToPattern = {
 	[ 8 + 2 + 4 + 1 ] = 'c',
 }
 
+local patternToSquareValue = {}
+for k,v in pairs( squareValueToPattern ) do
+	patternToSquareValue[ v ] = k
+end
+
 --------------------------------------------------------------------
 CLASS: NamedTileMapTerrainBrush ( TileMapTerrainBrush )
 	:MODEL{}
@@ -29,52 +49,65 @@ function NamedTileMapTerrainBrush:__init()
 	self.prefix = 'unknown'
 end
 
-function NamedTileMapTerrainBrush:paint( room, tx, ty )
-	room.codeGrid:setTile( tx, ty, 1 )
-	self:updateNeighbors( room, tx, ty )
+function NamedTileMapTerrainBrush:paint( layer, tx, ty )
+	self:updateNeighbors( layer, tx, ty )
 end
 
-function NamedTileMapTerrainBrush:remove( room, tx, ty )
-	room.codeGrid:setTile( tx, ty, 0 )
-	self:updateNeighbors( room, tx, ty )
+function NamedTileMapTerrainBrush:remove( layer, tx, ty )
+	self:updateNeighbors( layer, tx, ty )
 end
 
-function NamedTileMapTerrainBrush:updateNeighbors( room, x, y  )
-	self:updateTile( room, x, y )
-	self:updateTile( room, x + 1, y )
-	self:updateTile( room, x + 1, y + 1 )
-	self:updateTile( room, x, y + 1 )
+function NamedTileMapTerrainBrush:updateNeighbors( layer, x, y  )
+	self:updateTile( layer, x, y, 0, 0 )
+	self:updateTile( layer, x, y, 1, 0 )
+	self:updateTile( layer, x, y, 1, 1 )
+	self:updateTile( layer, x, y, 0, 1 )
 end
 
-function NamedTileMapTerrainBrush:updateTile( room, x, y )
-	local w, h = room:getSize()
+function NamedTileMapTerrainBrush:updateTile( layer, x0, y0, dx, dy )
+	local w, h = layer:getSize()
+	local x, y = x0 + dx, y0 + dy
 	if x < 1 or x > w then return false end
 	if y < 1 or y > h then return false end
-	local wallMap   = room.wallMap
-	local sq = self:getSquareValue( room, x, y )
+	local sq = self:getSquareValue( layer, x, y, dx, dy )
 	local p = squareValueToPattern[ sq ] or false
 	if p then
-		wallMap:setTile( x, y, self.prefix..'.'..p )
+		layer:setTile( x, y, self.prefix..'.'..p )
 	else
-		wallMap:setTile( x, y, false )
+		layer:setTile( x, y, self.prefix..'.c' )
 	end
 end
 
-function NamedTileMapTerrainBrush:isSolid( room, x, y )	
-	local w, h = room:getSize()
+function NamedTileMapTerrainBrush:isSolid( layer, x, y )	
+	local w, h = layer:getSize()
 	if x < 1 or x > w then return true end
 	if y < 1 or y > h then return true end
-	local c = room:getCodeTile( x, y )
+	local c = layer:getCodeTile( x, y )
 	return c == 1
 end
 
-function NamedTileMapTerrainBrush:getSquareValue( room, x, y )
-	local n = 0
-	if self:isSolid( room, x-1, y-1 ) then n = n + 8 end
-	if self:isSolid( room, x,   y-1 ) then n = n + 4 end
-	if self:isSolid( room, x-1, y   ) then n = n + 2 end
-	if self:isSolid( room, x  , y   ) then n = n + 1 end
-	return n
+function NamedTileMapTerrainBrush:getSquareValue( layer, x, y, dx, dy )
+	local tileData = layer:getTileData( x, y )
+	local sq0 = 0
+	if tileData and tileData.prefix==self.prefix then
+		local pattern = tileData.tileIdBaseHead
+		sq0 = patternToSquareValue[ pattern ]
+	end
+	-- [ 1 ] = 'sw'  bit 0,
+	-- [ 2 ] = 'se'  bit 1,
+	-- [ 4 ] = 'nw'  bit 2,
+	-- [ 8 ] = 'ne'  bit 3,
+	local sq = sq0
+	if     dx == 0 and dy == 0 then -- +sw
+		sq = setbit( sq0, bit(0) )
+	elseif dx == 1 and dy == 0 then -- +se
+		sq = setbit( sq0, bit(1) )
+	elseif dx == 1 and dy == 1 then -- +ne
+		sq = setbit( sq0, bit(3) )
+	elseif dx == 0 and dy == 1 then -- +nw
+		sq = setbit( sq0, bit(2) )
+	end
+	return sq
 end
 
 
@@ -114,6 +147,13 @@ function NamedTileset:buildTerrainBrush( tileGroup )
 	return brush
 end
 
+local function extractTileIdBase( id )
+	local base = string.match( id, '.*%.(.*)')
+	if not base then return nil end
+	local head, tail = string.match( base, '(-?%a+)(.*)' )
+	return head, tail
+end
+
 function NamedTileset:load( data, texture )
 	self.name = data['name']
 	self.rawName = data['raw_name']
@@ -143,7 +183,13 @@ function NamedTileset:load( data, texture )
 			group.idToName[ index ] = baseName
 			self.nameToId[ itemName ] = index
 			self.idToName[ index ] = itemName
-			self.nameToTile[ itemName ] = tileData
+			local data2 = table.simplecopy( tileData )
+			data2.group  = group
+			data2.prefix = group.name
+			local head, tail = string.match( baseName, '(-?%a+)(.*)' )
+			data2.tileIdBaseHead = head or ''
+			data2.tileIdBaseTail = tail or ''
+			self.nameToTile[ itemName ] = data2
 		end
 	end
 	self.tileCount = count
@@ -193,6 +239,10 @@ end
 
 function NamedTileset:getTileDataByName( name )
 	return self.nameToTile[ name ]
+end
+
+function NamedTileset:getTileData( id )
+	return self.nameToTile[ id ]
 end
 
 function NamedTileset:getRawRect( id )
