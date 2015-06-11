@@ -71,13 +71,34 @@ end
 function PhysicsShape:updateMaterial()
 	local material, shape = self.material, self.shape
 	if not shape then return end
-	if not material then material = getDefaultPhysicsMaterial() end
+	if not material then 
+		material = getDefaultPhysicsMaterial() 
+		self.material = material
+	end
 	shape:setDensity      ( material.density )
 	shape:setFriction     ( material.friction )
 	shape:setRestitution  ( material.restitution )
 	shape:setSensor       ( material.isSensor )
-	shape:setFilter       ( material.categoryBits or 1, material.maskBits or 0xffff, material.group or 1 )
+	-- print('categoryBits: ', bit.tohex(material.categoryBits), ' maskBits: ', bit.tohex(material.maskBits))
+	shape:setFilter       ( material.categoryBits or 1, material.maskBits or 0xffffffff, material.group or 0 )
 	self.parentBody:updateMass()
+end
+
+function PhysicsShape:setFilter(categoryBits, maskBits, group)
+	group = group or 0
+
+	local material, shape = self.material, self.shape
+	if not shape then return end
+	if not material then 
+		material = getDefaultPhysicsMaterial() 
+		self.material = material
+	end
+
+	shape:setFilter(categoryBits, maskBits, group)
+	-- update material as well
+	material.categoryBits = categoryBits
+	material.maskBits = maskBits
+	material.group = group
 end
 
 function PhysicsShape:onAttach( entity )

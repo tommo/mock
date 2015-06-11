@@ -24,9 +24,9 @@ function PhysicsMaterial:__init()
 	self.restitution  = 0
 	self.friction     = 0
 	self.isSensor     = false
-	self.group        = 1
+	self.group        = 0
 	self.categoryBits = 1
-	self.maskBits     = 0xffff
+	self.maskBits     = 0xffffffff
 end
 
 function PhysicsMaterial:clone()
@@ -45,7 +45,7 @@ end
 local DefaultMaterial = PhysicsMaterial()
 
 function getDefaultPhysicsMaterial()
-	return DefaultMaterial
+	return table.simplecopy(DefaultMaterial)
 end
 
 --------------------------------------------------------------------

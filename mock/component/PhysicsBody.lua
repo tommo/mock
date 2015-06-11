@@ -84,12 +84,15 @@ end
 
 function PhysicsBody:updatePositionSyncPolicy( entity )
 	local prop = entity:getProp( 'physics' )
+	local body = self.body
 
 	if self:getType() ~= 'static' and (not self.useEntityTransform) then
-		local body = self.body
 		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT )
 	else
 		prop:clearAttrLink( MOCKProp.SYNC_WORLD_LOC_2D )
+		-- compensate for the last update
+		prop:setWorldLoc(body:getPosition())
+
 	end
 end
 
