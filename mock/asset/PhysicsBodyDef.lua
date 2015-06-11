@@ -33,7 +33,7 @@ end
 local defaultBodyDef = PhysicsBodyDef()
 defaultBodyDef.tag = '_default'
 function getDefaultPhysicsBodyDef()
-	return defaultBodyDef
+	return table.simplecopy(defaultBodyDef)
 end
 
 --------------------------------------------------------------------

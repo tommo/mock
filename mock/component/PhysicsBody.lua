@@ -24,7 +24,7 @@ function PhysicsBody:__init()
 	self.body   = false
 	self.joints = {}
 	self.mass    = 1
-	---
+	self.bodyType = 'dynamic'
 	self.useEntityTransform = false
 end
 
@@ -70,19 +70,30 @@ end
 
 function PhysicsBody:onStart( entity )
 	local body = self.body
-	if self:getType() ~= 'static' and (not self.useEntityTransform) then
-		body:clearAttrLink( MOAIProp.ATTR_X_LOC )
-		body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
-		body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
 
-		local prop = entity:getProp( 'physics' )
-		-- prop:setAttrLink ( MOAIProp.ATTR_X_LOC, body, MOAIProp.ATTR_WORLD_X_LOC ) 
-		-- prop:setAttrLink ( MOAIProp.ATTR_Y_LOC, body, MOAIProp.ATTR_WORLD_Y_LOC ) 
-		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT ) 
-		-- prop:setAttrLink ( MOAIProp.ATTR_Z_ROT, body, MOAIProp.ATTR_Z_ROT ) 
-	end
+	-- break body<-prop position link 
+	body:clearAttrLink( MOAIProp.ATTR_X_LOC )
+	body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
+	body:clearAttrLink( MOAIProp.ATTR_Z_LOC )
+	body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
+	-- update position sync based on body type and settings
+	self:updatePositionSyncPolicy( entity )
 
 	self:updateMass()
+end
+
+function PhysicsBody:updatePositionSyncPolicy( entity )
+	local prop = entity:getProp( 'physics' )
+	local body = self.body
+
+	if self:getType() ~= 'static' and (not self.useEntityTransform) then
+		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT )
+	else
+		prop:clearAttrLink( MOCKProp.SYNC_WORLD_LOC_2D )
+		-- compensate for the last update
+		prop:setWorldLoc(body:getPosition())
+
+	end
 end
 
 function PhysicsBody:onDetach( entity )
@@ -95,6 +106,7 @@ function PhysicsBody:onDetach( entity )
 		prop:clearAttrLink ( MOAIProp.ATTR_X_LOC )
 		prop:clearAttrLink ( MOAIProp.ATTR_Y_LOC )
 		prop:clearAttrLink ( MOAIProp.ATTR_Z_ROT )
+		prop:clearAttrLink( MOCKProp.SYNC_WORLD_LOC_2D )
 		self.body = false
 		body:destroy()
 	end	
@@ -151,14 +163,15 @@ end
 function PhysicsBody:setType( bodyType )
 	if not self.body then return end
 	self.body:setType( bodyTypeNames[ bodyType ] or MOAIBox2DBody.DYNAMIC )
+	self.bodyType = bodyType
+
+	-- re-setting the mass after changing body type
+	self:updatePositionSyncPolicy( self._entity )
+	self:setMass(self.mass)
 end
 
 function PhysicsBody:getType()
-	if self.bodyDef then
-		return self.bodyDef.bodyType
-	else
-		return false
-	end
+	return self.bodyType
 end
 
 function PhysicsBody:setGravityScale( s )
@@ -199,6 +212,11 @@ function PhysicsBody:calcMass()
 	end
 end
 
+function PhysicsBody:moveTransform(dx, dy)
+	local x, y = self.body:getPosition()
+	self:setTransform(x + dx, y + dy)
+end
+
 
 function PhysicsBody:_removeJoint( j )
 	self.joints[ j ] = nil
@@ -207,7 +225,6 @@ end
 function PhysicsBody:_addJoint( j )
 	self.joints[ j ] = true
 end
-
 
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',

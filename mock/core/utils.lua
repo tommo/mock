@@ -324,6 +324,7 @@ function lengthSqrd(x,y)
 	return x*x+y*y
 end
 
+-- Direction from 1 to 2
 function direction(x1,y1,x2,y2)
 	return atan2(y2-y1,x2-x1)
 end
