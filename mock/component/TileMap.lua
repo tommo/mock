@@ -469,9 +469,6 @@ function TileMap:init( param )
 	self.width      = param.width
 	self.height     = param.height
 	self.defaultTileset = param.defaultTileset
-	--create a default layer
-	local layer = TileMapLayer()
-	self:addLayer( layer )
 end
 
 function TileMap:getDefaultParam()
