@@ -388,6 +388,7 @@ function setupMoaiProp( prop, option )
 	if deck then 
 		if type(deck) == 'string' then
 			deck = mock.loadAsset( deck )
+			deck = deck and deck:getMoaiDeck()
 		end
 		prop:setDeck( deck )
 	elseif option.texture then

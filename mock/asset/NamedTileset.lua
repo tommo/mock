@@ -1,21 +1,21 @@
 module 'mock'
 
-local function bit(p)
-  return 2 ^ p  -- 1-based indexing
-end
+-- local function bit(p)
+--   return 2 ^ p  -- 1-based indexing
+-- end
 
--- Typical call:  if hasbit(x, bit(3)) then ...
-local function hasbit(x, p)
-  return x % (p + p) >= p       
-end
+-- -- Typical call:  if hasbit(x, bit(3)) then ...
+-- local function hasbit(x, p)
+--   return x % (p + p) >= p       
+-- end
 
-local function setbit(x, p)
-  return hasbit(x, p) and x or x + p
-end
+-- local function setbit(x, p)
+--   return hasbit(x, p) and x or x + p
+-- end
 
-local function clearbit(x, p)
-  return hasbit(x, p) and x - p or x
-end
+-- local function clearbit(x, p)
+--   return hasbit(x, p) and x - p or x
+-- end
 --------------------------------------------------------------------
 local squareValueToPattern = {
 	[ 1 ] = 'sw',
@@ -86,6 +86,9 @@ function NamedTileMapTerrainBrush:isSolid( layer, x, y )
 	return c == 1
 end
 
+local lshift = bit.lshift
+local bor    = bit.bor
+
 function NamedTileMapTerrainBrush:getSquareValue( layer, x, y, dx, dy )
 	local tileData = layer:getTileData( x, y )
 	local sq0 = 0
@@ -99,13 +102,13 @@ function NamedTileMapTerrainBrush:getSquareValue( layer, x, y, dx, dy )
 	-- [ 8 ] = 'ne'  bit 3,
 	local sq = sq0
 	if     dx == 0 and dy == 0 then -- +sw
-		sq = setbit( sq0, bit(0) )
+		sq = bor( sq0, lshift(1, 0) )
 	elseif dx == 1 and dy == 0 then -- +se
-		sq = setbit( sq0, bit(1) )
+		sq = bor( sq0, lshift(1, 1) )
 	elseif dx == 1 and dy == 1 then -- +ne
-		sq = setbit( sq0, bit(3) )
+		sq = bor( sq0, lshift(1, 3) )
 	elseif dx == 0 and dy == 1 then -- +nw
-		sq = setbit( sq0, bit(2) )
+		sq = bor( sq0, lshift(1, 2) )
 	end
 	return sq
 end
@@ -118,6 +121,7 @@ CLASS: NamedTileset ( Tileset )
 
 function NamedTileset:__init()
 	self.nameToTile = {}
+	self.idToTile = {}
 	self.nameToId = {}
 	self.idToName = {}
 	self.terrainBrushes = {}
@@ -154,14 +158,18 @@ local function extractTileIdBase( id )
 	return head, tail
 end
 
-function NamedTileset:load( data, texture )
+function NamedTileset:_load( data, texture )
+	self:loadData( data )
+	self:buildDeck( texture )
+end
+
+function NamedTileset:loadData( data )
 	self.name = data['name']
 	self.rawName = data['raw_name']
 	self.nameToId = {}
 	self.idToName = {}
 	self.groups = {}
 	self.tileWidth, self.tileHeight = unpack( data['size'] )
-
 	local count = 0
 	for i, groupData in pairs( data[ 'groups' ] ) do
 		local name = groupData[ 'name' ]
@@ -190,11 +198,15 @@ function NamedTileset:load( data, texture )
 			data2.tileIdBaseHead = head or ''
 			data2.tileIdBaseTail = tail or ''
 			self.nameToTile[ itemName ] = data2
+			self.idToTile[ index ] = data2
 		end
 	end
 	self.tileCount = count
+end
+
+function NamedTileset:buildDeck( texture )
 	local deck = self:getMoaiDeck()
-	deck:reserve( count )
+	deck:reserve( self.tileCount )
 	deck:setTexture( texture )
 	local texW, texH = texture:getSize()
 	for k, tile in pairs( self.nameToTile ) do
@@ -241,7 +253,11 @@ function NamedTileset:getTileDataByName( name )
 	return self.nameToTile[ name ]
 end
 
-function NamedTileset:getTileData( id )
+function NamedTileset:getTileDataByIndex( idx )
+	return self.idToTile[ idx ]
+end
+
+function NamedTileset:getTileData( id ) --id is name for NamedTileset, not index
 	return self.nameToTile[ id ]
 end
 
@@ -286,7 +302,7 @@ function NamedTilesetPack:load( json, texpath )
 	local setIdToName = {}
 	for k, tilesetData in pairs( data[ 'themes' ] ) do
 		local tileset = NamedTileset()
-		tileset:load( tilesetData, texture )
+		tileset:_load( tilesetData, texture )
 		self.tilesets[ tilesetData[ 'name' ] ] = tileset
 	end
 end

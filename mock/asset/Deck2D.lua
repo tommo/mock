@@ -24,7 +24,6 @@ function Deck2D:__init()
 	self.h = 0
 end
 
-
 function Deck2D:setTexture( path, autoResize )
 	local tex, node = mock.loadAsset( path )
 	if not tex then return end
@@ -684,8 +683,7 @@ local function Deck2DItemLoader( node )
 	if item then
 		item:update()
 		node.cached.deckItem = item
-		local deck = item:getMoaiDeck()
-		return deck
+		return item		
 	end
 	return nil
 end

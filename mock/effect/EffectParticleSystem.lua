@@ -90,6 +90,7 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 
 	setPropBlend( system, self.blend )
 	local deck = mock.loadAsset( self.deck )
+	deck = deck and deck:getMoaiDeck()
 	system:setDeck( deck )
 	system:setDepthMask( false )
 	system:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )

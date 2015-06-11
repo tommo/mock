@@ -40,8 +40,9 @@ end
 function DeckComponent:setDeck( deckPath )
 	self.deckPath = deckPath
 	local deck = mock.loadAsset( deckPath )
-	self._moaiDeck = deck
-	self.prop:setDeck( deck )
+	local moaiDeck = deck and deck:getMoaiDeck()
+	self._moaiDeck = moaiDeck
+	self.prop:setDeck( moaiDeck )
 	self.prop:forceUpdate()
 end
 

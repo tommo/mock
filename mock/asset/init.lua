@@ -22,7 +22,10 @@ require 'mock.asset.TextStyle'
 --GRAPHICS ADV
 require 'mock.asset.RenderTargetTexture'
 require 'mock.asset.Shader'
+require 'mock.asset.NamedTileset'
 require 'mock.asset.DeckPack'
+require 'mock.asset.MQuadDeck'
+require 'mock.asset.MTileset'
 
 --PARTICLE
 require 'mock.asset.Particle'
@@ -50,7 +53,6 @@ require 'mock.asset.AuroraSprite'
 require 'mock.asset.EffectNode'
 require 'mock.asset.EffectPack'
 
-require 'mock.asset.NamedTileset'
 
 
 --------------------------------------------------------------------

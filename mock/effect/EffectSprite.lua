@@ -42,6 +42,7 @@ end
 function EffectStaticSprite:onLoad( fxState )
 	local sprite = MOAIProp.new()
 	local deck = loadAsset( self.deck )
+	deck = deck and deck:getMoaiDeck()
 	sprite:setDeck( deck )
 	setPropBlend( sprite, self.blend )
 	--todo: shader	

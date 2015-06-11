@@ -93,6 +93,8 @@ function TileMapLayer:__init()
 	self.tilesetPath = false
 	self.tileset = false
 
+	self.order     = 0 --order
+
 end
 
 function TileMapLayer:init( parentMap, tilesetPath )
@@ -113,6 +115,7 @@ function TileMapLayer:onInit()
 	local grid = self:getGrid()
 	grid:setSize( self.width, self.height, self.tileWidth, self.tileHeight )
 end
+
 
 function TileMapLayer:getName()
 	return self.name
@@ -184,8 +187,17 @@ function TileMapLayer:saveData()
 	data[ 'tileSize' ] = { self:getTileSize() }
 	data[ 'tiles'    ] = self:getGrid():saveTiles()
 	data[ 'tileset'  ] = self:getTilesetPath()
+	data[ 'order'    ] = self.order
 	self:onSaveData( data )
 	return data
+end
+
+function TileMapLayer:setOrder( order )
+	self.order = order
+	self:onSetOrder( order )
+end
+
+function TileMapLayer:onSetOrder( order )
 end
 
 function TileMapLayer:onLoadData( data )
@@ -396,22 +408,14 @@ function TileMap:_createLayer( tilesetPath )
 	return layer
 end
 
-function TileMap:createLayerByType( ltype )
-	local layer
-	if ltype == 'layer' then
-		layer = TileMapLayer()
-	elseif ltype == 'named_layer' then
-		layer = NamedTileMapLayer()
-	end
-	return layer
-end
-
 function TileMap:createLayerByTileset( tilesetPath )
 	local tileset, anode = mock.loadAsset( tilesetPath )
 	local atype = anode:getType()
 	if atype == 'tileset' then
 		return TileMapLayer()
 	elseif atype == 'named_tileset' then
+		return NamedTileMapLayer()
+	elseif atype == 'deck2d.mtileset' then
 		return NamedTileMapLayer()
 	end
 	return false
@@ -450,10 +454,11 @@ function TileMap:loadPendingMapData()
 	self.tileWidth, self.tileHeight = unpack( data['tileSize'] )
 	local layerDatas = data[ 'layers' ]
 	for i, layerData in ipairs( layerDatas ) do
-		local ltype = layerData[ 'type' ]
-		local layer = self:createLayerByType( ltype )
-		layer:loadData( layerData, self )
-		self:addLayer( layer )
+		local layer = self:createLayerByTileset( layerData[ 'tileset' ] )
+		if layer then
+			layer:loadData( layerData, self )
+			self:addLayer( layer )
+		end
 	end
 	self.pendingMapData = false
 end
@@ -477,6 +482,10 @@ function TileMap:getDefaultParam()
 	param.tileHeight = 30
 	param.defaultTileset = self.defaultTileset
 	return param
+end
+
+function TileMap:updateLayerOrder()
+
 end
 
 ----
@@ -537,3 +546,4 @@ function TileMap:updateRenderParams()
 		layer:updateRenderParams()		
 	end
 end
+
