@@ -15,6 +15,7 @@ function TileMapGrid:getMoaiGrid()
 	return self.grid
 end
 
+
 function TileMapGrid:locToCoord( x, y )
 	return self.grid:locToCoord( x, y )
 end
@@ -116,6 +117,14 @@ function TileMapLayer:onInit()
 	grid:setSize( self.width, self.height, self.tileWidth, self.tileHeight )
 end
 
+function TileMapLayer:resize( w, h )
+	self:onResize( w, h )
+	self.width  = w
+	self.height = h
+end
+
+function TileMapLayer:onResize( w, h )
+end
 
 function TileMapLayer:getName()
 	return self.name
@@ -305,6 +314,16 @@ CLASS: TileMapParam ()
 	Field 'tileHeight'     :int() :range(1);
 }
 
+
+----------------------------------------------------------------------
+CLASS: TileMapResizeParam ()
+:MODEL {
+	Field 'width'          :int() :readonly();
+	Field 'height'         :int() :readonly();
+	Field 'newWidth'       :int() :range(1);
+	Field 'newHeight'      :int() :range(1);
+}
+
 -- function TileMapParam:updateTileSizeFromTileset()
 -- 	local tilesetPath = self.defaultTileset
 -- 	local set = loadAsset( tilesetPath )
@@ -471,6 +490,16 @@ function TileMap:init( param )
 	self.defaultTileset = param.defaultTileset
 end
 
+function TileMap:resize( resizeParam )
+	local newWidth  = resizeParam.newWidth
+	local newHeight = resizeParam.newHeight
+	self.width  = newWidth
+	self.height = newHeight
+	for i, layer in ipairs( self.layers ) do
+		layer:resize( newWidth, newHeight )
+	end
+end
+
 function TileMap:getDefaultParam()
 	local param = TileMapParam()
 	param.width      = 20
@@ -495,7 +524,16 @@ function TileMap:toolActionInit()
 end
 
 function TileMap:toolActionResize()
-		mock_edit.alertMessage( 'message', 'TODO*', 'info' )
+	local param = TileMapResizeParam()
+	param.width     = self.width
+	param.height    = self.height
+	param.newWidth  = self.width
+	param.newHeight = self.height
+
+	if mock_edit.requestProperty( 'input tilemap parameters', param ) then
+		self:resize( param )
+		mock_edit.alertMessage( 'message', 'tilemap is resized', 'info' )
+	end		
 end
 
 function TileMap:findLayerByName( name )
