@@ -219,6 +219,10 @@ function TileMapLayer:getTile( x,y )
 	return self.mapGrid:getTile( x, y )
 end
 
+function TileMapLayer:getTerrain( x, y )
+	return nil
+end
+
 function TileMapLayer:getTileData( x, y )
 	local id = self.mapGrid:getTile( x, y )
 	local tileset = self:getTileset()

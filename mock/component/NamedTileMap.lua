@@ -223,4 +223,7 @@ function NamedTileMapLayer:onParentDetach( ent )
 	ent:_detachProp( self.prop )
 end
 
-
+function NamedTileMapLayer:getTerrain( x, y )
+	local data = self:getTileData( x, y )
+	return data and data.terrain or false
+end
