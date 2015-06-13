@@ -99,7 +99,6 @@ function MTileset:load( deckData )
 		end
 		meshSpans[ idx ] = { currentVertexOffset, spanSize }
 		local name = self.idToName[ idx ]
-		print( name, idx, currentVertexOffset, spanSize )
 		currentVertexOffset = currentVertexOffset + spanSize	
 	end
 

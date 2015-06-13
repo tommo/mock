@@ -78,7 +78,7 @@ function CameraImageEffectColorGrading:__init()
 	self.tex:reserve( 2 )
 end
 
-function CameraImageEffectColorGrading:onBuild( prop, texture, layer )
+function CameraImageEffectColorGrading:onBuild( prop, texture, layer, passId )
 	self.tex:setTexture( 1, texture )
 	prop:setTexture( self.tex )
 	prop:setShader( assert( buildLUTShader() ) )

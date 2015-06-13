@@ -36,7 +36,7 @@ end
 CLASS: CameraImageEffectInvert ( CameraImageEffect )
 	:MODEL{}
 
-function CameraImageEffectInvert:onBuild( prop, layer )
+function CameraImageEffectInvert:onBuild( prop, framebuffer, layer, passId )
 	prop:setShader( assert( buildInvertShader() ) )
 end
 

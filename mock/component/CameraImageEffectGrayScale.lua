@@ -37,7 +37,7 @@ end
 CLASS: CameraImageEffectGrayScale ( CameraImageEffect )
 	:MODEL{}
 
-function CameraImageEffectGrayScale:onBuild( prop, layer )
+function CameraImageEffectGrayScale:onBuild( prop, texture, layer, passId )
 	prop:setShader( assert( buildGreyscaleShader() ) )
 end
 
