@@ -142,7 +142,6 @@ end
 function CameraImageEffectBlur:onBuild( prop, frameBuffer, layer, passId )
 	if passId == 1 then
 		prop:setShader( assert( buildBlurShader( passId ) ) )
-		return 'more' --
 	elseif passId == 2 then
 		prop:setShader( assert( buildBlurShader( passId ) ) )
 	end

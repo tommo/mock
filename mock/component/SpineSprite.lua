@@ -142,4 +142,6 @@ function SpineSprite:onDetach( entity )
 	return SpineSpriteBase.onDetach( self, entity )
 end
 
+
+
 wrapWithMoaiPropMethods( SpineSprite, ':getSkeleton()' )

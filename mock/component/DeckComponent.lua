@@ -141,3 +141,8 @@ function DeckComponent:setShader( shaderPath )
 	end
 	self.prop:setShader( defaultShader )
 end
+
+function DeckComponent:getPickingProp()
+	return self.prop
+end
+

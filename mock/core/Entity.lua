@@ -382,6 +382,13 @@ function Entity:getAllComponentsOf( id )
 	return components
 end
 
+function Entity:printComponentClassNames()
+	for com in pairs( self.components ) do
+		print( com:getClassName() )
+	end
+end
+
+
 --------------------------------------------------------------------
 ------- Attributes Links
 --------------------------------------------------------------------
@@ -1113,3 +1120,4 @@ end
 function cloneEntity( src, ensureComponentOrder )
 	return _cloneEntity( src, true, true, nil, ensureComponentOrder )
 end
+

@@ -28,6 +28,9 @@ function GeometryComponent:setBlend( b )
 	setPropBlend( self.prop, b )
 end
 
+function GeometryComponent:getPickingProp()
+	return self.prop
+end
 
 --------------------------------------------------------------------
 
@@ -59,6 +62,7 @@ function GeometryRect:onGetRect()
 	local w,h = self.w, self.h
 	return -w/2,-h/2, w/2,h/2
 end
+
 
 --------------------------------------------------------------------
 CLASS: GeometryCircle ( GeometryComponent )

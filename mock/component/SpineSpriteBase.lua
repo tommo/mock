@@ -85,3 +85,8 @@ function SpineSpriteBase:updateShader()
 		self.skeleton:setShader( defaultShader )
 	end
 end
+
+function SpineSpriteBase:getPickingProp()
+	return self.skeleton
+end
+

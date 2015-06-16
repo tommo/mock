@@ -18,7 +18,7 @@ function MQuadDeck:__init()
 end
 
 function MQuadDeck:createMoaiDeck()
-	local mesh = MOAIMesh.new ()	
+	local mesh = MOAITileMesh.new ()	
 	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
 	return mesh
 end
@@ -52,6 +52,7 @@ function MQuadDeck:update()
 	if u[1] then
 		mesh:setBounds ( unpack(u) )
 	end
+	mesh:setTile( 1, 0, count )
 
 end
 

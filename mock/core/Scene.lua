@@ -18,6 +18,7 @@ function Scene:__init( option )
 	self.running = false
 	self.arguments       = false
 	self.layers          = {}
+	self.layersByName    = {}
 	self.entities        = {}
 	self.entitiesByName  = {}
 
@@ -94,11 +95,13 @@ end
 
 function Scene:initLayers()
 	local layers = {}
+	local layersByName = {}
 	local defaultLayer
-	
+
 	for i, l in ipairs( game.layers ) do
 		local layer = l:makeMoaiLayer()
 		layers[i] = layer
+		layersByName[ layer.name ] = layer
 		if l.default then
 			defaultLayer = layer
 		end
@@ -111,6 +114,7 @@ function Scene:initLayers()
 	end
 	assert( self.defaultLayer )
 	self.layers = layers
+	self.layersByName = layersByName
 end
 
 function Scene:getActionRoot()
@@ -352,10 +356,11 @@ end
 
 function Scene:getLayer( name )
 	if not name then return self.defaultLayer end
-	for i,l in pairs( self.layers ) do
-		if l.name == name then return l end
-	end
-	return nil
+	return self.layersByName[ name ]
+	-- for i,l in pairs( self.layers ) do
+	-- 	if l.name == name then return l end
+	-- end
+	-- return nil
 end
 
 

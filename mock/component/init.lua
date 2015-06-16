@@ -94,6 +94,7 @@ require 'mock.component.CameraImageEffectColorGrading'
 require 'mock.component.CameraImageEffectBlur'
 require 'mock.component.CameraImageEffectSharpen'
 require 'mock.component.CameraImageEffectBloom'
+require 'mock.component.CameraImageEffectRadialBlur'
 
 
 --------------------------------------------------------------------

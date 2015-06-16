@@ -358,6 +358,7 @@ function MSprite:drawBounds()
 	MOAIDraw.drawRect( x1,y1,x2,y2 )
 end
 
-
-
+function MSprite:getPickingProp()
+	return self.prop
+end
 
