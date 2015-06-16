@@ -183,6 +183,10 @@ function linkVisible( p1, p2 )
 	return p1:setAttrLink ( ATTR_VISIBLE, p2, ATTR_VISIBLE )
 end
 
+function linkLocalVisible( p1, p2 ) 
+	return p1:setAttrLink ( ATTR_LOCAL_VISIBLE, p2, ATTR_LOCAL_VISIBLE )
+end
+
 function inheritTransformColor( p1, p2 )
 	inheritTransform( p1, p2 )
 	return inheritColor( p1, p2 )

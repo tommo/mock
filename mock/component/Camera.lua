@@ -551,6 +551,6 @@ registerEntityWithComponent( 'Camera', Camera )
 function Camera:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'camera.png' )
-	giz:setTransform( self._camera )
+	giz:setParentEntity( self._entity )
 	return giz
 end

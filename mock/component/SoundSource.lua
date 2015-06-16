@@ -166,7 +166,7 @@ end
 function SoundSource:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'sound.png' )
-	giz:setTransform( self._entity:getProp() )
+	giz:setParentEntity( self._entity )
 	return giz
 end
 

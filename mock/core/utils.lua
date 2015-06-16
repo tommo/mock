@@ -214,6 +214,15 @@ function table.values( t )
 	return values
 end
 
+function table.reversed( t )
+	local t1 = {}
+	local count = #t
+	for i = 1, count do
+		t1[ i ] = t[ count - i + 1 ]
+	end
+	return t1
+end
+
 --------------------------------------------------------------------
 ----MATH & Geometry
 --------------------------------------------------------------------
