@@ -242,3 +242,21 @@ function loadMOAIGridTiles( grid, dataString )
 
 end
 
+
+function resizeMOAIGrid( grid, w, h, tw, th ,ox, oy, cw, ch )
+	local ow, oh = grid:getSize()
+	local nw, nh = math.min( ow, w ), math.min( oh, h )
+	local tmpGrid = MOAIGrid.new()
+	tmpGrid:setSize( nw, nh )
+	for y = 1, nh do
+		for x = 1, nw do
+			tmpGrid:setTile( x, y, grid:getTile( x, y ) )
+		end
+	end
+	grid:setSize( w,h,tw,th,ox,oy,cw,ch )
+	for y = 1, nh do
+		for x = 1, nw do
+			grid:setTile( x, y, tmpGrid:getTile( x, y ) )
+		end
+	end
+end

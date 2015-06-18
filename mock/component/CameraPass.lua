@@ -356,23 +356,34 @@ function CameraPass:buildImageEffects()
 	assert( defaultRenderTarget ~= outputRenderTarget )
 
 	local imageEffects = self.camera.imageEffects
-	local count = #imageEffects
+	local effectPassCount = 0
+	for i, effect in ipairs( self.camera.imageEffects ) do
+		effectPassCount = effectPassCount + effect:getPassCount()
+	end
 
 	local backbuffer  = defaultRenderTarget
 	local frontbuffer = outputRenderTarget
-	if count > 1 then --need backbuffer
+	if effectPassCount > 1 then --need backbuffer
 		frontbuffer = self:requestRenderTarget( 'image-effect-backbuffer', self.outputRenderTarget )
 	end
 
+	local totalEffectPassId = 0
 	for i, imageEffect in ipairs( imageEffects ) do
-		if i == count then
-			--last one output to output buffer
-			frontbuffer = outputRenderTarget
+		local passCount = imageEffect:getPassCount()
+		
+		for pass = 1, passCount do
+			totalEffectPassId = totalEffectPassId + 1
+			if totalEffectPassId == effectPassCount then
+				--last one output to output buffer
+				frontbuffer = outputRenderTarget
+			end
+			self.defaultRenderTarget = frontbuffer
+			self:pushRenderTarget( frontbuffer )
+			local result = imageEffect:buildCameraPass( self, backbuffer:getFrameBuffer(), pass )			
+			--swap double buffer
+			backbuffer, frontbuffer = frontbuffer, backbuffer
 		end
-		self.defaultRenderTarget = frontbuffer
-		self:pushRenderTarget( frontbuffer )
-		imageEffect:buildCameraPass( self, backbuffer:getFrameBuffer() )
-		backbuffer, frontbuffer = frontbuffer, backbuffer
+
 	end
 
 	self.defaultRenderTarget = defaultRenderTarget

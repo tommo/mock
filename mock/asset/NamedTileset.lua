@@ -46,35 +46,40 @@ CLASS: NamedTileMapTerrainBrush ( TileMapTerrainBrush )
 
 
 function NamedTileMapTerrainBrush:__init()
-	self.prefix = 'unknown'
+	self.terrainId = 'unknown'
 end
 
 function NamedTileMapTerrainBrush:paint( layer, tx, ty )
-	self:updateNeighbors( layer, tx, ty )
+	self:updateNeighbors( 'paint', layer, tx, ty )
 end
 
 function NamedTileMapTerrainBrush:remove( layer, tx, ty )
-	self:updateNeighbors( layer, tx, ty )
+	self:updateNeighbors( 'remove', layer, tx, ty )
 end
 
-function NamedTileMapTerrainBrush:updateNeighbors( layer, x, y  )
-	self:updateTile( layer, x, y, 0, 0 )
-	self:updateTile( layer, x, y, 1, 0 )
-	self:updateTile( layer, x, y, 1, 1 )
-	self:updateTile( layer, x, y, 0, 1 )
+function NamedTileMapTerrainBrush:updateNeighbors( action, layer, x, y  )
+	self:updateTile( action, layer, x, y, 0, 0 )
+	self:updateTile( action, layer, x, y, 1, 0 )
+	self:updateTile( action, layer, x, y, 1, 1 )
+	self:updateTile( action, layer, x, y, 0, 1 )
 end
 
-function NamedTileMapTerrainBrush:updateTile( layer, x0, y0, dx, dy )
+function NamedTileMapTerrainBrush:updateTile( action, layer, x0, y0, dx, dy )
 	local w, h = layer:getSize()
 	local x, y = x0 + dx, y0 + dy
 	if x < 1 or x > w then return false end
 	if y < 1 or y > h then return false end
-	local sq = self:getSquareValue( layer, x, y, dx, dy )
+	if action == 'remove' then
+		local terrain0 = layer:getTerrain( x, y )
+		if terrain0 ~= self.terrainId then return false end
+	end
+	local sq = self:getSquareValue( action, layer, x, y, dx, dy )
+	if action == 'remove' and sq == 0 then
+		layer:setTile( x, y, false )
+	end
 	local p = squareValueToPattern[ sq ] or false
 	if p then
-		layer:setTile( x, y, self.prefix..'.'..p )
-	else
-		layer:setTile( x, y, self.prefix..'.c' )
+		layer:setTile( x, y, self.terrainId..'.'..p )
 	end
 end
 
@@ -88,11 +93,13 @@ end
 
 local lshift = bit.lshift
 local bor    = bit.bor
+local band   = bit.band
+local bnot   = bit.bnot
 
-function NamedTileMapTerrainBrush:getSquareValue( layer, x, y, dx, dy )
+function NamedTileMapTerrainBrush:getSquareValue( action, layer, x, y, dx, dy )
 	local tileData = layer:getTileData( x, y )
 	local sq0 = 0
-	if tileData and tileData.prefix==self.prefix then
+	if tileData and tileData.terrainId==self.terrainId then
 		local pattern = tileData.tileIdBaseHead
 		sq0 = patternToSquareValue[ pattern ]
 	end
@@ -102,18 +109,36 @@ function NamedTileMapTerrainBrush:getSquareValue( layer, x, y, dx, dy )
 	-- [ 8 ] = 'ne'  bit 3,
 	local sq = sq0
 	if     dx == 0 and dy == 0 then -- +sw
-		sq = bor( sq0, lshift(1, 0) )
+		if action == 'paint' then
+			sq = bor( sq0, lshift(1, 0) )
+		elseif action == 'remove' then
+			sq = band( sq0, bnot( lshift(1, 0) ) )
+		end
 	elseif dx == 1 and dy == 0 then -- +se
-		sq = bor( sq0, lshift(1, 1) )
+		if action == 'paint' then
+			sq = bor( sq0, lshift(1, 1) )
+		elseif action == 'remove' then
+			sq = band( sq0, bnot( lshift(1, 1) ) )
+		end
 	elseif dx == 1 and dy == 1 then -- +ne
-		sq = bor( sq0, lshift(1, 3) )
+		if action == 'paint' then
+			sq = bor( sq0, lshift(1, 3) )
+		elseif action == 'remove' then
+			sq = band( sq0, bnot( lshift(1, 3) ) )
+		end
 	elseif dx == 0 and dy == 1 then -- +nw
-		sq = bor( sq0, lshift(1, 2) )
+		if action == 'paint' then
+			sq = bor( sq0, lshift(1, 2) )
+		elseif action == 'remove' then
+			sq = band( sq0, bnot( lshift(1, 2) ) )
+		end
 	end
 	return sq
 end
 
-
+function NamedTileMapTerrainBrush:getTerrainId()
+	return self.terrainId
+end
 
 --------------------------------------------------------------------
 CLASS: NamedTileset ( Tileset )
@@ -134,6 +159,13 @@ function NamedTileset:getTerrainBrushes()
 	return self.terrainBrushes
 end
 
+function NamedTileset:getTerrainBrush( id )
+	for i, brush in ipairs( self.terrainBrushes ) do
+		if brush:getTerrainId() == id then return brush end
+	end
+	return nil
+end
+
 function NamedTileset:getTileSize()
 	return self.tileWidth, self.tileHeight
 end
@@ -145,8 +177,8 @@ end
 
 function NamedTileset:buildTerrainBrush( tileGroup )
 	local brush = NamedTileMapTerrainBrush()
-	brush.prefix = tileGroup.name
-	brush.name = tileGroup.name
+	brush.terrainId = tileGroup.name
+	brush.name   = tileGroup.name
 	table.insert( self.terrainBrushes, brush )
 	return brush
 end
@@ -177,8 +209,10 @@ function NamedTileset:loadData( data )
 		group.tileType = groupData[ 'type' ]
 		group.alt      = groupData[ 'alt'  ]
 		group.name     = groupData[ 'name' ]
+		local isTerrainGroup = false
 		if groupData[ 'type' ] == 'T' then
 			self:buildTerrainBrush( group )
+			isTerrainGroup = true
 		end
 		self.groups[ name ] = group
 		for _, tileData in pairs( groupData[ 'tiles' ] ) do
@@ -193,10 +227,15 @@ function NamedTileset:loadData( data )
 			self.idToName[ index ] = itemName
 			local data2 = table.simplecopy( tileData )
 			data2.group  = group
-			data2.prefix = group.name
+			data2.terrainId = group.name
 			local head, tail = string.match( baseName, '(-?%a+)(.*)' )
 			data2.tileIdBaseHead = head or ''
 			data2.tileIdBaseTail = tail or ''
+			if isTerrainGroup then
+				data2.terrain = group.name
+			else
+				data2.terrain = false
+			end
 			self.nameToTile[ itemName ] = data2
 			self.idToTile[ index ] = data2
 		end
@@ -270,6 +309,9 @@ end
 function NamedTileset:getNamedTileMapTerrainBrushes()
 	return self.terrainBrushes
 end
+
+-- function NamedTileset:getTerrainByName()
+-- end
 
 --------------------------------------------------------------------
 CLASS: NamedTileGroup ()

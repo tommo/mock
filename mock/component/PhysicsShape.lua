@@ -224,6 +224,10 @@ function PhysicsShapeBox:setHeight( h )
 	self:updateShape()
 end
 
+function PhysicsShapeBox:getSize()
+	return self.w, self.h
+end
+
 function PhysicsShapeBox:setSize( w, h )
 	self.w = w
 	self.h = h
@@ -272,7 +276,6 @@ function PhysicsShapeCircle:clone(original)
 	return copy
 end
 
-
 function PhysicsShapeCircle:createShape( body )	
 	local x, y = self:getLoc()
 	local shape = body:addCircle( x, y, self.radius )
@@ -282,6 +285,10 @@ end
 function PhysicsShapeCircle:setRadius( radius )
 	self.radius = radius
 	self:updateShape()
+end
+
+function PhysicsShapeCircle:getRadius()
+	return self.radius
 end
 
 function PhysicsShapeCircle:matchSize()
@@ -296,6 +303,28 @@ function PhysicsShapeCircle:matchSize()
 		self:updateShape()
 	end
 end
+
+
+--------------------------------------------------------------------
+CLASS: PhysicsShapePolygon ( PhysicsShape )
+	:MODEL{}
+
+-- mock.registerComponent( 'PhysicsShapePolygon', PhysicsShapePolygon )
+
+
+--------------------------------------------------------------------
+CLASS: PhysicsShapeEdges ( PhysicsShape )
+	:MODEL{}
+
+-- mock.registerComponent( 'PhysicsShapeEdges', PhysicsShapeEdges )
+
+
+--------------------------------------------------------------------
+CLASS: PhysicsShapeChain ( PhysicsShape )
+	:MODEL{}
+
+-- mock.registerComponent( 'PhysicsShapeChain', PhysicsShapeChain )
+
 
 --------------------------------------------------------------------
 CLASS: PhysicsShapePie ( PhysicsShape )

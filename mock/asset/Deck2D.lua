@@ -242,6 +242,11 @@ function Tileset:getTerrainBrushes()
 	return {}
 end
 
+function Tileset:findTerrainBrush( id )
+	return nil
+end
+
+
 --------------------------------------------------------------------
 CLASS: TileMapTerrainBrush ()
 	:MODEL{}
@@ -259,6 +264,11 @@ end
 function TileMapTerrainBrush:getName()
 	return self.name
 end
+
+function TileMapTerrainBrush:getTerrainId()
+	return self.name
+end
+
 
 
 --------------------------------------------------------------------

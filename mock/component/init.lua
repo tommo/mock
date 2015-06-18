@@ -91,6 +91,9 @@ require 'mock.component.CameraImageEffectGrayScale'
 require 'mock.component.CameraImageEffectSepia'
 require 'mock.component.CameraImageEffectInvert'
 require 'mock.component.CameraImageEffectColorGrading'
+require 'mock.component.CameraImageEffectBlur'
+require 'mock.component.CameraImageEffectSharpen'
+require 'mock.component.CameraImageEffectBloom'
 
 
 --------------------------------------------------------------------

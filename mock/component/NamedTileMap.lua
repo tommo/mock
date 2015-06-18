@@ -20,6 +20,12 @@ function NamedTileGrid:setSize( w, h, tw, th, ox, oy, cw, ch )
 	self.height = h	
 end
 
+function NamedTileGrid:resize( w, h, tw, th, ox, oy, cw, ch )
+	resizeMOAIGrid( self.grid, w, h, tw, th, ox, oy, cw, ch )
+	self.width  = w
+	self.height = h
+end
+
 function NamedTileGrid:getTile( x, y ) -- name
 	local id = self.grid:getTile( x, y )
 	return self.idToName[ id ]
@@ -131,6 +137,10 @@ function NamedTileMapLayer:onInit()
 
 end
 
+function NamedTileMapLayer:onResize( w, h )
+	self.mapGrid:resize( w, h, self.tileWidth, self.tileHeight, 0, 0, 1, 1 )
+end
+
 function NamedTileMapLayer:worldToModel( x, y )
 	return self.prop:worldToModel( x, y )
 end
@@ -213,4 +223,7 @@ function NamedTileMapLayer:onParentDetach( ent )
 	ent:_detachProp( self.prop )
 end
 
-
+function NamedTileMapLayer:getTerrain( x, y )
+	local data = self:getTileData( x, y )
+	return data and data.terrain or false
+end
