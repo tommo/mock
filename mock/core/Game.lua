@@ -421,10 +421,10 @@ function Game:initGraphics( fromEditor )
 	self.mainRenderTarget:setAspectRatio( self.width/self.height )
 	self.mainRenderTarget:setKeepAspect( true )
 
-	_stat( 'opening window', self.title, self.width, self.height )
+	_stat( 'opening window', self.title, w, h )
 	if not fromEditor then
 		--FIXME: crash here if no canvas shown up yet
-		MOAISim.openWindow( self.title, self.width, self.height )
+		MOAISim.openWindow( self.title, w, h  )
 	end
 	self.graphicsInitialized = true
 	if self.pendingResize then
