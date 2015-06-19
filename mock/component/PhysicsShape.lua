@@ -169,7 +169,6 @@ end
 _wrapMethods( PhysicsShape, 'shape', {
 	'getFilter',
 	'setDensity',
-	'setFilter',
 	'setFriction',
 	'setRestitution',
 	'setSensor',
