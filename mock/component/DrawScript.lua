@@ -23,6 +23,10 @@ function DrawScript:__init( option )
 	self:setRect( rect and unpack( rect ) )
 end
 
+function DrawScript:getMoaiProp()
+	return self.prop
+end
+
 function DrawScript:getBlend()
 	return self.blend
 end

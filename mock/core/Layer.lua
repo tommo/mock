@@ -22,7 +22,7 @@ CLASS: Layer ()
 		Field 'editVis'   :boolean()  :isset('EditorVisible') :no_edit();
 		Field 'locked'    :boolean()  :no_edit(); --editor only property
 		Field 'solo'      :boolean()  :isset('EditorSolo') :no_edit();
-		Field 'parallax'  :type('vec2') :getset('Parallax');
+		Field 'parallax'  :type('vec3') :getset('Parallax');
 		Field 'sortMode'  :enum( EnumLayerSortMode ) :getset('SortMode');
 		Field 'priority'  :int() :no_edit();
 	}
@@ -36,7 +36,7 @@ function Layer:__init( name )
 	self.default       = false
 	self.moaiLayers    = setmetatable( {}, { __mode='k' } )
 	self.locked        = false
-	self.parallax      = {1,1}
+	self.parallax      = {1,1,1}
 	self._moaiLayer    = MOAILayer.new()
 end
 
@@ -100,8 +100,8 @@ function Layer:getParallax()
 	return unpack( self.parallax )
 end
 
-function Layer:setParallax( x, y )
-	self.parallax = { x, y }
+function Layer:setParallax( x, y, z )
+	self.parallax = { x or 1, y or 1, z or 1 }
 end
 
 function Layer:makeMoaiLayer( partition )

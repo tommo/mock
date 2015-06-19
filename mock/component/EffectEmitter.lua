@@ -153,6 +153,6 @@ end
 function EffectEmitter:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'effect.png' )
-	giz:setPickingTarget( self._entity )
+	giz:setParentEntity( self._entity )
 	return giz
 end
