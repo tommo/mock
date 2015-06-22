@@ -237,6 +237,14 @@ function TextLabel:useDeckShader()
 	self.box:setShader( getBuiltinShader(DECK2D_SHADER) )
 end
 
+function TextLabel:more()
+	return self.box:more()
+end
+
+function TextLabel:nextPage( reveal )
+	return self.box:nextPage( reveal )
+end
+
 --------------------------------------------------------------------
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
 function TextLabel:setShader( shaderPath )

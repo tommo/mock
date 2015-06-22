@@ -285,7 +285,11 @@ end
 function Shader:setAttr( name, v )
 	local id = self.prog.uniformTable[ name ]
 	if not id then error('undefined uniform:'..name, 2) end
-	self.shader:setAttr( id, v )
+	return self.shader:setAttr( id, v )
+end
+
+function Shader:setAttrById( id, v )
+	return self.shader:setAttr( id, v )
 end
 
 function Shader:setAttrLink( name, node, id1 )

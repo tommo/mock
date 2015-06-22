@@ -13,10 +13,10 @@ end
 
 function StoryManager:init()
 	--TEST:
-	local context = self:createContext()
-	context:setActive()
-	context:setStoryPath( 'story/basic.story' )
-	context:start()
+	-- local context = self:createContext()
+	-- context:setActive()
+	-- context:setStoryPath( 'story/basic.story' )
+	-- context:start()
 end
 
 function StoryManager:update()
