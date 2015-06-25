@@ -169,6 +169,7 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 
 end
 
+
 function SceneSerializer:collectEntityWithProto( entity, objMap, protoInfo )
 	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
 	--proto instance
@@ -282,14 +283,21 @@ end
 
 function SceneSerializer:collectGroup( group, objMap )
 	local childGroupDatas = {}
+	local entityIds = {}
 	for childGroup in pairs( group.childGroups ) do
 		table.insert( childGroupDatas, self:collectGroup( childGroup, objMap ) )
 	end
 
+	for e in pairs( group.entities ) do
+		table.insert( entityIds, objMap:map( e ) )
+	end
+
 	return {
 		id = objMap:map( group ),
-		children = childGroupDatas
+		children = childGroupDatas,
+		entities = entityIds
 	}
+
 end
 
 function SceneSerializer:serializeScene( scene, keepProto )
@@ -508,7 +516,11 @@ function SceneDeserializer:deserializeGroup( scene, parentGroup, data, objMap )
 	local group = objMap[ id ][ 1 ]
 	group.__guid = id
 	parentGroup:addChildGroup( group )
-	for _, childData in ipairs( data[ 'children' ] or {} ) do
+	for _, entId in ipairs( data[ 'entities' ] ) do
+		ent = objMap[ entId ][ 1 ]
+		ent._entityGroup = group
+	end
+	for _, childData in ipairs( data[ 'children' ] or {} ) do		
 		self:deserializeGroup( scene, group, childData, objMap )
 	end
 end
@@ -526,12 +538,6 @@ function SceneDeserializer:deserializeScene( data, scene )
 
 	self:deserializeEntities( data, objMap, scene )
 	
-	--groups
-	local groupDatas = data[ 'groups' ] or {}
-	for i, gdata in ipairs( groupDatas ) do
-		self:deserializeGroup( scene, scene:getRootGroup(), gdata, objMap )
-	end
-
 	scene.metaData = data['meta'] or {}
 
 	self:postDeserializeScene( scene, data, objMap )
@@ -554,6 +560,12 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 	mergeProtoDataList( data, protoInstances )
 
 	local _, aliases = _deserializeObjectMap( map, objMap ) --ignore protoInstances
+	
+	--groups
+	local groupDatas = data[ 'groups' ] or {}
+	for i, gdata in ipairs( groupDatas ) do
+		self:deserializeGroup( scene, scene:getRootGroup(), gdata, objMap )
+	end
 
 	for id, objData in pairs( map ) do
 		local protoHistory = objData[ 'proto_history' ]
