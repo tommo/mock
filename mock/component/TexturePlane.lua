@@ -118,3 +118,7 @@ function TexturePlane:drawBounds()
 	local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
 	MOAIDraw.drawRect( x1,y1,x2,y2 )
 end
+
+function TexturePlane:getPickingProp()
+	return self.prop
+end

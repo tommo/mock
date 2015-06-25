@@ -10,6 +10,7 @@ local unpack = unpack
 --------------------------------------------------------------------
 CLASS: Entity ( Actor )
 	:MODEL{
+		Field '_entityGroup' :type( EntityGroup ) :no_edit();
 		Field '__prefabId':string() :no_edit();
 		Field '_priority' :int() :no_edit()  :set('setPriority');
 		----
@@ -67,7 +68,8 @@ function Entity:__init()
 	self.active      = true
 	self.localActive = true
 	self.started     = false
-	
+	self._entityGroup = false
+
 end
 
 function Entity:_insertIntoScene( scene, layer )
@@ -123,6 +125,20 @@ end
 
 function Entity:getProp( role )
 	return self._prop
+end
+
+function Entity:getEntityGroup( searchParent )
+	if searchParent ~= false then
+		local p = self
+		while p do
+			local group = p._entityGroup
+			if group then return group end
+			p = p.parent
+		end
+		return false
+	else
+		return self._entityGroup
+	end
 end
 
 --------------------------------------------------------------------
@@ -212,6 +228,10 @@ function Entity:destroyNow()
 		self.parent = nil
 	end
 
+	if self._entityGroup then
+		self._entityGroup:removeEntity( self )
+	end
+	
 	scene:removeUpdateListener( self )
 	scene.entities[ self ] = nil
 	
@@ -446,11 +466,8 @@ function Entity:addSibling( entity, layerName )
 	if self.parent then
 		return self.parent:addChild( entity, layerName )
 	else
-		local scene = self.scene
-		local layer = layerName and scene:getLayer(layerName) or self.layer
-		entity:_insertIntoScene( scene, layer )
+		return self.scene:addEntity( entity, layerName )
 	end
-	return entity
 end
 
 function Entity:_attachChildEntity( child )
@@ -462,7 +479,7 @@ end
 function Entity:addChild( entity, layerName )
 	self.children[ entity ] = true
 	entity.parent = self
-		
+
 	--TODO: better solution on scissor?
 	if self.scissorRect then entity:_setScissorRect( self.scissorRect ) end
 	--attach transform/color
@@ -481,6 +498,7 @@ function Entity:addChild( entity, layerName )
 	else
 		entity.layer = layerName or entity.layer or self.layer
 	end
+
 	return entity
 end
 
@@ -530,6 +548,10 @@ function Entity:getParent()
 	return self.parent
 end
 
+function Entity:getParentOrGroup() --for editor, return parent entity or group
+	return self.parent or self._entityGroup
+end
+
 function Entity:findEntity( name )
 	return self.scene:findEntity( name )
 end
@@ -538,13 +560,6 @@ function Entity:findEntityCom( entName, comId )
 	local ent = self:findEntity( entName )
 	return ent and ent:com( comId )
 end
-
--- function Entity:findSibling( name )
--- 	if self.parent then
--- 		return
--- 	else
--- 	end
--- end
 
 function Entity:findChild( name, deep )
 	for child in pairs( self.children ) do

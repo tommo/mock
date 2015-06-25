@@ -379,7 +379,7 @@ function Camera:getMoaiViewport()
 end
 
 function Camera:getViewportSize()
-	return self.viewpor:getScale()
+	return self.renderTarget:getScale()
 end
 
 function Camera:getViewportRect()

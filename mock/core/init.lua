@@ -37,6 +37,7 @@ require 'mock.core.Viewport'
 require 'mock.core.RenderTarget'
 
 ----game
+require 'mock.core.EntityGroup'
 require 'mock.core.Entity'
 require 'mock.core.Component'
 require 'mock.core.Layer'

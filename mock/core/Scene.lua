@@ -42,6 +42,8 @@ function Scene:__init( option )
 
 	self.config          = {}
 
+	self.rootGroup       = EntityGroup()
+	self.rootGroup.scene = self
 	return self
 end
 
@@ -371,7 +373,7 @@ function Scene:setEntityListener( func )
 	self.entityListener = func or false
 end
 
-function Scene:addEntity( entity, layer )
+function Scene:addEntity( entity, layer, group )
 	assert( entity )
 	layer = layer or entity.layer or self.defaultLayer
 	
@@ -384,8 +386,10 @@ function Scene:addEntity( entity, layer )
 		end 
 	end
 	assert( layer )
+	group = group or entity._entityGroup or self.rootGroup
+	group:addEntity( entity )
 	entity:_insertIntoScene( self, layer )
-	
+
 	return entity
 end
 
@@ -440,10 +444,18 @@ function Scene:clear( keepEditorEntity )
 	self.entitiesByName  = {}
 	self.pendingStart    = {}
 
+	self.rootGroup       = EntityGroup()
+	self.rootGroup.scene = self
+
 	self.defaultCamera   = false
 	self.entityListener = entityListener
 	self.arguments = false
 end
+
+function Scene:getRootGroup()
+	return self.rootGroup
+end
+
 
 Scene.add = Scene.addEntity
 

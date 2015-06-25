@@ -271,12 +271,36 @@ function SceneSerializer:collectEntity( entity, objMap )
 	}
 end
 
+function SceneSerializer:serializeGroups( scene, objMap )
+	local output = {}
+	for childGroup in pairs( scene:getRootGroup().childGroups ) do
+		local data = self:collectGroup( childGroup, objMap )
+		table.insert( output, data )
+	end
+	return output
+end
+
+function SceneSerializer:collectGroup( group, objMap )
+	local childGroupDatas = {}
+	for childGroup in pairs( group.childGroups ) do
+		table.insert( childGroupDatas, self:collectGroup( childGroup, objMap ) )
+	end
+
+	return {
+		id = objMap:map( group ),
+		children = childGroupDatas
+	}
+end
+
 function SceneSerializer:serializeScene( scene, keepProto )
 	emitSignal( 'scene.pre_serialize', scene )
 	--make proto data
 	local output = { _assetType  = 'scene' }
 	local objMap = SerializeObjectMap()
 	self:preSerializeScene( scene, output, keepProto )
+
+	--groups
+	output.groups = self:serializeGroups( scene, objMap )
 	
 	local entityList = {}
 	--scan top level entity
@@ -289,7 +313,7 @@ function SceneSerializer:serializeScene( scene, keepProto )
 
 	self:serializeEntities( entityList, output, objMap, scene, keepProto )
 
-	output.meta  = scene.metaData or {}
+	output.meta   = scene.metaData or {}
 
 	self:postSerialize( scene, output, objMap, keepProto )
 	emitSignal( 'scene.post_serialize', scene, output, objMap, keepProto )
@@ -479,6 +503,16 @@ function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
 	return entity
 end
 
+function SceneDeserializer:deserializeGroup( scene, parentGroup, data, objMap )
+	local id = data[ 'id' ]
+	local group = objMap[ id ][ 1 ]
+	group.__guid = id
+	parentGroup:addChildGroup( group )
+	for _, childData in ipairs( data[ 'children' ] or {} ) do
+		self:deserializeGroup( scene, group, childData, objMap )
+	end
+end
+
 function SceneDeserializer:deserializeScene( data, scene )
 	local objMap = {}
 	
@@ -491,6 +525,12 @@ function SceneDeserializer:deserializeScene( data, scene )
 	self:preDeserializeScene( scene, data, objMap )
 
 	self:deserializeEntities( data, objMap, scene )
+	
+	--groups
+	local groupDatas = data[ 'groups' ] or {}
+	for i, gdata in ipairs( groupDatas ) do
+		self:deserializeGroup( scene, scene:getRootGroup(), gdata, objMap )
+	end
 
 	scene.metaData = data['meta'] or {}
 
@@ -705,13 +745,13 @@ local function sceneLoader( node, option )
 	scene.path = node:getNodePath()
 	--entities
 	deserializeScene( data, scene )
+
 	local dep = data['asset_dependency']
 	if dep then
 		for assetPath in pairs( dep ) do
 			mock.loadAsset( assetPath )
 		end
 	end
-
 	return scene, false --no cache
 end
 

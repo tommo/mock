@@ -221,6 +221,10 @@ function TextLabel:drawBounds()
 	end
 end
 
+function TextLabel:getPickingProp()
+	return self.box
+end
+
 function TextLabel:inside( x, y, z, pad )
 	return self.box:inside( x,y,z, pad )	
 end
