@@ -54,7 +54,7 @@ function EntityGroup:getIcon()
 end
 
 function EntityGroup:addEntity( e )
-	e:getProp():setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
+	e:getProp( 'render' ):setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
 	e._entityGroup = self
 	self.entities[ e ] = true
 	assert( not e.parent )
@@ -62,7 +62,7 @@ function EntityGroup:addEntity( e )
 end
 
 function EntityGroup:removeEntity( e )
-	e:getProp():clearAttrLink( INHERIT_VISIBLE )
+	e:getProp( 'render' ):clearAttrLink( INHERIT_VISIBLE )
 	e._entityGroup = false
 	self.entities[ e ] = nil
 end

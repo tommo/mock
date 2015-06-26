@@ -3,11 +3,13 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: PhysicsShape ( mock.Component )
 	:MODEL{
+		Field 'tag'       :string();
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
 		Field 'material'  :asset( 'physics_material' ) :getset( 'Material' );
 	}
 
 function PhysicsShape:__init()
+	self.tag = false
 	self.materialPath = false
 	self.material = false
 	self.loc = { 0,0 }
@@ -23,6 +25,10 @@ function PhysicsShape:clone(original)
 	copy:setMaterial(original:getMaterial())
 	copy.loc = { original.loc[1], original.loc[2] }
 	return copy
+end
+
+function PhysicsShape:getTag()
+	return self.tag
 end
 
 function PhysicsShape:setLoc( x,y )

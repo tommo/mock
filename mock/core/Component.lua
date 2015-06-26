@@ -63,12 +63,20 @@ end
 --------------------------------------------------------------------
 --message & state
 --------------------------------------------------------------------
-function Component:broadcast( ... )
-	return self._entity:broadcast( ... )
-end
-
 function Component:tell( ... )
 	return self._entity:tell( ... )
+end
+
+function Component:tellSelfAndChildren( ... )
+	return self._entity:tellSelfAndChildren( ... )
+end
+
+function Component:tellChildren( ... )
+	return self._entity:tellChildren( ... )
+end
+
+function Component:tellSiblings( ... )
+	return self._entity:tellSiblings( ... )
 end
 
 function Component:getState()
@@ -87,6 +95,25 @@ function Component:inStateGroup( ... )
 	return self._entity:inStateGroup( ... )
 end
 
+--------------------------------------------------------------------
+-- invokes
+--------------------------------------------------------------------
+
+function Component:invokeUpward( methodName, ... )
+	return self._entity:invokeUpward( methodName, ... )
+end
+
+function Component:invokeChildren( methodName, ... )
+	return self._entity:invokeChildren( methodName, ... )
+end
+
+function Component:invokeComponents( methodName, ... )
+	return self._entity:invokeComponents( methodName, ... )
+end
+
+function Component:invokeOneComponent( methodName, ... )
+	return self._entity:invokeOneComponent( methodName, ... )
+end
 
 --------------------------------------------------------------------
 --signals

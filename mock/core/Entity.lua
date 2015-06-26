@@ -830,7 +830,6 @@ function Entity:invokeChildren( methodname, ... )
 	end
 end
 
-
 function Entity:invokeComponents( methodname, ... )
 	for com in pairs(self.components) do
 		local m=com[methodname]
@@ -842,6 +841,32 @@ function Entity:invokeOneComponent( methodname, ... )
 	for com in pairs(self.components) do
 		local m=com[methodname]
 		if m and type(m)=='function' then return m( com, ... ) end
+	end
+end
+
+function Entity:tellSelfAndChildren( msg, data, source )
+	self:tellChildren( msg, data, source )
+	return self:tell( msg, data, source )
+end
+
+function Entity:tellChildren( msg, data, source )
+	for ent in pairs( self.children ) do
+		ent:tellChildren( msg, data, source )
+		ent:tell( msg, data, source )
+	end
+end
+
+function Entity:tellParent( msg, data, source )
+	if not self.parent then return end
+	return self.parent:tell( msg, data, source )
+end
+
+function Entity:tellSiblings( msg, data, source )
+	if not self.parent then return end
+	for ent in pairs( self.parent.children ) do
+		if ent ~= self then
+			return ent:tell( msg, data, source )
+		end
 	end
 end
 
