@@ -270,7 +270,8 @@ function Game:init( option, fromEditor )
 
 	----audio
 	_stat( 'init audio' )
-	initFmodDesigner()
+	AudioManager.get():init()
+	
 
 	----physics
 	--option for default physics world
