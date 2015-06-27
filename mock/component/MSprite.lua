@@ -276,10 +276,9 @@ function MSprite:createAnimState( clipName, mode )
 	---bind animcurve to animState
 	local animState       = MOAIAnim.new()
 	local indexCurve   = clip.indexCurve
-	local offsetXCurve = clip.offsetXCurve
-	local offsetYCurve = clip.offsetYCurve
-
-	animState:reserveLinks( 3 )
+	-- local offsetXCurve = clip.offsetXCurve
+	-- local offsetYCurve = clip.offsetYCurve
+	animState:reserveLinks( 1 )
 	animState:setLink( 1, indexCurve,   self.prop, MOAIProp.ATTR_INDEX )
 	-- animState:setLink( 2, offsetXCurve, self.prop, MOAIProp.ATTR_X_LOC )
 	-- animState:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )

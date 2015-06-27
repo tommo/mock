@@ -433,6 +433,11 @@ function Game:initGraphics( fromEditor )
 		self:onResize( unpack( pendingResize ) )
 	end
 	self:setClearColor( 0, 0, 0, 1 )
+
+	MOAIGfxResourceMgr.setResourceLoadingPolicy( 
+		MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
+	)
+
 end
 
 function Game:getViewportScale()

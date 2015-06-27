@@ -89,14 +89,14 @@ function AnimatorState:apply( t )
 	local t0 = anim:getTime()
 	anim:setTime( t )
 	anim:apply( t0, t )
-	t = anim:getTime()
-	self:onUpdate( t )
+	-- t = anim:getTime()
+	-- self:onUpdate( t, t0 )
 end
 
-function AnimatorState:onUpdate( t )
+function AnimatorState:onUpdate( t, t0 )
 	for track, target in pairs( self.updateListenerTracks ) do
 		if self.stopping then return end --edge case: new clip started in apply
-		track:apply( self, target, t )
+		track:apply( self, target, t, t0 )
 	end
 end
 

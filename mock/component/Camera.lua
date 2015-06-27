@@ -289,6 +289,11 @@ function Camera:setShowDebugLines( show )
 		self:updateRenderLayers()
 	end
 end
+
+function Camera:isShowDeubgLines()
+	return self.showDebugLines
+end
+
 --------------------------------------------------------------------
 
 function Camera:setNearPlane( near )

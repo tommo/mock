@@ -63,26 +63,72 @@ function MSpriteAnimatorTrack:build( context )
 	context:updateLength( self:calcLength() )
 end
 
-function MSpriteAnimatorTrack:apply( state, playContext, t )
+function MSpriteAnimatorTrack:apply( state, playContext, t, t0 )
 	local spanId  = self.spanCurve:getValueAtTime( t )
 	local key     = self.keys[ spanId ]
 	local subTime = ( t - key.pos ) * key.FPS
 	local sprite  = playContext.sprite
 	local animState = playContext[ spanId ]
 	animState:setTime( subTime )
-	animState:apply( animState:getTime() )
+	local conv = animState.timeConverter
+	if conv then
+		subTime = conv( subTime, animState.length )
+		animState:apply( subTime )
+	end
+	animState:apply( subTime )
 end
+
+local max = math.max
+local floor = math.floor
+
+--TODO: optimization using C++
+local function mapTimeReverse( t0, length )
+	return max( length - t0, 0 )
+end
+
+local function mapTimeReverseContinue( t0, length )
+	return length - t0
+end
+
+local function mapTimeReverseLoop( t0, length )
+	t0 = t0 % length
+	return length - t0
+end
+
+local function mapTimePingPong( t0, length )
+	local span = floor( t0 / length )
+	t0 = t0 % length
+	if span % 2 == 0 then --ping
+		return t0
+	else
+		return length - t0
+	end
+end
+
+local timeMapFuncs = {
+	[MOAITimer.NORMAL]           = false;
+  [MOAITimer.REVERSE]          = mapTimeReverse;
+  [MOAITimer.CONTINUE]         = false;
+  [MOAITimer.CONTINUE_REVERSE] = mapTimeReverseContinue;
+  [MOAITimer.LOOP]             = false;
+  [MOAITimer.LOOP_REVERSE]     = mapTimeReverseLoop;
+  [MOAITimer.PING_PONG]        = mapTimePingPong;
+}
 
 function MSpriteAnimatorTrack:onStateLoad( state )
 	local rootEntity, scene = state:getTargetRoot()
 	local sprite = self.targetPath:get( rootEntity, scene )
 	local playContext = { sprite = sprite }
 	for i, key in ipairs( self.keys ) do
-		local animState = sprite:createAnimState( key.clip, key.playMode )
+		local animState, clip = sprite:createAnimState( key.clip, key.playMode )
+		animState.timeConverter = timeMapFuncs[ key.playMode ]
+		animState.length = clip.length
 		playContext[ i ] = animState
 	end
 	state:addUpdateListenerTrack( self, playContext )
 end
+
+
 
 --------------------------------------------------------------------
 registerCustomAnimatorTrackType( MSprite, 'clips', MSpriteAnimatorTrack )

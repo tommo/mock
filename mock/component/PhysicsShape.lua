@@ -434,14 +434,14 @@ function PhysicsShapePie:createShape(body)
 	table.insert(verts, ox)
 	table.insert(verts, oy)
 
-	print('---------')
+	-- print('---------')
 	local step = (self.endAngle - self.startAngle) / self.tessellation
 
 	local d = self.endAngle
 
 	for i=0,self.tessellation do
 		local angle = self.endAngle - i * step
-		print(angle)
+		-- print(angle)
 
 		local x = ox + math.cos(mock.d2arc(angle)) * self.radius
 		local y = oy + math.sin(mock.d2arc(angle)) * self.radius
@@ -449,7 +449,7 @@ function PhysicsShapePie:createShape(body)
 		table.insert(verts, y)
 
 	end
-	print('---------')
+	-- print('---------')
 
 	return body:addPolygon(verts)
 end
