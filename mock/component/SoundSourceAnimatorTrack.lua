@@ -50,7 +50,7 @@ end
 function SoundSourceAnimatorTrack:onStateLoad( state )
 	local rootEntity, scene = state:getTargetRoot()
 	local soundSource = self.targetPath:get( rootEntity, scene )
-	local playContext = { soundSource, false }
+	local playContext = { soundSource, 0 }
 	state:addUpdateListenerTrack( self, playContext )
 end
 
@@ -58,7 +58,7 @@ function SoundSourceAnimatorTrack:apply( state, playContext, t )
 	local soundSource = playContext[1]
 	local keyId = playContext[2]
 	local newId = self.idCurve:getValueAtTime( t )
-	if keyId ~= newId then
+	if keyId ~= newId and newId > 0 then
 		local key = self.keys[ newId ]
 		playContext[2] = newId
 		local clip = key.clip

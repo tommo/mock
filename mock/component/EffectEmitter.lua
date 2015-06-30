@@ -66,6 +66,11 @@ function EffectEmitter:setMirrorY( mirror )
 	
 end
 
+function EffectEmitter:restart()
+	self:stop()
+	self:start()
+end
+
 function EffectEmitter:start( waitStart )
 	if self.playing then return end
 	if not self.effectConfig then return end	

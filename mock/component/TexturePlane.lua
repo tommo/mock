@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: TexturePlane ( RenderComponent )
+CLASS: TexturePlane ( GraphicsPropComponent )
 	:MODEL{
 		Field 'texture' :asset('texture;render_target') :getset( 'Texture' );
 		Field 'size'    :type('vec2') :getset('Size');
@@ -59,11 +59,6 @@ function TexturePlane:setSize( w, h )
 	self.prop:forceUpdate()
 end
 
-function TexturePlane:setBlend( b )
-	self.blend = b
-	setPropBlend( self.prop, b )
-end
-
 function TexturePlane:setScissorRect( s )
 	self.prop:setScissorRect( s )
 end
@@ -75,41 +70,10 @@ function TexturePlane:resetSize()
 	end
 end
 
-function TexturePlane:setBillboard( billboard )
-	self.billboard = billboard
-	self.prop:setBillboard( billboard )
-end
-
-function TexturePlane:setDepthMask( enabled )
-	self.depthMask = enabled
-	self.prop:setDepthMask( enabled )
-end
-
-function TexturePlane:setDepthTest( mode )
-	self.depthTest = mode
-	self.prop:setDepthTest( mode )
-end
-
 --------------------------------------------------------------------
 function TexturePlane:inside( x, y, z, pad )
 	local _,_,z1 = self.prop:getWorldLoc()
 	return self.prop:inside( x,y,z1, pad )
-end
-
-
---------------------------------------------------------------------
-local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
-
-function TexturePlane:setShader( shaderPath )
-	self.shader = shaderPath	
-	if shaderPath then
-		local shader = mock.loadAsset( shaderPath )
-		if shader then
-			local moaiShader = shader:getMoaiShader()
-			return self.prop:setShader( moaiShader )
-		end
-	end
-	self.prop:setShader( defaultShader )
 end
 
 --------------------------------------------------------------------

@@ -75,7 +75,7 @@ end
 function ScriptAnimatorTrack:onStateLoad( state )
 	local rootEntity, scene = state:getTargetRoot()
 	local target = self.targetPath:get( rootEntity, scene )
-	local playContext = { target, false }
+	local playContext = { target, 0 }
 	state:addUpdateListenerTrack( self, playContext )
 end
 
@@ -83,7 +83,7 @@ function ScriptAnimatorTrack:apply( state, playContext, t )
 	local target = playContext[1]
 	local keyId = playContext[2]
 	local newId = self.idCurve:getValueAtTime( t )
-	if keyId ~= newId then
+	if keyId ~= newId and newId > 0 then
 		local key = self.keys[ newId ]
 		playContext[2] = newId
 		if key.isCoroutine then

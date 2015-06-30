@@ -226,6 +226,18 @@ function PhysicsBody:_addJoint( j )
 	self.joints[ j ] = true
 end
 
+function PhysicsBody:setPosition( x, y )
+	local body = self.body
+	local angle = body:getAngle()
+	body:setTransform( x, y, angle )
+end
+
+function PhysicsBody:setAngle( dir )
+	local body = self.body
+	local x, y = body:getPosition()
+	body:setTransform( x, y, angle )
+end
+
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',
 	'applyForce',

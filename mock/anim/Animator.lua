@@ -103,8 +103,8 @@ end
 
 function Animator:_loadClip( clip, previewing )
 	self:stop()
-	self:setThrottle( 1 )
 	local state = AnimatorState()
+	state:setThrottle( self.throttle )
 	state.previewing = previewing or false
 	state:loadClip( self, clip )
 	self.activeState = state

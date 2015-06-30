@@ -827,5 +827,21 @@ function Game:collectgarbage( ... )
 	collectgarbage( ... )
 end
 
+function Game:isFullscreenMode()
+	return self.fullscreen
+end
+
+function Game:enterFullscreenMode()
+	if self.fullscreen then return end
+	MOAISim.enterFullscreenMode()
+	self.fullscreen = true
+end
+
+function Game:exitFullscreenMode()
+	if not self.fullscreen then return end
+	MOAISim.exitFullscreenMode()
+	self.fullscreen = false
+end
+
 game = Game()
 

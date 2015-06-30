@@ -25,7 +25,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: MSprite ( RenderComponent )
+CLASS: MSprite ( GraphicsPropComponent )
 	:MODEL {
 		'----';
 		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
@@ -47,8 +47,8 @@ mock.registerEntityWithComponent( 'MSprite', MSprite )
 
 function MSprite:__init()
 	self.prop        = MOAIProp.new()
-	self.animState      = MOAIAnim.new()
-	self.spriteData = false
+	self.animState   = MOAIAnim.new()
+	self.spriteData  = false
 	self.currentClip = false
 	self.playFPS     = 10
 	self.playSpeed   = 1
@@ -58,6 +58,7 @@ function MSprite:__init()
 	self.autoPlayMode= MOAITimer.LOOP 
 	self.flipX = false
 	self.flipY = false
+	
 end
 
 function MSprite:onAttach( entity )
@@ -134,38 +135,6 @@ function MSprite:setupFeatures( featureNames )
 		end
 	end
 end
-
---------------------------------------------------------------------
-local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
-
-function MSprite:setShader( shaderPath )
-	self.shader = shaderPath	
-	if shaderPath then
-		local shader = mock.loadAsset( shaderPath )
-		if shader then
-			local moaiShader = shader:getMoaiShader()
-			return self.prop:setShader( moaiShader )
-		end
-	end
-	self.prop:setShader( defaultShader )
-end
-
-
-function MSprite:setBillboard( billboard )
-	self.billboard = billboard
-	self.prop:setBillboard( billboard )
-end
-
-function MSprite:setDepthMask( enabled )
-	self.depthMask = enabled
-	self.prop:setDepthMask( enabled )
-end
-
-function MSprite:setDepthTest( mode )
-	self.depthTest = mode
-	self.prop:setDepthTest( mode )
-end
-
 
 function MSprite:getSprite()
 	return self.spritePath
@@ -338,18 +307,6 @@ function MSprite:isPlaying()
 	return self.animState:isBusy()
 end
 
-function MSprite:setBlend( b )
-	self.blend = b	
-	setPropBlend( self.prop, b )
-end
-
-function MSprite:setVisible( f )
-	return self.prop:setVisible( f )
-end
-
-function MSprite:isVisible()
-	return self.prop:isVisible()
-end
 
 function MSprite:drawBounds()
 	GIIHelper.setVertexTransform( self.prop )

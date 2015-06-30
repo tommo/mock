@@ -25,7 +25,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: AuroraSprite ( RenderComponent )
+CLASS: AuroraSprite ( GraphicsPropComponent )
 	:MODEL {
 		Field 'sprite' :asset( 'aurora_sprite' ) :getset('Sprite');
 		Field 'default' :string() :selection( 'getClipNames' );
@@ -217,17 +217,4 @@ end
 
 function AuroraSprite:isPlaying()
 	return self.driver:isBusy()
-end
-
-function AuroraSprite:setBlend( b )
-	self.blend = b	
-	setPropBlend( self.prop, b )
-end
-
-function AuroraSprite:setVisible( f )
-	return self.prop:setVisible( f )
-end
-
-function AuroraSprite:isVisible()
-	return self.prop:isVisible()
 end

@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: TiledTextureRect ( RenderComponent )
+CLASS: TiledTextureRect ( GraphicsPropComponent )
 	:MODEL{
 		Field 'shader' :asset( 'shader' ) :no_edit();
 

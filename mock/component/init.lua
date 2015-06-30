@@ -4,6 +4,7 @@ require 'mock.component.Behaviour'
 require 'mock.component.UpdateListener'
 require 'mock.component.IntervalUpdateListener'
 require 'mock.component.RenderComponent'
+require 'mock.component.GraphicsPropComponent'
 require 'mock.component.DeckComponent'
 
 --------------------------------------------------------------------
@@ -67,6 +68,7 @@ require 'mock.component.PhysicsTriggerArea'
 require 'mock.component.AuroraSprite'
 
 require 'mock.component.MSprite'
+require 'mock.component.MSpriteCopy'
 require 'mock.component.MSpriteAnimatorTrack'
 
 require 'mock.component.SpineSpriteBase'

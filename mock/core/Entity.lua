@@ -249,7 +249,10 @@ function Entity:attach( com )
 		_error('attempt to attach component to a dead entity')
 		return com
 	end
-	assert( not self.components[ com ], 'component already attached!!!!'  )
+	if self.components[ com ] then
+		print( self.name, tostring( self.__guid ), com:getClassName() )
+		error( 'component already attached!!!!' )
+	end
 	self.components[ com ] = com:getClass()
 	com._componentID = self._maxComponentID
 	self._maxComponentID = self._maxComponentID + 1

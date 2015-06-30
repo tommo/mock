@@ -35,8 +35,12 @@ function AnimatorState:__init()
 end
 
 function AnimatorState:setThrottle( t )
-	self.throttle = t
+	self.throttle = t or 1
 	self.anim:throttle( t )
+end
+
+function AnimatorState:getThrottle()
+	return self.throttle
 end
 
 function AnimatorState:start()
