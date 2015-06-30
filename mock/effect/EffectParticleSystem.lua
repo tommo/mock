@@ -158,7 +158,7 @@ end
 function EffectNodeParticleSystem:onStop( fxState )
 	local system = fxState[ self ]
 	system:stop()
-	system:setPartition( nil )	
+	fxState:unlinkPartition( system )
 end
 
 --------------------------------------------------------------------

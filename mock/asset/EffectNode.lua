@@ -343,15 +343,15 @@ function EffectState:getEmitter()
 	return self._emitter
 end
 
+function EffectState:linkPartition( prop )
+	inheritPartition( prop, self._emitterProp )
+	return prop
+end
+
 function EffectState:linkTransform( trans )
 	inheritTransform( trans, self._trans )	
 	trans:forceUpdate()
 	return trans
-end
-
-function EffectState:linkPartition( prop )
-	inheritPartition( prop, self._emitterProp )
-	return prop
 end
 
 function EffectState:linkVisible( prop )
@@ -362,6 +362,11 @@ end
 function EffectState:linkColor( prop )
 	inheritColor( prop, self._emitterProp )
 	return prop
+end
+
+function EffectState:unlinkPartition( prop )
+	prop:setPartition( nil )
+	clearPartitionLink( prop )
 end
 
 function EffectState:getTimer()

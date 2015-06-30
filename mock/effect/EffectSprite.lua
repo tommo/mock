@@ -112,6 +112,10 @@ function EffectAuroraSprite:getClipNames()
 	return result
 end
 
+function EffectAuroraSprite:onStop( fxState )
+	local sprite = fxState[ self ]
+	fxState:unlinkPartition( sprite.prop )
+end
 
 --------------------------------------------------------------------
 --Aurora Sprite
@@ -197,6 +201,11 @@ function EffectSpineSprite:getClipNames()
 	return result
 end
 
+
+function EffectSpineSprite:onStop( fxState )
+	local sprite = fxState[ self ]
+	fxState:unlinkPartition( sprite.skeleton )
+end
 --------------------------------------------------------------------
 registerTopEffectNodeType(
 	'sprite-static',

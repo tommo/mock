@@ -201,6 +201,10 @@ function inheritPartition( p1, p2 )
 	p1:setAttrLink ( ATTR_PARTITION, p2, ATTR_PARTITION )
 end
 
+function clearPartitionLink( p1 )
+	p1:clearAttrLink ( ATTR_PARTITION )
+end
+
 function inheritShader( p1, p2 )
 	p1:setAttrLink ( ATTR_SHADER, p2, ATTR_SHADER )
 end
