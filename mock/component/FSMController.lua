@@ -51,6 +51,7 @@ CLASS:  FSMController ( Behaviour )
 	:MODEL{
 		Field 'state'  :string() :readonly() :get('getState');
 		Field 'scheme' :asset('fsm_scheme') :getset('Scheme');
+		Field 'syncEntityState' :boolean();
 	}
 
 -----fsm state method collector
@@ -62,6 +63,7 @@ end
 
 function FSMController:__init()
 	self.msgBox = {}
+	self.syncEntityState = false
 	local msgFilter = false
 	self.msgBoxListener = function( msg, data, source )
 		if msgFilter and msgFilter( msg,data,source ) == false then return end
@@ -90,8 +92,18 @@ function FSMController:onDetach( ent )
 end
 
 function FSMController:getState()
-	local ent = self._entity
-	return ent and ent:getState()
+	return self.state
+end
+
+function FSMController:setState( state )
+	self.state = state
+	if self._entity and self.syncEntityState then
+		self._entity:setState( state )
+	end
+end
+
+function FSMController:getEntityState()
+	return self._entity and self._entity:getState()
 end
 
 function FSMController:clearMsgBox()

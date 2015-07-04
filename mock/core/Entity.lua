@@ -560,7 +560,14 @@ end
 
 function Entity:findEntityCom( entName, comId )
 	local ent = self:findEntity( entName )
-	return ent and ent:com( comId )
+	if ent then ent:com( comId ) end
+	return nil
+end
+
+function Entity:findChildCom( name, comId, deep )
+	local ent = self:findChild( name, deep )
+	if ent then return ent:com( comId ) end
+	return nil
 end
 
 function Entity:findChild( name, deep )
@@ -662,6 +669,7 @@ function Entity:setLayer( layerName )
 	end
 end
 
+--------------------------------------------------------------------
 function Entity:setTags( t )
 	self._tags = t
 end

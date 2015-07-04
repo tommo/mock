@@ -118,8 +118,9 @@ function PhysicsJointDistance:createJoint( bodyA, bodyB )
 	return joint
 end
 
----------------------------------------------------------------------
 
+
+---------------------------------------------------------------------
 CLASS: PhysicsJointFriction ( PhysicsJoint )
 	:MODEL{
 		Field 'target'  :no_edit();

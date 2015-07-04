@@ -29,6 +29,10 @@ function Component:findEntityCom( name, comId )
 	return self._entity:findEntityCom( name, comId )
 end
 
+function Component:findChildCom( name, comId, deep )
+	return self._entity:findChildCom( name, comId, deep )
+end
+
 --------------------------------------------------------------------
 function Component:getComponent( comType )
 	return self._entity:getComponent( comType )
