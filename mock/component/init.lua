@@ -102,3 +102,5 @@ require 'mock.component.CameraImageEffectRadialBlur'
 --------------------------------------------------------------------
 --ETC
 require 'mock.component.BehaviourScript'
+require 'mock.component.ShakeController'
+

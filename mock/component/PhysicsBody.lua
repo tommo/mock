@@ -1,14 +1,22 @@
 module 'mock'
 
+EnumBodyTransformSyncPolicy = _ENUM_V {
+	'use_entity_transform',
+	'use_body_transform',
+	'smart_update',
+}
+
 --------------------------------------------------------------------
 CLASS: PhysicsBody ( mock.Component )
 	:MODEL{
 		Field 'bodyDef'      :asset( 'physics_body_def' ) :getset( 'BodyDef' );
 		'----';
 		Field 'mass'         :getset( 'Mass' );
+		Field 'transformSyncPolicy'   :enum( EnumBodyTransformSyncPolicy );
 		Field 'useEntityTransform'  :boolean();
 		Field 'updateMassFromShape' :boolean();
 		Field 'Calc Mass'    :action('calcMass');
+		Field 'Test Mass'    :action('testMass');
 	}
 
 mock.registerComponent( 'PhysicsBody', PhysicsBody )
@@ -19,13 +27,13 @@ function PhysicsBody:__init()
 	---	
 	self.updateMassFromShape = false
 	self.bodyReady = false
-	self.mass    = 1
-	---	
+
 	self.body   = false
 	self.joints = {}
-	self.mass    = 1
+	self.mass    = 0
 	self.bodyType = 'dynamic'
 	self.useEntityTransform = false
+	self.transformSyncPolicy = 'use_body_transform'
 end
 
 
@@ -69,31 +77,29 @@ function PhysicsBody:getMoaiBody()
 end
 
 function PhysicsBody:onStart( entity )
-	local body = self.body
-
-	-- break body<-prop position link 
-	body:clearAttrLink( MOAIProp.ATTR_X_LOC )
-	body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
-	body:clearAttrLink( MOAIProp.ATTR_Z_LOC )
-	body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
+	
 	-- update position sync based on body type and settings
-	self:updatePositionSyncPolicy( entity )
-
+	self:updateTransformSyncPolicy( entity )
 	self:updateMass()
 end
 
-function PhysicsBody:updatePositionSyncPolicy( entity )
+function PhysicsBody:updateTransformSyncPolicy( entity )
 	local prop = entity:getProp( 'physics' )
 	local body = self.body
-
-	if self:getType() ~= 'static' and (not self.useEntityTransform) then
+	local policy = self.transformSyncPolicy
+	if policy == 'use_body_transform' then
+		-- break body<-prop position link 
+		body:clearAttrLink( MOAIProp.ATTR_X_LOC )
+		body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
+		body:clearAttrLink( MOAIProp.ATTR_Z_LOC )
+		body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
 		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT )
-	else
-		prop:clearAttrLink( MOCKProp.SYNC_WORLD_LOC_2D )
-		-- compensate for the last update
+
+	elseif policy == 'use_entity_transform'	then
 		prop:setWorldLoc(body:getPosition())
 
 	end
+
 end
 
 function PhysicsBody:onDetach( entity )
@@ -166,8 +172,8 @@ function PhysicsBody:setType( bodyType )
 	self.bodyType = bodyType
 
 	-- re-setting the mass after changing body type
-	self:updatePositionSyncPolicy( self._entity )
-	self:setMass(self.mass)
+	self:updateTransformSyncPolicy( self._entity )
+	self:updateMass()
 end
 
 function PhysicsBody:getType()
@@ -197,6 +203,10 @@ function PhysicsBody:updateMass()
 	else
 		self.body:setMassData( self.mass )
 	end
+end
+
+function PhysicsBody:testMass()
+	print( self.mass )
 end
 
 function PhysicsBody:calcMass()
