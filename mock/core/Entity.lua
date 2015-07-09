@@ -560,7 +560,7 @@ end
 
 function Entity:findEntityCom( entName, comId )
 	local ent = self:findEntity( entName )
-	if ent then ent:com( comId ) end
+	if ent then return ent:com( comId ) end
 	return nil
 end
 
@@ -639,10 +639,16 @@ end
 function Entity:getFullName()
 	if not self.name then return false end
 	local output = self.name
-	local n = self.parent
+	local n0 = self
+	local n = n0.parent
 	while n do
 		output = (n.name or '<noname>')..'/'..output
-		n = n.parent
+		n0 = n
+		n = n0.parent
+	end
+	if n0._entityGroup then
+		local groupName = n0._entityGroup:getFullName()
+		return groupName..'::'..output
 	end
 	return output
 end
@@ -928,6 +934,16 @@ function Entity:callLater( time, func, ... )
 	timer:setSpan( time )
 	return timer
 end
+
+local NewMOAIAction = MOAIAction.new
+local EVENT_START = MOAIAction.EVENT_START
+local EVENT_STOP  = MOAIAction.EVENT_STOP
+function Entity:callAsAction( func )
+	local action = NewMOAIAction()
+	action:setListener( EVENT_STOP, func )
+	return action
+end
+
 
 --------------------------------------------------------------------
 --Color

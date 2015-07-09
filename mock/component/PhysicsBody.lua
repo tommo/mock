@@ -13,7 +13,6 @@ CLASS: PhysicsBody ( mock.Component )
 		'----';
 		Field 'mass'         :getset( 'Mass' );
 		Field 'transformSyncPolicy'   :enum( EnumBodyTransformSyncPolicy );
-		Field 'useEntityTransform'  :boolean();
 		Field 'updateMassFromShape' :boolean();
 		Field 'Calc Mass'    :action('calcMass');
 		Field 'Test Mass'    :action('testMass');
@@ -96,7 +95,7 @@ function PhysicsBody:updateTransformSyncPolicy( entity )
 		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT )
 
 	elseif policy == 'use_entity_transform'	then
-		prop:setWorldLoc(body:getPosition())
+		-- prop:setWorldLoc(body:getPosition())
 
 	end
 
@@ -161,8 +160,8 @@ function PhysicsBody:applyBodyDef( def )
 	body:setSleepingAllowed ( def.allowSleep )
 	body:setBullet          ( def.isBullet )
 	body:setGravityScale    ( def.gravityScale )
-	body:setGravityScale    ( def.linearDamping )
-	body:setGravityScale    ( def.angularDamping )
+	body:setLinearDamping   ( def.linearDamping )
+	body:setAngularDamping ( def.angularDamping )
 end
 
 ----
@@ -285,42 +284,48 @@ _wrapMethods( PhysicsBody, 'body', {
 -- Dynamically add post physics update functionality for one class which
 -- typically has physics components attached on and requires positional
 -- changes during the collision handler.
+
 function installPhysicsPostUpdate(klass)
 
-	klass['physicsPostThread'] = function(self)
-		while true do
-			self:onPostPhysicsUpdate()
-			coroutine.yield()
-		end
-	end
+	-- klass['physicsPostThread'] = function(self)
+	-- 	while true do
+	-- 		self:onPostPhysicsUpdate()
+	-- 		coroutine.yield()
+	-- 	end
+	-- end
 
-	-- This could be merged into physicsPostThread() but leave it here for
-	-- possible future updates
-	klass['onPostPhysicsUpdate'] = function(self)
-		if self.callingQueue then 
-			for i,func in ipairs(self.callingQueue) do
-				func()
-			end
-			-- all done, clear queue
-			self.callingQueue = {}
-		end
-	end
+	-- -- This could be merged into physicsPostThread() but leave it here for
+	-- -- possible future updates
+	-- klass['onPostPhysicsUpdate'] = function(self)
+	-- 	if self.callingQueue then 
+	-- 		for i,func in ipairs(self.callingQueue) do
+	-- 			func()
+	-- 		end
+	-- 		-- all done, clear queue
+	-- 		self.callingQueue = {}
+	-- 	end
+	-- end
 
 	-- Called by user
 	klass['addPostPhysicsCallback'] = function(self, func)
-		if self.callingQueue then
-			table.insert(self.callingQueue, func)
-		else
-			self.callingQueue = {func}
-		end
+		-- if self.callingQueue then
+		-- 	table.insert(self.callingQueue, func)
+		-- else
+		-- 	self.callingQueue = {func}
+		-- end
+		local ent = self:getEntity()
+		local action = ent:callAsAction( func )
+		ent:setActionPriority( action, 8 )
 
 	end
 
-	local originalOnStart = klass['onStart']
-	klass['onStart'] = function(self, ...)
-		originalOnStart(self, ...)
-		-- add busy update for onPhysicsPostUpdate
-		local coro = self:addCoroutine( 'physicsPostThread' )
-		self:setActionPriority(coro, 8)
-	end
+	-- local originalOnStart = klass['onStart']
+	-- klass['onStart'] = function(self, ...)
+	-- 	originalOnStart(self, ...)
+	-- 	-- add busy update for onPhysicsPostUpdate
+	-- 	local coro = self:addCoroutine( 'physicsPostThread' )
+	-- 	self:setActionPriority(coro, 8)
+	-- end
+
+	updateAllSubClasses( klass )	
 end

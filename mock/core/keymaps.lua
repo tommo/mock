@@ -187,6 +187,10 @@ local keymap_GLUT={
 	-- ['home']=	106 ;
 	-- ['end']=	107 ;
 	-- ['insert']=	108 ;
+	['lctrl']  = 224;
+	['lshift'] = 225;
+	['lalt']   = 226;
+	['lcmd']   = 227;
 
 }
 

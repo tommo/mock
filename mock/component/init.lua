@@ -9,6 +9,7 @@ require 'mock.component.DeckComponent'
 
 --------------------------------------------------------------------
 ---- Prefab
+require 'mock.component.ProtoSpawner'
 require 'mock.component.PrefabSpawner'
 
 --------------------------------------------------------------------

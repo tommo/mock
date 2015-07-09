@@ -161,5 +161,10 @@ function AnimatorState:getTrackTarget( track )
 	return self.trackTargets[ track ]
 end
 
+function AnimatorState:setListener( evId, func )
+	self.anim:setListener( evId, func )
+end
+
+
 -- function AnimatorState:addEventKey( track )
 -- end

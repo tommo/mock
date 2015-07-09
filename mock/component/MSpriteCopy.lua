@@ -3,6 +3,9 @@ module 'mock'
 CLASS: MSpriteCopy ( mock.GraphicsPropComponent )
 	:MODEL{
 		Field 'sourceSprite' :type( MSprite ) :set( 'setSourceSprite');
+		-- Field 'copyScl'      :boolean();
+		-- Field 'copyRot'      :boolean();
+		-- Field 'copyLoc'      :boolean();
 		-- Field 'flipX' :boolean() :onset( 'updateFlip' );
 		-- Field 'flipY' :boolean() :onset( 'updateFlip' );
 	}
@@ -25,6 +28,7 @@ function MSpriteCopy:setSourceSprite( sprite )
 	if not sprite then return end
 	self.prop:setDeck( sprite.deckInstance )
 	self.prop:setAttrLink( MOAIProp.ATTR_INDEX, sprite.prop, MOAIProp.ATTR_INDEX )
+	linkTransform( self.prop, sprite.prop )
 end
 
 -- function MSpriteCopy:updateFlip()

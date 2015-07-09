@@ -843,5 +843,13 @@ function Game:exitFullscreenMode()
 	self.fullscreen = false
 end
 
+function Game:hideCursor()
+	MOAISim.hideCursor()
+end
+
+function Game:showCursor()
+	MOAISim.showCursor()
+end
+
 game = Game()
 

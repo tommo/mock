@@ -32,6 +32,7 @@ function EntityGroup:setName( name )
 	self.name = name
 end
 
+
 function EntityGroup:isVisible()
 	return self._prop:getAttr( MOAIProp.ATTR_VISIBLE ) == 1
 end
@@ -47,6 +48,17 @@ end
 
 function EntityGroup:getName()
 	return self.name
+end
+
+function EntityGroup:getFullName()
+	if not self.name then return false end
+	local output = self.name
+	local n = self.parent
+	while n do
+		output = (n.name or '<noname>')..'/'..output
+		n = n.parent
+	end
+	return output
 end
 
 function EntityGroup:getIcon()

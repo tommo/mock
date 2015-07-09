@@ -29,6 +29,7 @@ local function initFmodDesigner()
 			["dopplerScale"]               =  0 ;
 		}
 
+	MOAIFmodEventMgr.setNear2DBlend( 100, 300, 1 )
 	if not MOAIFmodEventMgrReady then
 		--TODO:LOG alert?
 		_error('Fmod not initialized...')

@@ -49,6 +49,10 @@ function PhysicsShape:findBody()
 	return body
 end
 
+function PhysicsShape:getBody()
+	return self.parentBody
+end
+
 function PhysicsShape:isSensor()
 	if self.material then
 		return self.material.isSensor
