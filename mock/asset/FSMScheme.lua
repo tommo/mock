@@ -112,7 +112,6 @@ local function buildFSMScheme( scheme )
 			if enter then --entering new state
 				enter( self, name, transMsg, transMsgArg )
 			end
-
 			--activate and enter new state handler
 			local nextFunc = nextStateBody.func
 			self.currentStateFunc = nextFunc

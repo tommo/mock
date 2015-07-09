@@ -62,6 +62,7 @@ function FSMController:__initclass( subclass )
 end
 
 function FSMController:__init()
+	self.stateElapsedTime = 0
 	self.msgBox = {}
 	self.syncEntityState = false
 	local msgFilter = false
@@ -97,6 +98,7 @@ end
 
 function FSMController:setState( state )
 	self.state = state
+	self.stateElapsedTime = 0
 	if self._entity and self.syncEntityState then
 		self._entity:setState( state )
 	end
@@ -164,9 +166,14 @@ end
 function FSMController:onThreadFSMUpdate()
 	local dt = 0
 	while true do
+		self.stateElapsedTime = self.stateElapsedTime + dt
 		self:updateFSM( dt )
 		dt = coroutine.yield()
 	end
+end
+
+function FSMController:getStateElapsedTime()
+	return self.stateElapsedTime
 end
 
 registerComponent( 'FSMController', FSMController )
