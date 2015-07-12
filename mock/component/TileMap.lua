@@ -76,7 +76,7 @@ CLASS: TileMapLayer ()
 	:MODEL{
 		Field 'name'    :string();
 		Field 'tag'     :string();
-		Field 'tilesetPath' :asset( 'tileset' );
+		Field 'tilesetPath' :asset( 'deck2d.tileset' );
 		Field 'visible' :boolean();
 	}
 
@@ -113,8 +113,9 @@ function TileMapLayer:worldToModel( x, y )
 end
 
 function TileMapLayer:onInit()
-	local grid = self:getGrid()
-	grid:setSize( self.width, self.height, self.tileWidth, self.tileHeight )
+	self.mapGrid = TileMapGrid()
+	self.mapGrid:setTileSize( self.tileset )
+	self.mapGrid:setSize( self.width, self.height, self.tileWidth, self.tileHeight )
 end
 
 function TileMapLayer:resize( w, h )
@@ -350,8 +351,8 @@ CLASS: TileMap ( RenderComponent )
 		Field 'resize'   :action( 'toolActionResize' );
 }
 
-registerComponent( 'TileMap', TileMap )
-registerEntityWithComponent( 'TileMap', TileMap )
+-- registerComponent( 'TileMap', TileMap )
+-- registerEntityWithComponent( 'TileMap', TileMap )
 
 --TODO: API
 function TileMap:__init()
@@ -434,7 +435,7 @@ end
 function TileMap:createLayerByTileset( tilesetPath )
 	local tileset, anode = mock.loadAsset( tilesetPath )
 	local atype = anode:getType()
-	if atype == 'tileset' then
+	if atype == 'deck2d.tileset' then
 		return TileMapLayer()
 	elseif atype == 'named_tileset' then
 		return NamedTileMapLayer()

@@ -13,6 +13,7 @@ end
 
 function StoryManager:init()
 	--TEST:
+	if not hasAsset( 'story/basic.story' ) then return end
 	local context = self:createContext()
 	context:setActive()
 	context:setStoryPath( 'story/basic.story' )
