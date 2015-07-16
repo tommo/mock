@@ -325,7 +325,8 @@ function SceneSerializer:serializeScene( scene, keepProto )
 
 	self:postSerialize( scene, output, objMap, keepProto )
 	emitSignal( 'scene.post_serialize', scene, output, objMap, keepProto )
-	
+	output.config = scene:serializeConfig()
+
 	output.__VERSION = _SERIALIZER_VERSION
 	return output
 end
@@ -542,6 +543,9 @@ function SceneDeserializer:deserializeScene( data, scene )
 
 	self:postDeserializeScene( scene, data, objMap )
 	emitSignal( 'scene.post_deserialize', scene, data, objMap )
+
+	local configData = data['config'] or {}
+	scene:deserializeConfig( configData )
 	return scene
 end
 

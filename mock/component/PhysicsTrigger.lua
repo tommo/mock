@@ -7,14 +7,14 @@ local function _triggerCollisionHandler( phase, fixA, fixB, arb )
 	local ownerB = bodyB.component
 	if phase == MOAIBox2DArbiter.BEGIN then
 		if ownerA.onCollisionEnter then
-			ownerA:onCollisionEnter( ownerB )
+			ownerA:onCollisionEnter( ownerB, fixA, fixB )
 		end
 		-- if ownerB.onCollisionEnter then
 		-- 	ownerB:onCollisionEnter( ownerA )
 		-- end
 	else
 		if ownerA.onCollisionExit then
-			ownerA:onCollisionExit( ownerB )
+			ownerA:onCollisionExit( ownerB, fixA, fixB )
 		end
 		-- if ownerB.onCollisionExit then
 		-- 	ownerB:onCollisionExit( ownerA )

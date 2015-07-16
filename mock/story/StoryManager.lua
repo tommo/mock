@@ -1,7 +1,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: StoryManager ()
+CLASS: StoryManager ( GlobalManager )
 	:MODEL{}
 
 
@@ -11,7 +11,11 @@ function StoryManager:__init()
 	self.activeContext = false
 end
 
-function StoryManager:init()
+function StoryManager:getKey()
+	return 'StoryManager'
+end
+
+function StoryManager:onInit( game )
 	--TEST:
 	if not hasAsset( 'story/basic.story' ) then return end
 	local context = self:createContext()
@@ -20,7 +24,7 @@ function StoryManager:init()
 	context:start()
 end
 
-function StoryManager:update()
+function StoryManager:onUpdate( game, dt )
 	for _, context in ipairs( self.contexts ) do
 		context:tryUpdate()
 	end
@@ -83,18 +87,9 @@ function StoryManager:sendSceneEvent( sceneId, event ) --scene, enter/exit
 	end
 end
 
-----
 --------------------------------------------------------------------
 local storyManager = StoryManager()
 function getStoryManager()
 	return storyManager
 end
 
-
-connectGlobalSignalFunc( 'game.init', function()
-	storyManager:init()
-end )
-
-connectGlobalSignalFunc( 'game.update', function()
-	storyManager:update()
-end )

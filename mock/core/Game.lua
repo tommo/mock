@@ -120,6 +120,7 @@ function Game:__init()
 	self.editorMode = false
 	self.scenes        = {}
 	self.layers        = {}
+	self.configObjects = {}
 	self.gfx           = { w = 640, h = 480, viewportRect = {0,0,640,480} }
 	self.time          = 0
 	self.frame 				 = 0
@@ -304,6 +305,10 @@ function Game:init( option, fromEditor )
 	
 	----ask other systems to initialize
 	emitSignal( 'game.init', option )
+	self.globalManagers = getGlobalManagerRegistry()
+	for i, manager in ipairs( self.globalManagers ) do
+		manager:onInit( self )
+	end
 
 	----load scenes
 	if option['scenes'] then
@@ -603,6 +608,9 @@ function Game:onRootUpdate( delta )
 	self.time = self.time + delta
 	self.frame = self.frame + 1
 	emitSignal( 'game.update', delta )
+	for i, manager in ipairs( self.globalManagers ) do
+		manager:onUpdate( self, delta )
+	end
 	if self.pendingLoading then
 		local loadingParams = self.pendingLoading
 		self.pendingLoading = false

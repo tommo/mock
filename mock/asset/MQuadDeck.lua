@@ -23,6 +23,10 @@ function MQuadDeck:createMoaiDeck()
 	return mesh
 end
 
+function MQuadDeck:getSize()
+	return self.w, self.h, self.depth
+end
+
 function MQuadDeck:update()
 	local mesh = self:getMoaiDeck()
 
@@ -50,7 +54,9 @@ function MQuadDeck:update()
 	mesh:setTotalElements ( count )
 	local u = {vbo:computeBounds ( mquadVertexFormat ) }
 	if u[1] then
-		mesh:setBounds ( unpack(u) )
+		local x0,y0,z0, x1,y1,z1 = unpack(u)
+		mesh:setBounds ( x0,y0,z0, x1,y1,z1 )
+		self.w, self.h, self.depth = x1 - x0, y1 - y0 , z1 - z0
 	end
 	mesh:setTile( 1, 0, count )
 

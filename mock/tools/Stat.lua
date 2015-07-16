@@ -8,6 +8,8 @@ function Stat:__init( data )
 	self.changeListeners = {}
 	self.changeSignals   = {}
 	self.globalChangeSignal = false
+	self.globalChangeListenerList = {}
+	self.changeListeners[ '*' ] = self.globalChangeListenerList
 	if data then self:update( data ) end
 end
 
@@ -48,6 +50,11 @@ function Stat:set( n, v )
 	local v0 = values[n]
 	if v0 == v then return end
 	values[n]	= v
+
+	for func in pairs( self.globalChangeListenerList ) do
+		func( n, v, v0 )
+	end
+
 	local changeListenerList = self.changeListeners[ n ]
 	if changeListenerList then
 		for func in pairs( changeListenerList ) do

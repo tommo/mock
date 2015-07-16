@@ -144,6 +144,18 @@ function clearLinkPiv( p1 )
 	p1:clearAttrLink( MOAIProp.ATTR_Z_PIV )
 end
 
+function clearLinkColor( p1 )
+	p1:clearAttrLink( ATTR_R_COL )
+	p1:clearAttrLink( ATTR_G_COL )
+	p1:clearAttrLink( ATTR_B_COL )
+	p1:clearAttrLink( ATTR_A_COL )
+	p1:clearAttrLink( COLOR_TRAIT )
+	p1:clearAttrLink( INHERIT_COLOR )
+end
+
+function clearInheritColor( p1 )
+	p1:clearAttrLink( INHERIT_COLOR )
+end
 
 function linkTransform( p1, p2 )
 	linkLoc( p1, p2 )

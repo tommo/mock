@@ -283,7 +283,7 @@ function Entity:attachList( l )
 	end
 end
 
-function Entity:detach( com, fromAll )
+function Entity:detach( com, reason, _skipDisconnection )
 	local components = self.components
 	if not components[ com ] then return end
 	components[ com ] = nil
@@ -293,21 +293,21 @@ function Entity:detach( com, fromAll )
 			entityListener( 'detach', self, com )
 		end
 		local onDetach = com.onDetach
-		if not fromAll then
+		if not _skipDisconnection then
 			self:disconnectAllForObject( com )
 		end
-		if onDetach then onDetach( com, self ) end
+		if onDetach then onDetach( com, self, reason ) end
 	end
 	com._entity = nil
 	return com
 end
 
-function Entity:detachAll()
+function Entity:detachAll( reason )
 	local components = self.components
 	while true do
 		local com = next( components )
 		if not com then break end
-		self:detach( com, true )
+		self:detach( com, reason, true )
 	end
 end
 
@@ -646,7 +646,7 @@ function Entity:getFullName()
 		n0 = n
 		n = n0.parent
 	end
-	if n0._entityGroup then
+	if n0._entityGroup and not n0._entityGroup.isRoot then
 		local groupName = n0._entityGroup:getFullName()
 		return groupName..'::'..output
 	end

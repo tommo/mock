@@ -54,7 +54,7 @@ function EntityGroup:getFullName()
 	if not self.name then return false end
 	local output = self.name
 	local n = self.parent
-	while n do
+	while n and not n.isRoot do
 		output = (n.name or '<noname>')..'/'..output
 		n = n.parent
 	end

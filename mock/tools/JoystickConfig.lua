@@ -12,6 +12,16 @@ function JoystickConfig:__init( data )
 	end
 	self.buttonIdToName = buttonIdToName
 	self.buttonNameToId = buttonNameToId
+
+	local axisIdToName = {}
+	local axisNameToId = {}
+	for name, id in pairs( data.axises or {} ) do
+		axisIdToName[ id ] = name
+		axisNameToId[ name ] = id
+	end
+	self.axisIdToName = axisIdToName
+	self.axisNameToId = axisNameToId
+
 end
 
 function JoystickConfig:getBtnName( id )
@@ -22,8 +32,22 @@ function JoystickConfig:getBtnId( name )
 	return self.buttonNameToId[ name ] or nil
 end
 
+function JoystickConfig:getAxisName( id )
+	return self.axisIdToName[ id ] or nil
+end
+
+function JoystickConfig:getAxisId( name )
+	return self.axisNameToId[ name ] or nil
+end
+
 --------------------------------------------------------------------
 JoystickConfigPS3 = JoystickConfig {
+	axises  = {
+		['L.x'   ]   = 1   ;
+		['L.y'   ]   = 2   ;
+		['R.x'   ]   = 3   ;
+		['R.y'   ]   = 4   ;
+	};
 	buttons = {
 		['select']   = 0   ;
 		['L3'    ]   = 1   ;
@@ -41,5 +65,35 @@ JoystickConfigPS3 = JoystickConfig {
 		['R1'    ]   = 11  ;
 		['L2'    ]   = 8   ;
 		['R2'    ]   = 9   ;
+	}
+}
+
+
+--------------------------------------------------------------------
+JoystickConfigXBox360 = JoystickConfig {
+	axises  = {
+		['L.x'   ] = 1  ;
+		['L.y'   ] = 2  ;
+		['R.x'   ] = 3  ;
+		['R.y'   ] = 4  ;
+		['LT'    ] = 5  ;
+		['RT'    ] = 6  ;
+	};
+	buttons = {
+		['up'    ] = 11 ;
+		['right' ] = 14 ;
+		['down'  ] = 12 ;
+		['left'  ] = 13 ;
+		['x'     ] = 2  ;
+		['y'     ] = 3  ;
+		['a'     ] = 0  ;
+		['b'     ] = 1  ;
+		['L1'    ] = 4  ;
+		['R1'    ] = 5  ;
+		['L3'    ] = 6  ;
+		['R3'    ] = 7  ;
+		['back'  ] = 9  ;
+		['start' ] = 8  ;
+		['xbox'  ] = 10 ;
 	}
 }

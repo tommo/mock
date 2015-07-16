@@ -7,14 +7,13 @@ module 'mock'
 CLASS: 
 	Scene ()
 	:MODEL{
-		
+		Field 'EntityCount' :int() :readonly() :get( 'getEntityCount' );
+		Field 'comment' :string() :widget( 'textbox' );
 	}
-
 
 function Scene:__init( option )
 	self.active = false
 	self.__editor_scene = false
-
 	self.running = false
 	self.arguments       = false
 	self.layers          = {}
@@ -43,10 +42,22 @@ function Scene:__init( option )
 	self.config          = {}
 
 	self.rootGroup       = EntityGroup()
+	self.rootGroup.isRoot = true
 	self.rootGroup.scene = self
+
+	self.managers  = {}
+	self.comment   = ""
+
 	return self
 end
 
+function Scene:getConfig( key )
+	return self.config[ key ]
+end
+
+function Scene:isEditorScene()
+	return self.__editor_scene
+end
 
 --------------------------------------------------------------------
 --COMMON
@@ -59,6 +70,7 @@ function Scene:init()
 
 	-- self.mainLayer = self:addLayer( 'main' )
 	self:initLayers()
+	self:initManagers()
 
 	if self.onLoad then self:onLoad() end
 
@@ -119,12 +131,84 @@ function Scene:initLayers()
 	self.layersByName = layersByName
 end
 
+function Scene:initManagers()
+	self.managers = {}
+	local registry = getSceneManagerFactoryRegistry()
+	local isEditorScene = self:isEditorScene()
+	for i, entry in ipairs( registry ) do
+		local key = entry[ 1 ]
+		local fac = entry[ 2 ]
+		if not isEditorScene or fac:acceptEditorScene() then
+			local manager = fac:create( self )
+			if manager then
+				manager._factory = fac
+				manager._key = fac:getKey()
+				manager:init( self )
+				table.insert( self.managers, manager )
+			end
+		end
+	end
+end
+
 function Scene:getActionRoot()
 	return game:getActionRoot()
 end
 
 function Scene:getTime()
 	return game:getTime()
+end
+
+function Scene:getManager( key )
+	for i, manager in pairs( self.managers ) do
+		if manager:getKey() == key then
+			return manager
+		end
+	end
+	return nil
+end
+
+function Scene:getManagers()
+	return self.managers
+end
+
+function Scene:serializeConfig()
+	local output = {}
+	--common
+	local commonData = {
+		['comment'] = self.comment
+	}
+	output[ 'common' ] = commonData
+	
+	--managers
+	local managerConfigData = {}
+	for i, mgr in ipairs( self:getManagers() ) do
+		local key = mgr:getKey()
+		local data = mgr:serialize()
+		if data then
+			managerConfigData[ key ] = data
+		end
+	end
+	output[ 'managers' ] = managerConfigData
+	return output
+end
+
+function Scene:deserializeConfig( data )
+	--common
+	local commonConfigData = data[ 'common' ]
+	if commonConfigData then
+		self.comment = commonConfigData[ 'comment' ]
+	end
+
+	--managers
+	local managerConfigData = data[ 'managers' ]
+	if managerConfigData then
+		for key, data in pairs( managerConfigData ) do
+			local mgr = self:getManager( key )
+			if mgr then
+				mgr:deserialize( data )
+			end
+		end
+	end
 end
 
 function Scene:flushPendingStart()
@@ -446,6 +530,7 @@ function Scene:clear( keepEditorEntity )
 
 	self.rootGroup       = EntityGroup()
 	self.rootGroup.scene = self
+	self.rootGroup.isRoot = true
 
 	self.defaultCamera   = false
 	self.entityListener = entityListener
@@ -510,4 +595,9 @@ end
 
 function Scene:pauseBox2DWorld( paused )
 	self.b2world:pause( paused )
+end
+
+
+function Scene:getEntityCount()
+	return table.len( self.entities )
 end

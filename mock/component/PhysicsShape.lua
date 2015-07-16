@@ -31,6 +31,10 @@ function PhysicsShape:getTag()
 	return self.tag
 end
 
+function PhysicsShape:setTag( tag )
+	self.tag = tag
+end
+
 function PhysicsShape:setLoc( x,y )
 	self.loc = { x or 0, y or 0 }
 	self:updateShape()
