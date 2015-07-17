@@ -42,7 +42,7 @@ function ProtoSpawner:onStart( ent )
 	end
 end
 
-function ProtoSpawner:spawn()
+function ProtoSpawner:spawnOne( ox, oy, oz )
 	local ent = self._entity
 	local instance
 	if self.proto then
@@ -51,25 +51,46 @@ function ProtoSpawner:spawn()
 			instance:setName( self.spawnName )
 			local spawnMethod = self.spawnMethod
 			if spawnMethod == 'child' then
-				ent:addChild( instance )
 				if self.copyLoc then	instance:setLoc( 0,0,0 )	end
 				if self.copyRot then	instance:setRot( 0,0,0 )	end
 				if self.copyScl then	instance:setScl( 1,1,1 )	end
+				if ox then
+					instance:addLoc( ox, oy, oz )
+				end
+				ent:addChild( instance )
 			elseif spawnMethod == 'sibling' then
-				ent:addSibling( instance )
 				if self.copyLoc then	instance:setLoc( ent:getLoc() ) end
 				if self.copyRot then	instance:setRot( ent:getRot() ) end
 				if self.copyScl then	instance:setScl( ent:getScl() ) end
+				if ox then
+					instance:addLoc( ox, oy, oz )
+				end
+				ent:addSibling( instance )
 			elseif spawnMethod == 'root' then
-				ent:getScene():addEntity( instance )				
 				if self.copyLoc then	instance:setLoc( ent:getWorldLoc() ) end
 				if self.copyRot then	instance:setRot( ent:getRot() ) end
 				if self.copyScl then	instance:setScl( ent:getScl() ) end
+				if ox then
+					instance:addLoc( ox, oy, oz )
+				end
+				ent:getScene():addEntity( instance )				
 			end
 		end
 	end
+	return instance
+end
+
+function ProtoSpawner:spawn()
+	self:onSpawn()
+	self:postSpawn()
+end
+
+function ProtoSpawner:onSpawn()
+	return self:spawnOne()
+end
+
+function ProtoSpawner:postSpawn()
 	if self.destroyOnSpawn then
 		ent:destroy()
 	end
-	return instance
 end
