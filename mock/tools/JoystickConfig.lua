@@ -72,12 +72,12 @@ JoystickConfigPS3 = JoystickConfig {
 --------------------------------------------------------------------
 JoystickConfigXBox360 = JoystickConfig {
 	axises  = {
-		['L.x'   ] = 1  ;
-		['L.y'   ] = 2  ;
-		['R.x'   ] = 3  ;
+		['L.x'   ] = 0  ;
+		['L.y'   ] = 1  ;
+		['R.x'   ] = 5  ;
 		['R.y'   ] = 4  ;
-		['LT'    ] = 5  ;
-		['RT'    ] = 6  ;
+		['LT'    ] = 2  ;
+		['RT'    ] = 3  ;
 	};
 	buttons = {
 		['up'    ] = 11 ;

@@ -7,7 +7,7 @@ local INHERIT_VISIBLE   = MOAIProp. INHERIT_VISIBLE
 CLASS: EntityGroup ()
 	:MODEL{
 		-- Field '__guid': string() :no_edit();
-
+		Field '_editLocked' :boolean() :no_edit();
 		Field 'name': string() :getset( 'Name' ) ;
 		Field 'visible' :boolean() :get( 'isLocalVisible' ) :set( 'setVisible');
 	}
@@ -16,6 +16,7 @@ function EntityGroup:__init()
 	-- self.__guid = false
 	self._prop = MOAIProp.new() --only control visiblity
 	self._priority = 0
+	self._editLocked = false
 	self.scene  = false
 	self.parent = false
 	self.childGroups = {}
@@ -42,7 +43,22 @@ function EntityGroup:isLocalVisible()
 	return vis == 1
 end
 
+function EntityGroup:isLocalEditLocked()
+	return self._editLocked
+end
+
+function EntityGroup:setEditLocked( locked )
+	self._editLocked = locked
+end
+
+function EntityGroup:isEditLocked()
+	if self._editLocked then return true end
+	if self.parent then return self.parent:isEditLocked() end
+	return false
+end
+
 function EntityGroup:setVisible( visible )
+	print( "setting group visiblity" )
 	self._prop:setVisible( visible )
 end
 
@@ -66,7 +82,7 @@ function EntityGroup:getIcon()
 end
 
 function EntityGroup:addEntity( e )
-	e:getProp( 'render' ):setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
+	e:getProp( 'physics' ):setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
 	e._entityGroup = self
 	self.entities[ e ] = true
 	assert( not e.parent )
@@ -74,7 +90,7 @@ function EntityGroup:addEntity( e )
 end
 
 function EntityGroup:removeEntity( e )
-	e:getProp( 'render' ):clearAttrLink( INHERIT_VISIBLE )
+	e:getProp( 'physics' ):clearAttrLink( INHERIT_VISIBLE )
 	e._entityGroup = false
 	self.entities[ e ] = nil
 end

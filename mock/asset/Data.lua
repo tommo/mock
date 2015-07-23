@@ -5,5 +5,12 @@ local function JSONDataLoader( node )
 	return loadJSONFile( path, true )
 end
 
+local function DataSheetLoader( node )
+	local data = loadAsset( node.parent )
+	local name = node:getName()
+	return data[ name ]
+end
+
 registerAssetLoader( 'data_json',  JSONDataLoader )
 registerAssetLoader( 'data_xls',   JSONDataLoader )
+registerAssetLoader( 'data_sheet',  DataSheetLoader )

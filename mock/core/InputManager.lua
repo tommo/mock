@@ -487,36 +487,28 @@ end
 function InputDevice:initJoystickEventHandler()
 	--create listener for each set of joystick sensors( button + axis )
 	for joyId = 1, maxJoystickCount do
-
+		local joystickName = 'joystick-'..joyId
+		local joystickExSensor = self:getSensor( joystickName )
 		local joyName = 'joy-'..joyId
-		
-		--buttons
-		local buttonSensorName = joyName..'.button'
-		local joyButtonSensor = self:getSensor( buttonSensorName )
-		if joyButtonSensor then
-			-- print( 'foundJoyButtonSensor', buttonSensorName )
-			local function onJoyButtonEvent( key, down )
+		if joystickExSensor then
+			local function onJoystickButtonEvent( button, down )
 				if not self.enabled then return end
 				if down then
-					return self:sendJoystickEvent( 'down', joyId, key )
+					return self:sendJoystickEvent( 'down', joyId, button )
 				else
-					return self:sendJoystickEvent( 'up', joyId, key )
+					return self:sendJoystickEvent( 'up', joyId, button )
 				end
 			end
-			joyButtonSensor:setCallback( onJoyButtonEvent )
-		end
-		
-		--axis
-		for axisId = 1, maxJoystickAxisCount do
-			local axisSensorName = joyName .. '.axis-'..axisId
-			local joyAxisSensor = self:getSensor( axisSensorName )
-			if joyAxisSensor then
-				local function onJoyAxisEvent( value )
-					if not self.enabled then return end
-					return self:sendJoystickEvent( 'axis', joyId, nil, axisId, value )
-				end
-				joyAxisSensor:setCallback( onJoyAxisEvent )
+			joystickExSensor:setButtonCallback( onJoystickButtonEvent )
+
+			local function onJoystickAxisEvent( axis, value )
+				if not self.enabled then return end
+				return self:sendJoystickEvent( 'axis', joyId, nil, axis, value )
 			end
+			joystickExSensor:setAxisCallback( onJoystickAxisEvent )
+
+		else
+			_warn( 'no joystick sensor registered' )
 		end
 
 	end

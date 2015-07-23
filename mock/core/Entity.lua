@@ -12,6 +12,8 @@ CLASS: Entity ( Actor )
 	:MODEL{
 		Field '__prefabId':string() :no_edit();
 		Field '_priority' :int() :no_edit()  :set('setPriority');
+		Field '_editLocked' :boolean() :no_edit();
+		
 		----
 		Field 'name'      :string()  :getset('Name');
 		'----';
@@ -68,7 +70,8 @@ function Entity:__init()
 	self.localActive = true
 	self.started     = false
 	self._entityGroup = false
-
+	self._editLocked  = false
+	
 end
 
 function Entity:_insertIntoScene( scene, layer )
@@ -421,7 +424,7 @@ local inheritVisible        = inheritVisible
 local inheritLoc            = inheritLoc
 
 function Entity:_attachProp( p, role )
-	local _prop = self._prop
+	local _prop = self:getProp( role )
 	inheritTransformColorVisible( p, _prop )
 	self.layer:insertProp( p )
 	--TODO: better solution on scissor?
@@ -430,28 +433,30 @@ function Entity:_attachProp( p, role )
 end
 
 function Entity:_attachTransform( t, role )
-	local _prop = self._prop
+	local _prop = self:getProp( role )
 	inheritTransform( t, _prop )
 	return t
 end
 
 function Entity:_attachLoc( t, role )
-	local _prop = self._prop
+	local _prop = self:getProp( role )
 	inheritLoc( t, _prop )
 	return t
 end
 
 function Entity:_attachColor( t, role )
-	inheritColor( t, self._prop )
+	local _prop = self:getProp( role )
+	inheritColor( t, _prop )
 	return t
 end
 
 function Entity:_attachVisible( t, role )
-	inheritVisible( t, self._prop )
+	local _prop = self:getProp( role )
+	inheritVisible( t, _prop )
 	return t
 end
 
-function Entity:_insertPropToLayer( p, role )
+function Entity:_insertPropToLayer( p )
 	self.layer:insertProp( p )
 	return p
 end
@@ -723,6 +728,25 @@ function Entity:showChildren()
 	for child in pairs( self.children ) do
 		child:show()
 	end
+end
+
+--------------------------------------------------------------------
+---Edit lock control
+--------------------------------------------------------------------
+
+function Entity:isLocalEditLocked()
+	return self._editLocked
+end
+
+function Entity:setEditLocked( locked )
+	self._editLocked = locked
+end
+
+function Entity:isEditLocked()
+	if self._editLocked then return true end
+	if self.parent then return self.parent:isEditLocked() end
+	if self._entityGroup then return self._entityGroup:isEditLocked() end
+	return false
 end
 
 --------------------------------------------------------------------

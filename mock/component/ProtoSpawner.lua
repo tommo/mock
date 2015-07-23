@@ -91,6 +91,6 @@ end
 
 function ProtoSpawner:postSpawn()
 	if self.destroyOnSpawn then
-		ent:destroy()
+		self._entity:destroy()
 	end
 end
