@@ -53,7 +53,10 @@ function GraphicsPropComponent:setShader( shaderPath )
 		end
 	end
 	local default = self:getDefaultShader()
-	if default then self.prop:setShader( default ) end
+	if default then 
+		return self.prop:setShader( default )
+	end
+	return self.prop:setShader( nil )
 end
 
 function GraphicsPropComponent:getPickingProp()

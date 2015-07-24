@@ -43,6 +43,7 @@ require 'mock.component.TiledTextureRect'
 require 'mock.component.TileMap'
 require 'mock.component.NamedTileMap'
 require 'mock.component.TileMap2D'
+require 'mock.component.CodeTileMapLayer'
 
 require 'mock.component.ParticleSystem'
 require 'mock.component.ParticleEmitter'

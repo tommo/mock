@@ -22,6 +22,7 @@ require 'mock.asset.TextStyle'
 --GRAPHICS ADV
 require 'mock.asset.RenderTargetTexture'
 require 'mock.asset.Shader'
+require 'mock.asset.CodeTileset'
 require 'mock.asset.NamedTileset'
 require 'mock.asset.DeckPack'
 require 'mock.asset.MQuadDeck'

@@ -13,4 +13,5 @@ end
 
 registerAssetLoader( 'data_json',  JSONDataLoader )
 registerAssetLoader( 'data_xls',   JSONDataLoader )
+registerAssetLoader( 'data_yaml',   JSONDataLoader )
 registerAssetLoader( 'data_sheet',  DataSheetLoader )

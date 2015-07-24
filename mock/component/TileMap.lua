@@ -78,6 +78,7 @@ CLASS: TileMapLayer ()
 		Field 'tag'     :string();
 		Field 'tilesetPath' :asset( 'deck2d.tileset' );
 		Field 'visible' :boolean();
+		Field 'subDivision' :int() :range( 1, 4 );
 	}
 
 function TileMapLayer:__init()
@@ -95,7 +96,7 @@ function TileMapLayer:__init()
 	self.tileset = false
 
 	self.order     = 0 --order
-
+	self.subDivision = 1
 end
 
 function TileMapLayer:init( parentMap, tilesetPath )
@@ -122,6 +123,11 @@ function TileMapLayer:resize( w, h )
 	self:onResize( w, h )
 	self.width  = w
 	self.height = h
+end
+
+function TileMapLayer:setSubDivision( div )
+	self.subDivision = div
+	--TODO
 end
 
 function TileMapLayer:onResize( w, h )
@@ -165,6 +171,10 @@ end
 
 function TileMapLayer:getTileSize()
 	return self.parentMap:getTileSize()
+end
+
+function TileMapLayer:getDebugDrawProp()
+	return false
 end
 
 function TileMapLayer:tileIdToGridId( tileId )
@@ -341,6 +351,7 @@ CLASS: TileMapResizeParam ()
 --------------------------------------------------------------------
 CLASS: TileMap ( RenderComponent )
 	:MODEL{
+		Field 'initialized' :boolean() :no_edit();
 		Field 'serializedData' :string() :no_edit() :getset( 'SerializedData' );
 		'----';
 		Field 'defaultTileset' :asset( 'tileset' ) :readonly();
@@ -363,6 +374,7 @@ function TileMap:__init()
 	self.tileHeight = 1
 	self.defaultTileset = false
 	self.pendingMapData = false
+	self.initialized = false
 end
 
 function TileMap:getSize()
@@ -433,16 +445,11 @@ function TileMap:_createLayer( tilesetPath )
 end
 
 function TileMap:createLayerByTileset( tilesetPath )
-	local tileset, anode = mock.loadAsset( tilesetPath )
-	local atype = anode:getType()
-	if atype == 'deck2d.tileset' then
-		return TileMapLayer()
-	elseif atype == 'named_tileset' then
-		return NamedTileMapLayer()
-	elseif atype == 'deck2d.mtileset' then
-		return NamedTileMapLayer()
-	end
 	return false
+end
+
+function TileMap:getSupportedTilesetType()
+	return ''
 end
 
 function TileMap:saveData()
@@ -473,6 +480,7 @@ end
 
 function TileMap:loadPendingMapData()
 	if not self.pendingMapData then return end
+	self.initialized = true
 	local data = self.pendingMapData
 	self.width, self.height         = unpack( data['size'] )
 	self.tileWidth, self.tileHeight = unpack( data['tileSize'] )
@@ -493,6 +501,7 @@ function TileMap:init( param )
 	self.width      = param.width
 	self.height     = param.height
 	self.defaultTileset = param.defaultTileset
+	self.initialized = true
 end
 
 function TileMap:resize( resizeParam )

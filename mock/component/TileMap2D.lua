@@ -39,8 +39,13 @@ function TileMap2D:createLayerByTileset( tilesetPath )
 		return TileMap2DLayer()
 	elseif atype == 'named_tileset' then
 		return TileMap2DLayer()
+	elseif atype == 'code_tileset' then
+		return CodeTileMapLayer()
 	end
 	return false
 end
 
+function TileMap2D:getSupportedTilesetType()
+	return 'deck2d.tileset;named_tileset;deck2d.mtileset;code_tileset'
+end
 
