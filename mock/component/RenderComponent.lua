@@ -20,6 +20,10 @@ function RenderComponent:__init()
 	self.depthTest        = DEPTH_TEST_DISABLE
 end
 
+function RenderComponent:getEntity()
+	return self._entity
+end
+
 function RenderComponent:getBlend()
 	return self.blend
 end

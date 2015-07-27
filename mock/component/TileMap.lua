@@ -78,7 +78,7 @@ CLASS: TileMapLayer ()
 		Field 'tag'     :string();
 		Field 'tilesetPath' :asset( 'deck2d.tileset' );
 		Field 'visible' :boolean();
-		Field 'subDivision' :int() :range( 1, 4 );
+		Field 'subdivision' :int() :range( 1, 4 );
 	}
 
 function TileMapLayer:__init()
@@ -88,25 +88,23 @@ function TileMapLayer:__init()
 	self.mapGrid   = false
 	self.visible   = true
 
+	--for verifying purpose only
 	self.width      = 1
 	self.height     = 1
 	self.tileWidth  = 1
 	self.tileHeight = 1
+
 	self.tilesetPath = false
 	self.tileset = false
 
 	self.order     = 0 --order
-	self.subDivision = 1
+	self.subdivision = 1
 end
 
-function TileMapLayer:init( parentMap, tilesetPath )
-	self.width      = parentMap.width
-	self.height     = parentMap.height
-	self.tileWidth  = parentMap.tileWidth
-	self.tileHeight = parentMap.tileHeight
+function TileMapLayer:init( parentMap, tilesetPath, initFromEditor )
 	self.tilesetPath  = tilesetPath
 	self.tileset      = loadAsset( tilesetPath )
-	self:onInit()
+	self:onInit( initFromEditor )
 end
 
 function TileMapLayer:worldToModel( x, y )
@@ -115,19 +113,23 @@ end
 
 function TileMapLayer:onInit()
 	self.mapGrid = TileMapGrid()
-	self.mapGrid:setTileSize( self.tileset )
-	self.mapGrid:setSize( self.width, self.height, self.tileWidth, self.tileHeight )
+	self.mapGrid:setTileset( self.tileset )
+	local w, h   = self:getSize()
+	local tw, th = self:getTileSize()
+	self.mapGrid:setSize( w, h, tw, th )
 end
 
 function TileMapLayer:resize( w, h )
 	self:onResize( w, h )
-	self.width  = w
-	self.height = h
 end
 
 function TileMapLayer:setSubDivision( div )
-	self.subDivision = div
-	--TODO
+	local div0 = self.subdivision
+	self.subdivision = div
+	self:onSubDivisionChange( div, div0 )
+end
+
+function TileMapLayer:onSubDivisionChange( div, div0 )
 end
 
 function TileMapLayer:onResize( w, h )
@@ -173,6 +175,10 @@ function TileMapLayer:getTileSize()
 	return self.parentMap:getTileSize()
 end
 
+function TileMapLayer:getCellSize()
+	return self:getTileSize()
+end
+
 function TileMapLayer:getDebugDrawProp()
 	return false
 end
@@ -183,17 +189,23 @@ end
 
 function TileMapLayer:loadData( data, parentMap )
 	local tilesetPath = data[ 'tileset' ]
-	
-	self:init( parentMap, tilesetPath )
+	self.subdivision = data[ 'subdivision' ] or 1
 	self.name = data[ 'name' ]
 	self.tag  = data[ 'tag'  ]
+	
+	self:init( parentMap, tilesetPath )
 	--TODO:verify size
 	local width, height         = unpack( data['size'] )
 	local tileWidth, tileHeight = unpack( data['tileSize'] )
-	assert( self.width  == width )
-	assert( self.height == height )
-	assert( self.tileWidth == tileWidth )
-	assert( self.tileHeight == tileHeight )
+
+	local w0, h0   = self:getSize()
+	local tw0, th0 = self:getTileSize()
+
+	assert( w0  == width )
+	assert( h0  == height )
+	assert( tw0 == tileWidth )
+	assert( th0 == tileHeight )
+
 	self:getGrid():loadTiles( data['tiles'] )
 	self:onLoadData( data )
 end
@@ -208,6 +220,7 @@ function TileMapLayer:saveData()
 	data[ 'tiles'    ] = self:getGrid():saveTiles()
 	data[ 'tileset'  ] = self:getTilesetPath()
 	data[ 'order'    ] = self.order
+	data[ 'subdivision' ] = self.subdivision
 	self:onSaveData( data )
 	return data
 end
@@ -281,8 +294,8 @@ end
 
 local drawLine = MOAIDraw.drawLine
 function TileMapLayer:onDrawGridLine()
-	local tileWidth, tileHeight = self.tileWidth, self.tileHeight
-	local width, height = self.width, self.height
+	local tileWidth, tileHeight = self:getTileSize()
+	local width, height = self:getSize()
 	local x0, x1 = 0, width * tileWidth
 	local y0, y1 = 0, height * tileHeight
 	for col = 0, width do --vlines
@@ -368,10 +381,11 @@ CLASS: TileMap ( RenderComponent )
 --TODO: API
 function TileMap:__init()
 	self.layers = {}
-	self.width      = 1
+	self.width      = 1 
 	self.height     = 1
 	self.tileWidth  = 1
 	self.tileHeight = 1
+
 	self.defaultTileset = false
 	self.pendingMapData = false
 	self.initialized = false
@@ -439,7 +453,8 @@ end
 function TileMap:_createLayer( tilesetPath )
 	local layer = self:createLayerByTileset( tilesetPath )
 	if not layer then return false end
-	layer:init( self, tilesetPath )
+	layer.parentMap = self
+	layer:init( self, tilesetPath, true )
 	self:addLayer( layer )
 	return layer
 end
@@ -487,6 +502,7 @@ function TileMap:loadPendingMapData()
 	local layerDatas = data[ 'layers' ]
 	for i, layerData in ipairs( layerDatas ) do
 		local layer = self:createLayerByTileset( layerData[ 'tileset' ] )
+		layer.parentMap = self
 		if layer then
 			layer:loadData( layerData, self )
 			self:addLayer( layer )

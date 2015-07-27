@@ -61,7 +61,6 @@ function CodeTileGrid:loadTiles( data )
 	local nameToId = data[ 'nameToId' ]
 	local nameToId2 = self.nameToId
 	local w, h = data[ 'width' ], data[ 'height' ]
-
 	if w ~= self.width or h ~= self.height then
 		_warn( 'tilemap size mismatch' )
 		-- return false
@@ -126,19 +125,34 @@ function CodeTileMapLayer:__init()
 	self.visible = true
 end
 
-function CodeTileMapLayer:onInit()
+function CodeTileMapLayer:onInit( initFromEditor )
 	local tileset = self.tileset
+	if initFromEditor then
+		self.subdivision = tileset.defaultTileData.subdivision
+	end
+
 	self.mapGrid = CodeTileGrid()
 	self.mapGrid:setTileset( tileset )
-	self.mapGrid:setSize( self.width, self.height, self.tileWidth, self.tileHeight, 0, 0, 1, 1 )
+	
+	local w, h   = self:getSize()
+	local tw, th = self:getTileSize()
+	self.mapGrid:setSize( w, h, tw, th, 0, 0, tw, th )
 	
 	self.debugDrawProp = MOAIProp.new()
-	self.debugDrawProp:setDeck( tileset:getDebugDrawDeck() )
+	setPropBlend( self.debugDrawProp, 'alpha' )
+	-- local deck = tileset:getDebugDrawDeck()
+	local deck = tileset:buildDebugDrawDeck()
+	deck:setRect( 0,0, tw, th )
+	self.debugDrawProp:setDeck( deck )
 	self.debugDrawProp:setGrid( self.mapGrid:getMoaiGrid() )
+
+
 end
 
 function CodeTileMapLayer:onResize( w, h )
-	self.mapGrid:resize( w, h, self.tileWidth, self.tileHeight, 0, 0, 1, 1 )
+	local w, h = self:getSize()
+	local tw, th = self:getTileSize()
+	self.mapGrid:setSize( w, h, tw, th, 0,0, tw,th )
 end
 
 function CodeTileMapLayer:setVisible( vis )
@@ -191,4 +205,23 @@ end
 
 function CodeTileMapLayer:getDebugDrawProp()
 	return self.debugDrawProp
+end
+
+function CodeTileMapLayer:onSubDivisionChange( div )
+	self:onResize()
+	-- local tw, th = self:getTileSize()
+	-- self.mapGrid:resize( w, h, tw, th, 0, 0, 1, 1 )
+	-- subdivideMOAIGrid()
+end
+
+function CodeTileMapLayer:getSize()
+	local div = self.subdivision or 1
+	local w, h = self.parentMap:getSize()
+	return w*div, h*div
+end
+
+function CodeTileMapLayer:getTileSize()
+	local div = self.subdivision or 1
+	local tw, th = self.parentMap:getTileSize()
+	return tw/div, th/div
 end

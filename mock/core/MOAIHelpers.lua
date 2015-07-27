@@ -260,3 +260,25 @@ function resizeMOAIGrid( grid, w, h, tw, th ,ox, oy, cw, ch )
 		end
 	end
 end
+
+function subdivideMOAIGrid( grid, tw, th ,ox, oy, cw, ch )
+	local ow, oh = grid:getSize()
+	
+	local tmpGrid = MOAIGrid.new()
+	tmpGrid:setSize( ow, oh )
+	for y = 1, oh do
+		for x = 1, ow do
+			tmpGrid:setTile( x, y, grid:getTile( x, y ) )
+		end
+	end
+
+	local nw = ow * 2
+	local nh = oh * 2
+	grid:setSize( nw,nh,tw,th,ox,oy,cw,ch )
+	for y = 1, nh do
+		for x = 1, nw do
+			grid:setTile( x, y, tmpGrid:getTile( x/2, y/2 ) )
+		end
+	end
+	
+end

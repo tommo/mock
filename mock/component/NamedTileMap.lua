@@ -127,13 +127,16 @@ end
 
 function NamedTileMapLayer:onInit()
 	local tileset = self.tileset
-	self.prop = MOAIProp.new()
 	self.mapGrid = NamedTileGrid()
 	self.mapGrid:setTileset( tileset )
+	
+	local w, h   = self:getSize()
+	local tw, th = self:getTileSize()
+	self.mapGrid:setSize( w, h, tw, th, 0, 0, 1, 1 )
+
+	self.prop = MOAIProp.new()
 	self.prop:setGrid( self.mapGrid:getMoaiGrid() )
 	self.prop:setDeck( tileset:getMoaiDeck() )
-	
-	self.mapGrid:setSize( self.width, self.height, self.tileWidth, self.tileHeight, 0, 0, 1, 1 )
 
 end
 
