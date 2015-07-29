@@ -67,6 +67,11 @@ require 'mock.component.PhysicsShape'
 require 'mock.component.PhysicsJoint'
 require 'mock.component.PhysicsTrigger'
 require 'mock.component.PhysicsTriggerArea'
+
+require 'mock.component.PhysicsShapeCommon'
+require 'mock.component.PhysicsShapeBevelBox'
+require 'mock.component.PhysicsShapePie'
+
 --------------------------------------------------------------------
 ---- Extended
 require 'mock.component.AuroraSprite'
