@@ -1,18 +1,14 @@
 module 'mock'
 
-CLASS: DrawScript ()
+CLASS: DrawScript ( GraphicsPropComponent )
 	-- :MODEL{
 	-- 	Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
 	-- }
-function DrawScript:__init( option )
-	local prop = MOAIProp.new()
 
-	-- if option and option.transform then
-	-- 	prop:setupTransform( option.transform )
-	-- end
-	self.prop = prop
+function DrawScript:__init( option )
+	local prop = self.prop
 	local deck = MOAIScriptDeck.new()
-	self.prop:setDeck( deck )	
+	prop:setDeck( deck )	
 	self.deck = deck
 
 	if option then

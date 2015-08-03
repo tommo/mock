@@ -93,6 +93,7 @@ registerSignals{
 
 	'scene.init',
 	'scene.update',
+	'scene.clear',
 
 	'layer.update',
 	'layer.add',

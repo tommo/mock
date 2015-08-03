@@ -33,6 +33,9 @@ end
 
 function PhysicsShape:setTag( tag )
 	self.tag = tag
+	if self.shape then
+		self.shape.tag = self.tag
+	end
 end
 
 function PhysicsShape:setLoc( x,y )
@@ -110,9 +113,10 @@ function PhysicsShape:setFilter(categoryBits, maskBits, group)
 
 	shape:setFilter(categoryBits, maskBits, group)
 	-- update material as well
+	-- TODO: remove this
 	material.categoryBits = categoryBits
-	material.maskBits = maskBits
-	material.group = group
+	material.maskBits     = maskBits
+	material.group        = group
 end
 
 function PhysicsShape:onAttach( entity )
@@ -143,16 +147,21 @@ function PhysicsShape:updateParentBody( body )
 end
 
 function PhysicsShape:updateShape()
-	if self.shape then 
-		self.shape:destroy()
-		self.shape.component = nil
+	local shape = self.shape
+	if shape then 
+		shape.component = nil
+		shape:destroy()
 		self.shape = false
 	end
-	if not self.parentBody then return end
-	local body = self.parentBody.body
-	self.shape = self:createShape( body )
+
+	local parentBody = self.parentBody
+	if not parentBody then return end
+	local body = parentBody.body
+	shape = self:createShape( body )
 	-- back reference to the component
-	self.shape.component = self
+	shape.component = self
+	self.shape = shape
+	shape.tag = self.tag
 	--apply material
 	--TODO
 	self:updateMaterial()
@@ -166,8 +175,8 @@ end
 function PhysicsShape:setCollisionHandler(handler, phaseMask, categoryMask)
 
 	self.handlerData = {
-		func = handler,
-		phaseMask = phaseMask,
+		func         = handler,
+		phaseMask    = phaseMask,
 		categoryMask = categoryMask
 	}
 

@@ -447,23 +447,34 @@ end
 --------------------------------------------------------------------
 _G.CLASS     = classBuilder
 _G._rawClass = rawClass
+
+local classSearchCache = setmetatable({}, {__mode ='v'})
+
 function findClass( term )
+	local result = classSearchCache[ term ]
+	if result then return result end
 	local l = #term
 	local candidates = {}
 	for n, clas in pairs( globalClassRegistry ) do		
 		if clas.__name == term then
 			table.insert( candidates, clas )
 		end
-		-- if string.find( n, term, -l ) then 
-	-- end
 	end
 	local count = #candidates
 	if count > 1 then
 		_warn( 'more than one class found for name', term )
+		result = candidates[ 1 ]
+		classSearchCache[ term ] = result
+		return result
+
 	elseif count == 0 then
 		return nil
+
 	else
-		return candidates[ 1 ]
+		result = candidates[ 1 ]
+		classSearchCache[ term ] = result
+		return result
+
 	end
 end
 

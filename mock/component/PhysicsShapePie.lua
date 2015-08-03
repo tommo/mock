@@ -17,6 +17,7 @@ function PhysicsShapePie:__init()
 	self.endAngle = 390
 	self.tessellation = 6
 	self.radius = 50
+	self.verts = false
 end
 
 function PhysicsShapePie:clone(original)
@@ -91,10 +92,8 @@ function PhysicsShapePie:getRadius()
 	return self.radius
 end
 
-function PhysicsShapePie:createShape(body)
-
+function PhysicsShapePie:calcVerts()
 	self:angleWrap()
-
 	local verts = {}
 
 	-- origin(x, y)
@@ -107,7 +106,7 @@ function PhysicsShapePie:createShape(body)
 
 	local d = self.endAngle
 
-	for i=0,self.tessellation do
+	for i=0, self.tessellation do
 		local angle = self.endAngle - i * step
 		-- print(angle)
 
@@ -118,6 +117,10 @@ function PhysicsShapePie:createShape(body)
 
 	end
 	-- print('---------')
+	return verts
+end
 
+function PhysicsShapePie:createShape(body)
+	local verts = self:calcVerts()
 	return body:addPolygon(verts)
 end

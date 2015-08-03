@@ -93,6 +93,7 @@ function BTContext:validateTree( tree )
 end
 
 function BTContext:executeTree( tree )
+	self._conditionDirty = false
 	tree.root:execute( self )
 end
 
@@ -139,28 +140,28 @@ end
 
 function BTContext:setCondition( name, v )
 	self._conditions[ name ] = v
+	self._conditionDirty = true
 end
 
 function BTContext:completeEvaluation( res )
 	--TODO: delegate?
-	-- print('>> done <<\n')
 	self._runningQueue = {}
 	return 'complete'
 end
 
-function BTContext:updateRunningNodes( delta )
+function BTContext:updateRunningNodes( dt )
 	local _runningQueue = self._runningQueue
 	local count = #_runningQueue
 	if count == 0 then return false end
+
 	for i = 1, count do 
 		--only execute currently available nodes, new nodes left to next update
 		local node = _runningQueue[ i ]
 		if node then --might have already removed
-			if node:update( self, delta ) == 'complete' then return 'complete' end
-		else --no more execution pending
-			break
+			if node:update( self, dt ) == 'complete' then return 'complete' end
 		end
 	end
+
 	--shrink running queue?
 	if self._runningQueueNeedShrink then
 		local newQueue = {}
@@ -170,10 +171,12 @@ function BTContext:updateRunningNodes( delta )
 		end
 		self._runningQueue = newQueue
 	end
+
 	return true
 end
 
-function BTContext:addRunningNode( n, action )
+function BTContext:addRunningNode( n )
+	-- print( 'add running node', n:getClassName(), n.actionName  )
 	return insert( self._runningQueue, n )
 end
 
@@ -181,6 +184,7 @@ function BTContext:removeRunningChildNodes( parentNode )
 	self._runningQueueNeedShrink = true
 	local _runningQueue = self._runningQueue
 	local _activeActions = self._activeActions
+
 	for i, node in ipairs( _runningQueue ) do
 		if node and node:hasParent( parentNode ) then
 			--stop this & exclude this in new queue
@@ -192,12 +196,15 @@ function BTContext:removeRunningChildNodes( parentNode )
 			_runningQueue[ i ] = false --remove later
 		end		
 	end
+
 end
 
 function BTContext:removeRunningNode( nodeToRemove )
+	-- print( 'remove running node', nodeToRemove:getClassName(), nodeToRemove.actionName  )
 	self._runningQueueNeedShrink = true
 	local _activeActions = self._activeActions
 	local _runningQueue = self._runningQueue
+
 	--just remove one node
 	for i, node in ipairs( _runningQueue ) do
 		if node == nodeToRemove then
@@ -206,6 +213,11 @@ function BTContext:removeRunningNode( nodeToRemove )
 			break
 		end
 	end
+
+end
+
+function BTContext:clearRunningNode()
+	--TODO:
 end
 
 function BTContext:saveState()
@@ -292,7 +304,7 @@ end
 BTNode.cancel = false
 
 function BTNode:hasParent( node )
-	if node.depth >= self.depth then return false end
+	if node.depth > self.depth then return false end
 	local p = self.parentNode
 	while p do
 		if p == node then return true end
@@ -325,28 +337,30 @@ function BTActionNode:execute( context )
 	return self:update( context, 0, true )
 end
 
-function BTActionNode:update( context, delta, fromExecute )
+function BTActionNode:update( context, dt, fromExecute )
 	local act = context._activeActions[ self ]
-	local res = act:step( context, delta, self )	
+	local res = act:step( context, dt, self )	
 	assert ( 
 		res == 'ok' or res == 'fail' or res=='running', 
 		string.format('invalid action return value inside %s: %s', self.actionName, tostring( res ) )
 		)
-	if res ~= 'running' then
+	if res == 'running' then
+		if fromExecute then
+			--first time we run the update, put it in queue
+			context:addRunningNode( self )
+		end
+		return 'running'
+	else
+		--fail or ok
 		return self:returnUpLevel( res, context )
 	end
-	if fromExecute then
-		--first time we run the update, put it in queue
-		context:addRunningNode( self )
-	end
-	return 'running'
 end
 
 function BTActionNode:returnUpLevel( res, context )
-	context:removeRunningNode( self )
 	local act = context._activeActions[ self ]
 	local stop = act.stop
 	if stop then stop( act, context, self ) end
+	context:removeRunningNode( self )
 	return self.parentNode:resumeFromChild( self, res, context )
 end
 
@@ -595,43 +609,62 @@ end
 function BTConcurrentAndSelector:execute( context )
 	local env = context[ self ]
 	if not env then 
-		env = { executeIndex = 0, okCount = 0 }
+		env = { okCount = 0, failCount = 0, firstRun = true }
 		context[ self ] = env
 	end
-	
-	if env.executeIndex < self.childrenCount then --more to execute
-		local index = env.executeIndex + 1
-		local child = self.children[ index ]
-		env.executeIndex = index
-		local res = child:execute( context )
-		if res == 'complete' then return 'complete' end --already gone back to root
-		--assert( res == 'running' )
-		return self:execute( context ) --loop to execute rest of the children
+
+	for i, child in ipairs( self.children ) do
+		child:execute( context )
 	end
 
-	if env.okCount >= self.childrenCount then --all ok, now resume to parent
+	env.firstRun = false
+	return self:checkResult( context )
+end
+
+function BTConcurrentAndSelector:checkResult( context )
+	local env = context[ self ]
+	if env.firstRun then
+		return 'running'
+	end
+
+	local okCount   = env.okCount
+	local failCount = env.failCount
+
+	if failCount > 0 then
 		--reset env
-		env.executeIndex = 0
-		env.okCount = 0 
-		return self:returnUpLevel( 'ok', context )
-	end
+		env.okCount      = 0
+		env.failCount    = 0
+		env.firstRun     = true
+		context:removeRunningChildNodes( self )
+		return self:returnUpLevel( 'fail', context )
 
-	return 'running'
+	elseif okCount >= self.childrenCount then --all ok, now resume to parent
+		--reset env
+		env.okCount      = 0
+		env.failCount    = 0
+		env.firstRun     = true
+		return self:returnUpLevel( 'ok', context )
+
+	else
+		return 'running'
+
+	end
 end
 
 function BTConcurrentAndSelector:resumeFromChild( child, res, context )
 	local env = context[ self ]
-	if res == 'fail' then --let other node die!
-		--reset env
-		env.executeIndex = 0
-		env.okCount = 0 
+	if res == 'fail' then
+		env.failCount = env.failCount + 1
 
-		context:removeRunningChildNodes( self ) --remove all child node
-		return self:returnUpLevel( 'fail', context )
+	elseif res == 'ok' then
+		env.okCount = env.okCount + 1
+
+	else
+		error( 'fatal error' )
+
 	end
-	--assert res == 'ok'
-	env.okCount = env.okCount + 1
-	return self:execute( context )
+
+	return self:checkResult( context )
 end
 
 --------------------------------------------------------------------
@@ -642,45 +675,68 @@ function BTConcurrentOrSelector:getType()
 	return 'BTConcurrentOrSelector'
 end
 
+
 function BTConcurrentOrSelector:execute( context )
 	local env = context[ self ]
 	if not env then 
-		env = { executeIndex = 0, failCount = 0, okCount = 0 }
+		env = { failCount = 0, okCount = 0, firstRun = true }
 		context[ self ] = env
 	end
-	
-	if env.executeIndex < self.childrenCount then --more to execute
-		local index = env.executeIndex + 1
-		local child = self.children[ index ]
-		env.executeIndex = index
-		local res = child:execute( context )
-		if res == 'complete' then return 'complete' end --already gone back to root
-		--assert( res == 'running' )
-		return self:execute( context ) --loop to execute rest of the children
+
+	for i, child in ipairs( self.children ) do
+		child:execute( context )
 	end
 
-	if env.okCount + env.failCount >= self.childrenCount then --all ok, now resume to parent
-		local fail = env.okCount == 0 
+	env.firstRun = false
+	return self:checkResult( context )
+end
+
+function BTConcurrentOrSelector:checkResult( context )
+	local env = context[ self ]
+	local firstRun  = env.firstRun
+	if firstRun then
+		return 'running'
+	end
+
+	local okCount   = env.okCount
+	local failCount = env.failCount
+
+	if failCount >= self.childrenCount then
 		--reset env
-		env.executeIndex = 0
-		env.failCount = 0 
-		env.okCount = 0 
-		return self:returnUpLevel( fail and 'fail' or 'ok', context )
-	end
+		env.okCount      = 0
+		env.failCount    = 0
+		env.firstRun     = true
+		context:removeRunningChildNodes( self )
+		return self:returnUpLevel( 'fail', context )
 
-	return 'running'
+	elseif (okCount + failCount) >= self.childrenCount then 
+		--reset env
+		env.okCount      = 0
+		env.failCount    = 0
+		env.firstRun     = true
+		return self:returnUpLevel( 'ok', context )
+
+	else
+		return 'running'
+
+	end
 end
 
 function BTConcurrentOrSelector:resumeFromChild( child, res, context )
 	local env = context[ self ]
-	if res == 'fail' then --let other node die!
+	if res == 'fail' then
 		env.failCount = env.failCount + 1
-	else
-		env.okCount = env.okCount + 1
-	end
-	return self:execute( context )
-end
 
+	elseif res == 'ok' then
+		env.okCount = env.okCount + 1
+
+	else
+		error( 'fatal error' )
+
+	end
+
+	return self:checkResult( context )
+end
 
 
 
@@ -691,45 +747,64 @@ function BTConcurrentEitherSelector:getType()
 	return 'BTConcurrentEitherSelector'
 end
 
+
 function BTConcurrentEitherSelector:execute( context )
 	local env = context[ self ]
 	if not env then 
-		env = { executeIndex = 0, failCount = 0 }
+		env = { failCount = 0, okCount = 0, firstRun = true }
 		context[ self ] = env
 	end
-	if env.executeIndex < self.childrenCount then --more to execute
-		local index = env.executeIndex + 1
-		local child = self.children[ index ]
-		env.executeIndex = index
-		local res = child:execute( context )
-		if res == 'complete' then return 'complete' end --already gone back to root
-		--assert( res == 'running' )
-		return self:execute( context ) --loop to execute rest of the children
+
+	for i, child in ipairs( self.children ) do
+		child:execute( context )
 	end
 
-	if env.failCount >= self.childrenCount then --all ok, now resume to parent
+	env.firstRun = false
+	return self:checkResult( context )
+end
+
+function BTConcurrentEitherSelector:checkResult( context )
+	local env = context[ self ]
+	if env.firstRun then 
+		return 'running'
+	end
+
+	local okCount   = env.okCount
+	local failCount = env.failCount
+	if okCount > 0 then
 		--reset env
-		env.executeIndex = 0
-		env.failCount = 0 
-		return self:returnUpLevel( 'fail', context )
-	end
+		env.okCount      = 0
+		env.failCount    = 0
+		env.firstRun     = true
+		return self:returnUpLevel( 'ok', context )
 
-	return 'running'
+	elseif failCount >= self.childrenCount then
+		--reset env
+		env.okCount      = 0
+		env.failCount    = 0
+		env.firstRun     = true
+		return self:returnUpLevel( 'fail', context )
+
+	else
+		return 'running'
+
+	end
 end
 
 function BTConcurrentEitherSelector:resumeFromChild( child, res, context )
 	local env = context[ self ]
-	if res == 'ok' then --let other node die!
-		--reset env
-		env.executeIndex = 0
-		env.failCount = 0 
+	if res == 'fail' then
+		env.failCount = env.failCount + 1
 
-		context:removeRunningChildNodes( self ) --remove all child node
-		return self:returnUpLevel( 'ok', context )
+	elseif res == 'ok' then
+		env.okCount   = env.okCount + 1
+
+	else
+		error( 'fatal error' )
+
 	end
-	--assert res == 'fail'
-	env.failCount = env.failCount + 1
-	return self:execute( context )
+
+	return self:checkResult( context )
 end
 
 
@@ -757,6 +832,7 @@ end
 function BTDecorator:validate( context )
 	return self.targetNode:validate( context )
 end
+
 --------------------------------------------------------------------
 CLASS: BTDecoratorNot ( BTDecorator )
 function BTDecoratorNot:getType()
@@ -860,8 +936,8 @@ function BTController:__init()
 	self.context = BTContext( self )
 	self.tree = false
 	--use different countdown start value to make the update sparse
-	self._evaluateInterval = 10
 	startCountDown = startCountDown + 1
+	self._evaluateInterval = 10
 	self._evaluateCountDown = startCountDown % self._evaluateInterval
 end
 
@@ -872,16 +948,19 @@ end
 function BTController:onUpdate( dt )
 	local tree = self.tree
 	if not tree then return false end
+	
 	local context = self.context
 	local running = context:updateRunningNodes( dt )
-	if not running and self._evaluateCountDown <= 0 then
+	self._evaluateCountDown = self._evaluateCountDown - 1
+
+	if ( not running ) and self._evaluateCountDown <= 0 then
 		self._evaluateCountDown = self._evaluateInterval
 		context:executeTree( self.tree )
 		return true
 	else
-		self._evaluateCountDown = self._evaluateCountDown - 1
 		return false
 	end
+
 end
 
 function BTController:getScheme()
@@ -891,6 +970,8 @@ end
 function BTController:setScheme( schemePath )
 	self.schemePath = schemePath
 	self.tree = loadAsset( schemePath )
+	self.context:clearRunningNode()
+	self._evaluateCountDown = 0
 end
 
 function BTController:resetContext( context )

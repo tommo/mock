@@ -67,6 +67,7 @@ function Scene:init()
 	self.initialized  = true
 	self.exiting = false
 	self.active  = true
+	self.userObjects = {}
 
 	-- self.mainLayer = self:addLayer( 'main' )
 	self:initLayers()
@@ -135,16 +136,14 @@ function Scene:initManagers()
 	self.managers = {}
 	local registry = getSceneManagerFactoryRegistry()
 	local isEditorScene = self:isEditorScene()
-	for i, entry in ipairs( registry ) do
-		local key = entry[ 1 ]
-		local fac = entry[ 2 ]
+	for i, fac in ipairs( registry ) do
 		if not isEditorScene or fac:acceptEditorScene() then
 			local manager = fac:create( self )
 			if manager then
 				manager._factory = fac
 				manager._key = fac:getKey()
 				manager:init( self )
-				table.insert( self.managers, manager )
+				self.managers[ manager._key ] = manager
 			end
 		end
 	end
@@ -159,12 +158,7 @@ function Scene:getTime()
 end
 
 function Scene:getManager( key )
-	for i, manager in pairs( self.managers ) do
-		if manager:getKey() == key then
-			return manager
-		end
-	end
-	return nil
+	return self.managers[ key ]
 end
 
 function Scene:getManagers()
@@ -303,6 +297,14 @@ end
 
 function Scene:removeUpdateListener( obj )
 	self.updateListeners[ obj ] = nil
+end
+
+function Scene:setUserObject( id, obj )
+	self.userObjects[ id ] = obj
+end
+
+function Scene:getUserObject( id )
+	return self.userObjects[ id ]
 end
 
 function Scene:getPath()
@@ -535,6 +537,10 @@ function Scene:clear( keepEditorEntity )
 	self.defaultCamera   = false
 	self.entityListener = entityListener
 	self.arguments = false
+
+	if not self.__editor_scene then
+		emitSignal( 'scene.clear', self )
+	end
 end
 
 function Scene:getRootGroup()

@@ -49,3 +49,12 @@ function ProtoArraySpawner:onSpawn()
 	end
 	end
 end
+
+--------------------------------------------------------------------
+--EDITOR Support
+function ProtoArraySpawner:onBuildGizmo()
+	local giz = mock_edit.IconGizmo()
+	giz:setIcon( 'spawn.png' )
+	giz:setParentEntity( self._entity )
+	return giz
+end

@@ -94,3 +94,14 @@ function ProtoSpawner:postSpawn()
 		self._entity:destroy()
 	end
 end
+
+
+
+--------------------------------------------------------------------
+--EDITOR Support
+function ProtoSpawner:onBuildGizmo()
+	local giz = mock_edit.IconGizmo()
+	giz:setIcon( 'spawn.png' )
+	giz:setParentEntity( self._entity )
+	return giz
+end

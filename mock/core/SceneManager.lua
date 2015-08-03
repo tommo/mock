@@ -2,17 +2,16 @@ module 'mock'
 
 local _SceneManagerFactoryRegistry = {}
 --TODO: release on module refreshing
-function registerSceneManagerFactory( factory )
-	local key = factory:getKey()
-	if not key then return end
+function registerSceneManagerFactory( key, factory )
 	for i, fac0 in pairs( _SceneManagerFactoryRegistry ) do
-		local key0 = fac0:getKey()
+		local key0 = fac0._key
 		if key0 == key then
 			_warn( 'duplicated scene config factory, overwrite', key )
 			_SceneManagerFactoryRegistry[ i ] = factory
 			return
 		end
 	end
+	factory._key = key
 	table.insert( _SceneManagerFactoryRegistry, factory )
 end
 
@@ -25,12 +24,16 @@ end
 CLASS: SceneManagerFactory ()
 	:MODEL{}
 
+function SceneManagerFactory:__init()
+	self._key = false
+end
+
 function SceneManagerFactory:create( scn )
 	return false
 end
 
 function SceneManagerFactory:getKey()
-	_error( 'scene config key required, override this function' )
+	return self._key
 end
 
 function SceneManagerFactory:acceptEditorScene()
