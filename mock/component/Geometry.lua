@@ -94,7 +94,8 @@ end
 --------------------------------------------------------------------
 CLASS: GeometryRay ( GeometryComponent )
 	:MODEL{
-		Field 'length';		
+		'----';
+		Field 'length' :set( 'setLength' );		
 	}
 registerComponent( 'GeometryRay', GeometryRay )
 
@@ -113,6 +114,9 @@ function GeometryRay:onGetRect()
 	return 0,0, l,1
 end
 
+function GeometryRay:setLength( l )
+	self.length = l
+end
 
 --------------------------------------------------------------------
 CLASS: GeometryBoxOutline ( GeometryComponent )

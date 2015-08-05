@@ -384,6 +384,10 @@ function isInstance( o, clas )
 	return isClassInstance(o) and o:isInstance( clas )
 end
 
+function affirmInstance( o, clas )
+	return o and isInstance( o, clas ) and o or nil
+end
+
 function getClass( o )
 	if type( o ) ~= 'table' then return nil end
 	local clas = getmetatable( o )

@@ -58,7 +58,6 @@ function EntityGroup:isEditLocked()
 end
 
 function EntityGroup:setVisible( visible )
-	print( "setting group visiblity" )
 	self._prop:setVisible( visible )
 end
 

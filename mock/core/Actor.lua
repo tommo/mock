@@ -123,8 +123,12 @@ end
 --------------------------------------------------------------------
 ---- MSGListener: a string message based approach
 --------------------------------------------------------------------
-function Actor:addMsgListener( listener )
-	table.insert( self.msgListeners, listener )
+function Actor:addMsgListener( listener, append )
+	if append then
+		table.insert( self.msgListeners, listener )
+	else
+		table.insert( self.msgListeners, 1, listener )
+	end
 	return listener
 end
 
