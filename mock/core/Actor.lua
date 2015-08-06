@@ -23,13 +23,18 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
-local pairs,ipairs,setmetatable,unpack=pairs,ipairs,setmetatable,unpack
+local pairs,ipairs,setmetatable,unpack = pairs,ipairs,setmetatable,unpack
 local insert,remove = table.insert, table.remove
-local yield = coroutine.yield
+local yield  = coroutine.yield
 local select = select
-local block = MOAICoroutine.blockOnAction
+local block  = MOAICoroutine.blockOnAction
 
-local signalDisconnect = signalDisconnect
+local signalDisconnect  = signalDisconnect
+local signalConnect     = signalConnect
+local signalConnectMethod= signalConnectMethod
+local signalConnectFunc = signalConnectFunc
+local getGlobalSignal   = getGlobalSignal
+local isSignal          = isSignal
 
 module 'mock'
 
@@ -69,20 +74,29 @@ function Actor:connectForObject( obj, sig, slot )
 		connectedSignals = {}
 		self.connectedSignals = connectedSignals
 	end
+
+	local st = type( sig )
+	if st == 'string' then
+		sig = getGlobalSignal( sig )
+	end
 	
+	if not isSignal( sig ) then
+		return _error( 'not a valid signal' )
+	end
+
 	local tt = type( slot )
 	if tt == 'function' then
 		local func = slot
-		local signal = connectSignalFunc( sig, func )
-		table.insert( connectedSignals, { obj, signal, func } )
+		signalConnectFunc( sig, func )
+		insert( connectedSignals, { obj, sig, func } )
 		
 	elseif tt == 'string' then
 		local methodName = slot
 		if type( obj[methodName] )~='function' then
 			error( 'Method not found:'..methodName, 2 )
 		end
-		local signal = connectSignalMethod( sig, obj, methodName )
-		table.insert( connectedSignals, { obj, signal, obj } )
+		signalConnectMethod( sig, obj, methodName )
+		insert( connectedSignals, { obj, sig, obj } )
 
 	else
 		error( 'invalid slot type:' .. tt )
@@ -107,17 +121,17 @@ end
 function Actor:disconnectAllForObject( owner )
 	local connectedSignals = self.connectedSignals
 	if not connectedSignals then return end
-	local signals1 = {}
+	local newSignals = {}
 	for i, entry in ipairs(connectedSignals) do
 		local owner1, sig, obj = unpack( entry )
 		if owner == owner1 then
 			-- sig[ obj ] = nil
 			signalDisconnect( sig, obj )
 		else
-			table.insert( signals1, entry )
+			insert( newSignals, entry )
 		end		
 	end
-	self.connectedSignals = signals1
+	self.connectedSignals = newSignals
 end
 
 --------------------------------------------------------------------
@@ -125,9 +139,9 @@ end
 --------------------------------------------------------------------
 function Actor:addMsgListener( listener, append )
 	if append then
-		table.insert( self.msgListeners, listener )
+		insert( self.msgListeners, listener )
 	else
-		table.insert( self.msgListeners, 1, listener )
+		insert( self.msgListeners, 1, listener )
 	end
 	return listener
 end

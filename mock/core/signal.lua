@@ -38,6 +38,10 @@ local weakMT = {
 	__mode  = 'v',
 }
 
+local function isSignal( sig )
+	return getmetatable( sig ) == signalMT
+end
+
 local function newSignal()
 	local signal =  setmetatable( { 
 			slots = setmetatable( {}, weakMT ) 
@@ -50,6 +54,11 @@ end
 local function signalConnect( sig, obj, func )
 	sig.slots[ obj ] = func
 	return obj, func
+end
+
+local function signalConnectMethod( sig, obj, methodId )
+	local method = assert( obj[ methodId ], 'method not found' )
+	return signalConnect( sig, obj, method )
 end
 
 local function signalConnectFunc( sig, func )
@@ -75,8 +84,8 @@ local function signalEmit( sig, ... )
 		end
 	end
 end
-signalMT.__call = signalEmit
 
+signalMT.__call = signalEmit
 
 function signalProto:connect( a, b )
 	if (not b) and ( type( a ) == 'function' ) then --function connection
@@ -160,7 +169,9 @@ end
 --------------------------------------------------------------------
 
 _G.newSignal             = newSignal
+_G.isSignal              = isSignal
 _G.signalConnect         = signalConnect
+_G.signalConnectMethod   = signalConnectMethod
 _G.signalConnectFunc     = signalConnectFunc
 _G.signalEmit            = signalEmit
 _G.signalDisconnect      = signalDisconnect
