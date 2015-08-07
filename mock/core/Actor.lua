@@ -198,18 +198,40 @@ function Actor:_weakHoldCoroutine( newCoro )
 	return newCoro	
 end
 
+function Actor:findCoroutine( method )
+	for coro in pairs( self.coroutines ) do
+		if coro._func == method and (not coro:isDone()) then
+			return coro
+		end
+	end
+	return nil
+end
+
+function Actor:findAllCoroutines( method )
+	local found = {}
+	for coro in pairs( self.coroutines ) do
+		if coro._func == method and (not coro:isDone()) then
+			table.insert( found, coro )
+		end
+	end
+	return found
+end
 
 --------------------------------------------------------------------
+local newCoroutine = MOAICoroutine.new
 function Actor:_createCoroutine( defaultParent, func, obj, ... )
-	local coro = MOAICoroutine.new()	
+	--TODO: use pool
+	local coro = newCoroutine()
 
 	if defaultParent then coro:setDefaultParent( defaultParent ) end
 	local tt = type( func )
 	if tt == 'string' then --method name
 		local _func = obj[ func ]
 		assert( type(_func) == 'function' , 'method not found:'..func )
+		coro._func = func
 		coro:run( _coroutineMethodWrapper, coro, _func, obj, ... )
 	elseif tt=='function' then --function
+		coro._func = func
 		coro:run( _coroutineFuncWrapper, coro, func, ... )
 	else
 		error('unknown coroutine func type:'..tt)

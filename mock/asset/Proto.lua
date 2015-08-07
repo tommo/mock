@@ -59,6 +59,12 @@ function markProtoInstanceOverrided( obj, fid )
 	return false
 end
 
+function markProtoInstanceFieldsOverrided( obj, fid, ... )
+	for i, f in ipairs{ fid, ... } do
+		markProtoInstanceOverrided( obj, f )
+	end
+end
+
 function isProtoInstanceOverrided( obj, fid )
 	local protoInstance = findProtoInstance( obj )
 	if not protoInstance then return false end
