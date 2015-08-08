@@ -229,6 +229,33 @@ function Component:clearCoroutines()
 	self.coroutines = nil
 end
 
+function Component:findCoroutine( method )
+	for coro in pairs( self.coroutines ) do
+		if coro._func == method and (not coro:isDone()) then
+			return coro
+		end
+	end
+	return nil
+end
+
+function Component:findAllCoroutines( method )
+	local found = {}
+	for coro in pairs( self.coroutines ) do
+		if coro._func == method and (not coro:isDone()) then
+			table.insert( found, coro )
+		end
+	end
+	return found
+end
+
+function Component:findAndStopCoroutine( method )
+	for coro in pairs( self.coroutines ) do
+		if coro._func == method and (not coro:isDone()) then
+			coro:stop()
+		end
+	end
+end
+
 --------------------------------------------------------------------
 -------Component management
 --------------------------------------------------------------------

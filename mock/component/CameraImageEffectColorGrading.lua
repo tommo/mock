@@ -22,6 +22,7 @@ local function buildLUTShader()
 
 		uniform sampler2D sampler;
 		uniform sampler2D samplerLUT;
+		uniform float intensity;
 
 		vec4 sampleAs3DTexture( sampler2D texture, vec3 uv, float width ) {
 			float sliceSize = 1.0 / width;              // space of 1 slice
@@ -43,7 +44,7 @@ local function buildLUTShader()
 			LOWP vec4 pixel = texture2D ( sampler, uvVarying );
 			vec4 gradedPixel = sampleAs3DTexture( samplerLUT, pixel.rgb, 32.0 );
 			gradedPixel.a = pixel.a;
-			gl_FragColor = gradedPixel;
+		  gl_FragColor = mix(pixel, gradedPixel, intensity );
 		}
 
 	]]
@@ -60,28 +61,37 @@ local function buildLUTShader()
 				type  = "sampler",
 				value = 2
 			},
+			{
+					name = "intensity",
+					type = "float",
+					value = 1.0
+				}
 		}
 	}
 	local prog = buildShaderProgramFromString( vsh, fsh, vars )
-	return prog:buildShader():getMoaiShader()
+	return prog:buildShader()
 end
 
 --------------------------------------------------------------------
 CLASS: CameraImageEffectColorGrading ( CameraImageEffect )
 	:MODEL{
-		Field 'LUT' :asset( 'texture' ) :getset( 'LUTPath')
+		Field 'LUT' :asset( 'texture' ) :getset( 'LUTPath');
+		Field 'intensity' :onset( 'updateIntensity' ) :meta{ step = 0.1 };
 }
 
 function CameraImageEffectColorGrading:__init()
+	self.intensity = 1
 	self.lutPath = false
 	self.tex = MOAIMultiTexture.new()
 	self.tex:reserve( 2 )
 end
 
 function CameraImageEffectColorGrading:onBuild( prop, texture, layer, passId )
+	self.shader = buildLUTShader()
 	self.tex:setTexture( 1, texture )
 	prop:setTexture( self.tex )
-	prop:setShader( assert( buildLUTShader() ) )
+	prop:setShader( self.shader:getMoaiShader() )
+	self:updateIntensity()
 end
 
 function CameraImageEffectColorGrading:setLUTPath( path )
@@ -94,6 +104,11 @@ end
 
 function CameraImageEffectColorGrading:getLUTPath()
 	return self.lutPath
+end
+
+function CameraImageEffectColorGrading:updateIntensity()
+	if not self.shader then return end
+	self.shader:setAttr( 'intensity', self.intensity )
 end
 
 mock.registerComponent( 'CameraImageEffectColorGrading', CameraImageEffectColorGrading )
