@@ -107,6 +107,7 @@ Profiler = { coroWrapped = false }
 function Profiler:start( time, reportPath )
 	local ProFi=require 'mock.tools.ProFi'	
 	self.ProFi = ProFi
+	
 	--wrap moai coroutine
 	if not self.coroWrapped then
 		self.coroWrapped = true
@@ -120,6 +121,7 @@ function Profiler:start( time, reportPath )
 				end,...)
 		end
 	end
+
 	--auto stop settings
 	if time then
 		laterCall( time, function() 
@@ -129,10 +131,12 @@ function Profiler:start( time, reportPath )
 				end
 			end)
 	end
+
 	--start
-	ProFi:setGetTimeMethod(	MOAISim.getDeviceTime	)
+	-- ProFi:setGetTimeMethod(	MOAISim.getDeviceTime	)
 	_stat 'start profiler...'
 	ProFi:start()
+	
 end
 
 function Profiler:stop()

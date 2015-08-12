@@ -69,7 +69,10 @@ local function buildFSMScheme( scheme )
 						for i, s in ipairs( trackedStates ) do 
 							print( i, s )
 						end
-						game:debugStop()
+						if debugstop then
+							debugStop()
+						end
+						-- game:debugStop()
 						error('TERMINATED') --terminate
 					end
 				end

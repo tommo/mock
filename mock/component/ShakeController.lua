@@ -39,7 +39,6 @@ function ShakeController:pushShakeSourceXY( scale, duration )
 	return self:pushShakeSource( src )
 end
 
-
 function ShakeController:pushShakeSourceXYRot( scale, duration )
 	local src = ShakeSourceXYRot()
 	src:setScale( scale )

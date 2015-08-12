@@ -221,10 +221,7 @@ function PhysicsBody:calcMass()
 	end
 end
 
-function PhysicsBody:moveTransform(dx, dy)
-	local x, y = self.body:getPosition()
-	self:setTransform(x + dx, y + dy)
-end
+
 
 
 function PhysicsBody:_removeJoint( j )
@@ -245,6 +242,16 @@ function PhysicsBody:setAngle( dir )
 	local body = self.body
 	local x, y = body:getPosition()
 	body:setTransform( x, y, angle )
+end
+
+function PhysicsBody:addPosition( dx, dy )
+	local x,y = self:getPosition()
+	return self:setPosition( x+dx, y+dy )
+end
+
+function PhysicsBody:addAngle( da )
+	local a = self:getAngle()
+	return self:setAngle( da + a )
 end
 
 _wrapMethods( PhysicsBody, 'body', {

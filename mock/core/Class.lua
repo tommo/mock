@@ -316,12 +316,13 @@ function newClass( b, superclass, name  )
 
 	superclass.__subclasses[b] = true
 
-	b.__index = b
-	b.__class = b
-	b.__subclasses = {}
-	b.__serialize = superclass.__serialize
+	b.__index       = b
+	b.__class       = b
+	b.__subclasses  = {}
+
+	b.__serialize   = superclass.__serialize
 	b.__deserialize = superclass.__deserialize
-	b.__clone = superclass.__clone
+	b.__clone       = superclass.__clone
 
 	if not name then
 		local s = superclass
@@ -337,7 +338,7 @@ function newClass( b, superclass, name  )
 	b.__name  = name or '??'
 
 
-	local newindex=function( t, k, v )		
+	local newindex=function( t, k, v )
 		rawset( b, k, v )
 		if k=='__init' then
 			buildInstanceBuilder(b)
@@ -356,6 +357,7 @@ function newClass( b, superclass, name  )
 		superclass:__initclass( b )
 	end
 	return b
+	
 end
 
 function updateAllSubClasses( c, force )

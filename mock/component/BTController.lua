@@ -117,8 +117,9 @@ function BTContext:requestAction( actionNode )
 	local action
 	if actionClas then
 		action = actionClas()	
-	else
-		_warn( 'unregistered action class:'..name )
+	end
+	if not action then
+		_warn( 'invalid action class:'..name )
 		action = DUMMYAction
 	end
 	self._activeActions[ actionNode ] = action
@@ -176,7 +177,6 @@ function BTContext:updateRunningNodes( dt )
 end
 
 function BTContext:addRunningNode( n )
-	-- print( 'add running node', n:getClassName(), n.actionName  )
 	return insert( self._runningQueue, n )
 end
 
@@ -190,7 +190,6 @@ function BTContext:removeRunningChildNodes( parentNode )
 			--stop this & exclude this in new queue
 			--TODO: stop the nodes in reversed order?
 			local action = _activeActions[ node ]
-			-- _activeActions[ node ] = nil
 			local stop = action.stop
 			if stop then stop( action, self ) end
 			_runningQueue[ i ] = false --remove later
@@ -209,15 +208,18 @@ function BTContext:removeRunningNode( nodeToRemove )
 	for i, node in ipairs( _runningQueue ) do
 		if node == nodeToRemove then
 			_runningQueue[ i ] = false
+			return node:stop( self )
 			-- _activeActions[ nodeToRemove ] = nil
-			break
 		end
 	end
 
 end
 
 function BTContext:clearRunningNode()
-	--TODO:
+	for i, node in ipairs( self._runningQueue ) do
+		node:stop( self )
+	end
+	self._runningQueue = {}
 end
 
 function BTContext:saveState()
@@ -292,6 +294,10 @@ function BTNode:validate( context )
 	return true
 end
 
+function BTNode:stop( context )
+	return true
+end
+
 function BTNode:getType() --for debug purpose
 	return 'BTNode'
 end
@@ -356,12 +362,15 @@ function BTActionNode:update( context, dt, fromExecute )
 	end
 end
 
-function BTActionNode:returnUpLevel( res, context )
+function BTActionNode:returnUpLevel( res, context )	
+	context:removeRunningNode( self )
+	return self.parentNode:resumeFromChild( self, res, context )
+end
+
+function BTActionNode:stop( context )
 	local act = context._activeActions[ self ]
 	local stop = act.stop
 	if stop then stop( act, context, self ) end
-	context:removeRunningNode( self )
-	return self.parentNode:resumeFromChild( self, res, context )
 end
 
 function BTActionNode:validate( context )
@@ -961,6 +970,12 @@ function BTController:onUpdate( dt )
 		return false
 	end
 
+end
+
+function BTController:onDetach( ent )
+	--clear running actions
+	self.context:clearRunningNode()
+	BTController.__super.onDetach( self, ent )
 end
 
 function BTController:getScheme()

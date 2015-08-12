@@ -56,7 +56,7 @@ end
 
 function StoryRoleController:acceptStoryMessage( msg, node )
 	self:onStoryMessage( msg, node )
-	self:getEntity():tell( msg, node )
+	self:getEntity():tell( 'story.msg', { msg, node } )
 end
 
 function StoryRoleController:onStoryMessage( msg, node )
