@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: StoryRoleController ( Component )
+CLASS: StoryRoleController ( Behaviour )
 	:MODEL{
 		Field 'roleId'  :string() :getset( 'RoleId' ); -- :selection('_getRoleSelection');
 	}
@@ -19,11 +19,8 @@ function StoryRoleController:setRoleId( id )
 	self:_updateRegistry()
 end
 
-
 function StoryRoleController:_getRoleSelection() --for editor
-
 end
-
 
 function StoryRoleController:_updateRegistry()
 	self:_removeFromRegistry()

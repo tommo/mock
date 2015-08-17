@@ -3,8 +3,7 @@ module 'mock'
 CLASS: BehaviourScript ( mock.Behaviour )
 	:MODEL{
 		Field 'comment' :string();
-		Field 'script' :string() :widget('codebox');
-
+		Field 'script'  :string() :widget('codebox') :meta{ code_ext = 'lua' };
 }
 
 registerComponent( 'BehaviourScript', BehaviourScript )

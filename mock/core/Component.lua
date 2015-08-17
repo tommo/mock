@@ -64,6 +64,8 @@ end
 function Component:setCurrentCoroutinePriority( priority )
 	return self._entity:setCurrentCoroutinePriority( priority )
 end
+
+
 --------------------------------------------------------------------
 --message & state
 --------------------------------------------------------------------
@@ -98,6 +100,7 @@ end
 function Component:inStateGroup( ... )
 	return self._entity:inStateGroup( ... )
 end
+
 
 --------------------------------------------------------------------
 -- invokes
@@ -255,6 +258,7 @@ function Component:findAndStopCoroutine( method )
 		end
 	end
 end
+
 
 --------------------------------------------------------------------
 -------Component management
