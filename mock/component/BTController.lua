@@ -217,7 +217,9 @@ end
 
 function BTContext:clearRunningNode()
 	for i, node in ipairs( self._runningQueue ) do
-		node:stop( self )
+		if node then
+			node:stop( self )
+		end
 	end
 	self._runningQueue = {}
 end
@@ -339,7 +341,9 @@ end
 function BTActionNode:execute( context )
 	local act = context:requestAction( self )
 	local start = act.start
-	if start then start( act, context, self ) end
+	if start then 
+		local res = start( act, context, self )
+	end
 	return self:update( context, 0, true )
 end
 

@@ -253,7 +253,7 @@ function Entity:attach( com )
 		return com
 	end
 	if self.components[ com ] then
-		print( self.name, tostring( self.__guid ), com:getClassName() )
+		_log( self.name, tostring( self.__guid ), com:getClassName() )
 		error( 'component already attached!!!!' )
 	end
 	self.components[ com ] = com:getClass()
@@ -842,12 +842,17 @@ end
 function Entity:createTimer()
 	local timers = self.timers
 	if not timers then
-		timers = table.weak()
+		timers = {}
 		self.timers = timers
 	end
-	
+
 	local timer = self.scene:createTimer()
-	timers[timer] = true
+	timers[ timer ] = true
+	timer:setListener( MOAIAction.EVENT_STOP, 
+		function()
+			timers[ timer ] = nil
+		end
+	)
 
 	return timer
 end
@@ -933,7 +938,9 @@ function Entity:callInterval( interval, func, ... )
 	end
 
 	timer:setListener( MOAITimer.EVENT_TIMER_END_SPAN, 
-		function() return func( unpack(args) ) end
+		function()
+			return func( unpack(args) )
+		end
 		)
 	timer:setMode( MOAITimer.LOOP )
 	timer:setSpan( interval )
@@ -952,7 +959,9 @@ function Entity:callLater( time, func, ... )
 	end
 
 	timer:setListener( MOAITimer.EVENT_TIMER_END_SPAN, 
-		function() return func( unpack(args) ) end
+		function()			
+			return func( unpack(args) )
+		end
 		)
 	timer:setMode( MOAITimer.NORMAL )
 	timer:setSpan( time )

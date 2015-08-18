@@ -4,6 +4,7 @@ local enumSpawnMethod = _ENUM_V {
 	'root',
 	'sibling',
 	'child',
+	'parent_sibling'
 }
 
 CLASS: ProtoSpawner ()
@@ -66,13 +67,28 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 					instance:addLoc( ox, oy, oz )
 				end
 				ent:addSibling( instance )
+			elseif spawnMethod == 'parent_sibling' then
+				ent:forceUpdate()
+				if self.copyLoc then	instance:setWorldLoc( ent:getWorldLoc() ) end
+				if self.copyRot then	instance:setRot( ent:getRot() ) end
+				if self.copyScl then	instance:setScl( ent:getScl() ) end
+				if ox then
+					instance:addLoc( ox, oy, oz )
+				end
+				if ent.parent then
+					ent.parent:addSibling( instance )
+				else
+					ent:getScene():addEntity( instance )				
+				end
 			elseif spawnMethod == 'root' then
+				ent:forceUpdate()
 				if self.copyLoc then	instance:setLoc( ent:getWorldLoc() ) end
 				if self.copyRot then	instance:setRot( ent:getRot() ) end
 				if self.copyScl then	instance:setScl( ent:getScl() ) end
 				if ox then
 					instance:addLoc( ox, oy, oz )
 				end
+				instance:forceUpdate()
 				ent:getScene():addEntity( instance )				
 			end
 		end

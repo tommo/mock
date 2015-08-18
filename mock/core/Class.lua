@@ -378,6 +378,11 @@ function isClass( c )
 	return mt and mt.__isclass or false
 end
 
+function isSubclass( c, super )
+	if c == super then return true end
+	return isClass( c ) and c:isSubclass( super )
+end
+
 function isClassInstance( o )
 	return getClass( o ) ~= nil
 end

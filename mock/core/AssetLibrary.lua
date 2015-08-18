@@ -262,6 +262,10 @@ function getAssetNode( path )
 	return AssetLibrary[ path ]
 end
 
+function checkAsset( path )
+	return AssetLibrary[ path ] ~= nil
+end
+
 function getAssetType( path )
 	local node = getAssetNode( path )
 	return node and node:getType()
