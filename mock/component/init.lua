@@ -26,6 +26,8 @@ require 'mock.component.CameraImageEffect'
 require 'mock.component.StereoCamera'
 require 'mock.component.ScreenAnchor'
 
+require 'mock.component.TransformLink'
+
 --------------------------------------------------------------------
 ---- Graphics
 require 'mock.component.Prop'

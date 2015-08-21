@@ -105,8 +105,10 @@ end
 
 function GeometryRay:onDraw()
 	self:applyColor()
-	draw.fillRect( -2,-2, 2,2 )
-	draw.drawLine( 0, 0, self.length, 0 )
+	local l = self.length
+	draw.fillRect( -1,-1, 1,1 )
+	draw.drawLine( 0, 0, l, 0 )
+	draw.fillRect( -1 + l, -1, 1 + l,1 )
 end
 
 function GeometryRay:onGetRect()

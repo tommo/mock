@@ -75,13 +75,14 @@ local DUMMYAction = BTAction()
 CLASS: BTContext ()
 
 function BTContext:__init( owner )
-	self._actionTable = {}
+	self._actionTable  = {}
 	self._runningQueue = {}
 	self._runningQueueNeedShrink = false
-	self._active = true
+	self._active        = true
 	self._activeActions = {}
-	self._conditions = {}
-	self._owner = owner or false
+	self._conditions    = {}
+	self._params        = {}
+	self._owner         = owner or false
 end
 
 function BTContext:getOwner()
@@ -125,6 +126,16 @@ function BTContext:requestAction( actionNode )
 	self._activeActions[ actionNode ] = action
 	
 	return action
+end
+
+function BTContext:getParam( key, default )
+	local v = self._params[ key ]
+	if v == nil then return default end
+	return v
+end
+
+function BTContext:setParam( key, value )
+	self._params[ key ] = value
 end
 
 function BTContext:setConditionTable( t )
@@ -954,6 +965,10 @@ function BTController:__init()
 	self._evaluateCountDown = startCountDown % self._evaluateInterval
 end
 
+function BTController:setEvaluateInterval( e )
+	self._evaluateInterval = e
+end
+
 function BTController:scheduleUpdate()
 	self._evaluateCountDown = 0
 end
@@ -999,6 +1014,15 @@ end
 
 function BTController:getContext()
 	return self.context
+end
+
+
+function BTController:setParam( k, v )
+	return self.context:setParam( k, v )
+end
+
+function BTController:getParam( k, default )
+	return self.context:getParam( k, default )
 end
 
 function BTController:setCondition( k, v )

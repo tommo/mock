@@ -13,6 +13,18 @@ function Component:getEntity()
 	return self._entity
 end
 
+function Component:getEntityName()
+	return self._entity:getName()
+end
+
+function Component:getEntityTags()
+	return self._entity:getTags()
+end
+
+function Component:destroyEntity()
+	if self._entity then self._entity:destroy() end
+end
+
 function Component:findEntity( name )
 	return self._entity:findEntity( name )
 end
@@ -44,6 +56,12 @@ end
 
 function Component:com( id )
 	return self._entity:com( id )
+end
+
+function Component:detachFromEntity()
+	if self._entity then
+		self._entity:detach( self )
+	end
 end
 
 --------------------------------------------------------------------
