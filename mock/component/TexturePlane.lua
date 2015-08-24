@@ -17,24 +17,14 @@ function TexturePlane:__init()
 	self.h = 100
 	self.deck = Quad2D()
 	self.deck:setSize( 100, 100 )
-	self.prop = MOAIProp.new()
 	self.prop:setDeck( self.deck:getMoaiDeck() )
 	self.prop:setDepthMask( true )
 	self.prop:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )
 end
 
-function TexturePlane:onAttach( ent )
-	ent:_attachProp( self.prop )
-end
-
-function TexturePlane:onDetach( ent )
-	ent:_detachProp( self.prop )
-end
-
 function TexturePlane:setLayer( layer )
 	layer:insertProp( self.prop )
 end
-
 
 function TexturePlane:getTexture()
 	return self.texture

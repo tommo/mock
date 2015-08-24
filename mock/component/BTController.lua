@@ -1004,18 +1004,23 @@ end
 function BTController:setScheme( schemePath )
 	self.schemePath = schemePath
 	self.tree = loadAsset( schemePath )
+	self:resetEvaluate()	
+end
+
+function BTController:resetEvaluate()
+	-- self.context.resetting = true
 	self.context:clearRunningNode()
 	self._evaluateCountDown = 0
 end
 
 function BTController:resetContext( context )
+	self.context:clearRunningNode()
 	self.context = context or BTContext()
 end
 
 function BTController:getContext()
 	return self.context
 end
-
 
 function BTController:setParam( k, v )
 	return self.context:setParam( k, v )

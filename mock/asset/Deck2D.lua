@@ -525,8 +525,9 @@ end
 function PolygonDeck:update()
 	-- local w, h = self.w, self.h
 	-- mesh:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
-	local mesh = self:getMoaiDeck()
+	if not self.texture then return end	
 
+	local mesh = self:getMoaiDeck()
 	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )
 	mesh:setTexture( tex )

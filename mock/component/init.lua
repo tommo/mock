@@ -41,6 +41,7 @@ require 'mock.component.InputScript'
 require 'mock.component.Geometry'
 require 'mock.component.TexturePlane'
 require 'mock.component.TiledTextureRect'
+require 'mock.component.TextureCircle'
 
 require 'mock.component.TileMap'
 require 'mock.component.NamedTileMap'
