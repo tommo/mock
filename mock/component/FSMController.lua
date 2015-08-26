@@ -78,8 +78,8 @@ function FSMController:setMsgFilter( func )
 end
 
 function FSMController:onAttach( entity )
-	Behaviour.onAttach( self, entity )
 	entity:addMsgListener( self.msgBoxListener )
+	Behaviour.onAttach( self, entity )
 end
 
 function FSMController:onStart( entity )

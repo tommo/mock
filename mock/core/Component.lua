@@ -251,6 +251,7 @@ function Component:clearCoroutines()
 end
 
 function Component:findCoroutine( method )
+	if not self.coroutines then return end
 	for coro in pairs( self.coroutines ) do
 		if coro._func == method and (not coro:isDone()) then
 			return coro
@@ -260,6 +261,7 @@ function Component:findCoroutine( method )
 end
 
 function Component:findAllCoroutines( method )
+	if not self.coroutines then return end
 	local found = {}
 	for coro in pairs( self.coroutines ) do
 		if coro._func == method and (not coro:isDone()) then
@@ -270,6 +272,7 @@ function Component:findAllCoroutines( method )
 end
 
 function Component:findAndStopCoroutine( method )
+	if not self.coroutines then return end
 	for coro in pairs( self.coroutines ) do
 		if coro._func == method and (not coro:isDone()) then
 			coro:stop()

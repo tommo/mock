@@ -544,6 +544,12 @@ function Camera:getMoaiCamera()
 	return self._camera
 end
 
+function Camera:drawBounds()
+	GIIHelper.setVertexTransform( self._camera )
+	mock_edit.applyColor( 'camera-bound' )
+	local x0,y0,x1,y1 = self:getViewportLocalRect()
+	MOAIDraw.drawRect( x0,y0,x1,y1 )
+end
 
 --------------------------------------------------------------------
 wrapWithMoaiTransformMethods( Camera, '_camera' )
@@ -557,5 +563,9 @@ function Camera:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
 	giz:setIcon( 'camera.png' )
 	giz:setParentEntity( self._entity )
+	local boundGiz = mock_edit.SimpleBoundGizmo()
+	boundGiz:setTarget( self )
+	giz:addChild( boundGiz )
 	return giz
 end
+
