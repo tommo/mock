@@ -502,6 +502,11 @@ function Camera:removeImageEffect( imageEffect )
 	self:reloadPasses()
 end
 
+function Camera:setImageEffectVisible( imageEffect )
+	local idx = table.index( self.imageEffects, imageEffect )
+	if not id then return end
+	--TODO: image effect activate/deactivate
+end
 
 --------------------------------------------------------------------
 --output image buffer support

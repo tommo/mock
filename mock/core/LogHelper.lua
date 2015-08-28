@@ -45,7 +45,7 @@ function _logtime_end(name)
 end
 
 --------------------------------------------------------------------
-local logLevelNames = {
+local nameToLogLevel = {
 	['status']  =  MOAILogMgr.LOG_STATUS,
 	['warning'] =  MOAILogMgr.LOG_WARNING,
 	['error']   =  MOAILogMgr.LOG_ERROR,
@@ -54,9 +54,10 @@ local logLevelNames = {
 
 local _logLevel = MOAILogMgr.LOG_WARNING
 local _logFile  = false
+
 function setLogLevel( level )
 	if type(level) == 'string' then
-		level = logLevelNames[level] or MOAILogMgr.LOG_STATUS
+		level = nameToLogLevel[level] or MOAILogMgr.LOG_STATUS
 	end
 	MOAILogMgr.setLogLevel( level )
 	_logLevel = level
@@ -148,3 +149,5 @@ function reportHistogram()
 	print( f:read( '*a' ) )
 	f:close()
 end
+
+setLogLevel( 'warning' )
