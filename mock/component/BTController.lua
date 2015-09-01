@@ -89,6 +89,11 @@ function BTContext:getOwner()
 	return self._owner
 end
 
+function BTContext:getOwnerEntity()
+	local owner =  self._owner
+	return owner and owner:getEntity()
+end
+
 function BTContext:validateTree( tree )
 	return tree.root:validate( self )
 end

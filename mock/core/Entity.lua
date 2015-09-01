@@ -380,31 +380,43 @@ end
 
 function Entity:getAllComponentsOf( id )
 
-	local components = {}
-	if not self.components then return components end
+	local found = {}
+	if not self.components then return found end
 
 	local tt = type(id)
 	if tt == 'string' then
+		local clasName = id
 		for com, comType in pairs( self.components ) do
 			while comType do
-				if comType.__name == name then 
-					table.insert(components, com)
+				if comType.__name == clasName then 
+					table.insert(found, com)
 					break
 				end		
 				comType = comType.__super
 			end
 		end
 	elseif tt == 'table' then
+		local clasBody = id
 		for com, comType in pairs( self.components ) do
-			if comType == clas then 
-				table.insert(components, com) 
-			elseif isClass( comType ) and comType:isSubclass( clas ) then 
-				table.insert(components, com) 
+			if comType == clasBody then 
+				table.insert(found, com) 
+			elseif isClass( comType ) and comType:isSubclass( clasBody ) then 
+				table.insert(found, com) 
 			end
 		end
 	end
 
-	return components
+	return found
+end
+
+function Entity:eachComponent()
+	local list = table.keys( self:getComponents() )
+	return eachT( list )
+end
+
+function Entity:eachComponentOf( id )
+	local list = self:getAllComponentsOf( id )
+	return eachT( list )
 end
 
 function Entity:printComponentClassNames()
