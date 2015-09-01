@@ -3,12 +3,14 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: PhysicsShape ( mock.Component )
 	:MODEL{
+		Field 'active'   :boolean();
 		Field 'tag'       :string();
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
 		Field 'material'  :asset( 'physics_material' ) :getset( 'Material' );
 	}
 
 function PhysicsShape:__init()
+	self.active = true 
 	self.tag = false
 	self.materialPath = false
 	self.material = false
@@ -147,6 +149,7 @@ function PhysicsShape:updateParentBody( body )
 end
 
 function PhysicsShape:updateShape()
+	if not self.active then return end
 	local shape = self.shape
 	if shape then 
 		shape.component = nil
@@ -173,7 +176,7 @@ function PhysicsShape:createShape( body )
 end
 
 function PhysicsShape:setCollisionHandler(handler, phaseMask, categoryMask)
-
+	if not self.shape then return end
 	self.handlerData = {
 		func         = handler,
 		phaseMask    = phaseMask,

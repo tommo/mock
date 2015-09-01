@@ -198,7 +198,7 @@ end
 
 function BTContext:removeRunningChildNodes( parentNode )
 	self._runningQueueNeedShrink = true
-	local _runningQueue = self._runningQueue
+	local _runningQueue  = self._runningQueue
 	local _activeActions = self._activeActions
 
 	for i, node in ipairs( _runningQueue ) do
@@ -206,8 +206,10 @@ function BTContext:removeRunningChildNodes( parentNode )
 			--stop this & exclude this in new queue
 			--TODO: stop the nodes in reversed order?
 			local action = _activeActions[ node ]
-			local stop = action.stop
-			if stop then stop( action, self ) end
+			if action then
+				local stop   = action.stop
+				if stop then stop( action, self ) end
+			end
 			_runningQueue[ i ] = false --remove later
 		end		
 	end
