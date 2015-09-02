@@ -127,6 +127,10 @@ function ParseContextProto:set( type, value )
 	return true
 end
 
+function ParseContextProto:setArguments( args )
+	self.currentNode.arguments = args or false
+end
+
 function ParseContextProto:parseCommon( content, pos, type, symbol )
 	-- local content = content:sub( pos )
 	local s, e, match = string.find( content, '^'..symbol..'%s*([%w_.]+)%s*', pos )
@@ -138,6 +142,47 @@ function ParseContextProto:parseCommon( content, pos, type, symbol )
 	end
 end
 
+function ParseContextProto:parseAction( content, pos )
+	-- local content = content:sub( pos )
+	local s, e, match = string.find( content, '^@%s*([%w_.]+)%s*', pos )
+	if not s then	return pos end
+	if self:set( 'action', match ) then
+		local pos1 = e + 1
+		
+		--test empty arg first
+		local s, e, match = string.find( content, '%(%s*%)%s*', pos1 )
+		if s then return e + 1 end
+		
+		--test kvargs
+		local s, e, match = string.find( content, '%(%s*([%w_%s=,]*)s*%)%s*', pos1 )
+		if s then
+			local args = self:parseArguments( match )
+			table.print( args )
+			if not args then return pos end
+			self:setArguments( args )
+			return e + 1
+		else
+			return pos1
+		end
+
+	else
+		return pos
+	end
+end
+
+function ParseContextProto:parseArguments( raw )
+	local result = {}
+	for part in string.gsplit( raw, ',', true ) do
+		local k, v = string.match( part, '^%s*([%w_]+)%s*=%s*([%w_]+)%s*' )
+		if k then
+			result[ k ] = v
+		else
+			self:setErrorInfo( 'failed parsing arguments' )
+			return nil
+		end
+	end
+	return result
+end
 
 function ParseContextProto:parseDecorator( content, pos, type, symbol )
 	-- local content = content:sub( pos )
@@ -160,7 +205,8 @@ function ParseContextProto:parse_condition_not ( content, pos )
 end
 
 function ParseContextProto:parse_action ( content, pos )
-	return self:parseCommon( content, pos, 'action', '@' )
+	return self:parseAction( content, pos )
+	-- return self:parseCommon( content, pos, 'action', '@' )
 end
 
 function ParseContextProto:parse_priority ( content, pos )

@@ -55,6 +55,10 @@ function PhysicsBodySteerController:resume()
 	self._controller:pause(false)
 end
 
+function PhysicsBodySteerController:isPaused()
+	return self._controller:isPaused()
+end
+
 function PhysicsBodySteerController:getLimiter()
 	return self._controller:getLimiter()
 end

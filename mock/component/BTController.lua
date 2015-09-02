@@ -68,6 +68,31 @@ function BTAction:step( dt )
 	return 'ok'
 end
 
+function BTAction:getBTNode()
+	return self._BTNode
+end
+
+function BTAction:getArgumentTable()
+	return self._BTNode.arguments
+end
+
+function BTAction:getArgN( k, default )
+	return tonumber( self:getArg( k, default ) )
+end
+
+function BTAction:getArgB( k, default )
+	local v = self:getArg( k, nil )
+	if v == nil then return default and true or false end
+	if v == 'false' then return false end
+	return true
+end
+
+function BTAction:getArg( k, default )
+	local args = self._BTNode.arguments
+	local v = args and args[ k ]
+	return v == nil and default or v
+end
+
 --------------------------------------------------------------------
 local DUMMYAction = BTAction()
 --------------------------------------------------------------------
@@ -92,6 +117,14 @@ end
 function BTContext:getOwnerEntity()
 	local owner =  self._owner
 	return owner and owner:getEntity()
+end
+
+function BTContext:getController()
+	return self._owner
+end
+
+function BTContext:getControllerEntity()
+	return self._owner:getEntity()
 end
 
 function BTContext:validateTree( tree )
@@ -129,7 +162,7 @@ function BTContext:requestAction( actionNode )
 		action = DUMMYAction
 	end
 	self._activeActions[ actionNode ] = action
-	
+	action._BTNode = actionNode
 	return action
 end
 
@@ -240,6 +273,7 @@ function BTContext:clearRunningNode()
 		end
 	end
 	self._runningQueue = {}
+	self._activeActions = {}
 end
 
 function BTContext:saveState()
@@ -275,6 +309,7 @@ local function loadNode( data )
 
 	elseif nodeType == 'action' then
 		node.actionName = value
+		node.arguments  = data.arguments or false
 		--TODO: redirect action to object ?	
 	end
 	if children then
@@ -350,6 +385,7 @@ end
 CLASS: BTActionNode ( BTNode )
 function BTActionNode:__init( name )
 	self.actionName = name
+	self.arguments  = false
 end
 
 function BTActionNode:getType()
