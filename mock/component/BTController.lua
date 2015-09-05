@@ -77,7 +77,7 @@ function BTAction:getArgumentTable()
 end
 
 function BTAction:getArgN( k, default )
-	return tonumber( self:getArg( k, default ) )
+	return tonumber( self:getArg( k, nil ) ) or default or 0
 end
 
 function BTAction:getArgB( k, default )
@@ -311,6 +311,10 @@ local function loadNode( data )
 		node.actionName = value
 		node.arguments  = data.arguments or false
 		--TODO: redirect action to object ?	
+
+	elseif nodeType == 'log' then
+		node.logText = value
+		
 	end
 	if children then
 		for i, childData in ipairs( children ) do
@@ -433,6 +437,23 @@ end
 
 function BTActionNode:validate( context )
 	assert( context:requestAction( self ), 'action not registered for:'..self.actionName )
+end
+
+--------------------------------------------------------------------
+CLASS: BTActionLogNode ( BTNode )
+	:MODEL{}
+
+function BTActionLogNode:__init( name )
+	self.logText = name
+end
+
+function BTActionLogNode:getType()
+	return 'Log'
+end
+
+function BTActionLogNode:execute( context )
+	print( self.logText )
+	return self:returnUpLevel( 'ok', context )
 end
 
 --------------------------------------------------------------------
@@ -974,6 +995,7 @@ BehaviorTreeNodeTypes = {
 	['condition']         = BTCondition ;
 	['condition_not']     = BTConditionNot ;
 	['action']            = BTActionNode ;
+	['log']               = BTActionLogNode ;
 	['priority']          = BTPrioritySelector ;
 	['sequence']          = BTSequenceSelector ;
 	['random']            = BTRandomSelector ;

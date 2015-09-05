@@ -301,6 +301,12 @@ function wrap(v,minv,maxv)
 	end
 end
 
+function wrapAngle( angle )
+	angle = angle % 360
+	if angle > 180 then angle = angle - 360 end
+	return angle
+end
+
 function approxEqual(a, b, epislon)
 	epislon = epislon or 0.01
 	

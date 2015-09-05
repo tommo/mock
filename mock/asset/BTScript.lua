@@ -142,6 +142,17 @@ function ParseContextProto:parseCommon( content, pos, type, symbol )
 	end
 end
 
+function ParseContextProto:parseLineCommon( content, pos, type, symbol )
+	-- local content = content:sub( pos )
+	local s, e, match = string.find( content, '^'..symbol..'%s*(.*)%s*', pos )
+	if not s then	return pos end
+	if self:set( type, match ) then
+		return e + 1
+	else
+		return pos
+	end
+end
+
 function ParseContextProto:parseAction( content, pos )
 	-- local content = content:sub( pos )
 	local s, e, match = string.find( content, '^@%s*([%w_.]+)%s*', pos )
@@ -154,10 +165,9 @@ function ParseContextProto:parseAction( content, pos )
 		if s then return e + 1 end
 		
 		--test kvargs
-		local s, e, match = string.find( content, '%(%s*([%w_%s=,]*)s*%)%s*', pos1 )
+		local s, e, match = string.find( content, '%(%s*(.*)s*%)%s*', pos1 )
 		if s then
 			local args = self:parseArguments( match )
-			table.print( args )
 			if not args then return pos end
 			self:setArguments( args )
 			return e + 1
@@ -173,7 +183,7 @@ end
 function ParseContextProto:parseArguments( raw )
 	local result = {}
 	for part in string.gsplit( raw, ',', true ) do
-		local k, v = string.match( part, '^%s*([%w_]+)%s*=%s*([%w_]+)%s*' )
+		local k, v = string.match( part, '^%s*([%w_.]+)%s*=%s*([%w_.%+%-]+)%s*' )
 		if k then
 			result[ k ] = v
 		else
@@ -206,7 +216,10 @@ end
 
 function ParseContextProto:parse_action ( content, pos )
 	return self:parseAction( content, pos )
-	-- return self:parseCommon( content, pos, 'action', '@' )
+end
+
+function ParseContextProto:parse_log ( content, pos )
+	return self:parseLineCommon( content, pos, 'log', '##' )
 end
 
 function ParseContextProto:parse_priority ( content, pos )
@@ -253,6 +266,8 @@ function ParseContextProto:parse_decorator_repeat ( content, pos )
 	return self:parseDecorator( content, pos, 'decorator_repeat', ':repeat' )
 end
 
+
+
 function ParseContextProto:parse_commented ( content, pos )
 	local s, e, match = string.find( content, '^//.*', pos )
 	if s then
@@ -283,6 +298,7 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_condition( l, pos )
 		pos = self:parse_condition_not( l, pos )
 		pos = self:parse_action( l, pos )
+		pos = self:parse_log( l, pos )
 		pos = self:parse_priority( l, pos )
 		pos = self:parse_sequence( l, pos )
 		pos = self:parse_random( l, pos )
