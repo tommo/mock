@@ -1022,6 +1022,10 @@ separatorField = Field('----') :no_save() :no_edit()
 --------------------------------------------------------------------
 
 --some utils
+function _ENUM( t )
+	return t
+end
+
 function _ENUM_I( t )
 	local t1 = {}
 	for i, id in ipairs( t ) do

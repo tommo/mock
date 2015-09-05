@@ -453,7 +453,8 @@ end
 
 function BTActionLogNode:execute( context )
 	print( self.logText )
-	return self:returnUpLevel( 'ok', context )
+
+	return self:returnUpLevel( 'ignore', context )
 end
 
 --------------------------------------------------------------------
@@ -928,7 +929,9 @@ function BTDecoratorNot:getType()
 end
 
 function BTDecoratorNot:resumeFromChild( child, res, context )
-	res = res == 'ok' and 'fail' or 'ok'
+	if res ~= 'ignore' then
+		res = res == 'ok' and 'fail' or 'ok'
+	end
 	return self:returnUpLevel( res, context )
 end
 

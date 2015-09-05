@@ -142,7 +142,10 @@ function _serializeField( obj, f, data, objMap, noNewRef )
 	end
 
 	if isAtomicValue( ft ) then
-		data[ id ] = f:getValue( obj )
+		local v = f:getValue( obj )
+		if v ~= nil then
+			data[ id ] = v
+		end
 		return
 	end
 

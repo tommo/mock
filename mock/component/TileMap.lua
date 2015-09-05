@@ -344,6 +344,16 @@ CLASS: TileMapParam ()
 
 
 ----------------------------------------------------------------------
+EnumResizeDirection = _ENUM {
+	{ 'From Center',       'C'  };
+	{ 'From Left',         'L'  };
+	{ 'From Left Bottom',  'LB' };
+	{ 'From Left Top',     'LT' };
+	{ 'From Right',        'R'  };
+	{ 'From Right Bottom', 'RB' };
+	{ 'From Right Top',    'RT' };
+}
+
 CLASS: TileMapResizeParam ()
 :MODEL {
 	Field 'width'          :int() :readonly();
