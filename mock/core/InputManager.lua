@@ -412,6 +412,17 @@ function InputDevice:isKeyUp(key)
 	return state and ( not state.down )
 end
 
+function InputDevice:isShiftDown()
+	return self:isKeyDown( 'lshift' ) or self:isKeyDown( 'rshift' )
+end
+
+function InputDevice:isCtrlDown()
+	return self:isKeyDown( 'lctrl' ) or self:isKeyDown( 'rctrl' )
+end
+
+function InputDevice:isAltDown()
+	return self:isKeyDown( 'lalt' ) or self:isKeyDown( 'ralt' )
+end
 
 function InputDevice:pollKeyHit(key) --get key hit counts since last polling
 	local keyStates = self.keyStates
@@ -736,6 +747,22 @@ end
 
 function isKeyUp(key)
 	return _defaultInputDevice:isKeyUp(key)	
+end
+
+function isShiftDown()
+	return _defaultInputDevice:isShiftDown()
+end
+
+function isCtrlDown()
+	return _defaultInputDevice:isCtrlDown()
+end
+
+function isAltDown()
+	return _defaultInputDevice:isAltDown()
+end
+
+function isMetaDown()
+	return _defaultInputDevice:isMetaDown()
 end
 
 function pollKeyHit(key) --get key hit counts since last polling
