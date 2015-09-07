@@ -153,11 +153,11 @@ function ParseContextProto:parseLineCommon( content, pos, type, symbol )
 	end
 end
 
-function ParseContextProto:parseAction( content, pos )
+function ParseContextProto:parseCommonWithArguments( content, pos, type, symbol )
 	-- local content = content:sub( pos )
-	local s, e, match = string.find( content, '^@%s*([%w_.]+)%s*', pos )
+	local s, e, match = string.find( content, '^'..symbol..'%s*([%w_.]+)%s*', pos )
 	if not s then	return pos end
-	if self:set( 'action', match ) then
+	if self:set( type, match ) then
 		local pos1 = e + 1
 		
 		--test empty arg first
@@ -215,7 +215,11 @@ function ParseContextProto:parse_condition_not ( content, pos )
 end
 
 function ParseContextProto:parse_action ( content, pos )
-	return self:parseAction( content, pos )
+	return self:parseCommonWithArguments( content, pos, 'action', '@' )
+end
+
+function ParseContextProto:parse_msg ( content, pos )
+	return self:parseCommonWithArguments( content, pos, 'msg', '$' )
 end
 
 function ParseContextProto:parse_log ( content, pos )
@@ -298,6 +302,7 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_condition( l, pos )
 		pos = self:parse_condition_not( l, pos )
 		pos = self:parse_action( l, pos )
+		pos = self:parse_msg( l, pos )
 		pos = self:parse_log( l, pos )
 		pos = self:parse_priority( l, pos )
 		pos = self:parse_sequence( l, pos )

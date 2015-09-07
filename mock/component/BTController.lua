@@ -310,7 +310,10 @@ local function loadNode( data )
 	elseif nodeType == 'action' then
 		node.actionName = value
 		node.arguments  = data.arguments or false
-		--TODO: redirect action to object ?	
+
+	elseif nodeType == 'msg' then
+		node.msg = value
+		node.arguments = data.arguments or false
 
 	elseif nodeType == 'log' then
 		node.logText = value
@@ -440,20 +443,38 @@ function BTActionNode:validate( context )
 end
 
 --------------------------------------------------------------------
-CLASS: BTActionLogNode ( BTNode )
+CLASS: BTLoggingNode ( BTNode )
 	:MODEL{}
 
-function BTActionLogNode:__init( name )
+function BTLoggingNode:__init( name )
 	self.logText = name
 end
 
-function BTActionLogNode:getType()
+function BTLoggingNode:getType()
 	return 'Log'
 end
 
-function BTActionLogNode:execute( context )
+function BTLoggingNode:execute( context )
 	print( self.logText )
 
+	return self:returnUpLevel( 'ignore', context )
+end
+
+--------------------------------------------------------------------
+CLASS: BTMsgSendingNode ( BTNode )
+	:MODEL{}
+
+function BTMsgSendingNode:__init()
+	self.msg = false
+end
+
+function BTMsgSendingNode:getType()
+	return 'Msg'
+end
+
+function BTMsgSendingNode:execute( context )
+	--TODO: arguments
+	context:getControllerEntity():tell( self.msg, self, self )
 	return self:returnUpLevel( 'ignore', context )
 end
 
@@ -998,7 +1019,8 @@ BehaviorTreeNodeTypes = {
 	['condition']         = BTCondition ;
 	['condition_not']     = BTConditionNot ;
 	['action']            = BTActionNode ;
-	['log']               = BTActionLogNode ;
+	['log']               = BTLoggingNode ;
+	['msg']               = BTMsgSendingNode ;
 	['priority']          = BTPrioritySelector ;
 	['sequence']          = BTSequenceSelector ;
 	['random']            = BTRandomSelector ;
