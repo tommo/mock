@@ -259,7 +259,11 @@ function ParseContextProto:parse_decorator_not ( content, pos )
 end
 
 function ParseContextProto:parse_decorator_ok ( content, pos )
-	return self:parseDecorator( content, pos, 'decorator_ok', ':pass' )
+	return self:parseDecorator( content, pos, 'decorator_ok', ':ok' )
+end
+
+function ParseContextProto:parse_decorator_ignore ( content, pos )
+	return self:parseDecorator( content, pos, 'decorator_ignore', ':pass' )
 end
 
 function ParseContextProto:parse_decorator_fail ( content, pos )
@@ -314,6 +318,7 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_decorator_not( l, pos )
 		pos = self:parse_decorator_ok( l, pos )
 		pos = self:parse_decorator_fail( l, pos )
+		pos = self:parse_decorator_ignore( l, pos )
 		pos = self:parse_decorator_repeat( l, pos )
 		pos = self:parse_commented( l, pos )
 		pos = self:parse_spaces( l, pos )

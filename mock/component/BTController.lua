@@ -404,6 +404,9 @@ function BTActionNode:execute( context )
 	local start = act.start
 	if start then 
 		local res = start( act, context, self )
+		if res == 'ok' or res == 'fail' then
+			return self:returnUpLevel( res, context )
+		end
 	end
 	return self:update( context, 0, true )
 end
@@ -993,6 +996,23 @@ function BTDecoratorAlwaysFail:resumeFromChild( child, res, context )
 end
 
 --------------------------------------------------------------------
+CLASS: BTDecoratorIgnore ( BTDecorator )
+function BTDecoratorIgnore:getType()
+	return 'BTDecoratorIgnore'
+end
+
+function BTDecoratorIgnore:execute( context )
+	if self.targetNode then
+		return self.targetNode:execute( context )
+	else
+		return self:returnUpLevel( 'ignore', context )
+	end
+end
+
+function BTDecoratorIgnore:resumeFromChild( child, res, context )
+	return self:returnUpLevel( 'ignore', context )
+end
+--------------------------------------------------------------------
 CLASS: BTDecoratorRepeatUntil ( BTDecorator )
 function BTDecoratorRepeatUntil:getType()
 	return 'BTDecoratorRepeatUntil'
@@ -1031,6 +1051,7 @@ BehaviorTreeNodeTypes = {
 	['decorator_not']     = BTDecoratorNot ;
 	['decorator_ok']      = BTDecoratorAlwaysOK ;
 	['decorator_fail']    = BTDecoratorAlwaysFail ;
+	['decorator_ignore']  = BTDecoratorAlwaysOK ;
 	['decorator_repeat']  = BTDecoratorRepeatUntil ;
 }
 

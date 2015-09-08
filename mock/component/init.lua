@@ -92,6 +92,7 @@ require 'mock.component.SpineSpriteSimple'
 require 'mock.component.FSMController'
 require 'mock.component.BTController'
 require 'mock.component.SteerController'
+require 'mock.component.WaypointGraph'
 
 --------------------------------------------------------------------
 require 'mock.component.EffectEmitter'
