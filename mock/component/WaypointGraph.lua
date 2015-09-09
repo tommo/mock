@@ -67,8 +67,6 @@ end
 CLASS: WaypointGraph ( Component )
 	:MODEL{
 		Field 'serializedData' :variable() :no_edit() :getset( 'SerializedData' );
-		Field 'maxTotalIteration'  :int() :range( 1 );
-		Field 'maxSingleIteration' :int() :range( 1 );
 }
 
 registerComponent( 'WaypointGraph', WaypointGraph )
@@ -132,36 +130,6 @@ function WaypointGraph:getSerializedData()
 
 end
 
-
-function WaypointGraph:addPathFinder( pf, prior )
-	if prior then
-		table.insert( self.finderQueue, 1, pf )
-	else
-		table.insert( self.finderQueue, pf )
-	end
-end
-
-function WaypointGraph:updatePathFinders()
-	local totalIteration = 0
-	local maxTotalIteration  = self.maxTotalIteration
-	local maxSingleIteration = self.maxSingleIteration
-
-	for i, pf in ipairs( self.finderQueue ) do
-		local singleIteration
-		if totalIteration < maxTotalIteration then
-			singleIteration = SINGLE_ITERATION
-			totalIteration  = totalIteration + singleIteration
-		else
-			return 
-		end
-
-		if not pf:findPath( singleIteration ) then
-			self:reportPath( pf )
-		end
-
-	end
-end
-
 function WaypointGraph:addWaypoint()
 	local p = Waypoint()
 	self.nodeCount = self.nodeCount + 1
@@ -191,7 +159,6 @@ function WaypointGraph:getWaypoint( id )
 	return self.waypoints[ id ]
 end
 
-
 function WaypointGraph:findWaypointByName( name )
 	for i, p in ipairs( self.waypoints ) do
 		if p.name == name then return p end
@@ -217,10 +184,10 @@ function WaypointGraph:disconnectWaypoints( id1, id2 )
 	return false
 end
 
-
 function WaypointGraph:rebuildMOAIGraph()
 	local graph = MOAIVecPathGraph.new()
 	self.pathGraph = graph
+	self.needRebuild = false
 	local count = self.nodeCount
 	graph:reserveNodes( count )
 
@@ -228,9 +195,9 @@ function WaypointGraph:rebuildMOAIGraph()
 		local id = i
 		local x, y, z = wp:getWorldLoc()
 		graph:setNode( i, x, y, z )
-		for neighbour in pairs( wp.neighbours ) do
+		for neighbour, ctype in pairs( wp.neighbours ) do
 			local id1 = neighbour.nodeId
-			if id1 > id then
+			if ctype ~= 'nolink' and id1 > id then
 				graph:setNeighbours( id, id1, true )
 			end
 		end
@@ -239,7 +206,10 @@ function WaypointGraph:rebuildMOAIGraph()
 	return graph
 end
 
-function WaypointGraph:getMOAIPathGraph()
+function WaypointGraph:affirmPathGraph()
+	if self.needRebuild then
+		self:rebuildMOAIGraph()
+	end
 	return self.pathGraph
 end
 
@@ -265,4 +235,22 @@ end
 
 function WaypointGraph:_clearTmpConnections()
 	self.tmpConnections = {}
+end
+
+function WaypointGraph:findNearestWaypoint( x, y, z, checkingCallback )
+	--TODO: some borad phase? QUAD tree? 
+	-- if checkingCallback and checkingCallback( )
+	local minDistance = false
+	local candidate = false
+	for i, p in ipairs( self.waypoints ) do
+		local x0, y0, z0 = p:getLoc()
+		local distance = distance3( x0,y0,z0, x,y,z )
+		if ( not candidate ) or ( distance < minDistance ) then
+			if ( not checkingCallback ) or ( checkingCallback( p ) ) then
+				candidate = p
+				minDistance = distance
+			end
+		end
+	end
+	return candidate
 end

@@ -320,6 +320,13 @@ math.clamp = clamp
 math.wrap  = wrap
 
 --Vector helpers
+function distance3(x1,y1,z1, x2,y2,z2 )
+	local dx=x1-x2
+	local dy=y1-y2
+	local dz=z1-z2
+	return sqrt(dx*dx+dy*dy+dz*dz)
+end
+
 function distance(x1,y1,x2,y2)
 	local dx=x1-x2
 	local dy=y1-y2

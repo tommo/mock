@@ -2,6 +2,7 @@ require 'mock.core.MOAIInterfaces'
 
 --CORE
 require 'mock.core.utils'
+
 require 'mock.core.signal'
 require 'mock.core.Class'
 require 'mock.core.ClassHelpers'
