@@ -79,3 +79,12 @@ end
 -- 	s1 = s1 or 5
 -- 	s2 = s2 or 5	
 -- end
+
+function MOAIDraw.drawRectC( x, y, w, h )
+	return MOAIDraw.drawRect( x - w/2, y - h/2, w + w/2, h + w/2 )
+end
+
+function MOAIDraw.fillRectC( x, y, w, h )
+	return MOAIDraw.fillRect( x - w/2, y - h/2, w + w/2, h + w/2 )
+end
+

@@ -373,7 +373,7 @@ function Entity:com( id )
 	end
 end
 
-function Entity:hasComponent( clas )
+function Entity:hasComponentOf( clas )
 	if self:getComponent( clas ) then return true end
 	return false
 end

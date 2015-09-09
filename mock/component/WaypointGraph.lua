@@ -20,11 +20,12 @@ function Waypoint:isNeighbour( p1 )
 	return self.neighbours[ p1 ] and true or false
 end
 
-function Waypoint:addNeighbour( p1 )
+function Waypoint:addNeighbour( p1, ctype )
 	if not self.nodeId then return false end
 	if p1 == self then return false end
-	p1.neighbours[ self ] = true
-	self.neighbours[ p1 ] = true
+	ctype = ctype or true -- 'forcelink', 'nolink'
+	p1.neighbours[ self ] = ctype
+	self.neighbours[ p1 ] = ctype
 	self.parentGraph.needRebuild = true
 	return true
 end
@@ -38,6 +39,14 @@ function Waypoint:removeNeighbour( p1 )
 	return true
 end
 
+function Waypoint:clearNeighbours()
+	for p in pairs( self.neighbours ) do
+		p.neighbours[ self ] = nil
+	end
+	self.neighbours = {}
+	self.parentGraph.needRebuild = true
+end
+
 function Waypoint:getLoc()
 	return self.trans:getLoc()
 end
@@ -49,12 +58,15 @@ end
 
 function Waypoint:setLoc( x, y, z )
 	self.trans:setLoc( x, y, z )
-	self.parentGraph.needRebuild = true
+	if self.parentGraph then
+		self.parentGraph.needRebuild = true
+	end
 end
 
 --------------------------------------------------------------------
 CLASS: WaypointGraph ( Component )
 	:MODEL{
+		Field 'serializedData' :variable() :no_edit() :getset( 'SerializedData' );
 		Field 'maxTotalIteration'  :int() :range( 1 );
 		Field 'maxSingleIteration' :int() :range( 1 );
 }
@@ -62,7 +74,9 @@ CLASS: WaypointGraph ( Component )
 registerComponent( 'WaypointGraph', WaypointGraph )
 
 function WaypointGraph:__init()
-	self.waypoints = {}
+	self.waypoints   = {}
+	self.tmpConnections = {}
+
 	self.nodeCount = 0
 	self.pathGraph = MOAIVecPathGraph.new()
 	self.finderQueue = {}
@@ -78,6 +92,46 @@ end
 
 function WaypointGraph:onDetach( ent )
 end
+
+function WaypointGraph:setSerializedData( data )
+	if not data then return end
+	local waypoints = {}
+	self.waypoints = waypoints
+	
+	--load waypoints
+	for i, pdata in ipairs( data.waypoints ) do
+		local p = self:addWaypoint()
+		p:setLoc( unpack( pdata.loc ) )
+	end
+	for i, conn in ipairs( data.connections ) do
+		local id0, id1, ctype = unpack( conn )
+		self:connectWaypoints( id0, id1, ctype )
+	end
+	self.needRebuild = true --?
+
+end
+
+function WaypointGraph:getSerializedData()
+	--save waypoints
+	local connections = {}
+	local waypoints = {}
+	for i, p in ipairs( self.waypoints ) do
+		waypoints[ i ] = {
+			loc = { p:getLoc() }
+		}
+		for n, ctype in pairs( p.neighbours ) do
+			if n.nodeId > i then
+				table.insert( connections, { p.nodeId, n.nodeId, ctype } )
+			end
+		end
+	end
+	return {
+		waypoints = waypoints,
+		connections = connections
+	}
+
+end
+
 
 function WaypointGraph:addPathFinder( pf, prior )
 	if prior then
@@ -122,6 +176,7 @@ end
 function WaypointGraph:removeWaypoint( wp )
 	local idx = table.index( self.waypoints, wp )
 	if not idx then return false end
+	wp:clearNeighbours()
 	table.remove( self.waypoints, idx )
 	self.nodeCount = self.nodeCount - 1
 	local waypoints = self.waypoints
@@ -144,11 +199,11 @@ function WaypointGraph:findWaypointByName( name )
 	return nil
 end
 
-function WaypointGraph:connectWaypoints( id1, id2 )
+function WaypointGraph:connectWaypoints( id1, id2, ctype )
 	local p1 = self.waypoints[ id1 ]
 	local p2 = self.waypoints[ id2 ]
 	if p1 and p2 then
-		return p1:addNeighbour( p2 )
+		return p1:addNeighbour( p2, ctype )
 	end
 	return false
 end
@@ -189,4 +244,25 @@ function WaypointGraph:getMOAIPathGraph()
 end
 
 function WaypointGraph:requestPath( x, y, z )
+end
+
+function WaypointGraph:findWaypointByLoc( x, y, padding )
+	padding = padding or 8
+	local pad2 = padding*padding
+	for i, wp in ipairs( self.waypoints ) do
+		local x0, y0 = wp:getLoc()
+		local dx, dy = x - x0, y - y0
+		if dx*dx + dy*dy < pad2 then return wp end
+	end
+end
+
+function WaypointGraph:findConnectionByLoc( x, y, padding )
+end
+
+function WaypointGraph:_addTmpConnection( p1, p2, ctype )
+	self.tmpConnections[ p1 ] = { p1, p2, ctype }
+end
+
+function WaypointGraph:_clearTmpConnections()
+	self.tmpConnections = {}
 end

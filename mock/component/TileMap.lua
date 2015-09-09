@@ -375,7 +375,7 @@ CLASS: TileMapResizeParam ()
 CLASS: TileMap ( RenderComponent )
 	:MODEL{
 		Field 'initialized' :boolean() :no_edit();
-		Field 'serializedData' :string() :no_edit() :getset( 'SerializedData' );
+		Field 'serializedData' :variable() :no_edit() :getset( 'SerializedData' );
 		'----';
 		Field 'defaultTileset' :asset( 'tileset' ) :readonly();
 		Field 'size'     :type( 'vec2' ) :getset( 'Size' ) :readonly() :meta{ decimals = 0 };
