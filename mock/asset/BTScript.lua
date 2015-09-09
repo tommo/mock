@@ -41,6 +41,7 @@ function ParseContextProto:init()
 	self.currentIndent = -1
 	self.currentNode   = self.rootNode
 	self.currentParent = false
+	self.currentDecorationNode = false
 end
 
 local function printBTScriptNode( n, indent )
@@ -98,7 +99,7 @@ function ParseContextProto:matchIndent( indent )
 	if not found then
 		error( 'indent no match' )
 	end
-	self.currentNode = n
+	self.currentNode   = n
 	self.currentParent = self.currentNode.parent
 	self.currentIndent = indent
 	return self:add()
@@ -117,6 +118,8 @@ function ParseContextProto:set( type, value )
 			self.decorateState = 'decorated'
 			self.currentParent = self.currentNode
 			self.currentLineHead = self.currentNode
+			self.currentDecorationNode = false
+
 		elseif self.decorateState == 'decorated' then
 			-- self:setErrorInfo( 'decorator node can only have ONE target node' )
 			-- return false
@@ -200,6 +203,7 @@ function ParseContextProto:parseDecorator( content, pos, type, symbol )
 	if not s then	return pos end
 	if self:set( type, type ) then
 		self.decorateState = 'decorating'
+		self.currentDecorationNode = self.currentNode
 		return e + 1
 	else
 		return pos
@@ -293,12 +297,24 @@ end
 
 
 function ParseContextProto:parseLine( lineNo, l )
-	self.currentLineHead = false
-	self.decorateState = false
+	
 	local i = calcIndent( l )
 	self:matchIndent( i )
+	if self.decorateState == 'decorating' then
+		if self.currentParent ~= self.currentDecorationNode then
+			print( 'decorator node must have ONE sub node')
+			local info = string.format( 'syntax error @ %d:%d', lineNo, i )
+			print( info )
+			error( 'fail parsing' )
+		end
+	end
+
+	self.currentLineHead = false
+	self.decorateState   = false
+	
 	local pos = i + 1
 	pos = self:parse_action( l, pos )
+
 	local length = #l
 	while true do
 		if pos >= length then break end

@@ -333,6 +333,7 @@ end
 
 function BehaviorTree:load( data )
 	self.root = loadNode( data )	
+	self.root:validate()
 	return self
 end
 
@@ -442,6 +443,7 @@ function BTActionNode:stop( context )
 end
 
 function BTActionNode:validate( context )
+	if not context then return true end
 	assert( context:requestAction( self ), 'action not registered for:'..self.actionName )
 end
 
@@ -943,6 +945,7 @@ function BTDecorator:execute( context )
 end
 
 function BTDecorator:validate( context )
+	assert( self.targetNode, 'decoration node has no child node' )
 	return self.targetNode:validate( context )
 end
 
