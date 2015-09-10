@@ -284,8 +284,10 @@ function Game:init( option, fromEditor )
 
 	----extra
 	_stat( '...extra init' )
+	
 	collectgarbage( 'setpause',   70  )
-	collectgarbage( 'setstepmul', 150 )	
+	collectgarbage( 'setstepmul', 200 )	
+
 	-- MOAILuaRuntime.reportGC( true )
 	MOAISim.setStep( 1/60 )
 	MOAISim.clearLoopFlags()
@@ -300,7 +302,7 @@ function Game:init( option, fromEditor )
 			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)
 	-- MOAISim.setLongDelayThreshold( 100 )
-	-- MOAISim.setBoostThreshold( 3 )	
+	MOAISim.setBoostThreshold( 0 )	
 	-- MOAISim.setStepMultiplier( 2 )	
 
 	

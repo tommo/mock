@@ -165,7 +165,9 @@ end
 --------------------------------------------------------------------
 CLASS: WaypointPathFinder ( Component )
 	:MODEL{
+		Field 'targetGraph' :type( WaypointGraph ) :getset( 'Graph' )
 	}
+
 mock.registerComponent( 'WaypointPathFinder', WaypointPathFinder )
 
 function WaypointPathFinder:__init()
@@ -181,6 +183,10 @@ end
 
 function WaypointPathFinder:setGraph( graph )
 	self.targetGraph = graph
+end
+
+function WaypointPathFinder:getGraph()
+	return self.targetGraph
 end
 
 function WaypointPathFinder:stopRequest( request )

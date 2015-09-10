@@ -108,6 +108,7 @@ function BTContext:__init( owner )
 	self._conditions    = {}
 	self._params        = {}
 	self._owner         = owner or false
+	self._nodeContext   = {}
 end
 
 function BTContext:getOwner()
@@ -272,8 +273,13 @@ function BTContext:clearRunningNode()
 			node:stop( self )
 		end
 	end
-	self._runningQueue = {}
+	self._runningQueue  = {}
 	self._activeActions = {}
+end
+
+function BTContext:resetRunningState()
+	self:clearRunningNode()
+	self._nodeContext = {}
 end
 
 function BTContext:saveState()
@@ -607,20 +613,21 @@ function BTPrioritySelector:getType()
 end
 
 function BTPrioritySelector:execute( context )
-	local index = context[ self ] or 1
+	local nodeContext = context._nodeContext
+	local index = nodeContext[ self ] or 1
 	local child = self.children[ index ]
 	if not child then
-		context[ self ] = false
+		nodeContext[ self ] = false
 		return self:returnUpLevel( 'fail', context )
 	end
 	--run child node
-	context[ self ] = index + 1
+	nodeContext[ self ] = index + 1
 	return child:execute( context )
 end
 
 function BTPrioritySelector:resumeFromChild( child, res, context )
 	if res == 'ok' then  --done
-		context[ self ] = false
+		context._nodeContext[ self ] = false
 		return self:returnUpLevel( 'ok', context )
 	end 
 	return self:execute( context )
@@ -646,20 +653,21 @@ function BTSequenceSelector:getType()
 end
 
 function BTSequenceSelector:execute( context )
-	local index = context[ self ] or 1
+	local nodeContext = context._nodeContext
+	local index = nodeContext[ self ] or 1
 	local child = self.children[ index ]
 	if not child then
-		context[ self ] = false
+		nodeContext[ self ] = false
 		return self:returnUpLevel( 'ok', context )
 	end
 	--run child node
-	context[ self ] = index + 1
+	nodeContext[ self ] = index + 1
 	return child:execute( context )
 end
 
 function BTSequenceSelector:resumeFromChild( child, res, context )
 	if res == 'fail' then  --done
-		context[ self ] = false
+		context._nodeContext[ self ] = false
 		return self:returnUpLevel( 'fail', context )
 	end 
 	return self:execute( context )
@@ -688,10 +696,11 @@ function BTShuffledSequenceSelector:getType()
 end
 
 function BTShuffledSequenceSelector:execute( context )
-	local executeList = context[ self ]
+	local nodeContext = context._nodeContext
+	local executeList = nodeContext[ self ]
 	if not executeList then
 		executeList = makeShuffleList( self.childrenCount )
-		context[ self ] = executeList
+		nodeContext[ self ] = executeList
 	end
 
 	local index = remove( executeList )
@@ -700,14 +709,14 @@ function BTShuffledSequenceSelector:execute( context )
 		return child:execute( context )
 	else
 		--queue empty
-		context[ self ] = false
+		nodeContext[ self ] = false
 		return self:returnUpLevel( 'ok', context )
 	end
 end
 
 function BTShuffledSequenceSelector:resumeFromChild( child, res, context )
 	if res == 'fail' then
-		context[ self ] = false
+		context._nodeContext[ self ] = false
 		return self:returnUpLevel( 'fail', context )
 	end
 	return self:execute( context )
@@ -722,10 +731,12 @@ function BTConcurrentAndSelector:getType()
 end
 
 function BTConcurrentAndSelector:execute( context )
-	local env = context[ self ]
+	local nodeContext = context._nodeContext
+
+	local env = nodeContext[ self ]
 	if not env then 
 		env = { okCount = 0, failCount = 0, firstRun = true }
-		context[ self ] = env
+		nodeContext[ self ] = env
 	end
 
 	for i, child in ipairs( self.children ) do
@@ -737,7 +748,7 @@ function BTConcurrentAndSelector:execute( context )
 end
 
 function BTConcurrentAndSelector:checkResult( context )
-	local env = context[ self ]
+	local env = context._nodeContext[ self ]
 	if env.firstRun then
 		return 'running'
 	end
@@ -767,7 +778,7 @@ function BTConcurrentAndSelector:checkResult( context )
 end
 
 function BTConcurrentAndSelector:resumeFromChild( child, res, context )
-	local env = context[ self ]
+	local env = context._nodeContext[ self ]
 	if res == 'fail' then
 		env.failCount = env.failCount + 1
 
@@ -792,10 +803,11 @@ end
 
 
 function BTConcurrentOrSelector:execute( context )
-	local env = context[ self ]
+	local nodeContext = context._nodeContext
+	local env = nodeContext[ self ]
 	if not env then 
 		env = { failCount = 0, okCount = 0, firstRun = true }
-		context[ self ] = env
+		nodeContext[ self ] = env
 	end
 
 	for i, child in ipairs( self.children ) do
@@ -807,7 +819,7 @@ function BTConcurrentOrSelector:execute( context )
 end
 
 function BTConcurrentOrSelector:checkResult( context )
-	local env = context[ self ]
+	local env = context._nodeContext[ self ]
 	local firstRun  = env.firstRun
 	if firstRun then
 		return 'running'
@@ -838,7 +850,7 @@ function BTConcurrentOrSelector:checkResult( context )
 end
 
 function BTConcurrentOrSelector:resumeFromChild( child, res, context )
-	local env = context[ self ]
+	local env = context._nodeContext[ self ]
 	if res == 'fail' then
 		env.failCount = env.failCount + 1
 
@@ -864,10 +876,12 @@ end
 
 
 function BTConcurrentEitherSelector:execute( context )
-	local env = context[ self ]
+	local nodeContext = context._nodeContext
+
+	local env = nodeContext[ self ]
 	if not env then 
 		env = { failCount = 0, okCount = 0, firstRun = true }
-		context[ self ] = env
+		nodeContext[ self ] = env
 	end
 
 	for i, child in ipairs( self.children ) do
@@ -879,7 +893,7 @@ function BTConcurrentEitherSelector:execute( context )
 end
 
 function BTConcurrentEitherSelector:checkResult( context )
-	local env = context[ self ]
+	local env = context._nodeContext[ self ]
 	if env.firstRun then 
 		return 'running'
 	end
@@ -907,7 +921,7 @@ function BTConcurrentEitherSelector:checkResult( context )
 end
 
 function BTConcurrentEitherSelector:resumeFromChild( child, res, context )
-	local env = context[ self ]
+	local env = context._nodeContext[ self ]
 	if res == 'fail' then
 		env.failCount = env.failCount + 1
 
@@ -1071,8 +1085,10 @@ mock.registerComponent( 'BTController', BTController )
 local startCountDown = 0
 function BTController:__init()
 	self.schemePath = false
-	self.context = BTContext( self )
-	self.tree = false
+	self.context    = BTContext( self )
+	self.tree       = false
+	self.resetting  = false
+
 	--use different countdown start value to make the update sparse
 	startCountDown = startCountDown + 1
 	self._evaluateInterval = 10
@@ -1092,6 +1108,12 @@ function BTController:onUpdate( dt )
 	if not tree then return false end
 	
 	local context = self.context
+
+	if self.resetting then
+		self.resetting = false
+		context:resetRunningState()
+	end
+
 	local running = context:updateRunningNodes( dt )
 	self._evaluateCountDown = self._evaluateCountDown - 1
 
@@ -1122,9 +1144,8 @@ function BTController:setScheme( schemePath )
 end
 
 function BTController:resetEvaluate()
-	-- self.context.resetting = true
-	self.context:clearRunningNode()
-	self._evaluateCountDown = 0
+	self.resetting = true
+	self:scheduleUpdate()
 end
 
 function BTController:resetContext( context )

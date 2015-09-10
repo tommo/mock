@@ -260,7 +260,7 @@ function WaypointGraph:findNearestWaypoint( x, y, z, maxDistance, checkingCallba
 		local x0, y0, z0 = p:getLoc()
 		local distance = distance3( x0,y0,z0, x,y,z )
 
-		if ( maxDistance > distance ) 
+		if ( ( not maxDistance ) or ( maxDistance > distance ) )
 			and ( ( not candidate ) or ( distance < minDistance ) )
 			and ( ( not checkingCallback ) or ( checkingCallback( p ) ) )
 		then

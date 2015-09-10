@@ -126,7 +126,7 @@ function ParseContextProto:set( type, value )
 		end
 	end
 	self.currentNode.type     = type
-	self.currentNode.value    = value
+	self.currentNode.value    = value or 'NONAME'
 	return true
 end
 
@@ -136,7 +136,9 @@ end
 
 function ParseContextProto:parseCommon( content, pos, type, symbol )
 	-- local content = content:sub( pos )
-	local s, e, match = string.find( content, '^'..symbol..'%s*([%w_.]+)%s*', pos )
+	local pattern = '^'..symbol..'%s*([%w_.]*)%s*'
+	local s, e, match = string.find( content, pattern, pos )
+	-- print( s,e,type,symbol, content:sub( pos, -1 ) )
 	if not s then	return pos end
 	if self:set( type, match ) then
 		return e + 1
@@ -317,7 +319,7 @@ function ParseContextProto:parseLine( lineNo, l )
 
 	local length = #l
 	while true do
-		if pos >= length then break end
+		if pos > length then break end
 		local pos0 = pos
 		pos = self:parse_condition( l, pos )
 		pos = self:parse_condition_not( l, pos )
