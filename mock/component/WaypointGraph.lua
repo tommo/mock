@@ -12,6 +12,18 @@ function Waypoint:__init()
 	self.neighbours = {}
 end
 
+function Waypoint:setName( n )
+	self.name = n
+end
+
+function Waypoint:getName()
+	return self.name
+end
+
+function Waypoint:getNodeId()
+	return self.nodeId
+end
+
 function Waypoint:getTransform()
 	return self.trans
 end
@@ -171,6 +183,8 @@ function WaypointGraph:connectWaypoints( id1, id2, ctype )
 	local p2 = self.waypoints[ id2 ]
 	if p1 and p2 then
 		return p1:addNeighbour( p2, ctype )
+	else
+		_error( 'invalid waypoint id', id1, id2 )
 	end
 	return false
 end
@@ -184,7 +198,7 @@ function WaypointGraph:disconnectWaypoints( id1, id2 )
 	return false
 end
 
-function WaypointGraph:rebuildMOAIGraph()
+function WaypointGraph:buildMOAIPathGraph()
 	local graph = MOAIVecPathGraph.new()
 	self.pathGraph = graph
 	self.needRebuild = false
@@ -198,7 +212,7 @@ function WaypointGraph:rebuildMOAIGraph()
 		for neighbour, ctype in pairs( wp.neighbours ) do
 			local id1 = neighbour.nodeId
 			if ctype ~= 'nolink' and id1 > id then
-				graph:setNeighbours( id, id1, true )
+				graph:setNeighbors( id, id1, true )
 			end
 		end
 	end
@@ -206,9 +220,9 @@ function WaypointGraph:rebuildMOAIGraph()
 	return graph
 end
 
-function WaypointGraph:affirmPathGraph()
+function WaypointGraph:affirmMOAIPathGraph()
 	if self.needRebuild then
-		self:rebuildMOAIGraph()
+		self:buildMOAIPathGraph()
 	end
 	return self.pathGraph
 end
@@ -237,7 +251,7 @@ function WaypointGraph:_clearTmpConnections()
 	self.tmpConnections = {}
 end
 
-function WaypointGraph:findNearestWaypoint( x, y, z, checkingCallback )
+function WaypointGraph:findNearestWaypoint( x, y, z, maxDistance, checkingCallback )
 	--TODO: some borad phase? QUAD tree? 
 	-- if checkingCallback and checkingCallback( )
 	local minDistance = false
@@ -245,12 +259,15 @@ function WaypointGraph:findNearestWaypoint( x, y, z, checkingCallback )
 	for i, p in ipairs( self.waypoints ) do
 		local x0, y0, z0 = p:getLoc()
 		local distance = distance3( x0,y0,z0, x,y,z )
-		if ( not candidate ) or ( distance < minDistance ) then
-			if ( not checkingCallback ) or ( checkingCallback( p ) ) then
-				candidate = p
-				minDistance = distance
-			end
+
+		if ( maxDistance > distance ) 
+			and ( ( not candidate ) or ( distance < minDistance ) )
+			and ( ( not checkingCallback ) or ( checkingCallback( p ) ) )
+		then
+			candidate = p
+			minDistance = distance
 		end
 	end
 	return candidate
+
 end
