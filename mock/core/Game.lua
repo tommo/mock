@@ -84,6 +84,8 @@ registerSignals{
 	'game.stop',
 	'game.update',
 
+	'asset.init',
+
 	'gfx.resize',
 	'device.resize',
 
@@ -167,71 +169,36 @@ end
 
 function Game:init( option, fromEditor )
 	_stat( '...init game' )
-	self.editorMode  = fromEditor or false
-	self.initialized = true
 	
-	self.assetLibraryIndex = option['asset_library']
+	self.initialized = true
+	self.editorMode  = fromEditor and true or false
+	self.initOption  = option
+
+	--META
 	self.name    = option['name'] or 'GAME'
 	self.version = option['version'] or '0.0.1'
 	self.title   = option['title'] or self.name
 
-	--grahpics profile( only for desktop version? )
-	self.graphicsOption = option['graphics']
-	self:initGraphics( fromEditor )
+	--Systems
+	self:initGraphics   ( option, fromEditor )
+	self:initSystem     ( option, fromEditor )
+	self:initSubSystems ( option, fromEditor )
 	
-	--assetlibrary
-	_stat( '...loading asset library' )
-	loadAssetLibrary( self.assetLibraryIndex )
-	
-	--scriptlibrary
-	_stat( '...loading game modules' )
-	loadAllGameModules( option['script_library'] or false )
+	--init asset
+	self:initAsset      ( option, fromEditor )
 
-	--load layers
-	_stat( '...setting up layers' )
-	for i, data  in ipairs( option['layers'] or {} ) do
-		local layer 
-
-		if data['default'] then
-			layer = self.defaultLayer
-			layer.name = data['name']
-		else
-			layer = self:addLayer( data['name'] )
-		end
-		layer:setSortMode( data['sort'] )
-		layer:setVisible( data['visible'] ~= false )
-		layer:setEditorVisible( data['editor_visible'] ~= false )
-		layer.parallax = data['parallax'] or {1,1}
-		layer.priority = i
-		layer:setLocked( data['locked'] )
+	--postInit
+	if not fromEditor then --initCommonData will get called after scanning asset modifications
+		self:initCommonData( option, fromEditor )
 	end
-
-	table.sort( self.layers, 
-		function( a, b )
-			local pa = a.priority or 0
-			local pb = b.priority or 0
-			return pa < pb
-		end )
 	
-	if fromEditor then
-		local layer = self:addLayer( '_GII_EDITOR_LAYER' )
-		layer.priority = 1000000
-	end
+end
 
-	----- Global Objects
-	_stat( '...loading global game objects' )
-	self.globalObjectLibrary = GlobalObjectLibrary()
-	self.globalObjectLibrary:load( option['global_objects'] )
 
-	--load setting data
-	_stat( '...loading setting data' )
-	self.settingFileName = option['setting_file'] or 'setting'
-	self.userDataPath    = MOAIEnvironment.documentDirectory or '.'
-	local settingData = self:loadSettingData( self.settingFileName )
-	self.settingData  = settingData or {}
-
-	_stat( '...setting up action root' )
+function Game:initSystem( option, fromEditor )
+	_stat( '...init systems' )
 	-------Setup Action Root
+	_stat( '...setting up action root' )
 	self.time     = 0
 	self.throttle = 1
 	self.isPaused = false
@@ -266,22 +233,6 @@ function Game:init( option, fromEditor )
 		function( width, height )	return self:onResize( width, height )	end
 		)
 
-	----make inputs work
-	_stat( 'init input handlers' )
-	initDefaultInputEventHandlers()
-
-	----audio
-	_stat( 'init audio' )
-	AudioManager.get():init()
-	
-
-	----physics
-	--option for default physics world
-	self.physicsOption = table.simplecopy( DefaultPhysicsWorldOption )
-	if option['physics'] then
-		table.extend( self.physicsOption, option['physics'] )
-	end
-
 	----extra
 	_stat( '...extra init' )
 	
@@ -304,14 +255,103 @@ function Game:init( option, fromEditor )
 	-- MOAISim.setLongDelayThreshold( 100 )
 	MOAISim.setBoostThreshold( 0 )	
 	-- MOAISim.setStepMultiplier( 2 )	
+end
 
-	
-	----ask other systems to initialize
-	emitSignal( 'game.init', option )
+function Game:initSubSystems( option, fromEditor )
+	----make inputs work
+	_stat( 'init input handlers' )
+	initDefaultInputEventHandlers()
+
+	----audio
+	_stat( 'init audio' )
+	AudioManager.get():init()
+
+	----physics
+	--option for default physics world
+	self.physicsOption = table.simplecopy( DefaultPhysicsWorldOption )
+	if option['physics'] then
+		table.extend( self.physicsOption, option['physics'] )
+	end
+
+	--
 	self.globalManagers = getGlobalManagerRegistry()
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:onInit( self )
 	end
+
+end
+
+function Game:initLayers( option, fromEditor )
+	--load layers
+	_stat( '...setting up layers' )
+	for i, data  in ipairs( option['layers'] or {} ) do
+		local layer 
+
+		if data['default'] then
+			layer = self.defaultLayer
+			layer.name = data['name']
+		else
+			layer = self:addLayer( data['name'] )
+		end
+		layer:setSortMode( data['sort'] )
+		layer:setVisible( data['visible'] ~= false )
+		layer:setEditorVisible( data['editor_visible'] ~= false )
+		layer.parallax = data['parallax'] or {1,1}
+		layer.priority = i
+		layer:setLocked( data['locked'] )
+	end
+
+	table.sort( self.layers, 
+		function( a, b )
+			local pa = a.priority or 0
+			local pb = b.priority or 0
+			return pa < pb
+		end )
+	
+	if fromEditor then
+		local layer = self:addLayer( '_GII_EDITOR_LAYER' )
+		layer.priority = 1000000
+	end
+end
+
+function Game:initAsset( option, fromEditor )
+	self.assetLibraryIndex   = option['asset_library']
+	self.textureLibraryIndex = option['texture_library']
+	--assetlibrary
+	_stat( '...loading asset library' )
+	loadAssetLibrary( self.assetLibraryIndex )
+	loadTextureLibrary( self.textureLibraryIndex )
+	
+	--scriptlibrary
+	_stat( '...loading game modules' )
+	loadAllGameModules( option['script_library'] or false )
+
+	emitSignal( 'asset.init' )
+
+end
+
+function Game:initCommonDataFromEditor()
+	return self:initCommonData( self.initOption, true )
+end
+
+function Game:initCommonData( option, fromEditor )
+	--init layers
+	self:initLayers     ( option, fromEditor )
+
+	--load setting data
+	_stat( '...loading setting data' )
+	self.settingFileName = option['setting_file'] or 'setting'
+	self.userDataPath    = MOAIEnvironment.documentDirectory or '.'
+	local settingData = self:loadSettingData( self.settingFileName )
+	self.settingData  = settingData or {}
+
+	--init global objects
+	_stat( '...loading global game objects' )
+	self.globalObjectLibrary = GlobalObjectLibrary()
+	self.globalObjectLibrary:load( option['global_objects'] )
+
+	----ask other systems to initialize
+	emitSignal( 'game.init', option )
 
 	----load scenes
 	if option['scenes'] then
@@ -319,14 +359,17 @@ function Game:init( option, fromEditor )
 			self.scenes[ alias ] = scnPath
 		end
 	end
-	
+
 	self.entryScene = option['entry_scene']
 	self.previewingScene = option['previewing_scene']
 
 	self.mainScene:init()
 	_stat( '...init game done!' )
+
 end
 
+
+--------------------------------------------------------------------
 function Game:saveConfigToTable()
 	local layerConfigs = {}
 	for i,l in pairs( self.layers ) do
@@ -349,6 +392,7 @@ function Game:saveConfigToTable()
 		version        = self.version,
 		title          = self.title,
 		asset_library  = self.assetLibraryIndex,
+		texture_library = self.textureLibraryIndex,
 		graphics       = self.graphicsOption,
 		physics        = self.physicsOption,
 		layers         = layerConfigs,
@@ -403,9 +447,10 @@ end
 --------------------------------------------------------------------
 --------Graphics related
 --------------------------------------------------------------------
-function Game:initGraphics( fromEditor )
-	local option = self.graphicsOption or {}
+function Game:initGraphics( option, fromEditor )
+	self.graphicsOption = option['graphics'] or {}
 	
+	local gfxOption = self.graphicsOption
 	self.deviceRenderTarget = DeviceRenderTarget( MOAIGfxDevice.getFrameBuffer(), 1, 1 )
 	
 	self.mainRenderTarget   = RenderTarget()
@@ -416,16 +461,16 @@ function Game:initGraphics( fromEditor )
 	--TODO
 	local w, h = getDeviceResolution()
 	if w * h == 0 then
-		w, h  = option['device_width'] or 800, option['device_height'] or 600
+		w, h  = gfxOption['device_width'] or 800, gfxOption['device_height'] or 600
 	end
 
 	self.deviceRenderTarget:setPixelSize( w, h )
 
-	self.width   = option['width']  or w
-	self.height  = option['height'] or h
-	self.fullscreen = option['fullscreen'] or false	
+	self.width   = gfxOption['width']  or w
+	self.height  = gfxOption['height'] or h
+	self.fullscreen = gfxOption['fullscreen'] or false	
 
-	self.viewportMode = option['viewport_mode'] or 'fit'
+	self.viewportMode = gfxOption['viewport_mode'] or 'fit'
 
 	self.mainRenderTarget:setAspectRatio( self.width/self.height )
 	self.mainRenderTarget:setKeepAspect( true )

@@ -13,6 +13,7 @@ end
 
 function loadTextureLibrary( indexPath )
 	if not indexPath then return end
+	_stat 'init texture library'
 	textureLibraryIndex = indexPath
 	textureLibrary = TextureLibrary()	
 	if MOAIFileSystem.checkFileExists( indexPath ) then
@@ -22,17 +23,6 @@ function loadTextureLibrary( indexPath )
 	end
 	return textureLibrary
 end
-
-local function onGameInit( option )
-	loadTextureLibrary( option['texture_library'] )
-end
-
-local function onGameConfigSave( data )
-	data[ 'texture_library' ] = textureLibraryIndex
-end
-
-connectSignalFunc( 'game_config.save', onGameConfigSave )
-connectSignalFunc( 'game.init', onGameInit )
 
 --------------------------------------------------------------------
 CLASS: TextureLibrary ()
@@ -280,6 +270,7 @@ function TextureGroup:addTexture( t )
 end
 
 function TextureGroup:removeTexture( t )
+	_stat( 'removing texture from library', t.path )
 	for i, t1 in ipairs( self.textures ) do
 		if t1 == t then 
 			table.remove( self.textures, i )
@@ -522,6 +513,7 @@ function TextureLibrary:save( path )
 end
 
 function TextureLibrary:initDefault()
+	_stat( 'initializing texture library' )
 	self.groups = {}
 	local defaultGroup = self:addGroup()
 	defaultGroup.name = 'DEFAULT'
@@ -543,15 +535,18 @@ function TextureLibrary:load( path )
 	
 	local getAssetNode = getAssetNode
 	for i, group in ipairs( self.groups ) do
-		local textures1 = {}
+		local newTextures = {}
 		for i, tex in ipairs( group.textures ) do --clear removed textures
 			if getAssetNode( tex.path ) then
-				table.insert( textures1, tex )
+				table.insert( newTextures, tex )
 				self.lookupDict[ tex.path ] = tex
+			else
+				_stat( 'texture node removed', tex.path )
 			end
 		end
-		group.textures = textures1
+		group.textures = newTextures
 	end
+
 end
 
 
