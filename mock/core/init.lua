@@ -27,7 +27,7 @@ require 'mock.core.AssetLibrary'
 require 'mock.core.AssetScanner'
 
 ----input
-require 'mock.core.InputManager'
+require 'mock.core.InputDevice'
 require 'mock.core.InputSignal'
 
 ----audio
