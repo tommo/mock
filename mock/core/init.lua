@@ -21,22 +21,27 @@ require 'mock.core.DebugHelper'
 require 'mock.core.LogHelper'
 
 ----------------Core Modules
-require 'mock.core.Actor'
 require 'mock.core.defaults'
+
+----common class
+require 'mock.core.Actor'
+require 'mock.core.GlobalManager'
+
 ----asset
 require 'mock.core.AssetLibrary'
 require 'mock.core.AssetScanner'
 
+----basic
+require 'mock.core.Viewport'
+require 'mock.core.RenderTarget'
+
 ----input
+require 'mock.core.InputManager'
 require 'mock.core.InputDevice'
 require 'mock.core.InputSignal'
 
 ----audio
 require 'mock.core.Audio'
-
-----basic
-require 'mock.core.Viewport'
-require 'mock.core.RenderTarget'
 
 ----game
 require 'mock.core.EntityGroup'
@@ -46,7 +51,6 @@ require 'mock.core.Layer'
 require 'mock.core.SceneManager'
 require 'mock.core.Scene'
 require 'mock.core.GlobalObject'
-require 'mock.core.GlobalManager'
 require 'mock.core.ScreenProfile'
 require 'mock.core.Game'
 
