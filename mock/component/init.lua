@@ -31,7 +31,7 @@ require 'mock.component.TransformLink'
 --------------------------------------------------------------------
 ---- Graphics
 require 'mock.component.Prop'
-require 'mock.component.Text'
+-- require 'mock.component.Text'
 require 'mock.component.TextLabel'
 require 'mock.component.PatchSprite'
 

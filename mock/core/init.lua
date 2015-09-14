@@ -14,6 +14,7 @@ require 'mock.core.enums'
 require 'mock.core.MOAIHelpers'
 require 'mock.core.MOAIActionHelpers'
 require 'mock.core.MOAIPropHelpers'
+require 'mock.core.MOAINodeHelper'
 
 require 'mock.core.ThreadTask'
 require 'mock.core.DebugHelper'

@@ -105,6 +105,11 @@ function Proto:__init( id )
 	self.source = false
 	self.ready  = false
 	self.loading = false
+	self.rootName = false
+end
+
+function Proto:getRootName()
+	return self.rootName
 end
 
 local function mergeTable( a, b )
@@ -369,7 +374,9 @@ function Proto:loadData( dataPath )
 	self.data      = data
 	self.ready     = true
 	self.rootId    = data.entities[1]['id']
-	self.loading = false
+	local rootData = data.map[ self.rootId ]
+	self.rootName  = rootData['body']['name']
+	self.loading   = false
 end
 
 function Proto:createInstance( overridedData, guid )

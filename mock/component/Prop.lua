@@ -1,5 +1,7 @@
 module 'mock'
 
+--DEPRECATED
+--for legacy support
 
 local newProp = MOAIProp.new
 function Prop( option )

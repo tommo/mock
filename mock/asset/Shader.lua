@@ -384,8 +384,9 @@ function ShaderConfig:loadSingleShader( data )
 	local prog = ShaderProgram()
 	prog.vsh = data['vsh'] or '__default_vsh__'
 	prog.fsh = data['fsh'] or '__default_fsh__'
-	prog.uniforms = data['uniforms'] or {}
-	prog.globals  = data['globals'] or {}
+	prog.uniforms   = data['uniforms'] or {}
+	prog.globals    = data['globals'] or {}
+	prog.attributes = data['attributes'] or false
 	prog:build()
 	prog.config = self
 	loadedShaderPrograms[ self ] = prog
