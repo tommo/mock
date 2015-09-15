@@ -78,13 +78,13 @@ function FSMController:setMsgFilter( func )
 end
 
 function FSMController:onAttach( entity )
-	entity:addMsgListener( self.msgBoxListener )
 	Behaviour.onAttach( self, entity )
 end
 
 function FSMController:onStart( entity )
+	entity:addMsgListener( self.msgBoxListener )
 	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
-	Behaviour.onStart( self, entity )
+	return Behaviour.onStart( self, entity )
 end
 
 function FSMController:onDetach( ent )

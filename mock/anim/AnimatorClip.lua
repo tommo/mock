@@ -6,6 +6,7 @@ local insert = table.insert
 CLASS: AnimatorKey ()
 CLASS: AnimatorClipSubNode ()
 CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
+CLASS: AnimatorTrackSpan ()
 CLASS: AnimatorTrack ( AnimatorClipSubNode )
 CLASS: AnimatorClip ()
 
@@ -18,6 +19,7 @@ AnimatorKey
 		Field 'tweenAnglePre'  :enum( EnumAnimCurveTweenMode ) :no_edit();
 		Field 'tweenAnglePost' :enum( EnumAnimCurveTweenMode ) :no_edit();
 		Field 'parent' :type( AnimatorTrack ) :no_edit();		
+		Field 'spanId' :int()  :no_edit();
 		'----';
 	}
 
@@ -28,6 +30,8 @@ function AnimatorKey:__init( pos, tweenMode )
 	self.tweenMode = tweenMode or 0 --LINEAR
 	self.tweenAnglePre  = 180
 	self.tweenAnglePost = 0
+	----
+	self.spanId = 0
 end
 
 function AnimatorKey:getTweenCurveNormal()
@@ -144,6 +148,9 @@ end
 --------------------------------------------------------------------
 AnimatorClipSubNode
 :MODEL{
+	--editor attr
+	Field '_folded' :boolean() : no_edit();
+	--
 	Field 'name' :string();
 	Field 'parent' :type( AnimatorClipSubNode ) :no_edit();
 	Field 'children' :array( AnimatorClipSubNode ) :no_edit();
@@ -151,13 +158,15 @@ AnimatorClipSubNode
 }
 
 function AnimatorClipSubNode:__init()
-	self.parent = false
-	self.children = {}
+	self.parent     = false
+	self.children   = {}
 	self.parentClip = false
+	self._folded    = false
 end
 
 function AnimatorClipSubNode:build( context )
 	self:buildChildren( context )
+	return true
 end
 
 function AnimatorClipSubNode:isEmpty()
@@ -213,6 +222,7 @@ function AnimatorClipSubNode:removeChild( node )
 	local idx = table.index( self.children, node )
 	if idx then
 		table.remove( self.children, idx )
+		node.parent = false
 	end
 end
 
@@ -222,6 +232,18 @@ end
 
 function AnimatorClipSubNode:getParent()
 	return self.parent
+end
+
+function AnimatorClipSubNode:canReparent( node )
+	return false
+end
+
+function AnimatorClipSubNode:reparent( node )
+	if self.parent == node then return false end
+	if self.parent then
+		self.parent:removeChild( self )
+	end
+	node:addChild( self )
 end
 
 function AnimatorClipSubNode:getRoot()
@@ -277,14 +299,27 @@ end
 
 updateAllSubClasses( AnimatorClipSubNode )
 
+
 --------------------------------------------------------------------
 AnimatorTrackGroup
 :MODEL{
+	Field 'spans' :array( AnimatorTrackSpan	);
 }
+
+function AnimatorTrackGroup:__init()
+	self.spans = {}
+end
 
 function AnimatorTrackGroup:getIcon()
 	return 'group'
 end
+
+function AnimatorTrackGroup:canReparent( node )
+	if node:isInstance( AnimatorTrackGroup ) then
+		return true
+	end
+end
+
 
 --------------------------------------------------------------------
 AnimatorTrack
@@ -470,7 +505,24 @@ end
 function AnimatorTrack:build( context )
 end
 
+function AnimatorTrack:isLoadable( state )
+	return true
+end
+
 function AnimatorTrack:onStateLoad( state )
+end
+
+function AnimatorTrack:canReparent( node )
+	if node:isInstance( AnimatorTrackGroup ) then
+		return true
+	end
+end
+
+--------------------------------------------------------------------
+CLASS: AnimatorSubTrack ( AnimatorTrack )
+
+function AnimatorSubTrack:canReparent( node )
+	return false
 end
 
 --------------------------------------------------------------------
@@ -610,6 +662,7 @@ end
 
 function AnimatorRecordingState:markFieldRecording( obj, fieldId )
 	--TODO:support non field recording state
+	if not obj then return end
 	local state = self.states[ obj ]
 	if not state then
 		state = {}

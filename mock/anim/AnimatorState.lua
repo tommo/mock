@@ -116,18 +116,23 @@ function AnimatorState:loadClip( animator, clip )
 	
 	local previewing = self.previewing
 	for track in pairs( context.playableTracks ) do
-		if ( not previewing ) or track:isPreviewable() then
-			track:onStateLoad( self )
+		if track:isLoadable( self ) then
+			if ( not previewing ) or track:isPreviewable() then
+				track:onStateLoad( self )
+			end
 		end
 	end
 
 	anim:reserveLinks( self.attrLinkCount )
 	for i, linkInfo in ipairs( self.attrLinks ) do
 		local track, curve, target, attrId, asDelta  = unpack( linkInfo )
-		if ( not previewing ) or track:isPreviewable() then
-			anim:setLink( i, curve, target, attrId, asDelta )
+		if target then
+			if ( not previewing ) or track:isPreviewable() then
+				anim:setLink( i, curve, target, attrId, asDelta )
+			end
 		end
 	end
+
 
 	--event key
 	anim:setCurve( context.eventCurve )
@@ -135,8 +140,8 @@ function AnimatorState:loadClip( animator, clip )
 
 end
 
-function AnimatorState:addUpdateListenerTrack( track, target )
-	self.updateListenerTracks[ track ] = target
+function AnimatorState:addUpdateListenerTrack( track, context )
+	self.updateListenerTracks[ track ] = context
 end
 
 function AnimatorState:addAttrLink( track, curve, target, id, asDelta )

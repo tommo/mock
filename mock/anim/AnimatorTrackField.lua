@@ -76,3 +76,9 @@ function AnimatorTrackField:onRestoreObjectRecordingState( animator, retainedSta
 	local target = self.targetPath:get( rootEntity, scene )
 	retainedState:restoreFieldRecording( target, self.fieldId )
 end
+
+function AnimatorTrackField:isLoadable( state )
+	local rootEntity, scene = state:getTargetRoot()
+	local target = self.targetPath:get( rootEntity, scene )
+	return target and true or false
+end

@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: AnimatorTrackVecComponent ( AnimatorTrack )
+CLASS: AnimatorTrackVecComponent ( AnimatorSubTrack )
 	:MODEL {
 		Field 'comId' :int() :no_edit();
 	}
@@ -28,7 +28,6 @@ end
 function AnimatorTrackVecComponent:hasCurve()
 	return true
 end
-
 
 
 --------------------------------------------------------------------
