@@ -394,6 +394,10 @@ function AnimatorTrackGroup:getIcon()
 	return 'group'
 end
 
+function AnimatorTrackGroup:toString()
+	return '<trackgroup>' .. self.name
+end
+
 function AnimatorTrackGroup:canReparent( node )
 	if node:isInstance( AnimatorTrackGroup ) then
 		return true
@@ -421,7 +425,7 @@ function AnimatorTrack:getType()
 end
 
 function AnimatorTrack:toString()
-	return self.name
+	return '<track>' .. self.name
 end
 
 function AnimatorTrack:getAction()

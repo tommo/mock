@@ -162,7 +162,7 @@ function TextLabel:updateRect()
 end
 	
 function TextLabel:setText( text )
-	self.text = text or ''
+	self.text = tostring( text )
 	self.box:setString( text )
 end
 

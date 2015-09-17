@@ -113,12 +113,12 @@ function AnimatorData:_load() --post-serialization
 	end
 	self.rootGroup.parentPackage = self
 
-	self:updateClipList()
 	for i, clip in ipairs( self.clips ) do --backward compatibilty
 		if not clip.parentGroup then
 			self.rootGroup:addChildClip( clip )
 		end
 	end
+	self:updateClipList()
 	self.rootGroup:_load()
 	
 end
