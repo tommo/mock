@@ -53,8 +53,6 @@ function AnimatorData:addClip( clip, parentGroup )
 	parentGroup = parentGroup or self.rootGroup
 	--assert self:hasGroup( parentGroup )
 	parentGroup:addChildClip( clip )
-	table.insert( self.clips, clip )
-	clip.parent = self
 	return clip
 end
 
@@ -72,17 +70,25 @@ function AnimatorData:removeClipGroup( clipGroup )
 	return true
 end
 
-
 function AnimatorData:removeClip( clip )
-	local idx = table.index( self.clips )
-	if idx then
-		table.remove( self.clips, idx )
-		if clip.parentGroup then
-			clip.parentGroup:removeChildClip( clip )
-		end
-		return true
+	local parentGroup = clipGroup.parentGroup
+	parentGroup:removeChildClip( clip )
+	return true
+end
+
+local function _collectClip( group, list )
+	list = list or {}
+	for i, clip in ipairs( group.childClips ) do
+		table.insert( list, clip )
 	end
-	return false
+	for i, childGroup in ipairs( group.childGroups ) do
+		_collectClip( childGroup, list )
+	end
+	return list
+end
+
+function AnimatorData:updateClipList()
+	self.clips = _collectClip( self.rootGroup )
 end
 
 function AnimatorData:getClip( name )
@@ -105,24 +111,16 @@ function AnimatorData:_load() --post-serialization
 		self.rootGroup = AnimatorClipGroup()
 		self.rootGroup.name = '__root'
 	end
+	self.rootGroup.parentPackage = self
 
+	self:updateClipList()
 	for i, clip in ipairs( self.clips ) do --backward compatibilty
 		if not clip.parentGroup then
 			self.rootGroup:addChildClip( clip )
 		end
-		clip:getRoot():_load()
 	end
-	-- if animatorData then --set parent nodes
-	-- 	for i, clip in ipairs( animatorData.clips ) do
-	-- 		for i, track in ipairs( clip.tracks ) do
-	-- 			track.parent = clip
-	-- 			for i, event in ipairs( track.events ) do
-	-- 				event.parent = track
-	-- 			end
-	-- 		end
-	-- 	end
-	-- end
-	--set Group 
+	self.rootGroup:_load()
+	
 end
 
 

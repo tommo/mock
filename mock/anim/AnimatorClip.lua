@@ -741,6 +741,10 @@ function AnimatorClip:__init()
 	self.inherited = false
 end
 
+function AnimatorClip:_load()
+	return self.root:_load()
+end
+
 function AnimatorClip:getName()
 	return self.name
 end
@@ -855,27 +859,45 @@ function AnimatorClipGroup:__init()
 	self.parentGroup = false
 end
 
+function AnimatorClipGroup:getRootGroup()
+	local g = self
+	while true do
+		local pg = g.parentGroup
+		if not pg then return g end
+		g = pg
+	end
+end
+
+function AnimatorClipGroup:getParentPackage()
+	local rootGroup = self:getRootGroup()
+	return rootGroup.parentPackage
+end
+
 function AnimatorClipGroup:addChildGroup( g )
 	if g.parentGroup == self then return g end
 	if g.parentGroup then
 		g.parentGroup:removeChildGroup( g )
 	end
 	g.parentGroup = self
+	g.parentPackage = self.parentPackage
 	table.insert( self.childGroups, g )
+	self:getParentPackage():updateClipList()
 	return g
 end
 
 function AnimatorClipGroup:removeChildGroup( g )
 	local idx = table.index( self.childGroups, g )
-	if idx then
-		table.remove( self.childGroups, idx ) 
-		g.parentGroup = false
-	end
+	if not idx then return end
+	table.remove( self.childGroups, idx ) 
+	g.parentGroup = false
+	g.parentPackage = false
+	self:getParentPackage():updateClipList()	
 end
 
 function AnimatorClipGroup:addChildClip( c )
 	table.insert( self.childClips, c )
 	c.parentGroup = self
+	self:getParentPackage():updateClipList()	
 end
 
 function AnimatorClipGroup:removeChildClip( c )
@@ -884,6 +906,7 @@ function AnimatorClipGroup:removeChildClip( c )
 		table.remove( self.childClips, idx )
 		c.parentGroup = false
 	end
+	self:getParentPackage():updateClipList()
 end
 
 function AnimatorClipGroup:getName()
@@ -902,4 +925,13 @@ end
 function AnimatorClipGroup:getChildNodes()
 	local list = {}
 	return table.mergearray( self.childGroups, self.childClips )
+end
+
+function AnimatorClipGroup:_load()
+	for i, clip in ipairs( self.childClips ) do
+		clip:_load()
+	end
+	for i, group in ipairs( self.childGroups ) do
+		group:_load()
+	end
 end
