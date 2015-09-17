@@ -3,25 +3,27 @@ module 'mock'
 local insert = table.insert
 
 --------------------------------------------------------------------
-CLASS: AnimatorKey ()
 CLASS: AnimatorClipSubNode ()
-CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
-CLASS: AnimatorTrackSpan ()
-CLASS: AnimatorTrack ( AnimatorClipSubNode )
-CLASS: AnimatorClip ()
+CLASS: AnimatorClipSubNodeSpan ()
 
+CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
+CLASS: AnimatorTrack ( AnimatorClipSubNode )
+CLASS: AnimatorKey ()
+
+CLASS: AnimatorClip ()
+CLASS: AnimatorClipGroup ()
 --------------------------------------------------------------------
 AnimatorKey
 :MODEL{		
-		Field 'pos'    :float() :range(0)  :getset('Pos')      :meta{ decimals = 3, step = 0.01 };
-		Field 'length' :float() :range(0)  :getset('Length')   :meta{ decimals = 3, step = 0.01 };
-		Field 'tweenMode'      :enum( EnumAnimCurveTweenMode ) :no_edit();
-		Field 'tweenAnglePre'  :enum( EnumAnimCurveTweenMode ) :no_edit();
-		Field 'tweenAnglePost' :enum( EnumAnimCurveTweenMode ) :no_edit();
-		Field 'parent' :type( AnimatorTrack ) :no_edit();		
-		Field 'spanId' :int()  :no_edit();
-		'----';
-	}
+	Field 'pos'    :float() :range(0)  :getset('Pos')      :meta{ decimals = 3, step = 0.01 };
+	Field 'length' :float() :range(0)  :getset('Length')   :meta{ decimals = 3, step = 0.01 };
+	'----';
+	Field 'tweenMode'      :enum( EnumAnimCurveTweenMode ) :no_edit();
+	Field 'tweenAnglePre'  :no_edit();
+	Field 'tweenAnglePost' :no_edit();
+	Field 'parent' :type( AnimatorTrack ) :no_edit();		
+	Field 'parentSpanId' :int()  :no_edit();
+}
 
 function AnimatorKey:__init( pos, tweenMode )
 	self.pos    = pos or 0
@@ -31,7 +33,7 @@ function AnimatorKey:__init( pos, tweenMode )
 	self.tweenAnglePre  = 180
 	self.tweenAnglePost = 0
 	----
-	self.spanId = 0
+	self.parentSpanId = 1
 end
 
 function AnimatorKey:getTweenCurveNormal()
@@ -110,11 +112,6 @@ function AnimatorKey:getAction()
 end
 
 function AnimatorKey:getClip()
-	-- local track = self.parent
-	-- if track then
-	-- 	return track:getClip()
-	-- end
-	-- return nil
 	return self.parentClip
 end
 
@@ -134,7 +131,6 @@ function AnimatorKey:executeEvent( state, time )
 end
 
 
-
 --------------------------------------------------------------------
 --VIRTUAL
 function AnimatorKey:getCurveValue()
@@ -145,23 +141,109 @@ function AnimatorKey:toString()
 	return 'key'
 end
 
+
+---------------------------------------------------------------------
+AnimatorClipSubNodeSpan:
+MODEL{
+	Field 'id'    :int();
+	Field 'name'  :string();
+	Field 'pos'   :float();
+	Field 'length':float();
+}
+
+function AnimatorClipSubNodeSpan:__init( id )
+	self.id     = id
+	self.pos    = 0
+	self.length = -1
+end
+
+
 --------------------------------------------------------------------
 AnimatorClipSubNode
 :MODEL{
 	--editor attr
 	Field '_folded' :boolean() : no_edit();
 	--
-	Field 'name' :string();
-	Field 'parent' :type( AnimatorClipSubNode ) :no_edit();
-	Field 'children' :array( AnimatorClipSubNode ) :no_edit();
+	Field 'name'       :string();
+	Field 'parent'     :type( AnimatorClipSubNode ) :no_edit();
+	Field 'children'   :array( AnimatorClipSubNode ) :no_edit();
 	Field 'parentClip' :type( AnimatorClip ) :no_edit();
+	Field 'spans'      :array( AnimatorClipSubNodeSpan ) :no_edit();
+	Field 'parentSpanId' :int() :no_edit();
 }
 
 function AnimatorClipSubNode:__init()
-	self.parent     = false
-	self.children   = {}
-	self.parentClip = false
-	self._folded    = false
+	self._folded      = false
+	self.parentClip   = false
+
+	self.parent       = false
+	self.children     = {}
+	self.spans        = {}
+	self.parentSpanId = 1
+
+	--default span
+	self.spans[ 1 ] = AnimatorClipSubNodeSpan( 1 )
+end
+
+function AnimatorClipSubNode:getSpan( id )
+	return self.spans[ id ]
+end
+
+function AnimatorClipSubNode:addSpan()
+	local count = self
+	local span = AnimatorNodeSpan()
+	table.insert( self.spans, span )
+	return span
+end
+
+function AnimatorClipSubNode:removeSpan( id )
+	local count = #self.spans
+	assert( count > 1, 'a clipnode must at least have one span' )
+	local span = self:getSpan( id )
+	assert( span )
+	self:onRemoveSpan( id )
+	table.remove( self.spans, id )
+	self:updateChildrenSpanId()
+end
+
+function AnimatorClipSubNode:onRemoveSpan( spanId )
+	--remove child nodes with span id
+	local toremove = {}
+	for i, child in ipairs( self.children ) do
+		if spanId == child.parentSpanId then
+			toremove[ child ] = true
+		end
+	end
+	for child in pairs( toremove ) do
+		self:removeChild( child )
+	end
+end
+
+function AnimatorClipSubNode:updateChildrenSpanId()
+	--send spanId change to all children
+	local changed = false
+	local idConversion = {}
+	for i, span in ipairs( self.spans ) do
+		local oldId = span.id
+		local newId = i
+		if oldId ~= newId then
+			changed = true
+			span.id = newId
+		end
+		idConversion[ oldId ] = newId
+	end
+	if not changed then return end 
+
+	for i, child in ipairs( self.children ) do
+		local oldId = child.parentSpanId
+		local newId = idConversion[ oldId ]
+		child.parentSpanId = newId
+	end
+
+end
+
+function AnimatorClipSubNode:getParentSpan()
+	return self.parent:getSpan( self.parentSpanId )
 end
 
 function AnimatorClipSubNode:build( context )
@@ -303,11 +385,9 @@ updateAllSubClasses( AnimatorClipSubNode )
 --------------------------------------------------------------------
 AnimatorTrackGroup
 :MODEL{
-	Field 'spans' :array( AnimatorTrackSpan	);
 }
 
 function AnimatorTrackGroup:__init()
-	self.spans = {}
 end
 
 function AnimatorTrackGroup:getIcon()
@@ -438,6 +518,48 @@ function AnimatorTrack:getLastKey()
 		return self.keys[ l ]
 	end
 	return nil
+end
+
+function AnimatorTrack:updateChildrenSpanId()
+	--send spanId change to all children
+	local changed = false
+	local idConversion = {}
+	for i, span in ipairs( self.spans ) do
+		local oldId = span.id
+		local newId = i
+		if oldId ~= newId then
+			changed = true
+			span.id = newId
+		end
+		idConversion[ oldId ] = newId
+	end
+	if not changed then return end 
+
+	for i, child in ipairs( self.children ) do
+		local oldId = child.parentSpanId
+		local newId = idConversion[ oldId ]
+		child.parentSpanId = newId
+	end
+	for i, key in ipairs( self.keys ) do
+		local oldId = key.parentSpanId
+		local newId = idConversion[ oldId ]
+		key.parentSpanId = newId
+	end
+end
+
+function AnimatorTrack:onRemoveSpan( spanId )
+	--remove keys
+	local toremove = {}
+	for i, key in ipairs( self.keys ) do
+		if spanId == key.parentSpanId then
+			toremove[ key ] = true
+		end
+	end
+	for key in pairs( toremove ) do
+		self:removeKey( key )
+	end
+
+	return AnimatorTrack.__super.onRemoveSpan( self, spanId )
 end
 
 --------------------------------------------------------------------
@@ -596,13 +718,16 @@ AnimatorClip	:MODEL{
 		Field 'loop' :boolean();
 		Field 'length' :int();
 		Field 'inherited' :boolean() :no_edit();
-		Field 'root' :type( AnimatorClipSubNode ) :no_edit();
+		Field 'root'       :type( AnimatorClipSubNode ) :no_edit();
+		Field 'parentGroup':type( AnimatorClipGroup )   :no_edit();
 		'----';
 		Field 'comment' :string();
 	}
 
 function AnimatorClip:__init()
 	self.name      = 'action'
+	self.fullname  = 'action'
+	self.parentGroup = false --root group
 	
 	self.root      = AnimatorTrackGroup()
 	self.root.parentClip = self
@@ -614,6 +739,27 @@ function AnimatorClip:__init()
 	self.builtContext = false
 
 	self.inherited = false
+end
+
+function AnimatorClip:getName()
+	return self.name
+end
+
+function AnimatorClip:getFullName()
+	return self.fullname
+end
+
+function AnimatorClip:getGroup()
+	return self.group
+end
+
+function AnimatorClip:isInGroup( group )
+	local pg = self.parentGroup
+	while pg do
+		if pg == group then return true end
+		pg = pg.parentGroup
+	end
+	return false
 end
 
 function AnimatorClip:getRoot()
@@ -690,4 +836,70 @@ function AnimatorRecordingState:restoreFieldRecording( obj, fieldId )
 	if not boxedValue then return end
 	model:setFieldValue( obj, fieldId, unpack( boxedValue ) )
 	state[ fieldId ] = nil
+end
+
+
+--------------------------------------------------------------------
+AnimatorClipGroup
+	:MODEL{
+		Field 'name' :string();
+		Field 'parentGroup' :type( AnimatorClipGroup )  :no_edit();
+		Field 'childClips'  :array( AnimatorClip )      :no_edit();
+		Field 'childGroups' :array( AnimatorClipGroup ) :no_edit();
+	}
+
+function AnimatorClipGroup:__init()
+	self.name = 'group'
+	self.childClips  = {}
+	self.childGroups = {}
+	self.parentGroup = false
+end
+
+function AnimatorClipGroup:addChildGroup( g )
+	if g.parentGroup == self then return g end
+	if g.parentGroup then
+		g.parentGroup:removeChildGroup( g )
+	end
+	g.parentGroup = self
+	table.insert( self.childGroups, g )
+	return g
+end
+
+function AnimatorClipGroup:removeChildGroup( g )
+	local idx = table.index( self.childGroups, g )
+	if idx then
+		table.remove( self.childGroups, idx ) 
+		g.parentGroup = false
+	end
+end
+
+function AnimatorClipGroup:addChildClip( c )
+	table.insert( self.childClips, c )
+	c.parentGroup = self
+end
+
+function AnimatorClipGroup:removeChildClip( c )
+	local idx = table.index( self.childClips, c )
+	if idx then
+		table.remove( self.childClips, idx )
+		c.parentGroup = false
+	end
+end
+
+function AnimatorClipGroup:getName()
+	return self.name
+end
+
+function AnimatorClipGroup:getFullName()
+	local pname = self.parentGroup and self.parentGroup.name
+	if pname then
+		return pname .. '/' .. self.name
+	else
+		return self.name
+	end
+end
+
+function AnimatorClipGroup:getChildNodes()
+	local list = {}
+	return table.mergearray( self.childGroups, self.childClips )
 end

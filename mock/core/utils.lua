@@ -194,6 +194,18 @@ function table.split(t,s)
 	return t1,t2
 end
 
+function table.mergearray( a1, a2 )
+	local result = {}
+	for i, v in ipairs( a1 ) do
+		result[ i ] = v
+	end
+	local off = #a1
+	for i, v in ipairs( a2 ) do
+		result[ i + off ] = v
+	end
+	return result
+end
+
 function table.keys( t )
 	local keys = {}
 	local i = 1
