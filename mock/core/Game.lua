@@ -71,7 +71,7 @@ function loadAllGameModules( scriptLibrary )
 end
 
 --------------------------------------------------------------------
-registerSignals{
+registerGlobalSignals{
 	'msg',
 	'app.start',
 	'app.resume',

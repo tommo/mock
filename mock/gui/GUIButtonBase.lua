@@ -1,6 +1,6 @@
 module 'mock'
 
-registerSignals{
+registerGlobalSignals{
 	'ui.button.press',
 	'ui.button.release',
 	'ui.button.click',

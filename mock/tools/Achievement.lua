@@ -26,7 +26,7 @@
 module 'mock'
 
 
-registerSignals{
+registerGlobalSignals{
 	'achievement.finish',	
 	'achievement.report',
 }

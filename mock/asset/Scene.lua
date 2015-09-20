@@ -2,7 +2,7 @@ module 'mock'
 
 _SERIALIZER_VERSION = '2'
 
-registerSignals{
+registerGlobalSignals{
 	'scene.pre_serialize',
 	'scene.pre_deserialize',
 	'scene.post_serialize',

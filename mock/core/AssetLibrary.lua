@@ -1,6 +1,6 @@
 module ('mock')
 
-registerSignals{
+registerGlobalSignals{
 	'asset_library.loaded',
 }
 

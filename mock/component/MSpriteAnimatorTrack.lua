@@ -105,12 +105,16 @@ local function mapTimePingPong( t0, length )
 	end
 end
 
+local function mapTimeLoop( t0, length )
+	return t0 % length
+end
+
 local timeMapFuncs = {
 	[MOAITimer.NORMAL]           = false;
   [MOAITimer.REVERSE]          = mapTimeReverse;
   [MOAITimer.CONTINUE]         = false;
   [MOAITimer.CONTINUE_REVERSE] = mapTimeReverseContinue;
-  [MOAITimer.LOOP]             = false;
+  [MOAITimer.LOOP]             = mapTimeLoop;
   [MOAITimer.LOOP_REVERSE]     = mapTimeReverseLoop;
   [MOAITimer.PING_PONG]        = mapTimePingPong;
 }

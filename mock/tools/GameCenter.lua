@@ -24,7 +24,7 @@
 ]]
 
 
-registerSignals{
+registerGlobalSignals{
 	'gamecenter.login',
 	'gamecenter.achievement.ready',
 	'gamecenter.report.complete',

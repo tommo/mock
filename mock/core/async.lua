@@ -1,6 +1,6 @@
 module 'mock'
 
-registerSignals{
+registerGlobalSignals{
 	'async_queue.start',
 	'async_queue.stop',
 	'async_task.start',

@@ -1,6 +1,6 @@
 module 'mock'
 
-registerSignals{
+registerGlobalSignals{
 	'camera.viewport_update'
 }
 

@@ -26,7 +26,7 @@
 CLASS: RemoteData ()
 	
 
-registerSignals{
+registerGlobalSignals{
 	'remotedata.ready',
 	'remotedata.fail',
 }
