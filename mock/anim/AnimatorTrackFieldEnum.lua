@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: AnimatorKeyFieldEnum ( AnimatorKey )
+CLASS: AnimatorKeyFieldEnum ( AnimatorValueKey )
 	:MODEL{
 		Field 'value' :selection( 'getTargetFieldEnumItems' ) :string(); --Variation
 	}

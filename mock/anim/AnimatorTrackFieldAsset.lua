@@ -4,7 +4,7 @@ function _getTargetFieldAssetType( key )
 	return key:getTargetFieldAssetType()
 end
 
-CLASS: AnimatorKeyFieldAsset ( AnimatorKey )
+CLASS: AnimatorKeyFieldAsset ( AnimatorValueKey )
 	:MODEL{
 		Field 'value' :asset( _getTargetFieldAssetType )
 	}

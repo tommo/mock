@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: AnimatorTrackVecComponent ( AnimatorSubTrack )
+CLASS: AnimatorTrackVecComponent ( AnimatorValueTrack )
 	:MODEL {
 		Field 'comId' :int() :no_edit();
 	}
@@ -27,6 +27,10 @@ end
 
 function AnimatorTrackVecComponent:hasCurve()
 	return true
+end
+
+function AnimatorTrackVecComponent:canReparent( target )
+	return false
 end
 
 
@@ -100,7 +104,7 @@ end
 
 --------------------------------------------------------------------
 CLASS: AnimatorTrackFieldVec3 ( AnimatorTrackFieldVecCommon )
-function AnimatorTrackFieldVec3:onInit()
+function AnimatorTrackFieldVec3:init()
 	--create sub component track
 	self:createSubComponentTrack( 1, 'x' )
 	self:createSubComponentTrack( 2, 'y' )
@@ -152,7 +156,7 @@ end
 
 --------------------------------------------------------------------
 CLASS: AnimatorTrackFieldVec2 ( AnimatorTrackFieldVecCommon )
-function AnimatorTrackFieldVec2:onInit()
+function AnimatorTrackFieldVec2:init()
 	--create sub component track
 	self:createSubComponentTrack( 1, 'x' )
 	self:createSubComponentTrack( 2, 'y' )

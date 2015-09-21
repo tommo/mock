@@ -1,5 +1,5 @@
 module 'mock'
-CLASS: AnimatorTrackField ( AnimatorTrack )
+CLASS: AnimatorTrackField ( AnimatorValueTrack )
 	:MODEL{
 		Field 'fieldId' :string();
 	}
@@ -7,16 +7,7 @@ CLASS: AnimatorTrackField ( AnimatorTrack )
 function AnimatorTrackField:__init()
 	self.name = 'field'
 	self.targetField = false
-	self.fieldId = ''
-end
-
-function AnimatorTrackField:initFromObject( obj, fieldId, relativeTo )
-	local path  = AnimatorTargetPath.buildFor( obj, relativeTo )
-	local model = Model.fromObject( obj )
-	self.targetField = model:getField( fieldId )
-	self.fieldId = fieldId
-	self:setTargetPath( path )
-	self:onInit()
+	self.fieldId = false
 end
 
 function AnimatorTrackField:onInit()
@@ -56,6 +47,16 @@ function AnimatorTrackField:onStateLoad( state )
 end
 
 function AnimatorTrackField:onLoad()
+	self:affirmTargetField()	
+end
+
+function AnimatorTrackField:setFieldId( fieldId )
+	self.fieldId = fieldId
+	self:affirmTargetField()
+end
+
+function AnimatorTrackField:affirmTargetField()
+	assert( self.fieldId )
 	local clas = self.targetPath:getTargetClass()
 	local model = Model.fromClass( clas )
 	self.targetField = assert(model:getField( self.fieldId ) )

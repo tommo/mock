@@ -1,6 +1,6 @@
 module 'mock'
 --------------------------------------------------------------------
-CLASS: AnimatorTrackAttr ( AnimatorTrack )
+CLASS: AnimatorTrackAttr ( AnimatorValueTrack )
 	:MODEL{}
 
 function AnimatorTrackAttr:__init()

@@ -2,7 +2,7 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-CLASS: EntityMessageAnimatorKey ( AnimatorKey )
+CLASS: EntityMessageAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'msg'  :string();
 		Field 'data' :string();
@@ -14,7 +14,7 @@ function EntityMessageAnimatorKey:__init()
 end
 
 --------------------------------------------------------------------
-CLASS: EntityMessageAnimatorTrack ( CustomAnimatorTrack )
+CLASS: EntityMessageAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{
 	}
 

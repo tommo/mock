@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: AnimatorTrackColorComponent ( AnimatorSubTrack )
+CLASS: AnimatorTrackColorComponent ( AnimatorValueTrack )
 	:MODEL {
 		Field 'comId' :int() :no_edit();
 	}
@@ -28,9 +28,13 @@ function AnimatorTrackColorComponent:getIcon()
 	return 'track_number'
 end
 
+function AnimatorTrackColorComponent:canReparent( target )
+	return false
+end
+
 --------------------------------------------------------------------
 CLASS: AnimatorTrackFieldColor ( AnimatorTrackField )
-function AnimatorTrackFieldColor:onInit()
+function AnimatorTrackFieldColor:init()
 	--create sub component track
 	self:createSubComponentTrack( 1, 'r' )
 	self:createSubComponentTrack( 2, 'g' )

@@ -15,16 +15,13 @@ require 'mock.anim.Animator'
 require 'mock.anim.AnimatorEditorSupport'
 
 --------------------------------------------------------------------
-require 'mock.anim.AnimatorKeyCommon'
+--value tracks
+require 'mock.anim.AnimatorEventTrack'
+require 'mock.anim.AnimatorValueTrack'
+require 'mock.anim.CustomAnimatorTrack'
 
 --------------------------------------------------------------------
 require 'mock.anim.AnimatorTrackAttr'
-
---------------------------------------------------------------------
-require 'mock.anim.tracks.AnimatorTrackMessage'
-
---------------------------------------------------------------------
-require 'mock.anim.CustomAnimatorTrack'
 
 --------------------------------------------------------------------
 require 'mock.anim.AnimatorTrackField'
@@ -65,7 +62,6 @@ require 'mock.anim.AnimatorTrackField'
 --------------------------------------------------------------------
 --builtin custom track
 --------------------------------------------------------------------
-require 'mock.anim.AnimatorAnimatorTrack'
-require 'mock.anim.EntityMsgAnimatorTrack'
-
-require 'mock.anim.ScriptAnimatorTrack'
+require 'mock.anim.tracks.AnimatorAnimatorTrack'
+require 'mock.anim.tracks.EntityMsgAnimatorTrack'
+require 'mock.anim.tracks.ScriptAnimatorTrack'

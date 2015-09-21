@@ -6,142 +6,15 @@ local insert = table.insert
 CLASS: AnimatorClipSubNode ()
 CLASS: AnimatorClipSubNodeSpan ()
 
-CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
-CLASS: AnimatorTrack ( AnimatorClipSubNode )
 CLASS: AnimatorKey ()
+CLASS: AnimatorTrack ( AnimatorClipSubNode )
+CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
 
 CLASS: AnimatorClip ()
 CLASS: AnimatorClipGroup ()
---------------------------------------------------------------------
-AnimatorKey
-:MODEL{		
-	Field 'pos'    :float() :range(0)  :getset('Pos')      :meta{ decimals = 3, step = 0.01 };
-	Field 'length' :float() :range(0)  :getset('Length')   :meta{ decimals = 3, step = 0.01 };
-	'----';
-	Field 'tweenMode'      :enum( EnumAnimCurveTweenMode ) :no_edit();
-	Field 'tweenAnglePre'  :no_edit();
-	Field 'tweenAnglePost' :no_edit();
-	Field 'parent' :type( AnimatorTrack ) :no_edit();		
-	Field 'parentSpanId' :int()  :no_edit();
-}
-
-function AnimatorKey:__init( pos, tweenMode )
-	self.pos    = pos or 0
-	self.length = 0
-	----
-	self.tweenMode = tweenMode or 0 --LINEAR
-	self.tweenAnglePre  = 180
-	self.tweenAnglePost = 0
-	----
-	self.parentSpanId = 1
-end
-
-function AnimatorKey:getTweenCurveNormal()
-	local a0, a1 = self.tweenAnglePre, self.tweenAnglePost
-	local nx0 = math.cosd( a0 )
-	local ny0 = math.sind( a0 )
-	local nx1 = math.cosd( a1 )
-	local ny1 = math.sind( a1 )
-	return nx0, ny0, nx1, ny1
-end
-
-function AnimatorKey:findNextKey( allowWrap )
-	-- self.parent:sortKeys()
-	local action = self:getAction()	
-	local wrap = allowWrap ~= false and action.loop
-	local keys = self.parent.keys
-	local pos0 = self.pos
-	local pos = false
-	local res = nil
-	for i, k in ipairs( keys ) do
-		local pos1 = e.pos
-		if e ~= self and pos1 > pos0  then
-			if not pos or pos > pos1 then
-				res = e
-				pos = pos1
-			end
-		end
-	end
-	if res then
-		return res
-	elseif wrap then
-		return keys[1]
-	end
-	return nil
-end
-
-function AnimatorKey:start( state, pos )
-end
-
-function AnimatorKey:setPos( pos )
-	assert( type( pos ) == 'number' )
-	self.pos = pos
-end
-
-function AnimatorKey:isResizable()
-	return false
-end
-
-function AnimatorKey:getPos()
-	return self.pos
-end
-
-function AnimatorKey:getPosMS()
-	return math.floor( self.pos*1000 )
-end
-
-function AnimatorKey:setLength( length )
-	self.length = length
-end
-
-function AnimatorKey:getLength()
-	return self.length
-end
-
-function AnimatorKey:getEnd()
-	return self.pos + self.length
-end
-
-function AnimatorKey:getTrack()
-	return self.parent
-end
-
-function AnimatorKey:getAction()	
-	local track = self.parent
-	return track and track.parent
-end
-
-function AnimatorKey:getClip()
-	return self.parentClip
-end
-
-function AnimatorKey:setTweenMode( mode )
-	self.tweenMode = mode
-end
-
-function AnimatorKey:setTweenAnglePre( angle )
-	self.tweenAnglePre = 180 - angle
-end
-
-function AnimatorKey:setTweenAnglePost( angle )
-	self.tweenAnglePost = angle
-end
-
-function AnimatorKey:executeEvent( state, time )
-end
 
 
 --------------------------------------------------------------------
---VIRTUAL
-function AnimatorKey:getCurveValue()
-	return 0
-end
-
-function AnimatorKey:toString()
-	return 'key'
-end
-
-
 ---------------------------------------------------------------------
 AnimatorClipSubNodeSpan:
 MODEL{
@@ -379,32 +252,146 @@ end
 function AnimatorClipSubNode:onRestoreObjectRecordingState( animator, recordingState )
 end
 
-updateAllSubClasses( AnimatorClipSubNode )
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+AnimatorKey
+:MODEL{		
+	--
+	Field 'parent' :type( AnimatorTrack ) :no_edit();		
+	Field 'parentSpanId' :int()  :no_edit();
+	--
+	Field 'pos'    :float() :range(0)  :getset('Pos')      :meta{ decimals = 3, step = 0.01 };
+	Field 'length' :float() :range(0)  :getset('Length')   :meta{ decimals = 3, step = 0.01 };
+	'----';
+	Field 'tweenMode'      :enum( EnumAnimCurveTweenMode ) :no_edit();
+	Field 'tweenAnglePre'  :no_edit();
+	Field 'tweenAnglePost' :no_edit();
+	
+}
+
+function AnimatorKey:__init( pos, tweenMode )
+	self.pos    = pos or 0
+	self.length = 0
+	----
+	self.tweenMode = tweenMode or 0 --LINEAR
+	self.tweenAnglePre  = 180
+	self.tweenAnglePost = 0
+	----
+	self.parentSpanId = 1
+end
+
+function AnimatorKey:getTweenCurveNormal()
+	local a0, a1 = self.tweenAnglePre, self.tweenAnglePost
+	local nx0 = math.cosd( a0 )
+	local ny0 = math.sind( a0 )
+	local nx1 = math.cosd( a1 )
+	local ny1 = math.sind( a1 )
+	return nx0, ny0, nx1, ny1
+end
+
+function AnimatorKey:findNextKey( allowWrap )
+	-- self.parent:sortKeys()
+	local action = self:getAction()	
+	local wrap = allowWrap ~= false and action.loop
+	local keys = self.parent.keys
+	local pos0 = self.pos
+	local pos = false
+	local res = nil
+	for i, k in ipairs( keys ) do
+		local pos1 = e.pos
+		if e ~= self and pos1 > pos0  then
+			if not pos or pos > pos1 then
+				res = e
+				pos = pos1
+			end
+		end
+	end
+	if res then
+		return res
+	elseif wrap then
+		return keys[1]
+	end
+	return nil
+end
+
+function AnimatorKey:start( state, pos )
+end
+
+function AnimatorKey:setPos( pos )
+	assert( type( pos ) == 'number' )
+	self.pos = pos
+end
+
+function AnimatorKey:isResizable()
+	return false
+end
+
+function AnimatorKey:getPos()
+	return self.pos
+end
+
+function AnimatorKey:getPosMS()
+	return math.floor( self.pos*1000 )
+end
+
+function AnimatorKey:setLength( length )
+	self.length = length
+end
+
+function AnimatorKey:getLength()
+	return self.length
+end
+
+function AnimatorKey:getEnd()
+	return self.pos + self.length
+end
+
+function AnimatorKey:getTrack()
+	return self.parent
+end
+
+function AnimatorKey:getAction()	
+	local track = self.parent
+	return track and track.parent
+end
+
+function AnimatorKey:getClip()
+	return self.parentClip
+end
+
+function AnimatorKey:setTweenMode( mode )
+	self.tweenMode = mode
+end
+
+function AnimatorKey:setTweenAnglePre( angle )
+	self.tweenAnglePre = 180 - angle
+end
+
+function AnimatorKey:setTweenAnglePost( angle )
+	self.tweenAnglePost = angle
+end
+
+function AnimatorKey:executeEvent( state, time )
+end
+
+--------------------------------------------------------------------
+--VIRTUAL
+function AnimatorKey:getCurveValue()
+	return 0
+end
+
+function AnimatorKey:toString()
+	return 'key'
+end
+
+function AnimatorKey:getInfoText() --for editor usage
+	return false
+end
 
 
 --------------------------------------------------------------------
-AnimatorTrackGroup
-:MODEL{
-}
-
-function AnimatorTrackGroup:__init()
-end
-
-function AnimatorTrackGroup:getIcon()
-	return 'group'
-end
-
-function AnimatorTrackGroup:toString()
-	return self.name
-end
-
-function AnimatorTrackGroup:canReparent( node )
-	if node:isInstance( AnimatorTrackGroup ) then
-		return true
-	end
-end
-
-
 --------------------------------------------------------------------
 AnimatorTrack
 :MODEL{
@@ -438,6 +425,11 @@ end
 
 function AnimatorTrack:setTargetPath( path )
 	self.targetPath = path
+end
+
+function AnimatorTrack:setTargetObject( targetObject, relativeTo )
+	local path  = AnimatorTargetPath.buildFor( obj, relativeTo )
+	return self:setTargetPath( path )
 end
 
 function AnimatorTrack:serializeTargetPath()
@@ -603,6 +595,8 @@ function AnimatorTrack:buildIdCurve()
 	return idCurve
 end
 
+
+
 --(pre)build
 function AnimatorTrack:buildStateData( stateData ) 
 end
@@ -611,6 +605,9 @@ function AnimatorTrack:clearStateData( stateData )
 end
 
 function AnimatorTrack:setThrottle( state, th )
+end
+
+function AnimatorTrack:init()
 end
 
 function AnimatorTrack:start( state )
@@ -645,12 +642,32 @@ function AnimatorTrack:canReparent( node )
 end
 
 --------------------------------------------------------------------
-CLASS: AnimatorSubTrack ( AnimatorTrack )
+--------------------------------------------------------------------
+AnimatorTrackGroup
+:MODEL{
+}
 
-function AnimatorSubTrack:canReparent( node )
-	return false
+function AnimatorTrackGroup:__init()
 end
 
+function AnimatorTrackGroup:getIcon()
+	return 'group'
+end
+
+function AnimatorTrackGroup:toString()
+	return self.name
+end
+
+function AnimatorTrackGroup:canReparent( node )
+	if node:isInstance( AnimatorTrackGroup ) then
+		return true
+	end
+end
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
 --------------------------------------------------------------------
 CLASS: AnimatorClipBuildContext ()
 function AnimatorClipBuildContext:__init()
@@ -939,3 +956,7 @@ function AnimatorClipGroup:_load()
 		group:_load()
 	end
 end
+
+
+--------------------------------------------------------------------
+updateAllSubClasses( AnimatorClipSubNode )

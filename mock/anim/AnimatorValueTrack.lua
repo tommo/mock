@@ -1,6 +1,14 @@
 module 'mock'
 --------------------------------------------------------------------
-CLASS: AnimatorKeyNumber ( AnimatorKey )
+CLASS: AnimatorValueTrack ( AnimatorTrack )
+	:MODEL{}
+
+CLASS: AnimatorValueKey ( AnimatorKey )
+	:MODEL{}
+
+
+--------------------------------------------------------------------
+CLASS: AnimatorKeyNumber ( AnimatorValueKey )
 	:MODEL{
 		Field 'value'   :number()
 	}
@@ -26,7 +34,7 @@ function AnimatorKeyNumber:getCurveValue()
 end
 
 --------------------------------------------------------------------
-CLASS: AnimatorKeyBoolean ( AnimatorKey )
+CLASS: AnimatorKeyBoolean ( AnimatorValueKey )
 	:MODEL{
 		Field 'tweenMode' :no_edit();
 		Field 'value'   :boolean()
@@ -51,7 +59,7 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: AnimatorKeyString ( AnimatorKey )
+CLASS: AnimatorKeyString ( AnimatorValueKey )
 	:MODEL{
 		Field 'value'   :string()
 	}

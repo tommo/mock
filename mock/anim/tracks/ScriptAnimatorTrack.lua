@@ -15,7 +15,7 @@ local scriptTail = [[
 local scriptMT = { __index = _G }
 
 --------------------------------------------------------------------
-CLASS: ScriptAnimatorKey ( AnimatorKey )
+CLASS: ScriptAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'script'  :string() :widget('codebox');
 		Field 'isCoroutine' :boolean();
@@ -39,7 +39,7 @@ function ScriptAnimatorKey:buildScript()
 end
 
 --------------------------------------------------------------------
-CLASS: ScriptAnimatorTrack ( CustomAnimatorTrack )
+CLASS: ScriptAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{
 	}
 

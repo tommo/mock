@@ -1,25 +1,5 @@
 module 'mock'
 --------------------------------------------------------------------
-CLASS: CustomAnimatorTrack ( AnimatorTrack )
-
-function CustomAnimatorTrack:initFromObject( obj, relativeTo )	
-	local path  = AnimatorTargetPath.buildFor( obj, relativeTo )
-	self:setTargetPath( path )
-	self:onInit()
-end
-
-function CustomAnimatorTrack:onInit()
-end
-
-function CustomAnimatorTrack:isPlayable()
-	return true
-end
-
-function CustomAnimatorTrack:toString()
-	return 'custom track'
-end
-
---------------------------------------------------------------------
 --for object animator track creation
 local CustomAnimatorTrackTypes = {}
 local CommonCustomAnimatorTrackTypes = {}

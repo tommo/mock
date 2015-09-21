@@ -2,7 +2,7 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-CLASS: AnimatorAnimatorKey ( AnimatorKey )
+CLASS: AnimatorAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'clip'  :string() :selection( 'getClipNames' ) :set( 'setClip' );
 		Field 'playMode' :enum( EnumTimerMode );
@@ -11,7 +11,7 @@ CLASS: AnimatorAnimatorKey ( AnimatorKey )
 
 
 --------------------------------------------------------------------
-CLASS: AnimatorAnimatorTrack ( CustomAnimatorTrack )
+CLASS: AnimatorAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{
 	}
 

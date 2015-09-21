@@ -2,7 +2,7 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-CLASS: SoundSourceAnimatorKey ( AnimatorKey )
+CLASS: SoundSourceAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'clip' :asset('fmod_event') :set( 'setClip' );
 		Field 'follow' :boolean();
@@ -18,10 +18,9 @@ function SoundSourceAnimatorKey:setClip( clip )
 end
 
 --------------------------------------------------------------------
-CLASS: SoundSourceAnimatorTrack ( CustomAnimatorTrack )
+CLASS: SoundSourceAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{
 	}
-
 
 function SoundSourceAnimatorTrack:getIcon()
 	return 'track_audio'
@@ -32,6 +31,9 @@ function SoundSourceAnimatorTrack:toString()
 	return pathText..'<clips>'
 end
 
+function SoundSourceAnimatorTrack:isPreviewable()
+	return false
+end
 
 function SoundSourceAnimatorTrack:createKey( pos, context )
 	local key = SoundSourceAnimatorKey()

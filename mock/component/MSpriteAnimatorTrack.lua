@@ -2,7 +2,7 @@ module 'mock'
 
 
 --------------------------------------------------------------------
-CLASS: MSpriteAnimatorKey ( AnimatorKey )
+CLASS: MSpriteAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'clip'  :string() :selection( 'getClipNames' ) :set( 'setClip' );
 		Field 'playMode' :enum( EnumTimerMode );
@@ -25,7 +25,7 @@ function MSpriteAnimatorKey:setClip( clip )
 end
 
 --------------------------------------------------------------------
-CLASS: MSpriteAnimatorTrack ( CustomAnimatorTrack )
+CLASS: MSpriteAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{
 	}
 

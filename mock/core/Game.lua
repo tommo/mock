@@ -182,10 +182,10 @@ function Game:init( option, fromEditor )
 	--Systems
 	self:initGraphics   ( option, fromEditor )
 	self:initSystem     ( option, fromEditor )
-	self:initSubSystems ( option, fromEditor )
 	
 	--init asset
 	self:initAsset      ( option, fromEditor )
+	self:initSubSystems ( option, fromEditor )
 
 	--postInit
 	if not fromEditor then --initCommonData will get called after scanning asset modifications
