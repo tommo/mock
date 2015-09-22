@@ -61,7 +61,7 @@ function SceneManager:getKey()
 	return self._key
 end
 
-function SceneManager:onInit()
+function SceneManager:onInit( scene )
 end
 
 function SceneManager:serialize()

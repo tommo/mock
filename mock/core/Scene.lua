@@ -541,6 +541,7 @@ function Scene:clear( keepEditorEntity )
 	if not self.__editor_scene then
 		emitSignal( 'scene.clear', self )
 	end
+	self.initialized = false
 end
 
 function Scene:getRootGroup()

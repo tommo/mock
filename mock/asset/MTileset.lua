@@ -59,7 +59,9 @@ function MTileset:update()
 	
 	local u = {vbo:computeBounds ( mtilesetVertexFormat ) }
 	if u[1] then
-		mesh:setBounds ( unpack(u) )
+		-- mesh:setBounds ( unpack(u) )
+		local tw, th = self.tileWidth, self.tileHeight
+		mesh:setBounds( 0,0,0, 1,2.5,1 )
 	end
 end
 

@@ -68,11 +68,13 @@ end
 --Scene
 --------------------------------------------------------------------
 function Component:getScene()
-	return self._entity.scene
+	local ent = self._entity
+	return ent and ent.scene
 end
 
 function Component:getLayer()
-	return self._entity:getLayer()
+	local ent = self._entity
+	return ent and ent:getLayer()
 end
 
 function Component:setActionPriority( action, priority )
