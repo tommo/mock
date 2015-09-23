@@ -24,7 +24,7 @@ function JoystickConfig:__init( data )
 
 end
 
-function JoystickConfig:getBtnName( id )
+function JoystickConfig:getButtonName( id )
 	return self.buttonIdToName[ id ] or nil
 end
 

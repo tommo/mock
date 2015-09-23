@@ -836,6 +836,9 @@ function Entity:isLocalActive()
 	return self.localActive
 end
 
+function Entity:attachGlobalAction( groupId, action )
+	return self.scene:attachGlobalAction( groupId, action )
+end
 
 function Entity:setActionPriority( action, priority )
 	return self.scene:setActionPriority( action, priority )

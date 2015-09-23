@@ -73,7 +73,6 @@ function AudioManager:setCategoryVolume( category, volume )
 	return MOAIFmodEventMgr.setSoundCategoryVolume( category, volume or 1 )
 end
 
-
 function AudioManager:seekCategoryVolume( category, v, delta, easeType )
 	category = category or 'master'
 	delta = delta or 0
@@ -110,6 +109,22 @@ end
 
 function AudioManager:moveMasterVolume( dv, delta, easeType )
 	return self:moveCategoryVolume( 'master', dv, delta, easeType )
+end
+
+function AudioManager:pauseCategory( category, paused )
+	MOAIFmodEventMgr.pauseSoundCategory( category, paused ~= false )
+end
+
+function AudioManager:muteCategory( category, muted )
+	MOAIFmodEventMgr.muteSoundCategory( category, muted ~= false )
+end
+
+function AudioManager:isCategoryMuted( category )
+	return MOAIFmodEventMgr.isSoundCategoryMuted( category )
+end
+
+function AudioManager:isCategoryPaused( category )
+	return MOAIFmodEventMgr.isSoundCategoryPaused( category )
 end
 
 --------------------------------------------------------------------

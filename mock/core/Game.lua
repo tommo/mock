@@ -203,16 +203,16 @@ function Game:initSystem( option, fromEditor )
 	self.throttle = 1
 	self.isPaused = false
 
-	local actionRoot=MOAICoroutine.new()
-	actionRoot:run( function()
+
+	local rootUpdateCoroutine=MOAICoroutine.new()
+	rootUpdateCoroutine:run( function()
 			while true do
 				local dt = coroutine.yield()
 				self:onRootUpdate( dt ) --delta time get passed in
 			end
 		end
 	)
-
-	self.actionRoot = actionRoot
+	self.actionRoot = MOAISim.getActionMgr():getRoot()
 	self:setThrottle( 1 )
 
 	-------Setup Callbacks
@@ -355,7 +355,7 @@ function Game:initCommonData( option, fromEditor )
 
 	----load scenes
 	if option['scenes'] then
-		for alias, scnPath in ipairs( option['scenes'] ) do
+		for alias, scnPath in pairs( option['scenes'] ) do
 			self.scenes[ alias ] = scnPath
 		end
 	end
@@ -545,11 +545,20 @@ function Game:openScene( id, additive, arguments )
 	return self:openSceneByPath( scnPath, additive, arguments )
 end
 
+function Game:scheduleOpenScene( id, additive, arguments )
+	local scnPath = self.scenes[ id ]
+	if not scnPath then
+		return _error( 'scene not defined', id )
+	end
+	return self:scheduleOpenSceneByPath( scnPath, additive, arguments ) 
+end
+
 function Game:openSceneByPath( scnPath, additive, arguments )
 	_stat( 'openning scene:', scnPath )
 	local mainScene = self.mainScene
 	
 	if not additive then
+		mainScene:stop()
 		mainScene:clear( true )
 		collectAssetGarbage()
 	end
@@ -575,7 +584,8 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	mainScene.assetPath = scnPath
 	--todo: previous scene
 	scn.arguments = args
-	return scn:flushPendingStart()
+	scn:start()
+	return scn
 end
 
 function Game:scheduleOpenSceneByPath( scnPath, additive, arguments )

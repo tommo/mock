@@ -4,10 +4,58 @@ module 'mock'
 	filter [ mouse, keyboard, touch, joystick ]
 ]]
 
-function installInputListener( self, option )
+---------------------------------------------------------------------
+CLASS: InputListenerCategory ()
+
+function InputListenerCategory:__init()
+	self.active = true
+	self.id = false
+end
+
+function InputListenerCategory:getId()
+	return self.id
+end
+
+function InputListenerCategory:isActive()
+	return self.active
+end
+
+function InputListenerCategory:setActive( act )
+	self.active = act ~= false
+end
+
+
+--------------------------------------------------------------------
+local inputListenerCategories = {}
+
+function affirmInputListenerCategory( id )
+	local category = inputListenerCategories[ id ]
+	if category == nil then
+		category = InputListenerCategory()
+		category.id = id
+		inputListenerCategories[ id ] = category
+	end
+	return category
+end
+
+function getInputListenerCategory( id )
+	return inputListenerCategories[ id ]
+end
+
+function setInputListenerCategoryActive( id, active )
+	local cat = getInputListenerCategory( id )
+	if cat then return cat:setActive( active ) end
+end
+
+--------------------------------------------------------------------
+function installInputListener( owner, option )
 	option = option or {}
 	local inputDevice       = option['device'] or mock.getDefaultInputDevice()
 	local refuseMockUpInput = option['no_mockup'] == true
+	local categoryId        = option['category'] or 'main'
+
+	local category = affirmInputListenerCategory( categoryId )
+
 	----link callbacks
 	local mouseCallback    = false
 	local keyboardCallback = false
@@ -17,13 +65,13 @@ function installInputListener( self, option )
 	local sensors = option['sensors'] or false
 	if not sensors or table.index( sensors, 'mouse' ) then
 		----MouseEvent
-		local onMouseEvent = self.onMouseEvent
-		local onMouseDown  = self.onMouseDown
-		local onMouseUp    = self.onMouseUp
-		local onMouseMove  = self.onMouseMove
-		local onMouseEnter = self.onMouseEnter
-		local onMouseLeave = self.onMouseLeave
-		local onScroll     = self.onScroll
+		local onMouseEvent = owner.onMouseEvent
+		local onMouseDown  = owner.onMouseDown
+		local onMouseUp    = owner.onMouseUp
+		local onMouseMove  = owner.onMouseMove
+		local onMouseEnter = owner.onMouseEnter
+		local onMouseLeave = owner.onMouseLeave
+		local onScroll     = owner.onScroll
 
 		if 
 			onMouseDown or onMouseUp or onMouseMove or onScroll or
@@ -31,22 +79,23 @@ function installInputListener( self, option )
 			onMouseEvent
 		then
 			mouseCallback = function( ev, x, y, btn, mock )
+				if not category.active then return end
 				if mock and refuseMockUpInput then return end
 				if ev == 'move' then
-					if onMouseMove then onMouseMove( self, x, y, mock ) end
+					if onMouseMove then onMouseMove( owner, x, y, mock ) end
 				elseif ev == 'down' then
-					if onMouseDown then onMouseDown( self, btn, x, y, mock ) end
+					if onMouseDown then onMouseDown( owner, btn, x, y, mock ) end
 				elseif ev == 'up'   then
-					if onMouseUp  then onMouseUp  ( self, btn, x, y, mock ) end
+					if onMouseUp  then onMouseUp  ( owner, btn, x, y, mock ) end
 				elseif ev == 'scroll' then
-					if onScroll   then onScroll ( self, x, y, mock ) end
+					if onScroll   then onScroll ( owner, x, y, mock ) end
 				elseif ev == 'enter'  then
-					if onMouseEnter   then onMouseEnter ( self, mock ) end
+					if onMouseEnter   then onMouseEnter ( owner, mock ) end
 				elseif ev == 'leave'  then
-					if onMouseLeave   then onMouseLeave ( self, mock ) end
+					if onMouseLeave   then onMouseLeave ( owner, mock ) end
 				end
 				if onMouseEvent then
-					return onMouseEvent( self, ev, x, y, btn, mock )
+					return onMouseEvent( owner, ev, x, y, btn, mock )
 				end
 			end
 			inputDevice:addMouseListener( mouseCallback )
@@ -55,25 +104,26 @@ function installInputListener( self, option )
 
 	if not sensors or table.index( sensors, 'touch' ) then
 		----TouchEvent
-		local onTouchEvent  = self.onTouchEvent  
-		local onTouchDown   = self.onTouchDown
-		local onTouchUp     = self.onTouchUp
-		local onTouchMove   = self.onTouchMove
-		local onTouchCancel = self.onTouchCancel
+		local onTouchEvent  = owner.onTouchEvent  
+		local onTouchDown   = owner.onTouchDown
+		local onTouchUp     = owner.onTouchUp
+		local onTouchMove   = owner.onTouchMove
+		local onTouchCancel = owner.onTouchCancel
 		if onTouchDown or onTouchUp or onTouchMove or onTouchEvent then
 			touchCallback = function( ev, id, x, y, mock )
+				if not category.active then return end
 				if mock and refuseMockUpInput then return end
 				if ev == 'move' then
-					if onTouchMove   then onTouchMove( self, id, x, y, mock ) end
+					if onTouchMove   then onTouchMove( owner, id, x, y, mock ) end
 				elseif ev == 'down' then
-					if onTouchDown   then onTouchDown( self, id, x, y, mock ) end
+					if onTouchDown   then onTouchDown( owner, id, x, y, mock ) end
 				elseif ev == 'up' then
-					if onTouchUp     then onTouchUp  ( self, id, x, y, mock ) end
+					if onTouchUp     then onTouchUp  ( owner, id, x, y, mock ) end
 				elseif ev == 'cancel' then
-					if onTouchCancel then onTouchCancel( self ) end
+					if onTouchCancel then onTouchCancel( owner ) end
 				end
 				if onTouchEvent then
-					return onTouchEvent( self, ev, id, x, y, mock )
+					return onTouchEvent( owner, ev, id, x, y, mock )
 				end
 			end
 			inputDevice:addTouchListener( touchCallback )
@@ -82,19 +132,20 @@ function installInputListener( self, option )
 
 	----KeyEvent
 	if not sensors or table.index( sensors, 'keyboard' ) then
-		local onKeyEvent = self.onKeyEvent
-		local onKeyDown  = self.onKeyDown
-		local onKeyUp    = self.onKeyUp
+		local onKeyEvent = owner.onKeyEvent
+		local onKeyDown  = owner.onKeyDown
+		local onKeyUp    = owner.onKeyUp
 		if onKeyDown or onKeyUp or onKeyEvent then
 			keyboardCallback = function( key, down, mock )
+				if not category.active then return end
 				if mock and refuseMockUpInput then return end
 				if down then
-					if onKeyDown then onKeyDown( self, key, mock ) end
+					if onKeyDown then onKeyDown( owner, key, mock ) end
 				else
-					if onKeyUp   then onKeyUp  ( self, key, mock ) end
+					if onKeyUp   then onKeyUp  ( owner, key, mock ) end
 				end
 				if onKeyEvent then
-					return onKeyEvent( self, key, down, mock )
+					return onKeyEvent( owner, key, down, mock )
 				end
 			end
 			inputDevice:addKeyboardListener( keyboardCallback )
@@ -103,22 +154,23 @@ function installInputListener( self, option )
 
 	---JOYSTICK EVNET
 	if not sensors or table.index( sensors, 'joystick' ) then
-		local onJoyButtonDown = self.onJoyButtonDown
-		local onJoyButtonUp   = self.onJoyButtonUp
-		local onJoyButtonEvent = self.onJoyButtonEvent
-		local onJoyAxisMove   = self.onJoyAxisMove
+		local onJoyButtonDown = owner.onJoyButtonDown
+		local onJoyButtonUp   = owner.onJoyButtonUp
+		local onJoyButtonEvent = owner.onJoyButtonEvent
+		local onJoyAxisMove   = owner.onJoyAxisMove
 		if onJoyButtonDown or onJoyButtonUp or onJoyAxisMove or onJoyButtonEvent then
 			joystickCallback = function( ev, joyId, btnId, axisId, value, mock )
 				-- print( ev, joyid, btnId, axisId, value )
+				if not category.active then return end
 				if mock and refuseMockUpInput then return end
 				if ev == 'down' then
-					if onJoyButtonDown then onJoyButtonDown( self, joyId, btnId, mock ) end
-					if onJoyButtonEvent then onJoyButtonEvent( self, joyId, btnId, true, mock ) end
+					if onJoyButtonDown then onJoyButtonDown( owner, joyId, btnId, mock ) end
+					if onJoyButtonEvent then onJoyButtonEvent( owner, joyId, btnId, true, mock ) end
 				elseif ev == 'up' then
-					if onJoyButtonUp then onJoyButtonUp( self, joyId, btnId, mock ) end
-					if onJoyButtonEvent then onJoyButtonEvent( self, joyId, btnId, false, mock ) end
+					if onJoyButtonUp then onJoyButtonUp( owner, joyId, btnId, mock ) end
+					if onJoyButtonEvent then onJoyButtonEvent( owner, joyId, btnId, false, mock ) end
 				elseif ev == 'axis' then
-					if onJoyAxisMove then onJoyAxisMove( self, joyId, axisId, value ) end
+					if onJoyAxisMove then onJoyAxisMove( owner, joyId, axisId, value ) end
 				end
 			end
 			inputDevice:addJoystickListener( joystickCallback )
@@ -127,20 +179,19 @@ function installInputListener( self, option )
 
 	--MOTION Callbakcs
 	
-	
-	self.__inputListenerData = {
+	owner.__inputListenerData = {
 		mouseCallback    = mouseCallback,
 		keyboardCallback = keyboardCallback,
 		touchCallback    = touchCallback,
 		joystickCallback = joystickCallback,
-		inputDevice      = inputDevice
+		inputDevice      = inputDevice,
+		category         = category
 	}
 
-	
 end
 
-function uninstallInputListener( self )
-	local data = self.__inputListenerData
+function uninstallInputListener( owner )
+	local data = owner.__inputListenerData
 	if not data then return end	
 	local inputDevice = data.inputDevice
 	if data.mouseCallback then
@@ -161,6 +212,9 @@ function uninstallInputListener( self )
 
 end
 
+
+affirmInputListenerCategory( 'main' )
+affirmInputListenerCategory( 'ui' )
 
 --[[
 	input event format:

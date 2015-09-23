@@ -84,12 +84,17 @@ end
 function FSMController:onStart( entity )
 	entity:addMsgListener( self.msgBoxListener )
 	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
+	self.threadFSMUpdate:setDefaultParent( true )
 	return Behaviour.onStart( self, entity )
 end
 
 function FSMController:onDetach( ent )
 	Behaviour.onDetach( self, ent )
 	ent:removeMsgListener( self.msgBoxListener )
+end
+
+function FSMController:getFSMUpdateThread()
+	return self.threadFSMUpdate
 end
 
 function FSMController:getState()

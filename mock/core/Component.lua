@@ -77,6 +77,10 @@ function Component:getLayer()
 	return ent and ent:getLayer()
 end
 
+function Component:attachGlobalAction( groupId, action )
+	return self._entity:attachGlobalAction( groupId, action )
+end
+
 function Component:setActionPriority( action, priority )
 	return self._entity:setActionPriority( action, priority )
 end

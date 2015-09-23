@@ -50,16 +50,19 @@ end
 function collectAssetGarbage()
 	local collectThread = MOAICoroutine.new()
 	collectThread:run( function()
+			_stat( 'collect asset garbage' )
 			setAssetCacheWeak()
 			MOAISim.forceGC()
 			setAssetCacheStrong()
-			-- reportLoadedMoaiTextures()			
+			-- reportLoadedMoaiTextures()
 			-- reportAssetInCache()
 			-- reportHistogram()
 			-- reportTracingObject()
 			releaseRetainAssets()
+			_stat( 'collect asset garbage ... done' )
 		end
-		)
+	)
+	collectThread:attach( game:getActionRoot() )
 	return collectThread
 end
 
