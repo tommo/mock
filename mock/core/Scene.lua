@@ -183,22 +183,27 @@ end
 function Scene:flushPendingStart()
 	if not self.running then return self end
 	local pendingStart = self.pendingStart
-	self.pendingStart = {}
+	local newPendingStart = {}
+	self.pendingStart = newPendingStart
 	for entity in pairs( pendingStart ) do
 		entity:start()
 	end
-	return self
+	if next( newPendingStart ) then
+		return self:flushPendingStart()
+	else
+		return self
+	end
 end
 
 function Scene:threadMain( dt )
 	_stat( 'entering scene main thread' )
-	self:flushPendingStart()
 	-- first run
 	for ent in pairs( self.entities ) do
 		if not ent.parent then
 			ent:start()
 		end
 	end
+	self:flushPendingStart()
 	-- main loop
 	_stat( 'entering scene main loop' )
 	dt = 0
@@ -431,7 +436,7 @@ function Scene:start()
 	if not self.initialized then self:init() end
 	self.running = true
 	self.mainThread = MOAICoroutine.new()
-	self.mainThread:setDefaultParent( false )
+	self.mainThread:setDefaultParent( true )
 	self.mainThread:run( function()
 		return self:threadMain()
 	end)
@@ -446,7 +451,6 @@ function Scene:start()
 	local onStart = self.onStart
 	if onStart then onStart( self ) end
 	_stat( 'scene start ... done' )
-
 end
 
 

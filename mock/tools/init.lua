@@ -21,7 +21,6 @@ require 'mock.tools.ProfilerHelper'
 
 --------------------------------------------------------------------
 --Platform related
--- require 'tools.i18n'
 -- require 'mock.tools.GameCenter'
 -- require 'tools.FacebookHelper'
 
