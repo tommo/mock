@@ -42,6 +42,7 @@ end
 function Camera:__init( option )
 	option = option or {}
 	
+	self.active = false
 	self.clearBuffer = true
 	self.clearColor = { .1,.1,.1,1 }
 
@@ -79,7 +80,7 @@ function Camera:__init( option )
 	self.hasImageEffect = false
 
 	self:_initDefault()
-
+	self._renderCommandTable = {}
 end
 
 function Camera:_initDefault()
@@ -97,7 +98,7 @@ function Camera:_initDefault()
 	self.showDebugLines  = false
 
 	self.passes = {}
-	self._enabled = true
+	self._active = true
 
 end
 
@@ -118,10 +119,10 @@ function Camera:onDetach( entity )
 	self.renderTarget:clear()
 end
 
-function Camera:setActive( active )
-	self._enabled = active
-	self:updateRenderLayers()
-end
+-- function Camera:setActive( active )
+-- 	self._active = active
+-- 	self:updateRenderLayers()
+-- end
 
 --------------------------------------------------------------------
 --will affect Entity:wndToWorld
@@ -484,6 +485,25 @@ end
 function Camera:setPriority( p )
 	self.priority = p or 0
 	getCameraManager():update()
+end
+
+function Camera:_updateRenderCommandTable( t )
+	if t then
+		self._renderCommandTable = t
+	end
+	local active = self._active
+	for i, command in ipairs( self._renderCommandTable ) do
+		command:setEnabled( active )
+	end
+end
+
+function Camera:isActive()
+	return self._active
+end
+
+function Camera:setActive( active )
+	self._active = active ~= false
+	self:_updateRenderCommandTable()
 end
 
 --------------------------------------------------------------------

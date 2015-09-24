@@ -218,6 +218,9 @@ function TextLabel:drawBounds()
 	if self.rectLimit then
 		local x1,y1, x2,y2 = self.box:getRect()	
 		MOAIDraw.drawRect( x1,-y1,x2,-y2 )
+	else
+		local x1,y1,z1, x2,y2,z2 = self.box:getBounds()	
+		MOAIDraw.drawLine( x1, -y2, x2, -y2 )
 	end
 end
 

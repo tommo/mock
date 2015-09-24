@@ -71,20 +71,18 @@ function CameraManager:update()
 	
 	--build context->cameraList map	
 	for _, cam in ipairs( self:getCameraList() ) do
-		if cam._enabled then
-			local context    = cam.context
-			local renderData = contextMap[ context ]
-			if not renderData then
-				renderData = {
-					cameras           = {},
-					renderTableMap    = {},
-					bufferTable       = {},
-					deviceRenderTable = false
-				}
-				contextMap[ context ] = renderData
-			end
-			table.insert( renderData.cameras, cam )
+		local context    = cam.context
+		local renderData = contextMap[ context ]
+		if not renderData then
+			renderData = {
+				cameras           = {},
+				renderTableMap    = {},
+				bufferTable       = {},
+				deviceRenderTable = false
+			}
+			contextMap[ context ] = renderData
 		end
+		table.insert( renderData.cameras, cam )
 	end
 
 	for context, renderData in pairs( contextMap ) do
@@ -113,11 +111,11 @@ function CameraManager:update()
 end
 
 function CameraManager:_buildBufferTable( passQueue )
-	local bufferTable    = {}
 	local currentRenderTarget = false
 	local currentBuffer  = false
 	local currentOption  = false
 	local currentBatch   = false
+	local currentCamera  = false
 	local bufferBatchMap = {}
 
 	local defaultOptions = { clearColor = {0,0,0,1}, clearDepth = true }
@@ -128,20 +126,31 @@ function CameraManager:_buildBufferTable( passQueue )
 	currentRenderTarget = game:getMainRenderTarget()
 	currentBuffer       = currentRenderTarget and currentRenderTarget:getFrameBuffer() or MOAIGfxDevice.getFrameBuffer()
 	
+
 	--collect batches
 	for i, entry in ipairs( passQueue ) do
 		local tag = entry.tag
+
+		local camera = entry.camera
+		local cameraChanged = false
+		if camera ~= currentCamera then
+			cameraChanged = true
+			currentCamera = camera
+		end
+
 		if tag == 'render-target' then
 			local renderTarget = entry.renderTarget
 			local buffer = renderTarget:getFrameBuffer()
 			local option = entry.option or defaultOptions
-			if buffer ~= currentBuffer  then				
+			
+			if (buffer ~= currentBuffer) or cameraChanged then
 				currentBatch = {}
 				table.insert( bufferInfoTable,
 					{
 						buffer = buffer,
 						option = option,
-						batch  = currentBatch						
+						batch  = currentBatch,
+						camera = currentCamera
 					}
 				)
 				currentBuffer = buffer
@@ -149,13 +158,14 @@ function CameraManager:_buildBufferTable( passQueue )
 			end
 
 		elseif tag == 'layer' then
-			if not currentBatch then
+			if (not currentBatch) or cameraChanged then
 				currentBatch = {}
 				table.insert( bufferInfoTable,
 					{
 						buffer = currentBuffer,
 						option = defaultOptions,
-						batch  = currentBatch						
+						batch  = currentBatch,
+						camera = currentCamera
 					}
 				)
 			end
@@ -165,45 +175,97 @@ function CameraManager:_buildBufferTable( passQueue )
 
 	end
 
-	--
-	local innerContainer = {}
-	local batchCount  = #bufferInfoTable
-	
-	local id = 0
-	local function switchBatch()
-		if batchCount == 0 then return end
-		id = id + 1
-		if id > batchCount then id = 1 end
+	local USE_FRAMEBUFFER_COMMAND = true
 
-		local info = bufferInfoTable[ id ]
-		local buffer   = info.buffer
-		--batch
-		innerContainer[1] = info.batch or nil
-		--option
-		local option = info.option
-		local clearColor = option and option.clearColor
-		if clearColor then
-			buffer:setClearColor( unpack( clearColor ) )
-		else
-			buffer:setClearColor()
+	if USE_FRAMEBUFFER_COMMAND then
+		local currentCamera = false
+		local resultBufferTable = {}
+		local currentCamerRenderCommands = {}
+		local resultRenderTableMap = {} --legacy
+
+		for i, info in ipairs( bufferInfoTable ) do
+			local camera = info.camera
+			if camera ~= currentCamera then
+				currentCamera = camera
+				currentCamerRenderCommands = {}
+				camera:_updateRenderCommandTable( currentCamerRenderCommands )
+				table.insert( resultBufferTable, currentCamerRenderCommands )
+			end
+			
+			local frameRenderCommand = MOAIFrameBufferRenderCommand.new()
+			frameRenderCommand:setFrameBuffer( assert( info.buffer ) )
+			frameRenderCommand:setRenderTable( assert( info.batch ) )
+			frameRenderCommand.camera = camera
+			frameRenderCommand:setEnabled( camera:isActive() )
+
+			local option = info.option
+			local clearColor = option and option.clearColor
+			local clearDepth = option and option.clearDepth
+
+			if clearColor then
+				frameRenderCommand:setClearColor( unpack( clearColor ) )
+			else
+				frameRenderCommand:setClearColor()
+			end
+			frameRenderCommand:setClearDepth( clearDepth ~= false )
+			table.insert( currentCamerRenderCommands, frameRenderCommand )
 		end
-		buffer:setClearDepth( ( option and option.clearDepth ) ~= false )
+
+		return resultBufferTable, resultRenderTableMap
+	else
+		--
+		local innerContainer = {}
+		local batchCount  = #bufferInfoTable
+		local id = 0
+		local function switchBatch()
+			if batchCount == 0 then return end
+			id = id + 1
+			if id > batchCount then id = 1 end
+
+			local info = bufferInfoTable[ id ]
+
+			local buffer   = info.buffer
+			--batch
+			innerContainer[1] = info.batch or nil
+			--option
+			local option = info.option
+			local clearColor = option and option.clearColor
+			if clearColor then
+				buffer:setClearColor( unpack( clearColor ) )
+			else
+				buffer:setClearColor()
+			end
+			buffer:setClearDepth( ( option and option.clearDepth ) ~= false )
+		end
+
+		local universalRenderTable = {
+			--container,
+			innerContainer,
+			--switcher,
+			buildCallbackLayer( switchBatch ),
+		}
+		
+		local resultBufferTable    = {}
+		local resultRenderTableMap = {}
+		local currentCameraBufferTable = {}
+		local currentCamera = false
+		for i, entry in ipairs( bufferInfoTable ) do
+			local buffer = entry.buffer		
+			local camera = entry.camera
+			if camera ~= currentCamera then
+				currentCamera = camera
+				currentCameraBufferTable = {}
+				table.insert( resultBufferTable, currentCameraBufferTable )
+			end
+			table.insert( currentCameraBufferTable, buffer )
+			resultRenderTableMap[ buffer ] = universalRenderTable
+		end
+
+		switchBatch() --set initial id
+
+		return resultBufferTable, resultRenderTableMap
 	end
 
-	local universalRenderTable = {
-		--container,
-		innerContainer,
-		--switcher,
-		buildCallbackLayer( switchBatch ),
-	}
-	local resultRenderTableMap = {}
-	for i, entry in ipairs( bufferInfoTable ) do
-		local buffer = entry.buffer		
-		table.insert( bufferTable, buffer )
-		resultRenderTableMap[ buffer ] = universalRenderTable
-	end
-	switchBatch() --set initial id
-	return bufferTable, resultRenderTableMap
 
 end
 

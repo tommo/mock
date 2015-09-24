@@ -66,6 +66,11 @@ function CameraPass:getOutputRenderTarget()
 	return self.outputRenderTarget
 end
 
+function CameraPass:pushPassData( data )
+	data[ 'camera' ] = self:getCamera()
+	table.insert( self.passes, data )
+end
+
 function CameraPass:pushRenderLayer( layer, renderTarget, option )
 	if not layer then 
 		_error( 'no render layer given!' )
@@ -74,12 +79,10 @@ function CameraPass:pushRenderLayer( layer, renderTarget, option )
 	if renderTarget or option then
 		self:pushRenderTarget( renderTarget, option )
 	end
-
-	table.insert( self.passes, {
-			tag   = 'layer',
-			layer = layer
-		}
-	)
+	self:pushPassData {
+		tag   = 'layer',
+		layer = layer
+	}
 	return layer
 end
 
@@ -95,12 +98,12 @@ function CameraPass:pushRenderTarget( renderTarget, option )
 	local renderTarget = renderTarget or self:getDefaultRenderTarget()
 	self.currentRenderTarget = renderTarget
 	assert( isInstance( renderTarget, RenderTarget ) )
-	table.insert( self.passes, { 
+	--
+	self:pushPassData { 
 		tag          = 'render-target',
 		renderTarget = renderTarget,
 		option       = option 
 		}
-	)
 end
 
 function CameraPass:findPreviousRenderTarget()

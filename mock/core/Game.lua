@@ -585,7 +585,9 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	mainScene.assetPath = scnPath
 	--todo: previous scene
 	scn.arguments = args
-	scn:start()
+	if autostart then
+		scn:start()
+	end
 	return scn
 end
 
