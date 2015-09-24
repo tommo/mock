@@ -537,25 +537,26 @@ function Game:openEntryScene()
 	end
 end
 
-function Game:openScene( id, additive, arguments )
+function Game:openScene( id, additive, arguments, autostart )
 	local scnPath = self.scenes[ id ]
 	if not scnPath then
 		return _error( 'scene not defined', id )
 	end
-	return self:openSceneByPath( scnPath, additive, arguments )
+	return self:openSceneByPath( scnPath, additive, arguments, autostart )
 end
 
-function Game:scheduleOpenScene( id, additive, arguments )
+function Game:scheduleOpenScene( id, additive, arguments, autostart )
 	local scnPath = self.scenes[ id ]
 	if not scnPath then
 		return _error( 'scene not defined', id )
 	end
-	return self:scheduleOpenSceneByPath( scnPath, additive, arguments ) 
+	return self:scheduleOpenSceneByPath( scnPath, additive, arguments, autostart ) 
 end
 
-function Game:openSceneByPath( scnPath, additive, arguments )
+function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	_stat( 'openning scene:', scnPath )
 	local mainScene = self.mainScene
+	autostart = autostart ~= false
 	
 	if not additive then
 		mainScene:stop()
@@ -588,8 +589,9 @@ function Game:openSceneByPath( scnPath, additive, arguments )
 	return scn
 end
 
-function Game:scheduleOpenSceneByPath( scnPath, additive, arguments )
-	self.pendingLoading = { scnPath, additive, arguments }
+function Game:scheduleOpenSceneByPath( scnPath, additive, arguments, autostart )
+	autostart = true
+	self.pendingLoading = { scnPath, additive, arguments, autostart }
 end
 
 function Game:onSceneExit( scn )
