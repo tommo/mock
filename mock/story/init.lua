@@ -6,6 +6,7 @@ require 'mock.story.StoryGraph'
 
 require 'mock.story.FlagDict'
 require 'mock.story.StoryContext'
+require 'mock.story.StoryState'
 
 require 'mock.story.StoryRoleController'
 require 'mock.story.StorySceneController'

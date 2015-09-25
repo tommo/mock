@@ -16,7 +16,7 @@ function StoryManager:getKey()
 end
 
 function StoryManager:onInit( game )
-	print( 'init story manager')
+	-- print( 'init story manager')
 	--TEST:
 	if not hasAsset( 'story/basic.story' ) then return end
 	local context = self:createContext()
@@ -74,7 +74,7 @@ function StoryManager:getRoleControllers( roleId )
 end
 
 function StoryManager:sendInput( roleId, tag, data )
-	print( 'input event', roleId, tag, data )
+	-- print( 'input event', roleId, tag, data )
 	if self.activeContext then
 		self.activeContext:sendInput( roleId, tag, data )
 	end
@@ -82,7 +82,7 @@ end
 
 function StoryManager:sendSceneEvent( sceneId, event ) --scene, enter/exit
 	if not sceneId then return end
-	print( 'scene event', sceneId, event )
+	-- print( 'scene event', sceneId, event )
 	if self.activeContext then
 		self.activeContext:sendSceneEvent( sceneId, event )
 	end

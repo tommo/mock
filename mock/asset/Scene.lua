@@ -724,6 +724,14 @@ function copyAndPasteEntity( ent, idGenerator )
 	return created
 end
 
+function makeComponentCopyData( com )
+	--TODO
+end
+
+function makeComponentPasteData( copyData, idGenerator )
+	--TODO
+end
+
 
 --------------------------------------------------------------------
 function serializeEntity( ent, keepProto )
