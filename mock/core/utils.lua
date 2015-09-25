@@ -1215,3 +1215,24 @@ end
 -- 	return t
 -- end
 
+
+--tool functions
+function fixpath(p)
+	p=string.gsub(p,'\\','/')
+	return p
+end
+
+function splitpath( path )
+	path = fixpath( path )
+	return string.match( path, "(.-)[\\/]-([^\\/]-%.?([^%.\\/]*))$" )
+end
+
+function stripext(p)
+	return string.gsub( p, '%..*$', '' )
+end
+
+function stripdir(p)
+	p = fixpath(p)
+	return string.match(p, "[^\\/]+$")
+end
+
