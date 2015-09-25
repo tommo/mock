@@ -13,6 +13,7 @@ local remove = table.remove
 CLASS: Camera ( Component )
 
 :MODEL{
+	Field 'active'           :boolean() :isset('Active') ;
 	Field 'zoom'             :number()  :getset('Zoom')   :range(0) ;
 	'----';
 	Field 'perspective'      :boolean() :isset('Perspective');
@@ -41,13 +42,12 @@ end
 
 function Camera:__init( option )
 	option = option or {}
-	
-	self.active = false
 	self.clearBuffer = true
 	self.clearColor = { .1,.1,.1,1 }
 
 	local cam = MOAICamera.new()
 	self._camera  = cam
+	self._active  = true
 	cam.source = self
 
 	---framebuffer & viewports
@@ -69,9 +69,11 @@ function Camera:__init( option )
 	self.mainCamera   = false
 	self.renderLayers = {}
 	self.priority     = option.priority or 0
+	
 	self.dummyLayer = MOAILayer.new()  --just for projection transform
 	self.dummyLayer:setViewport( self:getMoaiViewport() )
 	self.dummyLayer:setCamera( self._camera )
+
 	self.includedLayers = option.included or 'all'
 	self.excludedLayers = {}
 	

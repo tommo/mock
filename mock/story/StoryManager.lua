@@ -16,6 +16,7 @@ function StoryManager:getKey()
 end
 
 function StoryManager:onInit( game )
+	print( 'init story manager')
 	--TEST:
 	if not hasAsset( 'story/basic.story' ) then return end
 	local context = self:createContext()

@@ -202,8 +202,13 @@ function CameraManager:_buildBufferTable( passQueue )
 			local clearColor = option and option.clearColor
 			local clearDepth = option and option.clearDepth
 
-			if clearColor then
+			local tt = type( clearColor )
+			if tt == 'table' then --color values
 				frameRenderCommand:setClearColor( unpack( clearColor ) )
+			elseif tt == 'string' then --color node
+				frameRenderCommand:setClearColor( hexcolor( clearColor ) )
+			elseif tt == 'userdata' then --color node
+				frameRenderCommand:setClearColor( clearColor )
 			else
 				frameRenderCommand:setClearColor()
 			end

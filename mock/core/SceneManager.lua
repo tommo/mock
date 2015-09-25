@@ -53,6 +53,13 @@ function SceneManager:init( scn )
 	self:onInit( scn )
 end
 
+function SceneManager:reset()
+	self:onReset()
+end
+
+function SceneManager:onReset()
+end
+
 function SceneManager:getScene()
 	return self.scene
 end

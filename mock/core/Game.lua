@@ -562,6 +562,7 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 		mainScene:stop()
 		mainScene:clear( true )
 		collectAssetGarbage()
+		mainScene:reset()
 	end
 	
 	local runningState = mainScene.running

@@ -73,9 +73,10 @@ function Scene:init()
 	self.userObjects = {}
 
 	self:resetActionRoot()
+
 	self:initLayers()
-	self:initManagers()
 	self:initPhysics()
+	self:initManagers()
 
 	if self.onLoad then self:onLoad() end
 
@@ -84,6 +85,8 @@ function Scene:init()
 	if not self.__editor_scene then
 		emitSignal( 'scene.init', self )
 	end
+	
+	self:reset()
 
 end
 
@@ -126,6 +129,14 @@ function Scene:initManagers()
 			end
 		end
 	end
+end
+
+function Scene:reset()
+	self:resetActionRoot()
+	for key, manager in pairs( self.managers ) do
+		manager:reset()
+	end
+
 end
 
 function Scene:getTime()
@@ -385,6 +396,17 @@ function Scene:attachGlobalAction( id, action )
 	return action
 end
 
+function Scene:pauseGlobalActionGroup( id, paused )
+	local group = self:getGlobalActionGroup( id, true )
+	group:pause( paused )
+end
+
+function Scene:isGlobalActionGroupPaused( id )
+	local group = self:getGlobalActionGroup( id, false )
+	if not group then return false end
+	return group:isPaused()
+end
+
 function Scene:pause( paused )
 	self.actionRoot:pause( paused ~= false )
 end
@@ -459,7 +481,7 @@ function Scene:stop()
 	self.running = false
 	self.mainThread:stop()
 	self.mainThread = false
-	self:resetActionRoot()
+	self.actionRoot:stop()
 end
 
 function Scene:exitLater(time)

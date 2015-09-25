@@ -123,9 +123,9 @@ function StoryState:getFlagAccessors( node )
 end
 
 function StoryState:getFlagDict( scopeName, node )
-	if scopeName == 'scope' then return self:getScopeFlagDict( node ) end
+	if scopeName == 'scope'  then return self:getScopeFlagDict( node ) end
 	if scopeName == 'global' then return self:getGlobalFlagDict() end
-	if scopeName == 'local' then return self:getLocalFlagDict( node ) end
+	if scopeName == 'local'  then return self:getLocalFlagDict( node ) end
 	return self:getLocalFlagDict( node )
 end
 
@@ -170,7 +170,6 @@ function StoryContext:__init()
 	self.inputTriggerMap = {}
 	self.flagTriggerMap  = {}
 	self.sceneTriggerMap = {}
-
 end
 
 function StoryContext:getStoryPath()

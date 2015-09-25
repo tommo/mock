@@ -282,7 +282,7 @@ local function mergeProtoData( data, id )
 					local oldBody = oldData.body
 					if not oldBody then
 						table.print( map[id] )
-						print('?????')
+						error('?????')
 					end
 					local newBody = simplecopy( oldBody )
 					for k, v in pairs( overBody ) do
