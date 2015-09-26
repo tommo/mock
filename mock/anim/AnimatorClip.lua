@@ -10,6 +10,8 @@ CLASS: AnimatorKey ()
 CLASS: AnimatorTrack ( AnimatorClipSubNode )
 CLASS: AnimatorTrackGroup ( AnimatorClipSubNode )
 
+CLASS: AnimatorClipMarker ()
+
 CLASS: AnimatorClip ()
 CLASS: AnimatorClipGroup ()
 
@@ -665,7 +667,41 @@ function AnimatorTrackGroup:canReparent( node )
 end
 
 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+--CLASS
+AnimatorClipMarker 
+	:MODEL {
+		Field 'pos';
+		Field 'length';
+		Field 'name'      :string();
+		Field 'comment' :string();
+	}
 
+function AnimatorClipMarker:__init()
+	self.pos      = 0
+	self.length   = 0
+	self.name     = 'marker'
+	self.comment  = 'a marker'
+	self.index    = false
+end
+
+function AnimatorClipMarker:getIndex()
+	return self.index
+end
+
+function AnimatorClipMarker:getName()
+	return self.name
+end
+
+function AnimatorClipMarker:setName( n )
+	self.name = n
+end
+
+
+local function _sortMarker( m1, m2 )
+	return m1.pos < m2.pos
+end
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -739,10 +775,12 @@ AnimatorClip	:MODEL{
 		Field 'loop' :boolean();
 		Field 'length' :int();
 		Field 'inherited' :boolean() :no_edit();
-		Field 'root'       :type( AnimatorClipSubNode ) :no_edit();
-		Field 'parentGroup':type( AnimatorClipGroup )   :no_edit();
 		'----';
 		Field 'comment' :string();
+		--
+		Field 'markers'    :array( AnimatorClipMarker ) :no_edit();
+		Field 'root'       :type( AnimatorClipSubNode ) :no_edit();
+		Field 'parentGroup':type( AnimatorClipGroup )   :no_edit();		
 	}
 
 function AnimatorClip:__init()
@@ -752,6 +790,7 @@ function AnimatorClip:__init()
 	
 	self.root      = AnimatorTrackGroup()
 	self.root.parentClip = self
+	self.markers   = {}
 
 	self.stateData = false
 	self.loop      = false
@@ -763,6 +802,10 @@ function AnimatorClip:__init()
 end
 
 function AnimatorClip:_load()
+	if not self.markers then
+		self.markers = {}
+	end
+	self:sortMarkers()
 	return self.root:_load()
 end
 
@@ -823,6 +866,23 @@ function AnimatorClip:collectObjectRecordingState( animator, state )
 	return state
 end
 
+function AnimatorClip:addMarker()
+	local marker = AnimatorClipMarker()
+	table.insert( self.markers, marker )
+	return marker
+end
+
+function AnimatorClip:removeMarker( m )
+	local idx = table.index( self.markers, m )
+	if idx then table.remove( self.markers, idx ) end
+end
+
+function AnimatorClip:sortMarkers()
+	table.sort( self.markers, _sortMarker )
+	for i, m in ipairs( self.markers ) do
+		m.index = i 
+	end
+end
 --------------------------------------------------------------------
 CLASS: AnimatorRecordingState ()
 

@@ -12,3 +12,7 @@ end
 CLASS: AnimatorEventKey ( AnimatorKey )
 	:MODEL{}
 
+function AnimatorEventKey:isResizable()
+	return true
+end
+
