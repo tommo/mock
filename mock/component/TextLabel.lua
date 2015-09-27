@@ -26,7 +26,7 @@ function TextLabel:__init(  )
 	box:setStyle( getFallbackTextStyle() )
 	box:setScl( 1,-1,1 )
 	self.box  = box
-	self.text = ''
+	self.text = 'Sample Text'
 	self.blend = 'alpha'
 	self.alignment  = 'left'
 	self.alignmentV = 'top'

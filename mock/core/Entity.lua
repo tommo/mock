@@ -495,6 +495,13 @@ function Entity:_attachChildEntity( child )
 	inheritTransformColorVisible( _p1, _prop )
 end
 
+function Entity:_detachChildEntity( child )
+	local _p1   = child._prop
+	clearInheritTransform( _p1 )
+	clearInheritColor( _p1 )
+	clearInheritVisible( _p1 )
+end
+
 function Entity:addChild( entity, layerName )
 	self.children[ entity ] = true
 	entity.parent = self
@@ -569,6 +576,28 @@ end
 
 function Entity:getParentOrGroup() --for editor, return parent entity or group
 	return self.parent or self._entityGroup
+end
+
+function Entity:reparentGroup( group )
+	if self._entityGroup then
+		self._entityGroup:removeEntity( self )
+	end
+	group:addEntity( self )
+end
+
+function Entity:reparent( entity )
+	--assert this entity is already inserted
+	assert( self.scene , 'invalid usage of reparent' )
+	local parent0 = self.parent
+	if parent0 then
+		parent0.children[ self ] = nil
+		parent0:_detachChildEntity( self )
+	end
+	self.parent = entity
+	if entity then
+		entity.children[ self ] = true
+		entity:_attachChildEntity( self )
+	end
 end
 
 function Entity:findEntity( name )
