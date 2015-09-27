@@ -22,8 +22,8 @@ AnimatorClipSubNodeSpan:
 MODEL{
 	Field 'id'    :int();
 	Field 'name'  :string();
-	Field 'pos'   :float();
-	Field 'length':float();
+	Field 'pos'   :float() :range(0) :meta{ step = 0.1 };
+	Field 'length':float() :range(0) :meta{ step = 0.1 };
 }
 
 function AnimatorClipSubNodeSpan:__init( id )
@@ -430,7 +430,7 @@ function AnimatorTrack:setTargetPath( path )
 end
 
 function AnimatorTrack:setTargetObject( targetObject, relativeTo )
-	local path  = AnimatorTargetPath.buildFor( obj, relativeTo )
+	local path  = AnimatorTargetPath.buildFor( targetObject, relativeTo )
 	return self:setTargetPath( path )
 end
 
@@ -672,15 +672,13 @@ end
 --CLASS
 AnimatorClipMarker 
 	:MODEL {
-		Field 'pos';
-		Field 'length';
-		Field 'name'      :string();
-		Field 'comment' :string();
+		Field 'pos'     :range(0) :meta{ step = 0.1 };
+		Field 'name'    :string();
+		Field 'comment' :string() :widget( 'textbox' );
 	}
 
 function AnimatorClipMarker:__init()
 	self.pos      = 0
-	self.length   = 0
 	self.name     = 'marker'
 	self.comment  = 'a marker'
 	self.index    = false
@@ -698,6 +696,13 @@ function AnimatorClipMarker:setName( n )
 	self.name = n
 end
 
+function AnimatorClipMarker:getPos()
+	return self.pos
+end
+
+function AnimatorClipMarker:setPos( p )
+	self.pos = p
+end
 
 local function _sortMarker( m1, m2 )
 	return m1.pos < m2.pos
@@ -836,6 +841,10 @@ end
 
 function AnimatorClip:getTrackList()
 	return self.root:getAllChildren()
+end
+
+function AnimatorClip:getMarkerList()
+	return self.markers
 end
 
 function AnimatorClip:clearPrebuiltContext()

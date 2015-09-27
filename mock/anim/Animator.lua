@@ -124,10 +124,17 @@ function Animator:setClip( name )
 	return self:_loadClip( clip )
 end
 
-function Animator:play( name, mode )
+function Animator:play( name, option )
 	local state = self:setClip( name )
 	if state then	
-		state:setMode( mode )
+		tt = type( option )
+		if tt == 'string' then --play mode only
+		elseif tt == 'table' then --advcanced options
+			--TODO
+		elseif option then
+			local playMode = option
+			state:setMode( playMode )
+		end
 		state:start()
 	end
 	return state
