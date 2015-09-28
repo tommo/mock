@@ -8,6 +8,10 @@ function AnimatorEventTrack:isPlayable()
 	return true
 end
 
+function AnimatorEventTrack:toString()
+	return ''
+end
+
 --------------------------------------------------------------------
 CLASS: AnimatorEventKey ( AnimatorKey )
 	:MODEL{}

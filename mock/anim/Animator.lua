@@ -12,7 +12,7 @@ CLASS: Animator ( Component )
 function Animator:__init()
 	self.dataPath    = false
 	self.data        = false
-	self.default     = 'default'
+	self.default     = 'default' --default clip
 	self.activeState = false
 	self.throttle    = 1
 	self.scale       = 1
@@ -111,7 +111,7 @@ function Animator:_loadClip( clip, previewing )
 	return state
 end
 
-function Animator:setClip( name )
+function Animator:loadClip( name )
 	if not self.data then
 		_warn('Animator has no data')
 		return false
@@ -124,8 +124,12 @@ function Animator:setClip( name )
 	return self:_loadClip( clip )
 end
 
-function Animator:play( name, option )
-	local state = self:setClip( name )
+function Animator:getAnimatorState()
+	return self.activeState
+end
+
+function Animator:playClip( clipName, option )
+	local state = self:loadClip( clipName )
 	if state then	
 		tt = type( option )
 		if tt == 'string' then --play mode only
@@ -165,7 +169,7 @@ end
 function Animator:onStart( ent )	
 	if self.autoPlay and self.default and self.data then
 		if self.default == '' then return end
-		self:play( self.default, self.autoPlayMode )
+		self:playClip( self.default, self.autoPlayMode )
 	end
 end
 

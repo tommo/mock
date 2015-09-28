@@ -5,16 +5,20 @@ module 'mock'
 CLASS: SoundSourceAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'clip' :asset('fmod_event') :set( 'setClip' );
-		Field 'follow' :boolean();
 	}
 
 function SoundSourceAnimatorKey:__init()
 	self.clip   = ''
-	self.follow = true
 end
 
 function SoundSourceAnimatorKey:setClip( clip )
 	self.clip = clip
+end
+
+function SoundSourceAnimatorKey:toString()
+	local clip = self.clip
+	if not clip then return '<nil>' end
+	return stripdir( clip )
 end
 
 --------------------------------------------------------------------

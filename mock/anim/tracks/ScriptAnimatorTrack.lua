@@ -18,6 +18,7 @@ local scriptMT = { __index = _G }
 CLASS: ScriptAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'script'  :string() :widget('codebox');
+		Field 'desc'    :string();
 		Field 'isCoroutine' :boolean();
 	}
 
@@ -25,6 +26,7 @@ function ScriptAnimatorKey:__init()
 	self.script = defaultScript
 	self.isCoroutine  = false
 	self.compiledFunc = false
+	self.desc         = 'Script'
 end
 
 function ScriptAnimatorKey:buildScript()
@@ -36,6 +38,10 @@ function ScriptAnimatorKey:buildScript()
 	local envTable = setmetatable( {}, scriptMT )
 	setfenv( func, envTable )
 	self.compiledFunc = func
+end
+
+function ScriptAnimatorKey:toString()
+	return self.desc
 end
 
 --------------------------------------------------------------------

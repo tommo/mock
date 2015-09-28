@@ -24,6 +24,10 @@ function MSpriteAnimatorKey:setClip( clip )
 	self.clip = clip
 end
 
+function MSpriteAnimatorKey:toString()
+	return self.clip or '<nil>'
+end
+
 --------------------------------------------------------------------
 CLASS: MSpriteAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{

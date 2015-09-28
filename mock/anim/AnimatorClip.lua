@@ -796,6 +796,7 @@ function AnimatorClip:__init()
 	self.root      = AnimatorTrackGroup()
 	self.root.parentClip = self
 	self.markers   = {}
+	self.markerMap = {}
 
 	self.stateData = false
 	self.loop      = false
@@ -887,11 +888,32 @@ function AnimatorClip:removeMarker( m )
 end
 
 function AnimatorClip:sortMarkers()
+	local markerMap = {}
 	table.sort( self.markers, _sortMarker )
 	for i, m in ipairs( self.markers ) do
 		m.index = i 
+		markerMap[ m:getName() ] = m
 	end
+	self.markerMap = markerMap
 end
+
+function AnimatorClip:findMarker( name )
+	-- for i, m in ipairs( self.markers ) do
+	-- 	if m:getName() == name then return m end
+	-- end
+	return self.markerMap[ name ]
+end
+
+-- function AnimatorClip:findNextMarker( t0 )
+-- 	--BTREE?
+-- 	for i, m in ipairs( self.markers ) do
+-- 		local t = m:getPos()
+-- 		if t > t0 then return
+-- 			return m
+-- 		end
+-- 	end
+-- end
+
 --------------------------------------------------------------------
 CLASS: AnimatorRecordingState ()
 

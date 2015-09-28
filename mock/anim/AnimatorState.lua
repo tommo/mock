@@ -20,6 +20,7 @@ CLASS: AnimatorState ()
 	:MODEL{}
 
 function AnimatorState:__init()
+
 	self.anim = MOAIAnim.new()
 	self.anim.source = self
 	self.anim:setListener( MOAIAnim.EVENT_ACTION_POST_UPDATE, _onAnimUpdate )
@@ -32,6 +33,17 @@ function AnimatorState:__init()
 	self.trackTargets = {}
 	self.stopping = false
 	self.previewing = false
+	self.length = 0
+	self.clip   = false
+	
+	self.startPos = 0
+	self.endPos   = 0
+
+end
+
+---
+function AnimatorState:isActive()
+	return self.anim:isActive()
 end
 
 function AnimatorState:setThrottle( t )
@@ -43,17 +55,89 @@ function AnimatorState:getThrottle()
 	return self.throttle
 end
 
+function AnimatorState:resetRange()
+	self:setRange( 0, self.length )
+end
+
+function AnimatorState:setRange( startPos, endPos )
+	local p0, p1
+	
+	if not startPos then --current time
+		p0 = self:getTime()
+	else
+		p0 = self:affirmPos( startPos )
+	end
+	
+	if not endPos then --end time
+		p1 = self.clipLength
+	else
+		p1 = self:affirmPos( endPos )
+	end
+
+	self.startPos = p0
+	self.endPos   = p1
+	self.anim:setSpan( p0, p1 )
+end
+
+function AnimatorState:getRange()
+	return self.startPos, self.endPos
+end
+
+function AnimatorState:setMode( mode )
+	self.anim:setMode( mode or MOAITimer.NORMAL )
+end
+
+function AnimatorState:getMode()
+	return self.anim:getMode()
+end 	
+
+function AnimatorState:play( mode )
+	if mode then
+		self:setMode( mode )
+	end
+	return self:start()
+end
+
+function AnimatorState:playRange( startPos, endPos, mode )
+	self:setRange( startPos, endPos )
+	return self:resetAndPlay( mode )
+end
+
+function AnimatorState:playUntil( endPos )
+	self:setRange( nil, endPos )
+	return self:start()
+end
+
+function AnimatorState:seek( pos )
+	local t = self:affirmPos( pos )
+	self:apply( t )
+	self:stop()
+end
+
+function AnimatorState:seekAndPlay( pos )
+	self:seek( pos )
+	return self:play()
+end
+
 function AnimatorState:start()
 	self.anim:start()
+	self.anim:pause( false )
+	return self.anim
 end
 
 function AnimatorState:stop()
 	self.stopping = true
 	self.anim:stop()
+	return self.anim
 end
 
-function AnimatorState:isActive()
-	return self.anim:isActive()
+function AnimatorState:reset()
+	self:apply( self.startPos )
+end
+
+function AnimatorState:resetAndPlay( mode )
+	self:reset()
+	return self:play( mode )
 end
 
 function AnimatorState:isDone()
@@ -71,10 +155,6 @@ end
 function AnimatorState:isDone()
 	return self.anim:isDone()
 end 
-
-function AnimatorState:setMode( mode )
-	self.anim:setMode( mode or MOAITimer.NORMAL )
-end
 
 function AnimatorState:pause( paused )
 	self.anim:pause( paused )
@@ -97,6 +177,22 @@ function AnimatorState:apply( t )
 	-- self:onUpdate( t, t0 )
 end
 
+function AnimatorState:findMarker( id )
+	return self.clip:findMarker( id )
+end
+
+function AnimatorState:affirmPos( pos )
+	local tt = type( pos )
+	if tt == 'string' then
+		local marker = self:findMarker( pos )
+		pos = marker and marker:getPos()
+	elseif tt == 'nil' then
+		return 0
+	end
+	return clamp( pos, 0, self.clipLength )
+end
+
+--
 function AnimatorState:onUpdate( t, t0 )
 	for track, target in pairs( self.updateListenerTracks ) do
 		if self.stopping then return end --edge case: new clip started in apply
@@ -108,11 +204,12 @@ function AnimatorState:loadClip( animator, clip )
 	self.animator    = animator
 	self.targetRoot  = animator._entity
 	self.targetScene = self.targetRoot.scene
+
+	local context = clip:getBuiltContext()
 	self.clip        = clip
+	self.clipLength  = context.length
 
 	local anim = self.anim
-	local context = clip:getBuiltContext()
-	anim:setSpan( context.length )
 	
 	local previewing = self.previewing
 	for track in pairs( context.playableTracks ) do
@@ -133,10 +230,12 @@ function AnimatorState:loadClip( animator, clip )
 		end
 	end
 
-
 	--event key
 	anim:setCurve( context.eventCurve )
 	self.keyEventMap = context.keyEventMap
+	
+	--range init
+	anim:setSpan( self.clipLength )
 
 end
 
@@ -170,6 +269,3 @@ function AnimatorState:setListener( evId, func )
 	self.anim:setListener( evId, func )
 end
 
-
--- function AnimatorState:addEventKey( track )
--- end

@@ -13,6 +13,11 @@ function EntityMessageAnimatorKey:__init()
 	self.data = ''
 end
 
+function EntityMessageAnimatorKey:toString()
+	return self.msg
+end
+
+
 --------------------------------------------------------------------
 CLASS: EntityMessageAnimatorTrack ( AnimatorEventTrack )
 	:MODEL{
