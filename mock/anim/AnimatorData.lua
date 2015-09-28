@@ -19,7 +19,8 @@ function AnimatorData:__init()
 	self.scale   = 1
 	self.groups  = {}
 	self.rootGroup = AnimatorClipGroup()
-	self.rootGroup.name = false
+	self.rootGroup.name = '__root'
+	self.rootGroup.parentPackage = self
 end
 
 function AnimatorData:getRootGroup()
@@ -126,11 +127,20 @@ end
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-function loadAnimatorData( node )
-	local data   = mock.loadAssetDataTable( node:getObjectFile('data') )
+function loadAnimatorDataFromRaw( data )
 	local animatorData = mock.deserialize( nil, data )
 	animatorData:_load()
 	return animatorData
+end
+
+function loadAnimatorDataFromString( strData )
+	local t = MOAIJsonParser.decode( strData )
+	return loadAnimatorDataFromRaw( t )
+end
+
+function loadAnimatorData( node )
+	local data   = mock.loadAssetDataTable( node:getObjectFile('data') )
+	return loadAnimatorDataFromRaw( data )
 end
 
 mock.registerAssetLoader( 'animator_data', loadAnimatorData )

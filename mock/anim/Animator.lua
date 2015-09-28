@@ -4,6 +4,7 @@ module 'mock'
 CLASS: Animator ( Component )
 	:MODEL{
 		Field 'data'         :asset('animator_data') :getset( 'DataPath' );
+		'----';
 		Field 'default'      :string() :selection( 'getClipNames' );
 		Field 'autoPlay'     :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );

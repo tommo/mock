@@ -12,6 +12,7 @@ require 'mock.anim.AnimatorState'
 require 'mock.anim.AnimatorClip'
 require 'mock.anim.AnimatorData'
 require 'mock.anim.Animator'
+require 'mock.anim.EmbedAnimator'
 require 'mock.anim.AnimatorEditorSupport'
 
 --------------------------------------------------------------------
