@@ -144,8 +144,8 @@ function AnimatorTargetPath.buildForEntity( target, relativeTo )
 		local id = AnimatorThisEntityId.buildForObject( target )
 		path:prependId( id )
 	else --absolute path
-		--TODO
-		error('TODO')
+		local id = AnimatorGlobalEntityId.buildForObject( target )
+		path:prependId( id )
 	end
 
 	return path
@@ -290,33 +290,7 @@ end
 function AnimatorChildEntityId:toString()
 	return self.name or ( self.targetClas and ( '<'..self.targetClas.__name..'>' ) ) or '???'
 end
---------------------------------------------------------------------
-CLASS: AnimatorGlobalEntityId ( AnimatorChildEntityId )
-	:MODEL{}
 
-function AnimatorGlobalEntityId:__init()
-	self.id         = false
-	self.name       = false
-	self.targetClas = false
-end
-
-function AnimatorGlobalEntityId:getTag()
-	return 'global'
-end
-
-function AnimatorGlobalEntityId:get( entity, scene )
-	local index = self.index
-	local targetClas = self.targetClas
-	local name = self.name
-	local candidates = {}
-	for entity in pairs( scene.entities ) do
-		if entity.__guid == id then return entity end
-		if entity.__class == targetClas and entity.name == name then
-			return entity
-		end
-	end
-	return false
-end
 
 --------------------------------------------------------------------
 CLASS: AnimatorThisEntityId( AnimatorChildEntityId )
@@ -344,28 +318,60 @@ function AnimatorThisEntityId:toString()
 	return '<this>'
 end
 
--- function AnimatorGlobalEntityId.buildForObject( obj )
--- 	local id = AnimatorGlobalEntityId()
--- 	id.id = obj.__guid
--- 	id.targetClas = obj.__class
--- 	id.name = obj:getName()
--- 	return id
--- end
 
--- function AnimatorGlobalEntityId:serialize()
--- 	return {
--- 		id   = self.id,
--- 		clas = self.targetClas.__fullname,
--- 		name = self.name,
--- 	}
--- end
+--------------------------------------------------------------------
+CLASS: AnimatorGlobalEntityId ( AnimatorChildEntityId )
+	:MODEL{}
 
--- function AnimatorGlobalEntityId:deserialize( data )
--- 	self.id = data.id
--- 	self.targetClas = findClass( data.clas )
--- 	self.name = data.name
--- end
+function AnimatorGlobalEntityId:__init()
+	self.id         = false
+	self.name       = false
+	self.targetClas = false
+end
 
--- function AnimatorGlobalEntityId:toString()
--- 	return self.name or ( self.targetClas and ( '<'..self.targetClas.__name..'>' ) ) or '???'
--- end
+function AnimatorGlobalEntityId:getTag()
+	return 'global'
+end
+
+function AnimatorGlobalEntityId:get( entity, scene )
+	local id = self.id
+	local targetClas = self.targetClas
+	local name = self.name
+
+	local candidate = false
+	for entity in pairs( scene.entities ) do
+		if entity.__guid == id then 
+			return entity
+		elseif entity.__class == targetClas and entity:getName() == name then
+			candidate = entity
+		end
+	end
+	
+	return candidate
+end
+
+function AnimatorGlobalEntityId.buildForObject( obj )
+	local id = AnimatorGlobalEntityId()
+	id.id = obj.__guid
+	id.targetClas = obj.__class
+	id.name = obj:getName()
+	return id
+end
+
+function AnimatorGlobalEntityId:serialize()
+	return {
+		id   = self.id,
+		clas = self.targetClas.__fullname,
+		name = self.name,
+	}
+end
+
+function AnimatorGlobalEntityId:deserialize( data )
+	self.id = data.id
+	self.targetClas = assert( getClassByName( data.clas ) )
+	self.name = data.name
+end
+
+function AnimatorGlobalEntityId:toString()
+	return self.name or ( self.targetClas and ( '<'..self.targetClas.__name..'>' ) ) or '???'
+end
