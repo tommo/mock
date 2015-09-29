@@ -110,14 +110,10 @@ end
 
 function AnimatorState:seek( pos )
 	local t = self:affirmPos( pos )
+	self:setRange( t )
 	self:apply( t )
-	self:stop()
 end
 
-function AnimatorState:seekAndPlay( pos )
-	self:seek( pos )
-	return self:play()
-end
 
 function AnimatorState:start()
 	self.anim:start()
@@ -132,7 +128,7 @@ function AnimatorState:stop()
 end
 
 function AnimatorState:reset()
-	self:apply( self.startPos )
+	self:seek( 0 )
 end
 
 function AnimatorState:resetAndPlay( mode )

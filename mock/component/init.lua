@@ -95,6 +95,9 @@ require 'mock.component.SteerController'
 require 'mock.component.WaypointGraph'
 require 'mock.component.WaypointPathFinder'
 
+--------------------------------------------------------------------
+require 'mock.component.Path'
+
 
 --------------------------------------------------------------------
 require 'mock.component.EffectEmitter'
