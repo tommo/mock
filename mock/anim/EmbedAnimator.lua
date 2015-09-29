@@ -12,18 +12,25 @@ end
 --------------------------------------------------------------------
 CLASS: EmbedAnimator ( Animator )
 	:MODEL{
-		Field 'data' :no_edit();
-		Field 'serializedData' :no_edit() :string() :getset( 'SerializedData' )
+		Field 'serializedData' :string() :no_edit() :getset( 'SerializedData');
+		Field 'data' :asset('animator_data')  :no_edit() :no_save();
 	}
 
 registerComponent( 'EmbedAnimator', EmbedAnimator )
 
 function EmbedAnimator:__init()
 	self.data = AnimatorData()
+	self.serializedData = 'shit'
+end
+
+function EmbedAnimator:onEditorInit()
+	--add default clip
+	self.data:createClip( 'default' )
+	self.default = 'default'
 end
 
 function EmbedAnimator:getSerializedData()
-	local serialized = serializeToString( self.data )
+	local serialized = serializeToString( self.data, true )
 	return serialized
 end
 

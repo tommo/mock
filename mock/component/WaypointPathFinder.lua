@@ -10,7 +10,7 @@ CLASS: WaypointPathFinderManager ( GlobalManager )
 function WaypointPathFinderManager:__init()
 	self.queueSize = 0
 	self.maxTotalIteration = 30
-	self.maxSingleIteration = 3
+	self.maxSingleIteration = 30
 	self.minSingleIteration = 1
 	self.requestQueue = {}
 end
@@ -54,19 +54,20 @@ function WaypointPathFinderManager:updatePathFinders()
 
 	local stoppedRequests = {}
 	local hasStoppedRequest = false
+	
+	local averageIteration = math.floor( maxTotalIteration/self.queueSize )
 
 	for i, request in ipairs( self.requestQueue ) do
 		if request.stopped then
 			stoppedRequests[ request ] = true
 			hasStoppedRequest = true
 		else
-			local singleIteration
+			local singleIteration = 0
 			if totalIteration < maxTotalIteration  then
-				singleIteration = maxSingleIteration
+				singleIteration = math.min( maxSingleIteration, averageIteration )
 				totalIteration  = totalIteration + singleIteration
-			else
-				minSingleIteration = minSingleIteration
 			end
+			singleIteration = math.max( singleIteration, minSingleIteration )
 			if request:update( singleIteration ) then
 				stoppedRequests[ request ] = true
 				hasStoppedRequest = true

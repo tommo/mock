@@ -163,11 +163,22 @@ end
 -------replace system os.clock
 os._clock=os.clock
 os.clock=MOAISim.getDeviceTime
+local JSON_FLAG_INDENT         = function( n ) return n > 0x1f and 0x1f or n < 0 and 0 or n end
+local JSON_FLAG_COMPACT        = 0x20
+local JSON_FLAG_SORT_KEY       = 0x80
+local JSON_FLAG_PRESERVE_ORDER = 0x100
+local JSON_FLAG_ENCODE_ANY     = 0x200
 
-MOAIJsonParser.defaultEncodeFlags = 0x02 + 0x80  --indent 2, sort key
+----
+MOAIJsonParser.defaultEncodeFlags = 
+	JSON_FLAG_INDENT( 2 ) + JSON_FLAG_SORT_KEY
 
-function encodeJSON( data ) --included default flags
-	return MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
+function encodeJSON( data, compact ) --included default flags
+	if compact then
+		return MOAIJsonParser.encode( data, JSON_FLAG_SORT_KEY + JSON_FLAG_COMPACT )
+	else
+		return MOAIJsonParser.encode( data, MOAIJsonParser.defaultEncodeFlags )
+	end
 end
 
 function decodeJSON( data ) --included default flags

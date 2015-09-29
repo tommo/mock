@@ -467,9 +467,9 @@ end
 --------------------------------------------------------------------
 local deflate = false
 
-function serializeToString( obj )
+function serializeToString( obj, compact )
 	local data = serialize( obj )
-	local str  = encodeJSON( data )
+	local str  = encodeJSON( data, compact or false )
 	return str	
 end
 
@@ -479,8 +479,8 @@ function deserializeFromString( obj, str, objMap )
 	return obj
 end
 
-function serializeToFile( obj, path )
-	local str = serializeToString( obj )	
+function serializeToFile( obj, path, compact )
+	local str = serializeToString( obj, compact )	
 	if deflate then
 		str  = MOAIDataBuffer.deflate( str, 0 )
 	end
