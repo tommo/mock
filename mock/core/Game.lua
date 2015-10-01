@@ -134,7 +134,7 @@ function Game:__init()
 	self.defaultLayer = l
 end
 
-local defaultGameOption={
+local defaultGameConfig={
 	title            = 'Hatrix Game',
 
 	settingFileName  = '_settings',
@@ -167,35 +167,35 @@ function Game:loadConfig( path, fromEditor )
 	return self:init( data, fromEditor )
 end
 
-function Game:init( option, fromEditor )
+function Game:init( config, fromEditor )
 	_stat( '...init game' )
 	
 	self.initialized = true
 	self.editorMode  = fromEditor and true or false
-	self.initOption  = option
+	self.initOption  = config
 
 	--META
-	self.name    = option['name'] or 'GAME'
-	self.version = option['version'] or '0.0.1'
-	self.title   = option['title'] or self.name
+	self.name    = config['name'] or 'GAME'
+	self.version = config['version'] or '0.0.1'
+	self.title   = config['title'] or self.name
 
 	--Systems
-	self:initGraphics   ( option, fromEditor )
-	self:initSystem     ( option, fromEditor )
+	self:initGraphics   ( config, fromEditor )
+	self:initSystem     ( config, fromEditor )
 	
 	--init asset
-	self:initAsset      ( option, fromEditor )
-	self:initSubSystems ( option, fromEditor )
+	self:initAsset      ( config, fromEditor )
+	self:initSubSystems ( config, fromEditor )
 
 	--postInit
 	if not fromEditor then --initCommonData will get called after scanning asset modifications
-		self:initCommonData( option, fromEditor )
+		self:initCommonData( config, fromEditor )
 	end
 	
 end
 
 
-function Game:initSystem( option, fromEditor )
+function Game:initSystem( config, fromEditor )
 	_stat( '...init systems' )
 	-------Setup Action Root
 	_stat( '...setting up action root' )
@@ -257,7 +257,7 @@ function Game:initSystem( option, fromEditor )
 	-- MOAISim.setStepMultiplier( 2 )	
 end
 
-function Game:initSubSystems( option, fromEditor )
+function Game:initSubSystems( config, fromEditor )
 	----make inputs work
 	_stat( 'init input handlers' )
 	initDefaultInputEventHandlers()
@@ -267,10 +267,10 @@ function Game:initSubSystems( option, fromEditor )
 	AudioManager.get():init()
 
 	----physics
-	--option for default physics world
+	--config for default physics world
 	self.physicsOption = table.simplecopy( DefaultPhysicsWorldOption )
-	if option['physics'] then
-		table.extend( self.physicsOption, option['physics'] )
+	if config['physics'] then
+		table.extend( self.physicsOption, config['physics'] )
 	end
 
 	--
@@ -278,13 +278,18 @@ function Game:initSubSystems( option, fromEditor )
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:onInit( self )
 	end
-
+	local managerConfigs = config[ 'global_managers' ] or {}
+	for i, manager in ipairs( self.globalManagers ) do
+		local key = manager:getKey()
+		local managerConfig = managerConfigs[ key ] or {}
+		manager:loadConfig( managerConfig )
+	end
 end
 
-function Game:initLayers( option, fromEditor )
+function Game:initLayers( config, fromEditor )
 	--load layers
 	_stat( '...setting up layers' )
-	for i, data  in ipairs( option['layers'] or {} ) do
+	for i, data  in ipairs( config['layers'] or {} ) do
 		local layer 
 
 		if data['default'] then
@@ -314,9 +319,9 @@ function Game:initLayers( option, fromEditor )
 	end
 end
 
-function Game:initAsset( option, fromEditor )
-	self.assetLibraryIndex   = option['asset_library']
-	self.textureLibraryIndex = option['texture_library']
+function Game:initAsset( config, fromEditor )
+	self.assetLibraryIndex   = config['asset_library']
+	self.textureLibraryIndex = config['texture_library']
 	--assetlibrary
 	_stat( '...loading asset library' )
 	loadAssetLibrary( self.assetLibraryIndex )
@@ -324,7 +329,7 @@ function Game:initAsset( option, fromEditor )
 	
 	--scriptlibrary
 	_stat( '...loading game modules' )
-	loadAllGameModules( option['script_library'] or false )
+	loadAllGameModules( config['script_library'] or false )
 
 	emitSignal( 'asset.init' )
 
@@ -334,13 +339,13 @@ function Game:initCommonDataFromEditor()
 	return self:initCommonData( self.initOption, true )
 end
 
-function Game:initCommonData( option, fromEditor )
+function Game:initCommonData( config, fromEditor )
 	--init layers
-	self:initLayers     ( option, fromEditor )
+	self:initLayers     ( config, fromEditor )
 
 	--load setting data
 	_stat( '...loading setting data' )
-	self.settingFileName = option['setting_file'] or 'setting'
+	self.settingFileName = config['setting_file'] or 'setting'
 	self.userDataPath    = MOAIEnvironment.documentDirectory or '.'
 	local settingData = self:loadSettingData( self.settingFileName )
 	self.settingData  = settingData or {}
@@ -348,20 +353,20 @@ function Game:initCommonData( option, fromEditor )
 	--init global objects
 	_stat( '...loading global game objects' )
 	self.globalObjectLibrary = GlobalObjectLibrary()
-	self.globalObjectLibrary:load( option['global_objects'] )
+	self.globalObjectLibrary:load( config['global_objects'] )
 
 	----ask other systems to initialize
-	emitSignal( 'game.init', option )
+	emitSignal( 'game.init', config )
 
 	----load scenes
-	if option['scenes'] then
-		for alias, scnPath in pairs( option['scenes'] ) do
+	if config['scenes'] then
+		for alias, scnPath in pairs( config['scenes'] ) do
 			self.scenes[ alias ] = scnPath
 		end
 	end
 
-	self.entryScene = option['entry_scene']
-	self.previewingScene = option['previewing_scene']
+	self.entryScene = config['entry_scene']
+	self.previewingScene = config['previewing_scene']
 
 	self.mainScene:init()
 	_stat( '...init game done!' )
@@ -386,6 +391,12 @@ function Game:saveConfigToTable()
 			}
 		end
 	end
+	local globalManagerConfigs = {}
+	for i, manager in ipairs( getGlobalManagerRegistry() ) do
+		local key = manager:getKey()
+		local data = manager:saveConfig()
+		globalManagerConfigs[ key ] = data or {}
+	end
 
 	local data = {
 		name           = self.name,
@@ -396,6 +407,7 @@ function Game:saveConfigToTable()
 		graphics       = self.graphicsOption,
 		physics        = self.physicsOption,
 		layers         = layerConfigs,
+		global_managers = globalManagerConfigs,
 		global_objects = self.globalObjectLibrary:save(),
 		scenes         = self.scenes,
 		entry_scene    = self.entryScene,
@@ -585,7 +597,7 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	end
 	mainScene.assetPath = scnPath
 	--todo: previous scene
-	scn.arguments = args
+	scn.arguments = args and table.simplecopy( args ) or {}
 	if autostart then
 		scn:start()
 	end

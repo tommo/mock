@@ -15,7 +15,7 @@ function Scene:__init( option )
 	self.active = false
 	self.__editor_scene = false
 	self.running = false
-	self.arguments       = false
+	self.arguments       = {}
 	self.layers          = {}
 	self.layersByName    = {}
 	self.entities        = {}
@@ -316,6 +316,12 @@ function Scene:getArguments()
 	return self.arguments
 end
 
+function Scene:getArgument( id, default )
+	local v = self.arguments[ id ]
+	if v == nil then return default end
+	return v
+end
+
 function Scene:setMetaData( key, data )
 	self.metaData[ key ] = data
 end
@@ -604,7 +610,8 @@ function Scene:clear( keepEditorEntity )
 
 	self.defaultCamera   = false
 	self.entityListener = entityListener
-	self.arguments = false
+	self.arguments = {}
+	self.userObjects = {}
 
 	if not self.__editor_scene then
 		emitSignal( 'scene.clear', self )

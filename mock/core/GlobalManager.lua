@@ -35,3 +35,9 @@ end
 function GlobalManager:onUpdate( game, dt )
 end
 
+function GlobalManager:saveConfig()
+	return {}
+end
+
+function GlobalManager:loadConfig( configData )
+end

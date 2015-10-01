@@ -40,9 +40,10 @@ function TriggerObjectBase:onAttach( ent )
 	self.body = body
 	body:setSleepingAllowed( false )
 	local prop = ent:getProp()
-	body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_X_LOC ) 
-	body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_Y_LOC ) 
+	body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
+	body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
 	body.component = self
+	body:forceUpdate( )
 	self:updateCollisionShape()
 end
 

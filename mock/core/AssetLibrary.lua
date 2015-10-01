@@ -50,6 +50,7 @@ end
 function collectAssetGarbage()
 	local collectThread = MOAICoroutine.new()
 	collectThread:run( function()
+			coroutine.yield()
 			_stat( 'collect asset garbage' )
 			setAssetCacheWeak()
 			MOAISim.forceGC()
@@ -280,9 +281,10 @@ function registerAssetLoader( assetType, loader, unloader, option )
 	assert( loader )
 	option = option or {}
 	AssetLoaderConfigs[ assetType ] = {
-		loader     = loader,
-		unloader   = unloader or false,
+		loader      = loader,
+		unloader    = unloader or false,
 		skip_parent = option['skip_parent'] or false,
+		option      = option
 	}
 end
 
@@ -363,6 +365,13 @@ function hasAsset( path )
 	return node and true or false 
 end
 
+function canPreload( path ) --TODO:use a generic method for arbitary asset types
+	local node = getAssetNode( path )
+	if not node then return false end
+	if node.type == 'scene' then return false end
+	return true
+end
+
 function loadAsset( path, option )
 	if path == '' then return nil end
 	if not path   then return nil end
@@ -394,7 +403,7 @@ function loadAsset( path, option )
 	end
 	if node.parent and ( not loaderConfig.skip_parent or option['skip_parent'] ) then
 		if not loadingAsset[ node.parent ] then
-			loadAsset( node.parent )
+			loadAsset( node.parent, option )
 		end
 		if node.cached.asset then return node.cached.asset end --already preloaded		
 	end

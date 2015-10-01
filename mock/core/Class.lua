@@ -821,6 +821,10 @@ function Field:no_edit() --short cut
 	return self:meta{ no_edit = true }
 end
 
+function Field:preload()
+	return self:meta{ preload = true }
+end
+
 function Field:no_save() --short cut
 	return self:meta{ no_save = true }
 end

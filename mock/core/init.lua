@@ -1,6 +1,8 @@
 require 'mock.core.MOAIInterfaces'
 
 --CORE
+
+--------------Utility modules
 require 'mock.core.utils'
 
 require 'mock.core.signal'
@@ -22,9 +24,9 @@ require 'mock.core.LogHelper'
 
 ----------------Core Modules
 require 'mock.core.defaults'
+require 'mock.core.Actor'
 
 ----common class
-require 'mock.core.Actor'
 require 'mock.core.GlobalManager'
 
 ----asset
@@ -55,6 +57,8 @@ require 'mock.core.ScreenProfile'
 require 'mock.core.Game'
 
 ----Helpers
+require 'mock.core.SceneReference'
+
 require 'mock.core.EntityHelper'
 require 'mock.core.AnimCurve'
 

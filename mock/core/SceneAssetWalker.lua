@@ -6,8 +6,14 @@ module 'mock'
 ]]
 --------------------------------------------------------------------
 
+local function needPreload( field )
+	if field.__type ~= '@asset' then return false end
+	local meta = field.__meta
+	return meta and meta[ 'preload' ]
+end
+
 local function collectAssetFromFields( obj, field, collected )
-	if field.__type == '@asset' then
+	if field.__type == '@asset' and field.__meta then
 		local v = field:getValue( obj )
 		if v then
 			collected[ v ] = true

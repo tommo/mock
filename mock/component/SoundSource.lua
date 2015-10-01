@@ -2,6 +2,31 @@ module 'mock'
 --------------------------------------------------------------------
 --SOUND SOURCE
 --------------------------------------------------------------------
+local event2IDCache = table.weak_k()
+
+local function _affirmFmodEvent( event )
+	if not event then return nil end
+	local id = event2IDCache[ event ]
+	if id ~= nil then return id end
+	if type( event ) == 'string' then
+		event, node = loadAsset( event ) 
+		if node and node.type == 'fmod_event' then 
+			id = event:getFullName()
+		else
+			return nil
+		end
+	else
+		id = event:getFullName()
+	end
+	event2IDCache[ event ] = id or false
+	return id
+end
+
+local function clearFmodEventIDCache()
+	event2IDCache = table.weak_k()
+end
+
+
 CLASS: SoundSource ()
 	:MODEL{
 		Field 'defaultClip' :asset('fmod_event')  :getset('DefaultClip');
@@ -64,30 +89,6 @@ function SoundSource:_addInstance( evt, follow )
 		evt:forceUpdate()
 	end
 	return evt
-end
-
-local event2IDCache = table.weak_k()
-
-local function _affirmFmodEvent( event )
-	if not event then return nil end
-	local id = event2IDCache[ event ]
-	if id ~= nil then return id end
-	if type( event ) == 'string' then
-		event, node = loadAsset( event ) 
-		if node and node.type == 'fmod_event' then 
-			id = event:getFullName()
-		else
-			return nil
-		end
-	else
-		id = event:getFullName()
-	end
-	event2IDCache[ event ] = id or false
-	return id
-end
-
-local function clearFmodEventIDCache()
-	event2IDCache = table.weak_k()
 end
 
 function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )

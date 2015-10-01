@@ -773,7 +773,9 @@ local function sceneLoader( node, option )
 	local dep = data['asset_dependency']
 	if dep then
 		for assetPath in pairs( dep ) do
-			mock.loadAsset( assetPath )
+			if canPreload( assetPath ) then
+				mock.loadAsset( assetPath, { preload = true } )
+			end
 		end
 	end
 	return scene, false --no cache
