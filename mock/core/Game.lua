@@ -576,7 +576,20 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 		collectAssetGarbage()
 		mainScene:reset()
 	end
-	
+
+	--load arguments first
+	local args = mainScene.arguments or {}
+	if not additive then args = {} end
+	if arguments then
+		for k,v in pairs( arguments ) do
+			args[ k ] = v
+		end
+	end
+	mainScene.assetPath = scnPath
+	--todo: previous scene
+	mainScene.arguments = args and table.simplecopy( args ) or {}
+
+	--load entities
 	local runningState = mainScene.running
 	mainScene.running = false --start entity in batch
 	local scn, node = loadAsset( scnPath, { scene = mainScene } )
@@ -588,16 +601,7 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	end
 	mainScene.running = runningState
 	emitSignal( 'mainscene.open', scn, arguments )
-	local args = scn.arguments or {}
-	if not additive then args = {} end
-	if arguments then
-		for k,v in pairs( arguments ) do
-			args[ k ] = v
-		end
-	end
-	mainScene.assetPath = scnPath
-	--todo: previous scene
-	scn.arguments = args and table.simplecopy( args ) or {}
+	
 	if autostart then
 		scn:start()
 	end
