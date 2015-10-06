@@ -1048,6 +1048,41 @@ function BTDecoratorRepeatUntil:update( context )
 	context:removeRunningNode( self ) 
 	return self:execute( context )
 end
+--------------------------------------------------------------------
+CLASS: BTDecoratorRepeatWhile ( BTDecorator )
+function BTDecoratorRepeatWhile:getType()
+	return 'BTDecoratorRepeatWhile'
+end
+
+function BTDecoratorRepeatWhile:resumeFromChild( child, res, context )
+	if res == 'ok' then
+		context:addRunningNode( self ) 
+		return 'running'
+	else --fail
+		return self:returnUpLevel( 'ok', context )
+	end
+end
+
+function BTDecoratorRepeatWhile:update( context )
+	context:removeRunningNode( self ) 
+	return self:execute( context )
+end
+
+--------------------------------------------------------------------
+CLASS: BTDecoratorRepeatForever ( BTDecorator )
+function BTDecoratorRepeatForever:getType()
+	return 'BTDecoratorRepeatForever'
+end
+
+function BTDecoratorRepeatForever:resumeFromChild( child, res, context )
+	context:addRunningNode( self ) 
+	return 'running'
+end
+
+function BTDecoratorRepeatForever:update( context )
+	context:removeRunningNode( self ) 
+	return self:execute( context )
+end
 
 --------------------------------------------------------------------
 
@@ -1070,6 +1105,8 @@ BehaviorTreeNodeTypes = {
 	['decorator_fail']    = BTDecoratorAlwaysFail ;
 	['decorator_ignore']  = BTDecoratorAlwaysOK ;
 	['decorator_repeat']  = BTDecoratorRepeatUntil ;
+	['decorator_while']   = BTDecoratorRepeatWhile ;
+	['decorator_forever'] = BTDecoratorRepeatForever ;
 }
 
 --------------------------------------------------------------------
