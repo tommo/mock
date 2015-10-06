@@ -44,10 +44,15 @@ end
 
 function StoryNodeFlag:onStateUpdate( state )
 	local succ, flag = pcall( self.exprFunc, state )
-	if succ and flag then
-		if self.hasYesRoute then return true end
+	if succ then
+		if flag then
+			if self.hasYesRoute then return true end
+		else
+			if self.hasNotRoute then return false end
+		end
 	else
-		if self.hasNotRoute then return false end
+		print( 'error executing expr', flag )
+		return false
 	end
 	return 'running' --block until flag changed
 end

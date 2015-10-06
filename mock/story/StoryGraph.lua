@@ -11,7 +11,6 @@ CLASS: StoryGraph ()
 	:MODEL{}
 
 function StoryGraph:__init()
-	self.defaultRoleId = '_NOBODY'
 	self:initRoot()
 end
 
@@ -19,12 +18,7 @@ function StoryGraph:initRoot()
 	self.rootGroup = StoryScopedGroup()
 	self.rootGroup.id = '__root'
 	self.rootGroup.text = '__root'
-	self.rootGroup.roleId = self.defaultRoleId
-
-end
-
-function StoryGraph:getDefaultRole()
-	return self.defaultRoleId
+	self.rootGroup.actorId = false
 end
 
 function StoryGraph:_loadStoryNode( nodeData, group, scope, nodeDict )
@@ -121,11 +115,17 @@ function StoryNode:__init()
 	self.type = 'node'
 	self.scope = false
 	self.group = false
-	self.roleId  = false
+	self.actorId  = false
 end
 
-function StoryNode:getRoleId()
-	return self.roleId or self.group:getRoleId()
+function StoryNode:getActorId()
+	if self.actorId then return self.actorId end
+	if self.group then return self.group:getActorId() end
+	return false
+end
+
+function StoryNode:setActorId( id )
+	self.actorId = id
 end
 
 function StoryNode:getScope()
@@ -185,7 +185,6 @@ function StoryNode:onStateExit( state )
 end
 
 function StoryNode:loadNodeData()
-	self.roleId = self.roleId or self:getRoleId()
 	self:onLoad( self.nodeData )
 end
 --------------------------------------------------------------------
@@ -196,7 +195,6 @@ function StoryNodeGroup:__init()
 	self.children = {}
 	self.startNodes = {}
 	self.inputNodes = {}
-	self.sceneEventNodes = {}
 end
 
 function StoryNodeGroup:addChild( node )
@@ -223,28 +221,21 @@ function StoryNodeGroup:onStateEnter( state, prevNode, prevResult )
 	for inputNode in pairs( self.inputNodes ) do
 		state:addInputTrigger( inputNode )
 	end
-	for sceneEventNode in pairs( self.sceneEventNodes ) do
-		state:addSceneEventTrigger( sceneEventNode )
-	end
 end
 
 function StoryNodeGroup:onLoad( nodeData )
 	local startNodes = {}
 	local inputNodes = {}
-	local sceneEventNodes = {}
 	for _, child in ipairs( self.children ) do
 		local t = child:getType()
 		if t == 'START' then
 			startNodes[ child ] = true
 		elseif t == 'INPUT' then
 			inputNodes[ child ] = true
-		elseif t == 'SCN' then
-			sceneEventNodes[ child ] = true
 		end
 	end
 	self.startNodes = startNodes
 	self.inputNodes = inputNodes
-	self.sceneEventNodes = sceneEventNodes
 end
 
 function StoryNodeGroup:onStateUpdate( state )
@@ -252,7 +243,6 @@ function StoryNodeGroup:onStateUpdate( state )
 end
 
 function StoryNodeGroup:loadNodeData()
-	self.roleId = self.roleId or self:getRoleId()
 	for i, child in ipairs( self.children ) do
 		child:loadNodeData()
 	end
@@ -318,4 +308,4 @@ local function StoryGraphLoader( node )
 	return graph
 end
 
-registerAssetLoader ( 'story', StoryGraphLoader )
+registerAssetLoader ( 'story_graph', StoryGraphLoader )

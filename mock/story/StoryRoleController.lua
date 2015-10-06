@@ -16,27 +16,27 @@ end
 
 function StoryRoleController:setRoleId( id )
 	self.roleId = id
-	self:_updateRegistry()
+	-- self:_updateRegistry()
 end
 
 function StoryRoleController:_getRoleSelection() --for editor
 end
 
-function StoryRoleController:_updateRegistry()
-	self:_removeFromRegistry()
-	self:getStoryManager():registerRoleController( self )
-end
+-- function StoryRoleController:_updateRegistry()
+-- 	self:_removeFromRegistry()
+-- 	self:getStoryManager():registerRoleController( self )
+-- end
 
-function StoryRoleController:_removeFromRegistry()
-	self:getStoryManager():unregisterRoleController( self )
-end
+-- function StoryRoleController:_removeFromRegistry()
+-- 	self:getStoryManager():unregisterRoleController( self )
+-- end
 
 function StoryRoleController:onAttach( ent )
-	self:_updateRegistry()
+	-- self:_updateRegistry()
 end
 
 function StoryRoleController:onDetach( ent )
-	self:_removeFromRegistry()
+	-- self:_removeFromRegistry()
 end
 
 function StoryRoleController:getContext()

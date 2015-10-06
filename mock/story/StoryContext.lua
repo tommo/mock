@@ -1,29 +1,41 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: StoryContext ( Component )
-	:MODEL{
-		Field 'story' :asset( 'story' ) :getset( 'StoryPath' );
-	}
+CLASS: StoryContext ()
 
 function StoryContext:__init()
+	self.parentContext = false
+	self.childContexts = {}
+
+	self.storyGraph    = false
+
 	self.flagDicts = {}
-	self.globalFlagDict = FlagDict( self, '__GLOBAL' )
-	self.storyPath = false
-	self.storyGraph = false
-	self.defaultRoleId = '_NOBODY'
+
 	self.inputTriggerMap = {}
 	self.flagTriggerMap  = {}
-	self.sceneTriggerMap = {}
+	self.needUpdate    = true
+	self.rootState     = false
+	self.ownerActor    = false
+	
+	self:affirmFlagDict( '__root' )
+
 end
 
-function StoryContext:getStoryPath()
-	return self.storyPath
+function StoryContext:createChildContext()
+	local context = StoryContext()
+	table.insert( self.childContexts, context )
+	context.parentContext = self
+	return context
 end
 
-function StoryContext:setStoryPath( path )
-	self.storyPath = path
-	self.storyGraph = loadAsset( path )
+function StoryContext:removeChildContext( context )
+	local idx = table.index( self.childContexts, context )
+	table.remove( self.childContexts, idx )
+	context.parentContext = false
+end
+
+function StoryContext:setStoryGraph( graph )
+	self.storyGraph = graph
 end
 
 function StoryContext:affirmFlagDict( id )
@@ -40,7 +52,11 @@ function StoryContext:getFlagDict( id )
 end
 
 function StoryContext:getGlobalFlagDict()
-	return self.globalFlagDict
+	return getStoryManager():getGlobalFlagDict()
+end
+
+function StoryContext:getLocalFlagDict()
+	return self:getFlagDict( '__root' )
 end
 
 ----
@@ -52,14 +68,14 @@ end
 ----
 function StoryContext:reset()
 	self.inputTriggerMap = {}
-	self.roleControllers = {}
+	self.childContexts   = {}
+	self.rootState       = false
 end
 
 function StoryContext:start()
 	self:reset()
 
 	if self.storyGraph then
-		self.defaultRoleId = self.storyGraph:getDefaultRole()
 		local entryNode = self.storyGraph:getRoot()
 		self.rootState = StoryState( self )
 		self.rootState:start( entryNode )
@@ -70,13 +86,39 @@ end
 
 function StoryContext:pendUpdate()
 	self.needUpdate = true
+	if self.parentContext then
+		return self.parentContext:pendUpdate()
+	end
 end
 
 function StoryContext:tryUpdate( force )
 	if self.needUpdate or force then
-		self.rootState:update()
+		for i, childContext in ipairs( self.childContexts ) do
+			childContext:tryUpdate( force )
+		end
+		if self.rootState then
+			self.rootState:update()
+		end
 	end
 end
+
+----
+function StoryContext:getActors( actorId )
+	if not actorId then
+		return { self.ownerActor }
+	else
+		return getStoryManager():getActors( actorId )
+	end
+end
+
+function StoryContext:setOwnerActor( actor )
+	self.ownerActor = actor
+end
+
+function StoryContext:getOwnerActor()
+	return self.ownerActor
+end
+
 ----
 function StoryContext:addInputTrigger( state, node )
 	local triggers = self.inputTriggerMap[ state ]
@@ -98,76 +140,25 @@ function StoryContext:clearInputTriggers( state )
 	end
 end
 
-function StoryContext:sendInput( roleId, tag, data )
-	local defaultRoleId = self.defaultRoleId
-	roleId = roleId or defaultRoleId
+function StoryContext:sendInput( actor, tag, data )
+	local actorId = actor:getActorId()
+	local isOwner = actor == self.ownerActor
 	for state, triggers in pairs( self.inputTriggerMap ) do
 		for _, node in ipairs( triggers ) do
 			local nodeTag = node.tag
-			local nodeRoleId = node:getRoleId() or defaultRoleId
-			if node.tag == tag
-				and nodeRoleId == roleId
+			local nodeActorId = node:getActorId()
+			local actorMatched = ( not nodeActorId and isOwner ) or ( nodeActorId == actorId )
+			if actorMatched
+				and node.tag == tag
 				and not ( node.data and node.data~=data )
 			then
 				state:enterStoryNode( node, nil, nil )
 			end
 		end
 	end
-
-end
-
---------------------------------------------------------------------
-function StoryContext:addSceneEventTrigger( state, sceneEventNode )	
-	local triggers = self.sceneTriggerMap[ state ]
-	if not triggers then
-		triggers = {}
-		self.sceneTriggerMap[ state ] = triggers
+	if self.parentContext then
+		return self.parentContext:sendInput( actor, tag, data )
 	end
-	triggers[ sceneEventNode ] = false
-end
-
-function StoryContext:clearSceneEventTriggers( state )
-	self.sceneTriggerMap[ state ] = nil
-end
-
-function StoryContext:sendSceneEvent( sceneId, event )
-	if not sceneId then return end
-	-- print( 'context:', 'scene event', sceneId, event )
-	for state, triggers in pairs( self.sceneTriggerMap ) do
-		for sceneEventNode, subState in pairs( triggers ) do
-			if sceneEventNode.sceneId == sceneId then
-				if subState then
-					if event == 'exit' then
-						if subState then
-							subState:forceEnd()
-						end
-						triggers[ sceneEventNode ] = nil
-					end
-				else
-					if event == 'enter' then
-						local newSubState = state:enterStoryNode( sceneEventNode, nil, nil )
-						triggers[ sceneEventNode ] = newSubState
-					end
-				end
-			end --if
-		end -- for
-	end
-
-end
-
---------------------------------------------------------------------
-
-function StoryContext:getRoleControllers( roleId )
-	return getStoryManager():getRoleControllers( roleId )
-end
-
-
-function StoryContext:isActive()
-	return getStoryManager():getActiveContext() == self
-end
-
-function StoryContext:setActive()
-	getStoryManager():setActiveContext( self )
 end
 
 --------------------------------------------------------------------

@@ -129,6 +129,10 @@ function Scene:initManagers()
 			end
 		end
 	end
+	for i, globalManager in ipairs( getGlobalManagerRegistry() ) do
+		globalManager:onSceneInit( self )
+	end
+
 end
 
 function Scene:reset()
@@ -136,7 +140,9 @@ function Scene:reset()
 	for key, manager in pairs( self.managers ) do
 		manager:reset()
 	end
-
+	for i, globalManager in ipairs( getGlobalManagerRegistry() ) do
+		globalManager:onSceneReset( self )
+	end
 end
 
 function Scene:getTime()
@@ -612,6 +618,10 @@ function Scene:clear( keepEditorEntity )
 	self.entityListener = entityListener
 	self.arguments = {}
 	self.userObjects = {}
+	
+	for i, globalManager in ipairs( getGlobalManagerRegistry() ) do
+		globalManager:onSceneClear( self )
+	end
 
 	if not self.__editor_scene then
 		emitSignal( 'scene.clear', self )

@@ -10,18 +10,18 @@ function StoryNodeUserInput:__init()
 end
 
 function StoryNodeUserInput:onStart( state )
-	local roleId =  self:getRoleId()
-	local roles = state:getRoleControllers( self:getRoleId() )
-	for i, role in ipairs( roles ) do
-		role:acceptStoryMessage( 'input.start', self )
+	local actorId = self:getActorId()
+	local actors = state:getActors( actorId )
+	for i, actor in ipairs( actors ) do
+		actor:acceptStoryMessage( 'input.start', self )
 	end
 end
 
 function StoryNodeUserInput:onStop( state )
-	local roleId =  self:getRoleId()
-	local roles = state:getRoleControllers( self:getRoleId() )
-	for i, role in ipairs( roles ) do
-		role:acceptStoryMessage( 'input.stop', self )
+	local actorId =  self:getActorId()
+	local actors = state:getActors( self:getActorId() )
+	for i, actor in ipairs( actors ) do
+		actor:acceptStoryMessage( 'input.stop', self )
 	end
 end
 

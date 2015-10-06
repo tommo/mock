@@ -7,8 +7,8 @@ CLASS: StoryManager ( GlobalManager )
 
 function StoryManager:__init()
 	self.contexts = {}
-	self.roleControllers = {}
-	self.activeContext = false
+	self.actorRegistry = {}
+	self.globalContext = false
 end
 
 function StoryManager:getKey()
@@ -16,76 +16,76 @@ function StoryManager:getKey()
 end
 
 function StoryManager:onInit( game )
-	-- print( 'init story manager')
-	--TEST:
-	if not hasAsset( 'story/basic.story' ) then return end
-	local context = self:createContext()
-	context:setActive()
-	context:setStoryPath( 'story/basic.story' )
-	context:start()
+	self.globalContext = StoryContext()
 end
 
-function StoryManager:onUpdate( game, dt )
-	for _, context in ipairs( self.contexts ) do
-		context:tryUpdate()
+function StoryManager:getActorRegistry()
+	return self.actorRegistry
+end
+
+function StoryManager:getActors( actorId )
+	return self.actorRegistry[ actorId ] or {}
+end
+
+function StoryManager:registerActor( actor )
+	local id = actor:getActorId()
+	local t = self.actorRegistry[ id ]
+	if not t then
+		t = {}
+		self.actorRegistry[ id ] = t
 	end
+	table.insert( t, actor )
+	return actor
 end
 
-function StoryManager:getActiveContext()
-	return self.activeContext
-end
-
-function StoryManager:setActiveContext( context )
-	self.activeContext = context
-end
-
-function StoryManager:createContext()
-	local context = StoryContext()
-	table.insert( self.contexts, context )
-	return context
-end
-
-function StoryManager:registerRoleController( controller )
-	local roleId = controller:getRoleId()
-	if not roleId then return end
-	local roles = self.roleControllers[ roleId ]
-	if not roles then
-		roles = {}
-		self.roleControllers[ roleId ] = roles
-	end
-	table.insert( roles, controller )
-end
-
-function StoryManager:unregisterRoleController( controller )
-	local roleId = controller:getRoleId()
-	local roles = self.roleControllers[ roleId ]
-	if not roles then return end
-	for i, r in ipairs( roles ) do
-		if r == controller then
-			table.remove( roles, i )
-			return
+function StoryManager:unregisterActor( actor )
+	local id = actor:getActorId()
+	local t = self.actorRegistry[ id ]
+	if t then
+		local idx = table.index( t, actor )
+		if idx then
+			table.remove( t, idx )
 		end
 	end
 end
 
-function StoryManager:getRoleControllers( roleId )
-	local roles = self.roleControllers[ roleId ]
-	return roles or {}
+function StoryManager:onUpdate( game, dt )
+	self.globalContext:tryUpdate()
 end
 
-function StoryManager:sendInput( roleId, tag, data )
-	-- print( 'input event', roleId, tag, data )
-	if self.activeContext then
-		self.activeContext:sendInput( roleId, tag, data )
-	end
+function StoryManager:getGlobalContext()
+	return self.globalContext
 end
 
-function StoryManager:sendSceneEvent( sceneId, event ) --scene, enter/exit
-	if not sceneId then return end
-	-- print( 'scene event', sceneId, event )
-	if self.activeContext then
-		self.activeContext:sendSceneEvent( sceneId, event )
-	end
+function StoryManager:getGlobalFlagDict()
+	return self.globalContext:getLocalFlagDict()
+end
+
+function StoryManager:getSceneContext( scn )
+	return scn:getUserObject( 'scene_story_context' )
+end
+
+function StoryManager:addSceneContext( scn )
+	local context = self.globalContext:createChildContext()
+	scn:setUserObject( 'scene_story_context', context )
+	return context
+end
+
+function StoryManager:removeSceneContext( scn )
+	local context = self:getSceneContext( scn )
+	if not context then return end
+	scn:setUserObject( 'scene_story_context', nil )
+	self.globalContext:removeChildContext( context )
+end
+
+function StoryManager:onSceneReset( scn )
+	if scn:isEditorScene() then return end
+	self:addSceneContext( scn )
+end
+
+function StoryManager:onSceneClear( scn )
+	if scn:isEditorScene() then return end
+	self:removeSceneContext( scn )
 end
 
 --------------------------------------------------------------------

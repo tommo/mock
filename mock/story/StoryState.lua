@@ -68,7 +68,6 @@ function StoryState:update()
 	end
 
 	context:clearInputTriggers( self )
-	context:clearSceneEventTriggers( self )
 	return false
 end
 
@@ -83,10 +82,6 @@ end
 --Input trigger node
 function StoryState:addInputTrigger( inputNode )
 	self.context:addInputTrigger( self, inputNode )
-end
-
-function StoryState:addSceneEventTrigger( sceneEventNode )
-	self.context:addSceneEventTrigger( self, sceneEventNode )
 end
 
 function StoryState:endGroup( groupNode )
@@ -134,7 +129,7 @@ function StoryState:getLocalFlagDict( node )
 end
 
 function StoryState:getScopeFlagDict( node )
-	return self.context:affirmFlagDict( node.scope.id )
+	return self.context:affirmFlagDict( '__root' )
 end
 
 function StoryState:getGlobalFlagDict()
@@ -151,6 +146,6 @@ function StoryState:serializeState()
 	return data
 end
 
-function StoryState:getRoleControllers( roleId )
-	return self.context:getRoleControllers( roleId )
+function StoryState:getActors( actorId )
+	return self.context:getActors( actorId )
 end

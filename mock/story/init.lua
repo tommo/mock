@@ -11,6 +11,8 @@ require 'mock.story.StoryState'
 require 'mock.story.StoryRoleController'
 require 'mock.story.StorySceneController'
 
+require 'mock.story.StoryActor'
+
 --------------------------------------------------------------------
 --Global Manager
 require 'mock.story.StoryManager'
@@ -25,4 +27,4 @@ require 'mock.story.StoryNodeUserInput'
 require 'mock.story.StoryNodeAttr'
 
 require 'mock.story.StoryNodeDialog'
-require 'mock.story.StoryNodeRole'
+require 'mock.story.StoryNodeActorId'

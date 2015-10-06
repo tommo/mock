@@ -41,3 +41,12 @@ end
 
 function GlobalManager:loadConfig( configData )
 end
+
+function GlobalManager:onSceneInit( scene )
+end
+
+function GlobalManager:onSceneReset( scene )
+end
+
+function GlobalManager:onSceneClear( scene )
+end
