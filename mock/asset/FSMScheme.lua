@@ -25,35 +25,42 @@ local function buildFSMScheme( scheme )
 		local exitname   = id .. '__exit'
 		local entername  = id .. '__enter'
 		--generated function
-		local function stateStep( self, dt, switchCount )
+		local function stateStep( controller, dt, switchCount )
 			----PRE STEP TRANSISTION
 			local nextState
 			local transMsg, transMsgArg
-		
-			---STEP
-			local step = self[ stepname ]
-			local out  = true
-			--step return name of next state
-			if step then out = step( self, dt ) end
 			
-			----POST STEP TRANSISTION
-			if out and outStates then --approach next state
-				nextState = outStates[ out ]
-				if not nextState then
-					_error( '! error in state:'..name )
-					if type( out ) ~= 'string' then
-						return error( 'output state name expected' )
-					end
-					error( 'output state not found:'..tostring( out ) )
-				end
+			local forceJumping = controller.forceJumping
+			if forceJumping then
+				controller.forceJumping = false
+				nextState, transMsg, transMsgArg = unpack( forceJumping )
 			else
-				--find triggering msg (post phase)
-				while true do
-					transMsg, transMsgArg = self:pollMsg()
-					if not transMsg then return end
-					nextState = jump and jump[ transMsg ]
-					if nextState then break end
-				end				
+				---STEP
+				local step = controller[ stepname ]
+				local out  = true
+				--step return name of next state
+				if step then out = step( controller, dt ) end
+				
+				----POST STEP TRANSISTION
+				if out and outStates then --approach next state
+					nextState = outStates[ out ]
+					if not nextState then
+						_error( '! error in state:'..name )
+						if type( out ) ~= 'string' then
+							return error( 'output state name expected' )
+						end
+						error( 'output state not found:'..tostring( out ) )
+					end
+				else
+					--find triggering msg (post phase)
+					while true do
+						transMsg, transMsgArg = controller:pollMsg()
+						if not transMsg then return end
+						nextState = jump and jump[ transMsg ]
+						if nextState then break end
+					end				
+				end
+
 			end
 
 			if DEADLOCK_TRACK_ENABLED then
@@ -84,41 +91,41 @@ local function buildFSMScheme( scheme )
 			local tt = type( nextState )
 			if tt == 'string' then --direct transition
 				nextStateName = nextState
-				local exit = self[ exitname ]
+				local exit = controller[ exitname ]
 				if exit then --exit previous state
-					exit( self, nextStateName, transMsg, transMsgArg )
+					exit( controller, nextStateName, transMsg, transMsgArg )
 				end
 
 			else --group transitions
 				local l = #nextState
 				nextStateName = nextState[l]
-				local exit = self[ exitname ]
+				local exit = controller[ exitname ]
 				if exit then --exit previous state
-					exit( self, nextStateName, transMsg, transMsgArg )
+					exit( controller, nextStateName, transMsg, transMsgArg )
 				end
 				--extra state group exit/enter
 				for i = 1, l-1 do
 					local funcName = nextState[ i ]
-					local func = self[ funcName ]
+					local func = controller[ funcName ]
 					if func then
-						func( self, name, nextStateName, transMsg, transMsgArg )
+						func( controller, name, nextStateName, transMsg, transMsgArg )
 					end
 				end				
 			end
 
-			self:setState( nextStateName )
+			controller:setState( nextStateName )
 			nextStateBody = scheme[ nextStateName ]
 			if not nextStateBody then
 				error( 'state body not found:' .. nextStateName, 2 )
 			end
-			local enter = self[ nextStateBody.entername ]
+			local enter = controller[ nextStateBody.entername ]
 			if enter then --entering new state
-				enter( self, name, transMsg, transMsgArg )
+				enter( controller, name, transMsg, transMsgArg )
 			end
 			--activate and enter new state handler
 			local nextFunc = nextStateBody.func
-			self.currentStateFunc = nextFunc
-			return nextFunc( self, dt, switchCount )
+			controller.currentStateFunc = nextFunc
+			return nextFunc( controller, dt, switchCount )
 			
 		end
 
@@ -129,13 +136,13 @@ local function buildFSMScheme( scheme )
 	end
 	local startEnterName = scheme['start'].entername
 	local startFunc      = scheme['start'].func
-	scheme[0] = function( self, dt )
-		local f = self[ startEnterName ]
+	scheme[0] = function( controller, dt )
+		local f = controller[ startEnterName ]
 		if f then
-			f( self ) --fsm.start:enter
+			f( controller ) --fsm.start:enter
 		end
-		self.currentStateFunc = startFunc
-		return startFunc( self, dt, 0 )
+		controller.currentStateFunc = startFunc
+		return startFunc( controller, dt, 0 )
 	end
 
 end
