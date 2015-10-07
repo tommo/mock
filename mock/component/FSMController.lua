@@ -114,7 +114,7 @@ function FSMController:getEntityState()
 	return self._entity and self._entity:getState()
 end
 
-function FSMController:forceJump( state, msg, args )
+function FSMController:forceState( state, msg, args )
 	self.forceJumping = { state, msg or '__forced', args or {} }
 end
 
