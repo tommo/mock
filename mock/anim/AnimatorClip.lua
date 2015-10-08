@@ -827,6 +827,18 @@ function AnimatorClip:getGroup()
 	return self.group
 end
 
+function AnimatorClip:setParentGroup( group )
+	return group:addChildClip( self )
+end
+
+function AnimatorClip:getParentGroup()
+	return self.group
+end
+
+function AnimatorClip:getRootGroup()
+	return self.group:getRootGroup()
+end
+
 function AnimatorClip:isInGroup( group )
 	local pg = self.parentGroup
 	while pg do
@@ -958,6 +970,7 @@ end
 --------------------------------------------------------------------
 AnimatorClipGroup
 	:MODEL{
+		Field '_folded' :boolean() :no_edit();
 		Field 'name' :string();
 		Field 'parentGroup' :type( AnimatorClipGroup )  :no_edit();
 		Field 'childClips'  :array( AnimatorClip )      :no_edit();
@@ -965,6 +978,7 @@ AnimatorClipGroup
 	}
 
 function AnimatorClipGroup:__init()
+	self._folded = false
 	self.name = 'group'
 	self.childClips  = {}
 	self.childGroups = {}
@@ -978,6 +992,14 @@ function AnimatorClipGroup:getRootGroup()
 		if not pg then return g end
 		g = pg
 	end
+end
+
+function AnimatorClipGroup:getParentGroup()
+	return self.parentGroup
+end
+
+function AnimatorClipGroup:setParentGroup( group )
+	return group:addChildGroup( self )
 end
 
 function AnimatorClipGroup:getParentPackage()
@@ -1007,9 +1029,14 @@ function AnimatorClipGroup:removeChildGroup( g )
 end
 
 function AnimatorClipGroup:addChildClip( c )
+	if c.parentGroup == self then return c end
+	if c.parentGroup then
+		c.parentGroup:removeChildClip( c )
+	end
 	table.insert( self.childClips, c )
 	c.parentGroup = self
 	self:getParentPackage():updateClipList()	
+	return c
 end
 
 function AnimatorClipGroup:removeChildClip( c )

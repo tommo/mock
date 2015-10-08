@@ -120,6 +120,61 @@ function linkPiv( p1, p2 )
 	p1:setAttrLink( MOAIProp.ATTR_Z_PIV, p2, MOAIProp.ATTR_Z_PIV )
 end
 
+function linkTransform( p1, p2 )
+	linkLoc( p1, p2 )
+	linkScl( p1, p2 )
+	linkRot( p1, p2 )
+	linkPiv( p1, p2 )
+end
+
+function inheritTransform( p1, p2 )
+	return p1:setAttrLink ( INHERIT_TRANSFORM, p2, TRANSFORM_TRAIT )
+end
+
+
+function inheritColor( p1, p2 )
+	return p1:setAttrLink ( INHERIT_COLOR, p2, COLOR_TRAIT )
+end
+
+function linkColor( p1, p2 )
+	return p1:setAttrLink ( COLOR_TRAIT, p2, COLOR_TRAIT )
+end
+
+function inheritVisible( p1, p2 ) 
+	return p1:setAttrLink ( INHERIT_VISIBLE, p2, ATTR_VISIBLE )
+end
+
+function linkVisible( p1, p2 ) 
+	return p1:setAttrLink ( ATTR_VISIBLE, p2, ATTR_VISIBLE )
+end
+
+function linkLocalVisible( p1, p2 ) 
+	return p1:setAttrLink ( ATTR_LOCAL_VISIBLE, p2, ATTR_LOCAL_VISIBLE )
+end
+
+function clearInheritVisible( p1 )
+	p1:clearAttrLink( INHERIT_VISIBLE )
+end
+
+function inheritTransformColor( p1, p2 )
+	inheritTransform( p1, p2 )
+	return inheritColor( p1, p2 )
+end
+
+function inheritTransformColorVisible( p1, p2 )
+	inheritTransformColor( p1, p2 )
+	return inheritVisible( p1, p2 )
+end
+
+function inheritPartition( p1, p2 )
+	p1:setAttrLink ( ATTR_PARTITION, p2, ATTR_PARTITION )
+end
+
+function inheritShader( p1, p2 )
+	p1:setAttrLink ( ATTR_SHADER, p2, ATTR_SHADER )
+end
+
+
 function clearLinkRot( p1 )
 	p1:clearAttrLink( MOAIProp.ATTR_X_ROT )
 	p1:clearAttrLink( MOAIProp.ATTR_Y_ROT )
@@ -157,12 +212,6 @@ function clearInheritColor( p1 )
 	p1:clearAttrLink( INHERIT_COLOR )
 end
 
-function linkTransform( p1, p2 )
-	linkLoc( p1, p2 )
-	linkScl( p1, p2 )
-	linkRot( p1, p2 )
-	linkPiv( p1, p2 )
-end
 
 function clearLinkTransform( p1 )
 	clearLinkLoc( p1 )
@@ -171,63 +220,18 @@ function clearLinkTransform( p1 )
 	clearLinkPiv( p1 )
 end
 
-function inheritTransform( p1, p2 )
-	return p1:setAttrLink ( INHERIT_TRANSFORM, p2, TRANSFORM_TRAIT )
-end
-
 function clearInheritTransform( p1 )
 	p1:clearAttrLink( INHERIT_TRANSFORM )
-end
-
-function inheritColor( p1, p2 )
-	return p1:setAttrLink ( INHERIT_COLOR, p2, COLOR_TRAIT )
-end
-
-function linkColor( p1, p2 )
-	return p1:setAttrLink ( COLOR_TRAIT, p2, COLOR_TRAIT )
-end
-
-function clearInheritTransform( p1 )
-	p1:clearAttrLink( INHERIT_COLOR )
-end
-
-function inheritVisible( p1, p2 ) 
-	return p1:setAttrLink ( INHERIT_VISIBLE, p2, ATTR_VISIBLE )
-end
-
-function linkVisible( p1, p2 ) 
-	return p1:setAttrLink ( ATTR_VISIBLE, p2, ATTR_VISIBLE )
-end
-
-function linkLocalVisible( p1, p2 ) 
-	return p1:setAttrLink ( ATTR_LOCAL_VISIBLE, p2, ATTR_LOCAL_VISIBLE )
-end
-
-function clearInheritVisible( p1 )
-	p1:clearAttrLink( INHERIT_VISIBLE )
-end
-
-function inheritTransformColor( p1, p2 )
-	inheritTransform( p1, p2 )
-	return inheritColor( p1, p2 )
-end
-
-function inheritTransformColorVisible( p1, p2 )
-	inheritTransformColor( p1, p2 )
-	return inheritVisible( p1, p2 )
-end
-
-function inheritPartition( p1, p2 )
-	p1:setAttrLink ( ATTR_PARTITION, p2, ATTR_PARTITION )
 end
 
 function clearPartitionLink( p1 )
 	p1:clearAttrLink ( ATTR_PARTITION )
 end
 
-function inheritShader( p1, p2 )
-	p1:setAttrLink ( ATTR_SHADER, p2, ATTR_SHADER )
+function clearInheritShader( p1 )
+	p1:clearAttrLink ( ATTR_SHADER )
 end
+
 
 function inheritAllPropAttributes( p1, p2 )
 	inheritTransformColorVisible( p1, p2 )
