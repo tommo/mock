@@ -759,6 +759,10 @@ function Entity:hide()
 	self:setVisible( false )
 end
 
+function Entity:toggleVisible()
+	return self:setVisible( not self:isLocalVisible() )
+end
+
 function Entity:hideChildren()
 	for child in pairs( self.children ) do
 		child:hide()
@@ -1176,6 +1180,20 @@ function Entity:resetTransform()
 	self:setPiv( 0, 0, 0 )
 end
 
+function Entity:setHexColor( hex, alpha )
+	return self:setColor( hexcolor( hex, alpha ) )
+end
+
+function Entity:seekHexColor( hex, alpha, duration, easeType )
+	local r,g,b = hexcolor( hex )
+	return self:seekColor( r,g,b, alpha, duration ,easeType )
+end
+
+function Entity:getHexColor()
+	local r,g,b,a = self:getColor() 
+	local hex = colorhex( r,g,b )
+	return hex, a
+end
 -- function Entity:onEditorPick( x, y, z, pad )
 -- 	for child in pairs(self.children) do
 -- 		local e = child:onEditorPick(x,y,z,pad)

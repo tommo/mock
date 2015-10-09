@@ -766,15 +766,23 @@ end
 
 ----------Color helpers
 local ssub=string.sub
+local format = string.format
 
 function hexcolor(s,alpha) --convert #ffffff to (1,1,1)
 	local r,g,b
-	r=tonumber('0x'..ssub(s,2,3))/255
-	g=tonumber('0x'..ssub(s,4,5))/255
-	b=tonumber('0x'..ssub(s,6,7))/255
+	r = tonumber('0x'..ssub(s,2,3))/255
+	g = tonumber('0x'..ssub(s,4,5))/255
+	b = tonumber('0x'..ssub(s,6,7))/255
 	return r,g,b,alpha or 1
 end
 
+
+function colorhex( r,g,b )
+	local R = clamp( r, 0, 1) * 255
+	local G = clamp( g, 0, 1) * 255
+	local B = clamp( b, 0, 1) * 255
+	return format( '#%02x%02x%02x', R,G,B )
+end
 
 function HSL(h, s, l, a)
    if s == 0 then return l,l,l,a or 1 end

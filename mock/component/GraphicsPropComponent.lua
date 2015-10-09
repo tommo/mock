@@ -101,5 +101,13 @@ function GraphicsPropComponent:getDefaultShader()
 	return nil
 end
 
+function GraphicsPropComponent:hide()
+	return self.prop:setVisible( false )
+end
+
+function GraphicsPropComponent:show()
+	return self.prop:setVisible( true )
+end
+
 
 wrapWithMoaiPropMethods( GraphicsPropComponent, ':getMoaiProp()' )
