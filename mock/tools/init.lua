@@ -4,6 +4,7 @@ require 'mock.tools.DrawHelpers'
 require 'mock.tools.UserAction' --non coroutine action
 
 require 'mock.tools.JoystickConfig'
+require 'mock.tools.SDLJoystickMapping'
 
 ---------------------------------------------------------------------
 --Stat
