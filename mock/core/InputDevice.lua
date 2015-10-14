@@ -95,10 +95,6 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: JoystickState ()
-	:MODEL{}
-
---------------------------------------------------------------------
 CLASS: InputDevice()
 function InputDevice:__init( deviceName, virtual )
 	self.inputDeviceName = assert( deviceName )
@@ -107,10 +103,10 @@ function InputDevice:__init( deviceName, virtual )
 	self.virtual = virtual
 	self.allowTouchSimulation = true
 	self.enabled = true
+
 	---TOUCH
 	self.touchListeners = {}
 	self.touchCount  = 16
-	self.touches     = {}
 	self.touchStates = {}
 
 	---KEY
@@ -138,6 +134,8 @@ function InputDevice:__init( deviceName, virtual )
 
 	--JOYSTICKS
 	self.joystickListeners = {}
+	self.joystickStates = {}
+
 
 	--MOTION
 	self.motionAccuracy  = 1
@@ -158,7 +156,6 @@ function InputDevice:__init( deviceName, virtual )
 	--COMPASS
 	self.compassHeading = 0
 	self.compassListeners = {}
-
 end
 
 function InputDevice:getSensor( name )
@@ -827,3 +824,4 @@ end
 function _sendLevelEvent( ... )
 	return _defaultInputDevice:sendLevelEvent( ... )
 end
+

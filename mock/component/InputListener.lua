@@ -173,7 +173,7 @@ function installInputListener( owner, option )
 					if onJoyAxisMove then onJoyAxisMove( owner, joyId, axisId, value ) end
 				end
 			end
-			inputDevice:addJoystickListener( joystickCallback )
+			joystickManager:addJoystickListener( joystickCallback )
 		end
 	end
 
@@ -207,7 +207,7 @@ function uninstallInputListener( owner )
 	end
 
 	if data.joystickCallback then
-		inputDevice:removeJoystickListener( data.joystickCallback )
+		joystickManager:removeJoystickListener( data.joystickCallback )
 	end
 
 end

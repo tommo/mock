@@ -39,6 +39,7 @@ require 'mock.core.RenderTarget'
 
 ----input
 require 'mock.core.InputManager'
+require 'mock.core.JoystickManager'
 require 'mock.core.InputDevice'
 require 'mock.core.InputSignal'
 

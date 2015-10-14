@@ -1,5 +1,71 @@
 module 'mock'
 
+-- local SDLJoyCmdType = {
+-- 	XL = 'axis',
+-- 	XR = 'axis',
+-- 	YL = 'axis',
+-- 	YR = 'axis',
+-- }
+
+local SDLJoyCmdConversion = {
+	a = 'a',
+	b = 'b',
+	x = 'x',
+	y = 'y',
+	leftx         = 'LX',
+	lefty         = 'LY',
+	rightx        = 'RX',
+	righty        = 'RY',
+	leftshoulder  = 'LT',
+	lefttrigger   = 'LB',
+	leftstick     = 'L3',
+	rightshoulder = 'RT',
+	righttrigger  = 'RB',
+	rightstick    = 'R3',
+	dpleft        = 'left',
+	dpright       = 'right',
+	dpup          = 'up',
+	dpdown        = 'down',
+	guide         = 'guide',
+	start         = 'start',
+	back          = 'back',
+}
+--------------------------------------------------------------------
+CLASS: SDLJoystickMapping ()
+	:MODEL{}
+
+function SDLJoystickMapping:__init( data )
+	self.data = data
+	self.buttonToCommand = data[ 'button_map' ]
+	self.axisToCommand   = data[ 'axis_map' ]
+	self.hatToCommand    = data[ 'hat_map' ]
+end
+
+function SDLJoystickMapping:mapButtonEvent( btnId, down )
+	local cmd = self.buttonToCommand[ btnId ]
+	return 'button', cmd, down
+end
+
+function SDLJoystickMapping:mapAxisEvent( axisId, value, prevValue )
+	local cmd = self.axisToCommand[ axisId ]
+	if cmd == 'LB' or cmd == 'RB' then
+		--convert to button
+		local b0 = prevValue > 0
+		local b1 = value > 0
+		if b0 ~= b1 then
+			return 'button', cmd, b1
+		end
+	elseif cmd then
+		return 'axis', cmd, value
+	end
+end
+
+function SDLJoystickMapping:mapHatEvent( hatId, value, prevValue )
+	--TODO
+end
+
+
+--------------------------------------------------------------------
 local mappingTable = {}
 
 local function parseLine( line )
@@ -13,17 +79,44 @@ local function parseLine( line )
 	local result = {}
 	local GUID = blobs[1]
 	local name = blobs[2]
+	local buttonToCommand = {}
+	local hatToCommand    = {}
+	local axisToCommand   = {}
+
 	for i = 3, count do
 		local b = blobs[ i ]
 		local k,v = string.match( b, '(.*):(.*)' )
 		if k then
-			result[ k ] = v
+			local itype, ivalue = string.match( v, '([abh])(%d.*)')
+			if itype == 'a' then --axis
+				local idx = tonumber( ivalue )
+				axisToCommand[ idx ] = assert( SDLJoyCmdConversion[k], 'unkown mapping command:'..k )
+			elseif itype == 'b' then
+				local idx = tonumber( ivalue )
+				buttonToCommand[ idx ] = assert( SDLJoyCmdConversion[k], 'unkown mapping command:'..k )
+			elseif itype == 'h' then
+				local hatId, subId = string.match( ivalue, '(%d*)%.(%d*)' )
+				hatId = tonumber( hatId )
+				subId = tonumber( subId )
+				if not hatToCommand[ hatId ] then
+					hatToCommand[ hatId ] = {}
+				end
+				hatToCommand[ hatId ][ subId ] = assert( SDLJoyCmdConversion[k], 'unkown mapping command:'..k )
+			else
+				result[ k ] = v
+			end
 		end
 	end
+
 	result[ 'GUID' ] = GUID
 	result[ 'NAME' ] = name
-	mappingTable[ GUID ] = result
-	return result
+	result[ 'button_map' ] = buttonToCommand
+	result[ 'hat_map'    ] = hatsToCommand
+	result[ 'axis_map'   ] = axisToCommand
+
+	local mapping = SDLJoystickMapping( result )
+	mappingTable[ GUID ] = mapping
+	return mapping
 end
 
 local function parseText( t )
@@ -39,6 +132,7 @@ end
 function getSDLJoystickMapping( GUID )
 	return mappingTable[ GUID ]
 end
+
 
 -- controller mapping DB:
 -- https://github.com/gabomdq/SDL_GameControllerDB
