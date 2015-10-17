@@ -282,6 +282,10 @@ function MSprite:resetAndPlay( clipName, mode )
 	end
 end
 
+function MSprite:getAnimState()
+	return self.animState
+end
+
 function MSprite:start()
 	self.animState:start()
 	return self.animState
