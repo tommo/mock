@@ -37,6 +37,7 @@ function JoystickState:onButtonEvent( btn, down )
 			self._mgr:dispatchButtonEvent( self, cmd, value )
 		end
 	end
+	print( btn, down )
 	self._mgr:dispatchRawButtonEvent( self, btn, down )
 end
 
@@ -51,6 +52,7 @@ function JoystickState:onAxisMove( axisId, value )
 			self._mgr:dispatchAxisEvent( self, cmd, value )
 		end
 	end
+	print( axisId, value )
 	self._mgr:dispatchRawAxisEvent( self, axisId, value )
 end
 
@@ -91,6 +93,7 @@ function JoystickManager:onJoystickAdd( instance )
 	local joystickState = JoystickState( self, instance )
 	table.insert( self.joystickStates, joystickState )
 	if self.mode == 'SDL' then
+		print( instance:getGUID(), instance:getName() )
 		local mapping = mock.getSDLJoystickMapping( instance:getGUID() )
 		if mapping then
 			joystickState:setMapping( mapping )
@@ -101,7 +104,7 @@ end
 function JoystickManager:onJoystickRemove( instance )
 	for i, state in ipairs( self.joystickStates ) do
 		if state._instance == instance then
-			table.remove( i )
+			table.remove( self.joystickStates, i )
 			break
 		end
 	end
