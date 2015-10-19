@@ -389,9 +389,25 @@ function InputDevice:initMouseEventHandler()
 		end
 	end
 
+	local function setupMouseWheelCallback( sensorName, btnName )
+		local wheelSensor = self:getSensor( sensorName )
+		if wheelSensor then
+			wheelSensor:setCallback ( 
+				function( dy )
+					local dx = 0
+					local mouseState = self.mouseState
+					if not self.enabled then return end
+					mouseState.scrollY = mouseState.scrollY + dy
+					return self:sendMouseEvent( 'scroll', dx, dy, false, false )
+				end 
+			)
+			_stat( 'mouse button sensor callback ready' )
+		end
+	end
 	setupMouseButtonCallback( 'mouseLeft',   'left' )
 	setupMouseButtonCallback( 'mouseRight',  'right' )
 	setupMouseButtonCallback( 'mouseMiddle', 'middle' )
+	setupMouseWheelCallback( 'mouseWheel', 'wheel' )
 
 end
 

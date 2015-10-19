@@ -1,56 +1,64 @@
 module 'mock'
 
 --------------------------------------------------------------------
-local TBInited = false
-local function _affirmTBMgr()
-	if not TBInited then
-		MOAITBMgr.init()
-		MOAITBMgr.loadSkin( 
-			'resources/default_skin/skin.tb.txt',
-			'skin/skin.tb.txt'
-		)
-		TBInited = true
-	end
-end
-
-CLASS: TBCanvas ( mock.RenderComponent )
+CLASS: TBCanvas ( Entity )
 	:MODEL{
-		Field "size" :type( 'vec2' ) :getset( 'Size' ) 
+		Field 'skin' :asset( 'tb_skin' );
+		'----';
+		Field "size" :type( 'vec2' ) :getset( 'Size' );
+
 }
 
 function TBCanvas:__init()
-	self.x0 = false
-	self.y0 = false
+	self.mousePos = { false, false }
 	self.width  = 400
 	self.height = 300
+
+	self.skin = false
 	self.canvas = MOAITBCanvas.new()
-	self:setBlend( 'alpha' )
+	self.canvas:setBlendMode( MOAIProp.GL_SRC_ALPHA, MOAIProp.GL_ONE_MINUS_SRC_ALPHA ) 
+
 end
 
-function TBCanvas:getMoaiTBCanvas()
-	return self.canvas
+function TBCanvas:onLoad()
+	self:_attachProp( self.canvas )
 end
 
-function TBCanvas:onAttach( ent )
-	_affirmTBMgr()
-	ent:_attachProp( self.canvas )
-	installInputListener( self )
-end
-
-function TBCanvas:onDetach( ent )
-	ent:_detachProp( self.canvas )
-	uninstallInputListener( self )
+function TBCanvas:onDestroy()
+	self:_detachProp( self.canvas )
 end
 
 function TBCanvas:onStart()
+	installInputListener( self )
 	self.canvas:start()
 end
 
+--
+function TBCanvas:getSize()
+	return self.width, self.height
+end
+
+function TBCanvas:refresh()
+	self.canvas:doStep( 0, 0 )
+end
+
+function TBCanvas:setSize( w, h )
+	self.width = w
+	self.height = h
+	return self.canvas:setSize( w, h )
+end
+
+function TBCanvas:getRootInternalWidget()
+	return self.canvas:getRootWidget()
+end
+
+--hook input
 function TBCanvas:onKeyEvent( key, down )
 	self.canvas:sendKeyEvent( string.byte(key), down )
 end
 
 function TBCanvas:onMouseEvent( ev, x, y, btn, mockup )
+	local mx, my = unpack( self.mousePos )
 	if ev == 'down' then
 		if btn == 'left' then
 			return self.canvas:sendMouseButtonEvent( 1, true )
@@ -60,69 +68,36 @@ function TBCanvas:onMouseEvent( ev, x, y, btn, mockup )
 			return self.canvas:sendMouseButtonEvent( 1, false )
 		end
 	elseif ev == 'move' then
-		x, y = self._entity:wndToModel( x, y )
+		x, y = self:wndToModel( x, y )
 		y = -y
 		local dx, dy
-		if self.x0 then
-			dx = x - self.x0
-			dy = y - self.y0
+		if mx and my then
+			dx = x - mx
+			dy = y - my
 		else
 			dx, dy = 0,0
 		end
-		self.x0, self.y0 = x, y
+		self.mousePos = { x, y }
 		return self.canvas:sendMouseMoveEvent( x, y, dx, dy )
+	elseif ev == 'scroll' then
+		local dx, dy = x, y
+		return self.canvas:sendMouseScrollEvent( mx, my, dx, dy )
 	end
 end
 
-function TBCanvas:setBlend( b )
-	self.blend = b
-	setPropBlend( self.canvas, b )
-end
-
-function TBCanvas:setDepthMask( enabled )
-	self.depthMask = enabled
-	self.canvas:setDepthMask( enabled )
-end
-
-function TBCanvas:setDepthTest( mode )
-	self.depthTest = mode
-	self.canvas:setDepthTest( mode )
-end
-
-function TBCanvas:setBillboard( billboard )
-	self.billboard = billboard
-	self.canvas:setBillboard( billboard )
-end
-
-function TBCanvas:getSize()
-	return self.width, self.height
-end
-
-function TBCanvas:setSize( w, h )
-	self.width = w
-	self.height = h
-	return self.canvas:setSize( w, h )
-end
-
-function TBCanvas:getRootWidget()
-	return self.canvas:getRootWidget()
-end
-
-------------------------------------------------------------------
-local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
-
-function TBCanvas:setShader( shaderPath )
-	self.shader = shaderPath	
-	if shaderPath then
-		local shader = mock.loadAsset( shaderPath )
-		if shader then
-			local moaiShader = shader:getMoaiShader()
-			return self.canvas:setShader( moaiShader )
-		end
+function TBCanvas:_attachChildEntity( ent )
+	if ent.__TBWIDGET then
+		return self:attachWidgetEntity( ent )
 	end
-	self.canvas:setShader( defaultShader )
+	return TBCanvas.__super._attachChildEntity( ent )
 end
 
-mock.registerComponent( 'TBCanvas', TBCanvas )
-mock.registerEntityWithComponent( 'TBCanvas', TBCanvas )
+function TBCanvas:attachWidgetEntity( widget )
+	local rootTBWidget = self:getRootInternalWidget()
+	rootTBWidget:addChild( widget:affirmInternalWidget() )
+	self:_attachLoc( widget:getProp() )
+	self:refresh()
+end
+
+mock.registerEntity( 'TBCanvas', TBCanvas )
 

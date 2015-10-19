@@ -65,16 +65,16 @@ function installInputListener( owner, option )
 	local sensors = option['sensors'] or false
 	if not sensors or table.index( sensors, 'mouse' ) then
 		----MouseEvent
-		local onMouseEvent = owner.onMouseEvent
-		local onMouseDown  = owner.onMouseDown
-		local onMouseUp    = owner.onMouseUp
-		local onMouseMove  = owner.onMouseMove
-		local onMouseEnter = owner.onMouseEnter
-		local onMouseLeave = owner.onMouseLeave
-		local onScroll     = owner.onScroll
+		local onMouseEvent  = owner.onMouseEvent
+		local onMouseDown   = owner.onMouseDown
+		local onMouseUp     = owner.onMouseUp
+		local onMouseMove   = owner.onMouseMove
+		local onMouseEnter  = owner.onMouseEnter
+		local onMouseLeave  = owner.onMouseLeave
+		local onMouseScroll = owner.onMouseScroll
 
 		if 
-			onMouseDown or onMouseUp or onMouseMove or onScroll or
+			onMouseDown or onMouseUp or onMouseMove or onMouseScroll or
 			onMouseLeave or onMouseEnter or
 			onMouseEvent
 		then
@@ -88,7 +88,7 @@ function installInputListener( owner, option )
 				elseif ev == 'up'   then
 					if onMouseUp  then onMouseUp  ( owner, btn, x, y, mock ) end
 				elseif ev == 'scroll' then
-					if onScroll   then onScroll ( owner, x, y, mock ) end
+					if onMouseScroll   then onMouseScroll ( owner, x, y, mock ) end
 				elseif ev == 'enter'  then
 					if onMouseEnter   then onMouseEnter ( owner, mock ) end
 				elseif ev == 'leave'  then
