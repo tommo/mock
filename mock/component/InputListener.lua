@@ -47,6 +47,12 @@ function setInputListenerCategoryActive( id, active )
 	if cat then return cat:setActive( active ) end
 end
 
+function isInputListenerCategoryActive( id )
+	local cat = getInputListenerCategory( id )
+	if cat then return cat:isActive() end
+	return nil
+end
+
 --------------------------------------------------------------------
 function installInputListener( owner, option )
 	option = option or {}

@@ -3,15 +3,16 @@ module 'mock'
 CLASS: TBWidget ( Entity )
 	:MODEL{
 		Field 'color' :type('color') :no_edit();
-		Field 'rot' :no_edit();
-		Field 'scl' :no_edit();
-		Field 'piv' :no_edit();
+		Field 'rot'   :no_edit();
+		Field 'scl'   :no_edit();
+		Field 'piv'   :no_edit();
 		Field 'layer' :no_edit();
 		----
 
-		Field 'loc' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc') :label( 'Loc');
-		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size') :label( 'Size');
+		Field 'loc'  :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc'  ) :label( 'Loc'  );
+		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size' ) :label( 'Size' );
 		Field 'opacity';
+		'----';
 		Field 'skin' :asset( 'tb_skin' );
 		Field 'skinClass' :string(); --:selection( getSkinClassSelection )
 		'----';
@@ -59,13 +60,13 @@ function TBWidget:_detachChildEntity( entity )
 end
 
 function TBWidget:attachChildWidget( widget )
-	self:getInternalWidget():addChild( widget:getInternalWidget() )
+	self:getInternalWidget():getContentRoot():addChild( widget:getInternalWidget() )
 	self:_attachLoc( widget:getProp() )
 	self:refreshCanvas()
 end
 
 function TBWidget:detachChildWidget( widget )
-	self:getInternalWidget():removeChild( widget:getInternalWidget() )
+	self:getInternalWidget():getContentRoot():removeChild( widget:getInternalWidget() )
 	local _p1   = widget._prop
 	clearInheritTransform( _p1 )
 	self:refreshCanvas()
@@ -201,12 +202,15 @@ _wrapMethods( TBWidget, 'internalWidget', {
 		'setStateRaw',
 		'getAutoState',
 		'setAutoFocusState',
+		
 		'getOpacity',
 		'setOpacity',
 		'seekOpacity',
+		
 		'isVisible',
 		'isLocalVisible',
 		'setVisible',
+
 		'isDisabled',
 		'setDisabled',
 		-- 'addChild',

@@ -37,7 +37,6 @@ function JoystickState:onButtonEvent( btn, down )
 			self._mgr:dispatchButtonEvent( self, cmd, value )
 		end
 	end
-	print( btn, down )
 	self._mgr:dispatchRawButtonEvent( self, btn, down )
 end
 
@@ -52,7 +51,6 @@ function JoystickState:onAxisMove( axisId, value )
 			self._mgr:dispatchAxisEvent( self, cmd, value )
 		end
 	end
-	print( axisId, value )
 	self._mgr:dispatchRawAxisEvent( self, axisId, value )
 end
 
@@ -93,7 +91,6 @@ function JoystickManager:onJoystickAdd( instance )
 	local joystickState = JoystickState( self, instance )
 	table.insert( self.joystickStates, joystickState )
 	if self.mode == 'SDL' then
-		print( instance:getGUID(), instance:getName() )
 		local mapping = mock.getSDLJoystickMapping( instance:getGUID() )
 		if mapping then
 			joystickState:setMapping( mapping )
@@ -119,7 +116,6 @@ function JoystickManager:removeJoystickListener( func )
 end
 
 function JoystickManager:dispatchButtonEvent( joystickState, button, down, mock )
-	-- print( 'dispatching button event', button, down, mock )
 	for listener in pairs( self.joystickListeners ) do
 		if down then
 			listener( 'down', joystickState, button, nil, nil, mock )
@@ -130,7 +126,6 @@ function JoystickManager:dispatchButtonEvent( joystickState, button, down, mock 
 end
 
 function JoystickManager:dispatchAxisEvent( joystickState, axisId, value, mock )
-	-- print( 'dispatching axis event', axisId, value, mock )
 	for listener in pairs( self.joystickListeners ) do
 		listener( 'axis', joystickState, nil, axisId, value, mock )
 	end
