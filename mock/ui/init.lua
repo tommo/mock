@@ -15,7 +15,7 @@ require 'mock.ui.TBLayout'
 -- require 'mock.ui.TBSection'
 
 require 'mock.ui.TBButton'
--- require 'mock.ui.TBTextField'
+require 'mock.ui.TBTextField'
 -- require 'mock.ui.TBRadioButton'
 -- -- require 'mock.ui.TBEditField'
 

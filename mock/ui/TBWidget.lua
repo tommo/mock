@@ -59,7 +59,7 @@ function TBWidget:_detachChildEntity( entity )
 end
 
 function TBWidget:attachChildWidget( widget )
-	self:getInternalWidget():getContentRoot():addChild( widget:getInternalWidget() )
+	self:getInternalWidget():addChild( widget:getInternalWidget() )
 	self:_attachLoc( widget:getProp() )
 	self:refreshCanvas()
 end
@@ -86,13 +86,24 @@ function TBWidget:getInternalWidget()
 	return self.internalWidget
 end
 
+
+local function _widgetEventCallback( owner, widget, event )
+	local etype = event:getType()
+	return owner.__entity:onWidgetEvent( etype, widget, event )
+end
+
 function TBWidget:affirmInternalWidget()
 	if self.internalWidget then return self.internalWidget end
 	self.internalWidget = self:createInternalWidget()
+	self.internalWidget.__entity = self
 	local prop = self._prop
 	self.internalWidget:setAttrLink( MOAITBWidget.ATTR_X_LOC, prop, MOAIProp.ATTR_X_LOC )
 	self.internalWidget:setAttrLink( MOAITBWidget.ATTR_Y_LOC, prop, MOAIProp.ATTR_Y_LOC )
+	self.internalWidget:setListener( MOAITBWidget.EVENT_WIDGET_EVENT, _widgetEventCallback )
 	return self.internalWidget
+end
+
+function TBWidget:onWidgetEvent( etype, widget, event )
 end
 
 function TBWidget:getSkinClassSelection()
@@ -152,3 +163,112 @@ end
 function TBWidget:_createTransformProxy()
 	return mock_edit.TBWidgetTransformProxy()
 end
+
+_wrapMethods( TBWidget, 'internalWidget', {
+		-- 'getTBClassName',
+		-- 'isValid',
+		-- 'getRect',
+		-- 'setRect',
+		-- 'getLoc',
+		-- 'setLoc',
+		-- 'seekLoc',
+		-- 'getSize',
+		-- 'setSize',
+		-- 'seekSize',
+		'setMinSize',
+		'getMinSize',
+		'setMaxSize',
+		'getMaxSize',
+		'setPreferredSize',
+		'getPreferredSize',
+		'setFixedSize',
+		'invalidate',
+		'invalidateStates',
+		'invalidateLayout',
+		'invalidateSkinStates',
+		-- 'die',
+		'isDying',
+		'getID',
+		'setID',
+		'checkID',
+		'getGroupID',
+		'setGroupID',
+		'checkGroupID',
+		'getWidgetByID',
+		'getState',
+		'setState',
+		'getStateRaw',
+		'setStateRaw',
+		'getAutoState',
+		'setAutoFocusState',
+		'getOpacity',
+		'setOpacity',
+		'seekOpacity',
+		'isVisible',
+		'isLocalVisible',
+		'setVisible',
+		'isDisabled',
+		'setDisabled',
+		-- 'addChild',
+		-- 'insertChild',
+		-- 'removeChild',
+		-- 'deleteAllChildren',
+		'setZ',
+		'setZInflate',
+		'getZInflate',
+		'getGravity',
+		'setGravity',
+		-- 'setSkin',
+		-- 'getSkin',
+		-- 'setSkinBg',
+		-- 'getSkinBg',
+		-- 'getSkinBgElement',
+		'setGroupRoot',
+		'isGroupRoot',
+		'setFocusable',
+		'isFocusable',
+		'setClickableByKey',
+		'isClickableByKey',
+		'setLongClickWanted',
+		'isLongClickWanted',
+		'setInputIgnored',
+		'isInputIgnored',
+		'isInteractable',
+		'setFocus',
+		'isFocused',
+		'setFocusRecursive',
+		'moveFocus',
+		'getWidgetAt',
+		-- 'getChildFromIndex',
+		-- 'getIndexFromChild',
+		-- 'getContentRoot',
+		-- 'addContent',
+		'getTextByID',
+		'getValueByID',
+		'getParentRoot',
+		'getParentWindow',
+		'getParent',
+		'scrollTo',
+		'scrollToSmooth',
+		'scrollBy',
+		'scrollBySmooth',
+		'setAxis',
+		'getAxis',
+		'setValue',
+		'getValue',
+		'setValueDouble',
+		'getValueDouble',
+		'setText',
+		'getText',
+		-- 'convertToRoot',
+		-- 'convertFromRoot',
+		-- 'getFirstChild',
+		-- 'getLastChild',
+		-- 'getNext',
+		-- 'getPrev',
+		-- 'getNextDeep',
+		-- 'getPrevDeep',
+		-- 'getLastLeaf',
+		-- 'createPopupWindow',
+		-- 'createPopupMenu',
+	})

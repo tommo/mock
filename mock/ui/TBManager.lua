@@ -21,6 +21,7 @@ function TBManager:onInit()
 	local font = mock.loadAsset( 'font/zipex.fnt' )
 	MOAITBMgr.registerFont( 'zipex', font )
 	MOAITBMgr.setDefaultFontFace( 'zipex', 13 )
+	
 end
 
 
