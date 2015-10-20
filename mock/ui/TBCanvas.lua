@@ -40,6 +40,7 @@ function TBCanvas:getSize()
 end
 
 function TBCanvas:refresh()
+	self.canvas:getRootWidget():invalidateLayout()
 	self.canvas:doStep( 0, 0 )
 end
 

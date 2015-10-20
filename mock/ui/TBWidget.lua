@@ -28,13 +28,30 @@ function TBWidget:__init()
 	self:affirmInternalWidget()
 end
 
+function TBWidget:isLayouting()
+	return false
+end
+
+function TBWidget:isLayouted()
+	if parent and parent:isInstance( TBWidget ) then
+		return parent:isLayouting()
+	end
+	return false
+end
+
 function TBWidget:getLoc()
 	local x, y = self:getProp():getLoc()
 	return x, y
 end
 
 function TBWidget:setLoc( x, y )
+	if self:isLayouted() then return end
 	return self:getProp():setLoc( x, y )
+end
+
+function TBWidget:setRect( x,y,w,h )
+	self:getProp():setLoc( x,y )
+	self:getInternalWidget():setSize( w, h )
 end
 
 function TBWidget:getSize()
@@ -60,13 +77,17 @@ function TBWidget:_detachChildEntity( entity )
 end
 
 function TBWidget:attachChildWidget( widget )
-	self:getInternalWidget():getContentRoot():addChild( widget:getInternalWidget() )
+	self:getInternalWidget():addChild( widget:getInternalWidget() )
 	self:_attachLoc( widget:getProp() )
+	widget:onAttachToParent( self )
 	self:refreshCanvas()
 end
 
+function TBWidget:onAttachToParent( parent )
+end
+
 function TBWidget:detachChildWidget( widget )
-	self:getInternalWidget():getContentRoot():removeChild( widget:getInternalWidget() )
+	self:getInternalWidget():removeChild( widget:getInternalWidget() )
 	local _p1   = widget._prop
 	clearInheritTransform( _p1 )
 	self:refreshCanvas()
@@ -146,6 +167,7 @@ function TBWidget:getCanvasLoc()
 		local xx, yy = p:getLoc()
 		x = x + xx
 		y = y + yy
+		p=p.parent
 	end
 	return x, y
 end
@@ -168,7 +190,9 @@ end
 _wrapMethods( TBWidget, 'internalWidget', {
 		-- 'getTBClassName',
 		-- 'isValid',
-		-- 'getRect',
+
+		'getPaddingRect',
+		'getRect',
 		-- 'setRect',
 		-- 'getLoc',
 		-- 'setLoc',
