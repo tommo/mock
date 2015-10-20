@@ -27,6 +27,7 @@ local setmetatable  = setmetatable
 local getmetatable  = getmetatable
 
 local rawget, rawset = rawget, rawset
+local insert = table.insert
 --------------------------------------------------------------------
 -- CLASS
 --------------------------------------------------------------------
@@ -74,7 +75,7 @@ function reportTracingObject( filter, ignoreMockObject )
 	local total  = 0
 	local output = {}
 	for name, count in pairs( objectCounts ) do
-		table.insert( output, { name, count } )
+		insert( output, { name, count } )
 	end
 	table.sort( output, function( i1, i2 ) return i1[1] < i2[1] end )
 	print( '--------' )
@@ -468,7 +469,7 @@ function findClass( term )
 	local candidates = {}
 	for n, clas in pairs( globalClassRegistry ) do		
 		if clas.__name == term then
-			table.insert( candidates, clas )
+			insert( candidates, clas )
 		end
 	end
 	local count = #candidates
@@ -555,32 +556,42 @@ function Model:getName()
 	return self.__name
 end
 
-function Model:update( body )
-	--body[1] = name
-	-- local name = body[1]
-	-- if type(name) ~= 'string' then error('Model Name should be the first item', 3 ) end
-	-- self.__name = name
-	local fields = {}
-	local fieldN = {}
-	for i = 1, #body do		
-		local f = body[i]
-		if f =='----' then --separator
-			fields[ i ] = separatorField
-			-- error ('field separator not supported yet')
-		else
-			if getmetatable( f ) ~= Field then 
-				error('Field expected in Model, given:'..type( f ), 3)
-			end
-			local id = f.__id
-			if fieldN[id] then error( 'duplicated Field:'..id, 3 ) end
-			fieldN[ id ] = f
-			fields[ i ] = f
-			f.__model = self
+local function _collectFieldForUpdate( group, fields, fieldMap, f )
+	local mt = getmetatable( f )
+	if mt == FieldGroup then
+		for i, child in ipairs( f:getChildren() ) do
+			_collectFieldForUpdate( nil, fields, fieldMap, child )
 		end
+		f.__model = self
+	elseif mt == Field then
+		local id = f.__id
+		if fieldMap[id] then error( 'duplicated Field:'..id, 3 ) end
+		fieldMap[ id ] = f
+		insert( fields, f )
+		f.__model = self
+		if group then
+			group:_addChild( f )
+		end
+	elseif f == '----' then
+		insert( fields, separatorField )
+		if group then
+			group:_addChild( f )
+		end
+	else
+		error('Field/FieldGroup expected in Model, given:'..type( f ), 3)
 	end
-	self.__fields = fields
-	self.__fieldNames = fieldN
-	-- self.__src_class.__name = name
+end
+
+function Model:update( body )
+	local fields   = {}
+	local fieldMap = {}
+	local rootGroup = FieldGroup()
+	for i, f in ipairs( body ) do
+		_collectFieldForUpdate( rootGroup, fields, fieldMap, f )
+	end
+	self.__fields   = fields
+	self.__fieldMap = fieldMap
+	self.__rootGroup = rootGroup
 	return self
 end
 
@@ -713,6 +724,7 @@ function Field:__init( id )
 	self.__getter   = true 
 	self.__setter   = true
 	self.__objtype  = false
+	self.__group    = false
 end
 
 function Field:type( t )
@@ -829,8 +841,34 @@ function Field:no_save() --short cut
 	return self:meta{ no_save = true }
 end
 
-function Field:readonly() --short cut
-	return self:meta{ readonly = true }
+function Field:readonly( option ) --short cut
+	if type(option) == 'string' then --function
+		local checkerName = option
+		local checker = function( obj, ... )
+			local f = obj[checkerName]
+			if f then return f( obj, ... ) else error( 'readonly checker not found:'..checkerName ) end
+		end
+		self:meta{ readonly = checker }
+	elseif type(option) == 'function' then
+		local checker = option
+		return self:meta{ readonly = checker }
+	else
+		return self:meta{ readonly = option ~= false }
+	end
+end
+function Field:hidden( option ) --short cut
+	if type(option) == 'string' then --function
+		local checkerName = option
+		local checker = function( obj, ... )
+			local f = obj[checkerName]
+			if f then return f( obj, ... ) else error( 'hidden checker not found:'..checkerName ) end
+		end
+		self:meta{ hidden = checker }
+	elseif type(option) == 'function' then
+		return self:meta{ hidden = option }
+	else
+		return self:meta{ hidden = option ~= false }
+	end
 end
 
 function Field:range( min, max )
@@ -992,6 +1030,40 @@ function Field:getMeta( key, default )
 	return v
 end
 
+--------------------------------------------------------------------
+--FieldGroup
+--------------------------------------------------------------------
+CLASS: FieldGroup ()	
+function FieldGroup:__init( id )
+	self.__id = id
+	self.__children = {}
+end
+
+function FieldGroup:__call( t )
+	assert( type(t) == 'table' )
+	local children = {}
+	self.__children = children
+	for i, f in ipairs( t ) do
+		local mt = getmetatable( f )
+		if mt == Field or mt == FieldGroup then
+			insert( children, f )
+			f.__group = self
+		elseif f == '----' then
+			insert( children, f )
+		else
+			error('Field/FieldGroup expected in Model, given:'..type( f ), 3)
+		end
+	end
+	return self
+end
+
+function FieldGroup:getChildren()
+	return self.__children
+end
+
+function FieldGroup:_addChild( f )
+	insert( self.__children, f )
+end
 
 --------------------------------------------------------------------
 ---CLASS Replacement?
