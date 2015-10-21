@@ -14,6 +14,7 @@ function TBWindow:createInternalWidget()
 	window:setSize( 100, 100 )
 	window:setText( 'Window' )
 	window:resizeToFitContent()
+	window:setSettings( MOAITBWindow.WINDOW_SETTINGS_NONE )
 	return window
 end
 

@@ -35,7 +35,7 @@ local signalMT = {
 	__index = signalProto
 }
 local weakMT = {
-	__mode  = 'v',
+	-- __mode  = 'v',
 }
 
 local function isSignal( sig )

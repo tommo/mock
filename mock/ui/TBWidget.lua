@@ -45,7 +45,6 @@ function TBWidget:getLoc()
 end
 
 function TBWidget:setLoc( x, y )
-	if self:isLayouted() then return end
 	return self:getProp():setLoc( x, y )
 end
 
@@ -83,6 +82,22 @@ function TBWidget:attachChildWidget( widget )
 	self:refreshCanvas()
 end
 
+function TBWidget:updateSizeControlPolicy()
+	local prop = self._prop
+	local internal = self.internalWidget
+	if self:isLayouted() then
+		internal:clearAttrLink( MOAITBWidget.ATTR_X_LOC )
+		internal:clearAttrLink( MOAITBWidget.ATTR_Y_LOC )
+		prop:setAttrLink( MOAIProp.ATTR_X_LOC, internal, MOAITBWidget.ATTR_X_LOC )
+		prop:setAttrLink( MOAIProp.ATTR_Y_LOC, internal, MOAITBWidget.ATTR_Y_LOC )
+	else
+		prop:clearAttrLink( MOAIProp.ATTR_X_LOC )
+		prop:clearAttrLink( MOAIProp.ATTR_Y_LOC )
+		internal:setAttrLink( MOAITBWidget.ATTR_X_LOC, prop, MOAIProp.ATTR_X_LOC )
+		internal:setAttrLink( MOAITBWidget.ATTR_Y_LOC, prop, MOAIProp.ATTR_Y_LOC )
+	end
+end
+
 function TBWidget:onAttachToParent( parent )
 end
 
@@ -116,13 +131,12 @@ end
 
 function TBWidget:affirmInternalWidget()
 	if self.internalWidget then return self.internalWidget end
-	self.internalWidget = self:createInternalWidget()
-	self.internalWidget.__entity = self
-	local prop = self._prop
-	self.internalWidget:setAttrLink( MOAITBWidget.ATTR_X_LOC, prop, MOAIProp.ATTR_X_LOC )
-	self.internalWidget:setAttrLink( MOAITBWidget.ATTR_Y_LOC, prop, MOAIProp.ATTR_Y_LOC )
-	self.internalWidget:setListener( MOAITBWidget.EVENT_WIDGET_EVENT, _widgetEventCallback )
-	return self.internalWidget
+	local internal = self:createInternalWidget()
+	internal.__entity = self
+	internal:setListener( MOAITBWidget.EVENT_WIDGET_EVENT, _widgetEventCallback )
+	self.internalWidget = internal
+	self:updateSizeControlPolicy()	
+	return internal
 end
 
 function TBWidget:onWidgetEvent( etype, widget, event )

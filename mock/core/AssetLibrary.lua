@@ -236,6 +236,10 @@ function AssetNode:getCachedAsset()
 	return self.cached and self.cached.asset
 end
 
+function AssetNode:load()
+	return loadAsset( self:getNodePath() )
+end
+
 function registerAssetNode( path, data )
 	local ppath = splitPath(path)
 	local node = AssetNode()
@@ -453,10 +457,11 @@ function releaseAsset( path )
 		local atype  = node.type
 		local assetLoaderConfig =  AssetLoaderConfigs[ atype ]
 		local unloader = assetLoaderConfig and assetLoaderConfig.unloader
+		local newCacheTable = makeAssetCacheTable()
 		if unloader then
-			unloader( node, asset )
+			unloader( node, asset, newCacheTable )
 		end
-		node.cached = makeAssetCacheTable()
+		node.cached = newCacheTable
 		_stat( 'released node asset', path, node )
 	end
 end

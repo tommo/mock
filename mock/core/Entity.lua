@@ -647,6 +647,18 @@ function Entity:findChildByPath( path )
 	return e
 end
 
+function Entity:findEntityByPath( path )
+	local e = false
+	for part in string.gsplit( path, '/' ) do
+		if not e then
+			e = self:findEntity( part )
+		else
+			e = e:findChild( part, false )
+		end
+		if not e then return nil end
+	end
+	return e
+end
 
 --------------------------------------------------------------------
 ------ Meta

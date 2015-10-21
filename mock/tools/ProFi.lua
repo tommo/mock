@@ -231,12 +231,8 @@ function ProFi:createFuncReport( funcInfo )
 	return funcReport
 end
 
-function ProFi:startHooks( thread )
-	if thread then
-		debug.sethook( thread, onDebugHook, 'cr', self.hookCount )
-	else
-		debug.sethook( onDebugHook, 'cr', self.hookCount )
-	end
+function ProFi:startHooks()
+	debug.sethook( onDebugHook, 'cr', self.hookCount )
 end
 
 function ProFi:stopHooks()
@@ -439,7 +435,7 @@ onDebugHook = function( hookType )
 	local funcInfo = debug.getinfo( 2, 'nS' )
 	if hookType == "call" then
 		ProFi:onFunctionCall( funcInfo )
-	elseif hookType == "return" or hookType=="tail return" then
+	elseif hookType == "return" then
 		ProFi:onFunctionReturn( funcInfo )
 	end
 end

@@ -29,8 +29,16 @@ function Component:findEntity( name )
 	return self._entity:findEntity( name )
 end
 
+function Component:findEntityByPath( name )
+	return self._entity:findEntityByPath( name )
+end
+
 function Component:findChild( name, deep )
 	return self._entity:findChild( name, deep )
+end
+
+function Component:findChildByPath( path )
+	return self._entity:findChildByPath( path )
 end
 
 function Component:getParent()

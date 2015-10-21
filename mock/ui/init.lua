@@ -11,6 +11,7 @@ require 'mock.ui.TBCanvas'
 require 'mock.ui.TBWidget'
 
 require 'mock.ui.TBWindow'
+require 'mock.ui.TBContainer'
 require 'mock.ui.TBLayout'
 require 'mock.ui.TBSchemeContainer'
 -- require 'mock.ui.TBTabLayout'
@@ -24,3 +25,6 @@ require 'mock.ui.TBTextField'
 -- -- require 'mock.ui.TBEditField'
 
 
+
+--------------------------------------------------------------------
+require 'mock.ui.ButtonMessageSender'

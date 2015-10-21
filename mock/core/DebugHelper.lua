@@ -196,3 +196,22 @@ end
 function DebugCommand:fail()
 end
 
+
+--------------------------------------------------------------------
+function enableInfiniteLoopChecking()
+	local function _callback( funcInfo )
+		local funcInfo = debug.getinfo( 2, 'Sl' )
+		return print( '>>', funcInfo.source, funcInfo.currentline )
+	end
+
+	local MOAICoroutineIT = MOAICoroutine.getInterfaceTable()
+	local _run = MOAICoroutineIT.run
+	MOAICoroutineIT.run = function(self, func,...)
+		return _run(self, 
+			function(...)
+				debug.sethook( _callback, 'l' )
+				return func(...)
+			end,...)
+	end
+	debug.sethook( _callback, 'l' )
+end

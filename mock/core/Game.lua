@@ -115,6 +115,7 @@ CLASS: Game ()
 --------------------------------------------------------------------
 
 function Game:__init()
+
 	self.initialized          = false
 	self.graphicsInitialized  = false
 	self.currentRenderContext = 'game'    -- for editor integration
@@ -168,6 +169,7 @@ function Game:loadConfig( path, fromEditor )
 end
 
 function Game:init( config, fromEditor )
+	
 	_stat( '...init game' )
 	
 	self.initialized = true
@@ -715,13 +717,16 @@ function Game:pause()
 end
 
 function Game:stop()
+	_stat( 'game stop' )
 	self.mainScene:stop()
 	self.mainScene:clear( true )
 	self:resetClock()
 	emitSignal( 'game.stop', self )
+	_stat( 'game stopped' )
 end
 
 function Game:start()
+
 	_stat( 'game start' )
 	self.paused = false
 	self.mainScene:start()
@@ -730,7 +735,7 @@ function Game:start()
 	else
 		emitSignal( 'game.start', self )
 	end
-	
+	_stat( 'game started' )
 end
 
 function Game:isPaused()

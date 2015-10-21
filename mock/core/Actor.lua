@@ -68,6 +68,10 @@ function Actor:connect( sig, slot )
 	return self:connectForObject( self, sig, slot )
 end
 
+function Actor:disconnect( sig )
+	return self:disconnectForObject( self, sig )
+end
+
 function Actor:connectForObject( obj, sig, slot )
 	local connectedSignals = self.connectedSignals
 	if not connectedSignals then
@@ -103,6 +107,49 @@ function Actor:connectForObject( obj, sig, slot )
 	end
 end
 
+function Actor:disconnectAllForObject( obj, sig )
+	local connectedSignals = self.connectedSignals
+	if not connectedSignals then return end
+
+	local st = type( sig )
+	if st == 'string' then
+		sig = getGlobalSignal( sig )
+	end
+	
+	if not isSignal( sig ) then
+		return _error( 'not a valid signal' )
+	end
+
+	local newConnectedSignals = {}
+	for i, entry in ipairs( connectedSignals ) do
+		local owner, sig0, key = unpack( entry )
+		if sig0 == sig and owner == obj then
+			signalDisconnect( sig, key )
+		else
+			insert( newConnectedSignals, entry )
+		end
+	end
+	self.connectedSignals = newConnectedSignals
+
+	local tt = type( slot )
+	if tt == 'function' then
+		local func = slot
+		signalConnectFunc( sig, func )
+		insert( connectedSignals, { obj, sig, func } )
+		
+	elseif tt == 'string' then
+		local methodName = slot
+		if type( obj[methodName] )~='function' then
+			error( 'Method not found:'..methodName, 2 )
+		end
+		signalConnectMethod( sig, obj, methodName )
+		insert( connectedSignals, { obj, sig, obj } )
+
+	else
+		error( 'invalid slot type:' .. tt )
+	end
+end
+
 function Actor:emit( sig, ... )
 	return emitSignal( sig, ... )
 end
@@ -111,7 +158,7 @@ function Actor:disconnectAll()
 	local connectedSignals = self.connectedSignals
 	if not connectedSignals then return end
 	for i, entry in ipairs( connectedSignals ) do
-		local sig, obj = entry[ 2 ], entry[ 3 ]
+		local owner, sig, obj = unpack( entry )
 		-- sig[ obj ]=nil
 		signalDisconnect( sig, obj )
 	end

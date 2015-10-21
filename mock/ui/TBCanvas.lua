@@ -30,7 +30,11 @@ function TBCanvas:onDestroy()
 end
 
 function TBCanvas:onStart()
-	installInputListener( self )
+	installInputListener( self, {
+		category = 'ui',
+		sensors = {'joystick', 'mouse', 'keyboard', 'touch' },
+	} )
+
 	self.canvas:start()
 end
 
@@ -123,6 +127,28 @@ function TBCanvas:onMouseEvent( ev, x, y, btn, mockup )
 	elseif ev == 'scroll' then
 		local dx, dy = x, y
 		return self.rootWidget:sendMouseScrollEvent( mx, my, dx, dy )
+	end
+end
+
+function TBCanvas:onJoyButtonDown( jid, btn )
+	local w = MOAITBWidget.getFocusedWidget()
+	if btn == 'up' then
+		MOAITBWidget.setAutoFocusState( true )
+		if w then w:moveFocus( false ) end
+	elseif btn == 'down' then
+		MOAITBWidget.setAutoFocusState( true )
+		if w then w:moveFocus( true ) end
+	elseif btn == 'a' then
+		w:sendSpecialKeyEvent( MOAITBWidget.KEY_ENTER, true )
+	end
+end
+
+function TBCanvas:onJoyButtonUp( jid, btn )
+	if btn == 'a' then
+		local w = MOAITBWidget.getFocusedWidget()
+		if w then
+			w:sendSpecialKeyEvent( MOAITBWidget.KEY_ENTER, false )
+		end
 	end
 end
 

@@ -141,6 +141,15 @@ function BaseClass:isSubclass( superclass )
 	return false
 end
 
+function BaseClass:isSubclassByName( superclassName )
+	local s = self.__super
+	while s do
+		if s.__name == superclassName then return true end
+		s = s.__super
+	end
+	return false
+end
+
 --Instance Method
 function BaseClass:getClass()
 	return self.__class
@@ -155,9 +164,16 @@ function BaseClass:getClassFullName()
 end
 
 function BaseClass:isInstance( clas )
+	if type( clas ) == 'string' then return self:isInstanceByName( clas ) end
 	local c = self.__class
 	if c == clas then return true end
 	return c:isSubclass( clas )
+end
+
+function BaseClass:isInstanceByName( className )
+	local c = self.__class
+	if c.__name == className then return true end
+	return c:isSubclassByName( className )
 end
 
 function BaseClass:assertInstance( superclass )

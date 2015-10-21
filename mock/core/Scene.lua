@@ -13,7 +13,7 @@ CLASS:
 
 function Scene:__init( option )
 	self.active = false
-	self.__editor_scene = false
+	self.FLAG_EDITOR_SCENE = false
 	self.running = false
 	self.arguments       = {}
 	self.layers          = {}
@@ -59,7 +59,7 @@ function Scene:getConfig( key )
 end
 
 function Scene:isEditorScene()
-	return self.__editor_scene
+	return self.FLAG_EDITOR_SCENE
 end
 
 --------------------------------------------------------------------
@@ -82,7 +82,7 @@ function Scene:init()
 
 	_stat( 'Initialize Scene' )
 
-	if not self.__editor_scene then
+	if not self.FLAG_EDITOR_SCENE then
 		emitSignal( 'scene.init', self )
 	end
 	
@@ -213,7 +213,7 @@ function Scene:flushPendingStart()
 end
 
 function Scene:threadMain( dt )
-	_stat( 'entering scene main thread' )
+	_stat( 'entering scene main thread', self )
 	-- first run
 	for ent in pairs( self.entities ) do
 		if not ent.parent then
@@ -222,7 +222,7 @@ function Scene:threadMain( dt )
 	end
 	self:flushPendingStart()
 	-- main loop
-	_stat( 'entering scene main loop' )
+	_stat( 'entering scene main loop', self )
 	dt = 0
 	local lastTime = self:getTime()
 	while true do	
@@ -353,7 +353,7 @@ function Scene:resetActionRoot()
 			end
 		end	
 	)
-	self.actionRoot:attach( game:getActionRoot() )
+	self.actionRoot:attach( self:getParentActionRoot() )
 
 	_stat( 'scene timer reset ')
 	self.timer   = MOAITimer.new()
@@ -388,13 +388,17 @@ function Scene:getActionRoot()
 	return self.mainThread
 end
 
+function Scene:getParentActionRoot()
+	return game:getActionRoot()
+end
+
 function Scene:getGlobalActionGroup( id, affirm )
 	affirm = affirm ~= false
 	local group = self.globalActionGroups[ id ]
 	if (not group) and affirm then
 		group = MOAIAction.new()
 		group:setAutoStop( false )
-		group:attach( game:getActionRoot() )
+		group:attach( self:getParentActionRoot() )
 		self.globalActionGroups[ id ] = group
 	end
 
@@ -465,7 +469,7 @@ end
 --Flow Control
 --------------------------------------------------------------------
 function Scene:start()
-	_stat( 'scene start' )
+	_stat( 'scene start', self )
 	if self.running then return end
 	if not self.initialized then self:init() end
 	self.running = true
@@ -474,7 +478,7 @@ function Scene:start()
 	self.mainThread:run( function()
 		return self:threadMain()
 	end)
-	-- self.mainThread:attach( self:getActionRoot() )
+	self.mainThread:attach( self:getParentActionRoot() )
 
 	_stat( 'mainthread scene start' )
 	self:setActionPriority( self.mainThread, 0 )
@@ -623,7 +627,7 @@ function Scene:clear( keepEditorEntity )
 		globalManager:onSceneClear( self )
 	end
 
-	if not self.__editor_scene then
+	if not self.FLAG_EDITOR_SCENE then
 		emitSignal( 'scene.clear', self )
 	end
 end
