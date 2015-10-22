@@ -145,6 +145,10 @@ function Animator:playClip( clipName, option )
 	return state
 end
 
+-- function Animator:play( ... )
+-- 	return self:playClip( ... )
+-- end
+
 function Animator:stop()
 	if not self.activeState then return end
 	self.activeState:stop()

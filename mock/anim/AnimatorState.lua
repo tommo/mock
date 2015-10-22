@@ -41,6 +41,9 @@ function AnimatorState:__init()
 
 end
 
+function AnimatorState:getMoaiAction()
+	return self.anim
+end
 ---
 function AnimatorState:isActive()
 	return self.anim:isActive()

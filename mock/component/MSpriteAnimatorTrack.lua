@@ -7,12 +7,16 @@ CLASS: MSpriteAnimatorKey ( AnimatorEventKey )
 		Field 'clip'  :string() :selection( 'getClipNames' ) :set( 'setClip' );
 		Field 'playMode' :enum( EnumTimerMode );
 		Field 'FPS'   :int();
+		Field 'lockFrame' :int() :range(-1);
+		'----';
+		Field 'resetLength' :action( 'resetLength' );
 	}
 
 function MSpriteAnimatorKey:__init()
 	self.FPS = 10
 	self.clip = 'default'
 	self.playMode = MOAITimer.NORMAL
+	self.lockFrame = -1
 end
 
 function MSpriteAnimatorKey:getClipNames()
@@ -26,6 +30,14 @@ end
 
 function MSpriteAnimatorKey:toString()
 	return self.clip or '<nil>'
+end
+
+function MSpriteAnimatorKey:resetLength()
+	local msprite = self:getTrack():getEditorTargetObject()
+	local clipData = msprite:getClip( self.clip )
+	if clipData then
+		self:setLength( clipData.length / self.FPS )
+	end
 end
 
 --------------------------------------------------------------------
@@ -70,16 +82,19 @@ end
 function MSpriteAnimatorTrack:apply( state, playContext, t, t0 )
 	local spanId  = self.spanCurve:getValueAtTime( t )
 	local key     = self.keys[ spanId ]
-	local subTime = ( t - key.pos ) * key.FPS
+	local lockFrame = key.lockFrame
 	local sprite  = playContext.sprite
 	local animState = playContext[ spanId ]
-	animState:setTime( subTime )
-	local conv = animState.timeConverter
-	if conv then
-		subTime = conv( subTime, animState.length )
+	if lockFrame < 0 then
+		local subTime = ( t - key.pos ) * key.FPS
+		local conv = animState.timeConverter
+		if conv then
+			subTime = conv( subTime, animState.length )
+		end
 		animState:apply( subTime )
+	else
+		animState:apply( lockFrame )
 	end
-	animState:apply( subTime )
 end
 
 local max = math.max

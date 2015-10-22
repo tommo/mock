@@ -182,8 +182,30 @@ function MSprite:hasClip( name )
 end
 
 function MSprite:getClipLength( name )
-	local clip = name and self:getClip( name ) or self.currentClip
-	if clip then return clip.length * self.playFPS end
+	local clip
+	if name then
+		clip = self:getClip( name )
+	else
+		clip = self.currentClip
+	end
+	if clip then return clip.length / self.playFPS end
+end
+
+function MSprite:getClipFrameCount( name )
+	local clip
+	if name then
+		clip = self:getClip( name )
+	else
+		clip = self.currentClip
+	end
+	if clip then return clip.length end
+end
+
+function MSprite:setFrame( frame )
+	if not self.animState then return end
+	local time = clamp( frame, 0, self.currentClip.length )
+	self:apply( frame )
+	self:setTime( frame )
 end
 
 function MSprite:setDefaultClip( clipName )

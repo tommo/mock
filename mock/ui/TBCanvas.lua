@@ -139,7 +139,9 @@ function TBCanvas:onJoyButtonDown( jid, btn )
 		MOAITBWidget.setAutoFocusState( true )
 		if w then w:moveFocus( true ) end
 	elseif btn == 'a' then
-		w:sendSpecialKeyEvent( MOAITBWidget.KEY_ENTER, true )
+		if w then
+			w:sendSpecialKeyEvent( MOAITBWidget.KEY_ENTER, true )
+		end
 	end
 end
 
