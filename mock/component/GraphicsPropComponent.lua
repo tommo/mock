@@ -109,5 +109,9 @@ function GraphicsPropComponent:show()
 	return self.prop:setVisible( true )
 end
 
+function GraphicsPropComponent:getBounds()
+	return self.prop:getBounds()
+end
+
 
 wrapWithMoaiPropMethods( GraphicsPropComponent, ':getMoaiProp()' )

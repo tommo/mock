@@ -46,8 +46,6 @@ function ProtoContainer:refreshProto()
 		else
 			self:addInternalChild( instance )
 		end
-		print( 'built instance', instance, instance:getParent() )
-		print( instance:getParent():getLoc() )
 		self.instance = instance
 	end	
 end

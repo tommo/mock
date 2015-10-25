@@ -1184,6 +1184,27 @@ function Entity:pick( x, y, z, pad )
 	return nil
 end
 
+local min = math.min
+local max = math.max
+function Entity:getBounds( reason )
+	local bx0, by0, bz0, bx1, by1, bz1
+	for com in pairs( self.components ) do
+		local getBounds = com.getBounds
+		if getBounds then
+			local x0,y0,z0, x1,y1,z1 = getBounds( com, reason )
+			if x0 then
+				x0,y0,z0, x1,y1,z1 = x0 or 0,y0 or 0,z0 or 0, x1 or 0,y1 or 0,z1 or 0
+				bx0 = bx0 and min( x0, bx0 ) or x0
+				by0 = by0 and min( y0, by0 ) or y0
+				bz0 = bz0 and min( z0, bz0 ) or z0
+				bx1 = bx1 and max( x1, bx1 ) or x1
+				by1 = by1 and max( y1, by1 ) or y1
+				bz1 = bz1 and max( z1, bz1 ) or z1
+			end
+		end
+	end
+	return bx0 or 0, by0 or 0, bz0 or 0, bx1 or 0, by1 or 0, bz1 or 0
+end
 
 function Entity:resetTransform()
 	self:setLoc( 0, 0, 0 )

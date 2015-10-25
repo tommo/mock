@@ -32,3 +32,5 @@ require 'mock.tools.MeshHelper'
 
 require 'mock.tools.GridStruct'
 require 'mock.tools.SpatialGrid'
+
+require 'mock.tools.EntityAlignment'
