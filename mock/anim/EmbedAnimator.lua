@@ -14,6 +14,7 @@ CLASS: EmbedAnimator ( Animator )
 	:MODEL{
 		Field 'serializedData' :string() :no_edit() :getset( 'SerializedData');
 		Field 'data' :asset('animator_data')  :no_edit() :no_save();
+		Field 'uniqueKey' :string() :no_edit();
 	}
 
 registerComponent( 'EmbedAnimator', EmbedAnimator )
@@ -21,12 +22,14 @@ registerComponent( 'EmbedAnimator', EmbedAnimator )
 function EmbedAnimator:__init()
 	self.data = AnimatorData()
 	self.serializedData = 'shit'
+	self.uniqueKey = ''
 end
 
 function EmbedAnimator:onEditorInit()
 	--add default clip
 	self.data:createClip( 'default' )
 	self.default = 'default'
+	self.uniqueKey = MOAIEnvironment.generateGUID()
 end
 
 function EmbedAnimator:getSerializedData()

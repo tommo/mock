@@ -19,6 +19,9 @@ end
 --function onMsg( msg, data )
 --end
 
+--function onUpdate( dt )
+--end
+
 ]]
 
 local scriptHeader = [[
@@ -62,11 +65,21 @@ function BehaviourScript:loadScript( ent )
 	if onStart then
 		onStart( ent )
 	end
+
 	self.onThread = delegate.onThread
+
 	if delegate.onMsg then
 		self.msgListener = delegate.onMsg
 		ent:addMsgListener( self.msgListener )
 	end
+	if delegate.onUpdate then
+		ent.scene:addUpdateListener( self )
+	end
+	
+end
+
+function BehaviourScript:onUpdate( dt )
+	return self.delegate.onUpdate( dt )
 end
 
 function BehaviourScript:onDetach( ent )
@@ -77,6 +90,7 @@ function BehaviourScript:onDetach( ent )
 	if self.msgListener then
 		ent:removeMsgListener( self.msgListener )
 	end
+	ent.scene:removeUpdateListener( self )
 end
 
 --------------------------------------------------------------------
