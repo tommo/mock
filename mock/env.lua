@@ -69,6 +69,9 @@ require 'mock.entity'
 ----Effects
 require 'mock.effect'
 
+----CameraFX
+require 'mock.camerafx'
+
 ----UI
 require 'mock.ui'
 

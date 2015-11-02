@@ -66,6 +66,11 @@ function Deck2D:getRect()
 	local w,h   = self:getSize()
 	return ox - w/2, oy - h/2, ox + w/2, oy + h/2 
 end
+
+function Deck2D:getBounds()
+	local x0, y0, x1, y1 = self:getRect()
+	return x0, y0, 0, x1, y1, 0
+end
 	
 function Deck2D:setName( n )
 	self.name = n

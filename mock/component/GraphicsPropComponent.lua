@@ -1,7 +1,9 @@
 module 'mock'
 
 CLASS: GraphicsPropComponent ( RenderComponent )
-	:MODEL{}
+	:MODEL{
+		Field 'index' :int() :range(0) :getset( 'Index' );
+}
 
 function GraphicsPropComponent:__init()
 	self.billboard = false

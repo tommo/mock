@@ -14,6 +14,7 @@ CLASS: MQuadDeck ( Deck2D )
 
 function MQuadDeck:__init()
 	self.verts = {}
+	self.bounds = { 0,0,0, 1,1,1 }
 	self.pack = false
 end
 
@@ -57,6 +58,7 @@ function MQuadDeck:update()
 		local x0,y0,z0, x1,y1,z1 = unpack(u)
 		mesh:setBounds ( x0,y0,z0, x1,y1,z1 )
 		self.w, self.h, self.depth = x1 - x0, y1 - y0 , z1 - z0
+		self.bounds = { x0,y0,z0, x1,y1,z1 }
 	end
 	mesh:setTile( 1, 0, count )
 
@@ -85,4 +87,6 @@ function MQuadDeck:load( deckData )
 	self.verts = verts
 end
 
-
+function MQuadDeck:getBounds()
+	return unpack( self.bounds )
+end

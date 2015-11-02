@@ -63,6 +63,7 @@ local INHERIT_VISIBLE   = MOAIProp. INHERIT_VISIBLE
 local ATTR_SHADER       = MOAIProp. ATTR_SHADER
 local ATTR_BLEND_MODE   = MOAIProp. ATTR_BLEND_MODE
 local ATTR_PARTITION    = MOAIProp. ATTR_PARTITION
+local ATTR_INDEX        = MOAIProp. ATTR_INDEX
 
 local ATTR_R_COL        = MOAIColor. ATTR_R_COL
 local ATTR_G_COL        = MOAIColor. ATTR_G_COL
@@ -125,6 +126,30 @@ function linkTransform( p1, p2 )
 	linkScl( p1, p2 )
 	linkRot( p1, p2 )
 	linkPiv( p1, p2 )
+end
+
+function linkPartition( p1, p2 )
+	return p1:setAttrLink( ATTR_PARTITION, p2, ATTR_PARTITION )
+end
+
+function linkIndex( p1, p2 )
+	return p1:setAttrLink( ATTR_INDEX, p2, ATTR_INDEX )
+end
+
+function linkBlendMode( p1, p2 )
+	p1:setAttrLink ( ATTR_BLEND_MODE, p2, ATTR_BLEND_MODE )
+end
+
+function clearLinkPartition( p1 )
+	return p1:clearAttrLink( ATTR_PARTITION )
+end
+
+function clearLinkIndex( p1 )
+	return p1:clearAttrLink( ATTR_INDEX )
+end
+
+function clearLinkBlendMode( p1 )
+	p1:clearAttrLink ( ATTR_BLEND_MODE )
 end
 
 function inheritTransform( p1, p2 )
@@ -222,10 +247,6 @@ end
 
 function clearInheritTransform( p1 )
 	p1:clearAttrLink( INHERIT_TRANSFORM )
-end
-
-function clearPartitionLink( p1 )
-	p1:clearAttrLink ( ATTR_PARTITION )
 end
 
 function clearInheritShader( p1 )

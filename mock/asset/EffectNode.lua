@@ -366,7 +366,7 @@ end
 
 function EffectState:unlinkPartition( prop )
 	prop:setPartition( nil )
-	clearPartitionLink( prop )
+	clearLinkPartition( prop )
 end
 
 function EffectState:getTimer()

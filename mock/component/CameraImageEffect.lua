@@ -38,4 +38,3 @@ function CameraImageEffect:getPassCount()
 	return 1
 end
 
---------------------------------------------------------------------

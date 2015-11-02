@@ -2,8 +2,7 @@ module 'mock'
 
 CLASS: DeckComponent( GraphicsPropComponent )
 	:MODEL{
-		Field 'deck'  :asset('deck2d\\..*') :getset('Deck'),
-		Field 'index' :int() :range(0) :getset( 'Index' );
+		Field 'deck'  :asset('deck2d\\..*') :getset('Deck');
 	}
 
 registerComponent( 'DeckComponent', DeckComponent )

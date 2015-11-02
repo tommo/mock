@@ -6,6 +6,7 @@ require 'mock.component.IntervalUpdateListener'
 require 'mock.component.RenderComponent'
 require 'mock.component.GraphicsPropComponent'
 require 'mock.component.DeckComponent'
+require 'mock.component.DeckComponentArray'
 
 --------------------------------------------------------------------
 ---- Prefab
