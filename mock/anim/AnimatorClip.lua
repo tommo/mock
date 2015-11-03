@@ -142,7 +142,7 @@ function AnimatorClipSubNode:canDelete()
 	return true
 end
 
-function AnimatorClipSubNode:hasCurve()
+function AnimatorClipSubNode:isCurveTrack()
 	return false
 end
 
@@ -268,8 +268,8 @@ AnimatorKey
 	Field 'length' :float() :range(0)  :getset('Length')   :meta{ decimals = 3, step = 0.01 };
 	'----';
 	Field 'tweenMode'      :enum( EnumAnimCurveTweenMode ) :no_edit();
-	Field 'tweenAnglePre'  :no_edit();
-	Field 'tweenAnglePost' :no_edit();
+	Field 'preBezierPoint'  :type('vec2') :getset( 'PreBezierPoint' )  :no_edit();
+	Field 'postBezierPoint' :type('vec2') :getset( 'PostBezierPoint' ) :no_edit();
 	
 }
 
@@ -278,19 +278,16 @@ function AnimatorKey:__init( pos, tweenMode )
 	self.length = 0
 	----
 	self.tweenMode = tweenMode or 0 --LINEAR
-	self.tweenAnglePre  = 180
-	self.tweenAnglePost = 0
+	self.preBPX,  self.preBPY  = 0, 0
+	self.postBPX, self.postBPY = 0, 0
 	----
 	self.parentSpanId = 1
 end
 
-function AnimatorKey:getTweenCurveNormal()
-	local a0, a1 = self.tweenAnglePre, self.tweenAnglePost
-	local nx0 = math.cosd( a0 )
-	local ny0 = math.sind( a0 )
-	local nx1 = math.cosd( a1 )
-	local ny1 = math.sind( a1 )
-	return nx0, ny0, nx1, ny1
+function AnimatorKey:getBezierPoints()
+	local preBPX, preBPY = self:getPreBezierPoint()
+	local postBPX, postBPY = self:getPostBezierPoint()
+	return preBPX, preBPY, postBPX, postBPY
 end
 
 function AnimatorKey:findNextKey( allowWrap )
@@ -363,6 +360,27 @@ function AnimatorKey:getClip()
 	return self.parentClip
 end
 
+function AnimatorKey:getPreBezierPoint()
+	return self.preBPX, self.preBPY
+end
+
+function AnimatorKey:getPostBezierPoint()
+	return self.postBPX, self.postBPY
+end
+
+function AnimatorKey:setPreBezierPoint( x, y )
+	self.preBPX, self.preBPY = x, y
+end
+
+function AnimatorKey:setPostBezierPoint( x, y )
+	self.postBPX, self.postBPY = x, y
+end
+
+function AnimatorKey:setBezierPoints( bpx0, bpy0, bpx1, bpy1 )
+	self:setPreBezierPoint( bpx0, bpy0 )
+	self:setPostBezierPoint( bpx1, bpy1 )
+end
+
 function AnimatorKey:setTweenMode( mode )
 	self.tweenMode = mode
 end
@@ -382,6 +400,14 @@ end
 --VIRTUAL
 function AnimatorKey:getCurveValue()
 	return 0
+end
+
+function AnimatorKey:setCurveValue( v )
+	--virtual
+end
+
+function AnimatorKey:getCurveMode()
+	return 'linear'
 end
 
 function AnimatorKey:toString()
@@ -579,7 +605,7 @@ function AnimatorTrack:buildCurve()
 		local v = key:getCurveValue()
 		curve:setKey( i, t, v )
 		curve:setKeyMode( i, key.tweenMode )
-		curve:setKeyParam( i, key:getTweenCurveNormal() )
+		curve:setKeyParam( i, key:getBezierPoints() )
 	end
 	return curve
 end
@@ -596,7 +622,6 @@ function AnimatorTrack:buildIdCurve()
 	end
 	return idCurve
 end
-
 
 
 --(pre)build

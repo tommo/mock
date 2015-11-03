@@ -33,6 +33,10 @@ function AnimatorKeyNumber:getCurveValue()
 	return self.value
 end
 
+function AnimatorKeyNumber:setCurveValue( v )
+	return self:setValue( v )
+end
+
 --------------------------------------------------------------------
 CLASS: AnimatorKeyInt ( AnimatorKeyNumber )
 	:MODEL{

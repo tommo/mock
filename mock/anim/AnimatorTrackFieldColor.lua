@@ -20,7 +20,7 @@ function AnimatorTrackColorComponent:isPlayable()
 	return false
 end
 
-function AnimatorTrackColorComponent:hasCurve()
+function AnimatorTrackColorComponent:isCurveTrack()
 	return true
 end
 

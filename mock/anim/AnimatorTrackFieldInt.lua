@@ -3,7 +3,7 @@ module 'mock'
 CLASS: AnimatorTrackFieldInt ( AnimatorTrackField )
 
 
-function AnimatorTrackFieldInt:hasCurve()
+function AnimatorTrackFieldInt:isCurveTrack()
 	return true
 end
 
