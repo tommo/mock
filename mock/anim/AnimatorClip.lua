@@ -284,12 +284,6 @@ function AnimatorKey:__init( pos, tweenMode )
 	self.parentSpanId = 1
 end
 
-function AnimatorKey:getBezierPoints()
-	local preBPX, preBPY = self:getPreBezierPoint()
-	local postBPX, postBPY = self:getPostBezierPoint()
-	return preBPX, preBPY, postBPX, postBPY
-end
-
 function AnimatorKey:findNextKey( allowWrap )
 	-- self.parent:sortKeys()
 	local action = self:getAction()	
@@ -381,8 +375,18 @@ function AnimatorKey:setBezierPoints( bpx0, bpy0, bpx1, bpy1 )
 	self:setPostBezierPoint( bpx1, bpy1 )
 end
 
+function AnimatorKey:getBezierPoints()
+	local preBPX, preBPY = self:getPreBezierPoint()
+	local postBPX, postBPY = self:getPostBezierPoint()
+	return preBPX, preBPY, postBPX, postBPY
+end
+
 function AnimatorKey:setTweenMode( mode )
 	self.tweenMode = mode
+end
+
+function AnimatorKey:getTweenMode()
+	return self.tweenMode
 end
 
 function AnimatorKey:setTweenAnglePre( angle )
@@ -406,9 +410,6 @@ function AnimatorKey:setCurveValue( v )
 	--virtual
 end
 
-function AnimatorKey:getCurveMode()
-	return 'linear'
-end
 
 function AnimatorKey:toString()
 	return 'key'
@@ -605,7 +606,8 @@ function AnimatorTrack:buildCurve()
 		local v = key:getCurveValue()
 		curve:setKey( i, t, v )
 		curve:setKeyMode( i, key.tweenMode )
-		curve:setKeyParam( i, key:getBezierPoints() )
+		local preBPX, preBPY, postBPX, postBPY = key:getBezierPoints()
+		curve:setKeyParam( i, -preBPX, preBPY, postBPX, postBPY )
 	end
 	return curve
 end
