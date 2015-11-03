@@ -612,6 +612,9 @@ end
 function AnimatorTrack:init()
 end
 
+function AnimatorTrack:isCurveTrack()
+end
+
 function AnimatorTrack:start( state )
 end
 

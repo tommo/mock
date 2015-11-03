@@ -83,3 +83,4 @@ function AnimatorTrackField:isLoadable( state )
 	local target = self.targetPath:get( rootEntity, scene )
 	return target and true or false
 end
+

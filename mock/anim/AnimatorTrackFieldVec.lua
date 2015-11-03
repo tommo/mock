@@ -24,7 +24,6 @@ function AnimatorTrackVecComponent:getIcon()
 	return 'track_number'
 end
 
-
 function AnimatorTrackVecComponent:hasCurve()
 	return true
 end

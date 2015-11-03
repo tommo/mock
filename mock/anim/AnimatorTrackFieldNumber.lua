@@ -2,6 +2,10 @@ module 'mock'
 
 CLASS: AnimatorTrackFieldNumber ( AnimatorTrackField )
 
+function AnimatorTrackFieldNumber:hasCurve()
+	return true
+end
+
 function AnimatorTrackFieldNumber:createKey( pos, context )
 	local key = AnimatorKeyNumber()
 	key:setPos( pos )

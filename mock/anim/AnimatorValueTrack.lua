@@ -34,6 +34,17 @@ function AnimatorKeyNumber:getCurveValue()
 end
 
 --------------------------------------------------------------------
+CLASS: AnimatorKeyInt ( AnimatorKeyNumber )
+	:MODEL{
+		Field 'value' :int()
+	}
+
+local floor = math.floor
+function AnimatorKeyInt:setValue( v )
+	self.value = floor(v)
+end
+
+--------------------------------------------------------------------
 CLASS: AnimatorKeyBoolean ( AnimatorValueKey )
 	:MODEL{
 		Field 'tweenMode' :no_edit();

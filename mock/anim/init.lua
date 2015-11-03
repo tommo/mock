@@ -27,6 +27,7 @@ require 'mock.anim.AnimatorTrackAttr'
 --------------------------------------------------------------------
 require 'mock.anim.AnimatorTrackField'
 	require 'mock.anim.AnimatorTrackFieldNumber'	
+	require 'mock.anim.AnimatorTrackFieldInt'	
 	require 'mock.anim.AnimatorTrackFieldVec'
 	require 'mock.anim.AnimatorTrackFieldColor'
 	require 'mock.anim.AnimatorTrackFieldDiscrete'
@@ -40,7 +41,7 @@ require 'mock.anim.AnimatorTrackField'
 		if ftype == 'number' then
 			return AnimatorTrackFieldNumber
 		elseif ftype == 'int' then
-			return AnimatorTrackFieldNumber	
+			return AnimatorTrackFieldInt	
 		elseif ftype == 'boolean' then
 			return AnimatorTrackFieldBoolean
 		elseif ftype == 'string' then
