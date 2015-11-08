@@ -162,7 +162,14 @@ function inheritColor( p1, p2 )
 end
 
 function linkColor( p1, p2 )
-	return p1:setAttrLink ( COLOR_TRAIT, p2, COLOR_TRAIT )
+	p1:setAttrLink( ATTR_R_COL, p2, ATTR_R_COL )
+	p1:setAttrLink( ATTR_G_COL, p2, ATTR_G_COL )
+	p1:setAttrLink( ATTR_B_COL, p2, ATTR_B_COL )
+	p1:setAttrLink( ATTR_A_COL, p2, ATTR_A_COL )
+end
+
+function linkColorTrait( p1, p2 )
+	p1:setAttrLink( COLOR_TRAIT, p2, COLOR_TRAIT )
 end
 
 function inheritVisible( p1, p2 ) 

@@ -282,6 +282,10 @@ function Shader:getAttrId( name )
 	return self.prog.uniformTable[ name ]
 end
 
+function Shader:hasAttr( name )
+	return self:getAttrId( name ) and true or false
+end
+
 function Shader:setAttr( name, v )
 	local id = self.prog.uniformTable[ name ]
 	if not id then error('undefined uniform:'..name, 2) end
