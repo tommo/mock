@@ -70,7 +70,7 @@ require 'mock.entity'
 require 'mock.effect'
 
 ----CameraFX
-require 'mock.camerafx'
+-- require 'mock.camerafx'
 
 ----UI
 require 'mock.ui'
