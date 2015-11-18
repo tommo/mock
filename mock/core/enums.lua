@@ -69,6 +69,44 @@ EnumDepthTestMode = {
 	{ 'greater_equal', MOAIProp. DEPTH_TEST_GREATER_EQUAL },
 }
 
+--------------------------------------------------------------------
+EnumStencilTestMode = {
+	{ 'disable',       MOAIProp. STENCIL_TEST_DISABLE       },
+	{ 'never',         MOAIProp. STENCIL_TEST_NEVER         },
+	{ 'always',        MOAIProp. STENCIL_TEST_ALWAYS        },
+	{ 'less',          MOAIProp. STENCIL_TEST_LESS          },
+	{ 'less_equal',    MOAIProp. STENCIL_TEST_LESS_EQUAL    },
+	{ 'greater',       MOAIProp. STENCIL_TEST_GREATER       },
+	{ 'greater_equal', MOAIProp. STENCIL_TEST_GREATER_EQUAL },
+}
+
+--------------------------------------------------------------------
+EnumStencilOp = {
+	{ 'decr',       MOAIProp. STENCIL_OP_DECR       },
+	{ 'decr_wrap',  MOAIProp. STENCIL_OP_DECR_WRAP  },
+	{ 'incr',       MOAIProp. STENCIL_OP_INCR       },
+	{ 'incr_wrap',  MOAIProp. STENCIL_OP_INCR_WRAP  },
+	{ 'invert',     MOAIProp. STENCIL_OP_INVERT     },
+	{ 'keep',       MOAIProp. STENCIL_OP_KEEP       },
+	{ 'replace',    MOAIProp. STENCIL_OP_REPLACE    },
+	{ 'zero',       MOAIProp. STENCIL_OP_ZERO       },
+}
+
+--------------------------------------------------------------------
+EnumCullingMode = {
+	{ 'none',   MOAIProp. CULL_NONE   },
+	{ 'all',    MOAIProp. CULL_ALL    },
+	{ 'back',   MOAIProp. CULL_BACK   },
+	{ 'front',  MOAIProp. CULL_FRONT  },
+}
+
+--------------------------------------------------------------------
+EnumBillboard = {
+	{ 'none',    MOAIProp. BILLBOARD_NONE    },
+	{ 'normal',  MOAIProp. BILLBOARD_NORMAL  },
+	{ 'ortho',   MOAIProp. BILLBOARD_ORTHO   },
+	{ 'compass', MOAIProp. BILLBOARD_COMPASS },
+}
 
 --------------------------------------------------------------------
 EnumLayerSortMode = {

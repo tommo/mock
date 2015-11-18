@@ -18,6 +18,7 @@ require 'mock.asset.Deck2D'
 require 'mock.asset.DefaultFont'
 require 'mock.asset.Font'
 require 'mock.asset.TextStyle'
+require 'mock.asset.RenderMaterial'
 
 --GRAPHICS ADV
 require 'mock.asset.RenderTargetTexture'

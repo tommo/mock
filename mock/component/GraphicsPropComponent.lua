@@ -115,5 +115,10 @@ function GraphicsPropComponent:getBounds()
 	return self.prop:getBounds()
 end
 
+function GraphicsPropComponent:applyMaterial( material )
+	print( 'applying material' )
+	material:appyToMoaiProp( self.prop )
+end
+
 
 wrapWithMoaiPropMethods( GraphicsPropComponent, ':getMoaiProp()' )

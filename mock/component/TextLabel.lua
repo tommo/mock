@@ -266,6 +266,10 @@ function TextLabel:setShader( shaderPath )
 	self.box:setShader( defaultShader )
 end
 
+function TextLabel:applyMaterial( material )
+	material:appyToMoaiProp( self )
+end
+
 registerComponent( 'TextLabel', TextLabel )
 registerEntityWithComponent( 'TextLabel', TextLabel )
 wrapWithMoaiPropMethods( TextLabel, 'box' )
