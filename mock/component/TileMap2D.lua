@@ -24,6 +24,10 @@ end
 function TileMap2DLayer:onSetOrder( orde )
 end
 
+function TileMap2DLayer:applyMaterial( material )
+	material:applyToMoaiProp( self.prop )
+end
+
 
 --------------------------------------------------------------------
 CLASS: TileMap2D ( TileMap )

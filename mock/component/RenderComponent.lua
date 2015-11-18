@@ -3,13 +3,6 @@ module 'mock'
 CLASS: RenderComponent()
 	:MODEL{
 		Field 'material' :asset( 'material' ) :getset( 'Material' );
-		'----';
-		Field 'blend'            :enum( EnumBlendMode )      :getset('Blend');
-		Field 'shader'           :asset( 'shader' )          :getset('Shader');
-		'----';
-		Field 'billboard'        :boolean()                  :set('setBillboard');
-		Field 'depthMask'        :boolean()                  :set('setDepthMask');
-		Field 'depthTest'        :enum( EnumDepthTestMode )  :set('setDepthTest');
 	}
 
 --------------------------------------------------------------------
@@ -35,6 +28,10 @@ function RenderComponent:setMaterial( path )
 	self.material = loadAsset( path )
 	local material = self.material or getDefaultRenderMaterial()
 	return self:applyMaterial( material )
+end
+
+function RenderComponent:getMaterialObject()
+	return self.material or getDefaultRenderMaterial()
 end
 
 function RenderComponent:getEntity()

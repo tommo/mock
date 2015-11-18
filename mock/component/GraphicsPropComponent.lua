@@ -23,15 +23,15 @@ function GraphicsPropComponent:setBillboard( billboard )
 	self.prop:setBillboard( billboard )
 end
 
-function GraphicsPropComponent:setDepthMask( enabled )
-	self.depthMask = enabled
-	self.prop:setDepthMask( enabled )
-end
+-- function GraphicsPropComponent:setDepthMask( enabled )
+-- 	self.depthMask = enabled
+-- 	self.prop:setDepthMask( enabled )
+-- end
 
-function GraphicsPropComponent:setDepthTest( mode )
-	self.depthTest = mode
-	self.prop:setDepthTest( mode )
-end
+-- function GraphicsPropComponent:setDepthTest( mode )
+-- 	self.depthTest = mode
+-- 	self.prop:setDepthTest( mode )
+-- end
 
 function GraphicsPropComponent:getMoaiDeck()
 	return self._moaiDeck
@@ -116,8 +116,7 @@ function GraphicsPropComponent:getBounds()
 end
 
 function GraphicsPropComponent:applyMaterial( material )
-	print( 'applying material' )
-	material:appyToMoaiProp( self.prop )
+	material:applyToMoaiProp( self.prop )
 end
 
 

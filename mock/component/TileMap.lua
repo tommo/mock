@@ -308,29 +308,9 @@ function TileMapLayer:onDrawGridLine()
 	end
 end
 
-function TileMapLayer:updateRenderParams( param )
-	local map = self.parentMap
-	self:setShader( map.shader )
-	self:setDepthTest( map.depthTest )
-	self:setDepthMask( map.depthMask )
-	self:setBillboard( map.billboard )
-	self:setBlend( map.blend )
+function TileMapLayer:applyMaterial( material )
 end
 
-function TileMapLayer:setDepthTest( param )
-end
-
-function TileMapLayer:setDepthMask( param )
-end
-
-function TileMapLayer:setBillboard( param )
-end
-
-function TileMapLayer:setBlend( param )
-end
-
-function TileMapLayer:setShader( param )
-end
 
 ----------------------------------------------------------------------
 CLASS: TileMapParam ()
@@ -420,11 +400,11 @@ end
 function TileMap:onAttach( ent )
 	for i, layer in ipairs( self.layers ) do
 		layer:onParentAttach( ent )
+		layer:applyMaterial( self:getMaterialObject() )
 	end
 	if self.pendingMapData then
 		self:loadPendingMapData()
-	end
-	self:updateRenderParams()
+	end	
 end
 
 function TileMap:onDetach( ent )
@@ -442,7 +422,7 @@ function TileMap:addLayer( l )
 	l.parentMap = self
 	if self._entity then
 		l:onParentAttach( self._entity )
-		l:updateRenderParams()
+		l:applyMaterial( self:getMaterialObject() )
 	end
 	return l
 end
@@ -587,38 +567,8 @@ function TileMap:getLayer( idx )
 end
 
 
-function TileMap:getBlend()
-	return self.blend
-end
-
-function TileMap:setBlend( b )
-	self.blend = b
-	self:updateRenderParams()		
-end
-
-function TileMap:setShader( s )
-	self.shader = s
-	self:updateRenderParams()		
-end
-
-function TileMap:setDepthMask( enabled )
-	self.depthMask = enabled
-	self:updateRenderParams()		
-end
-
-function TileMap:setDepthTest( mode )
-	self.depthTest = mode
-	self:updateRenderParams()		
-end
-
-function TileMap:setBillboard( billboard )
-	self.billboard = billboard
-	self:updateRenderParams()		
-end
-
-function TileMap:updateRenderParams()
+function TileMap:applyMaterial( material )
 	for i, layer in ipairs( self.layers ) do
-		layer:updateRenderParams()		
+		layer:applyMaterial( material )
 	end
 end
-

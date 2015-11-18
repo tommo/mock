@@ -172,18 +172,6 @@ function NamedTileMapLayer:isVisible()
 	return self.prop:getAttr( MOAIProp.ATTR_VISIBLE ) ~= 0
 end
 
-function NamedTileMapLayer:setBillboard( billboard )
-	self.prop:setBillboard( billboard )
-end
-
-function NamedTileMapLayer:setDepthMask( enabled )
-	self.prop:setDepthMask( enabled )
-end
-
-function NamedTileMapLayer:setDepthTest( mode )
-	self.prop:setDepthTest( mode )
-end
-
 function NamedTileMapLayer:getGrid()
 	return self.mapGrid
 end
@@ -229,4 +217,8 @@ end
 function NamedTileMapLayer:getTerrain( x, y )
 	local data = self:getTileData( x, y )
 	return data and data.terrain or false
+end
+
+function NamedTileMapLayer:applyMaterial( material )
+	material:applyToMoaiProp( self.prop )
 end
