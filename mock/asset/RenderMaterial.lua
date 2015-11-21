@@ -13,6 +13,9 @@ CLASS: RenderMaterial ()
 		Field 'billboard'        :enum( EnumBillboard );
 		Field 'culling'          :enum( EnumCullingMode );
 		'----';
+		Field 'priority'         :int();
+
+		'----';
 		Field 'stencilTest'      :enum( EnumStencilTestMode );
 		Field 'stencilTestRef'   :int() :range(0,255);
 		Field 'stencilTestMask'  :int() :range(0,255);
@@ -20,6 +23,12 @@ CLASS: RenderMaterial ()
 		Field 'stencilOpSFail'   :enum( EnumStencilOp );
 		Field 'stencilOpDPFail'  :enum( EnumStencilOp );
 		Field 'stencilOpDPPass'  :enum( EnumStencilOp );
+
+		'----';
+		Field 'colorMaskR'       :boolean();
+		Field 'colorMaskG'       :boolean();
+		Field 'colorMaskB'       :boolean();
+		Field 'colorMaskA'       :boolean();
 
 	}
 
@@ -54,19 +63,34 @@ function RenderMaterial:__init()
 	self.stencilOpDPPass  = STENCIL_OP_REPLACE
 	self.stencilMask      = 0xff
 
+	--priority
+	self.priority = 0
+
+	--colorMask
+	self.colorMaskR = true
+	self.colorMaskG = true
+	self.colorMaskB = true
+	self.colorMaskA = true
+
 end
 
 function RenderMaterial:applyToMoaiProp( prop )
-	self:applyStencilMode( prop )
-	self:applyCullMode( prop )
-	self:applyBillboard( prop )
-	self:applyBlendMode( prop )
-	self:applyDepthMode( prop )
-	self:applyShader( prop )
+	self:applyCullMode    ( prop )
+	self:applyBillboard   ( prop )
+	self:applyBlendMode   ( prop )
+	self:applyDepthMode   ( prop )
+	self:applyShader      ( prop )
+	self:applyPriority    ( prop )
+	self:applyColorMask   ( prop )
+	self:applyStencilMode ( prop )
+end
+
+function RenderMaterial:applyColorMask( prop )
+	prop:setColorMask( self.colorMaskR, self.colorMaskG, self.colorMaskB, self.colorMaskA )
 end
 
 function RenderMaterial:applyStencilMode( prop )
-	prop:setStencilTest( self.stencilTest )
+	prop:setStencilTest( self.stencilTest, self.stencilTestRef, self.stencilTestMask )
 	prop:setStencilOp( self.stencilOpSFail, self.stencilOpDPFail, self.stencilOpDPPass )
 	prop:setStencilMask( self.stencilMask )
 end
@@ -84,10 +108,12 @@ function RenderMaterial:applyBlendMode( prop )
 end
 
 function RenderMaterial:applyDepthMode( prop )
-	-- prop:setDepthTest( self.depthTest )
-	local test = MOAIProp. DEPTH_TEST_LESS_EQUAL
-	prop:setDepthTest( test )
 	prop:setDepthMask( self.depthMask )
+	prop:setDepthTest( self.depthTest )
+end
+
+function RenderMaterial:applyPriority( prop )
+	prop:setPriority( self.priority )
 end
 
 function RenderMaterial:applyShader( prop, defaultShader )
@@ -106,6 +132,17 @@ function RenderMaterial:applyShader( prop, defaultShader )
 
 	return prop:setShader( nil )
 
+end
+
+function RenderMaterial:setColorMask( r, g, b, a )
+	self.colorMaskR = r
+	self.colorMaskG = g
+	self.colorMaskB = b
+	self.colorMaskA = a
+end
+
+function RenderMaterial:getColorMask()
+	return self.colorMaskR, self.colorMaskG, self.colorMaskB, self.colorMaskA
 end
 
 

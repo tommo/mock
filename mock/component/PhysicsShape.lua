@@ -94,6 +94,7 @@ function PhysicsShape:updateMaterial()
 		material = getDefaultPhysicsMaterial() 
 		self.material = material
 	end
+	
 	shape:setDensity      ( material.density )
 	shape:setFriction     ( material.friction )
 	shape:setRestitution  ( material.restitution )

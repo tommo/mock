@@ -26,6 +26,11 @@ function RenderTarget:setClearDepth( clear )
 	self:getFrameBuffer():setClearDepth( clear )
 end
 
+function RenderTarget:setClearStencil( clear )
+	if not self.frameBuffer then return end
+	self:getFrameBuffer():setClearStencil( clear )
+end
+
 --------------------------------------------------------------------
 CLASS: DeviceRenderTarget ( RenderTarget )
 	:MODEL{}
@@ -43,12 +48,15 @@ end
 
 --------------------------------------------------------------------
 local DefaultFrameBufferOptions = {
-	filter      = MOAITexture.GL_LINEAR,
-	clearDepth  = true,
-	colorFormat = false,
-	scale       = 1,
-	size        = 'relative',
-	autoResize  = true
+	filter           = MOAITexture.GL_LINEAR,
+	useStencilBuffer = false,
+	useDepthBuffer   = false,
+	clearDepth       = true,
+	clearStencil     = true,
+	colorFormat      = false,
+	scale            = 1,
+	size             = 'relative',
+	autoResize       = true
 }
 
 --------------------------------------------------------------------
@@ -61,6 +69,9 @@ function TextureRenderTarget:__init()
 	self.mode = 'relative'
 	self.keepAspect = false
 	self.previousTextureSize = false
+	self.colorFormat   = false
+	self.depthFormat   = false
+	self.stencilFormat = false
 end
 
 function TextureRenderTarget:onUpdateSize()
@@ -82,7 +93,7 @@ function TextureRenderTarget:onUpdateSize()
 
 	if not needResize then return end 
 
-	self.frameBuffer:init( w, h, self.colorFormat, self.depthFormat )
+	self.frameBuffer:init( w, h, self.colorFormat, self.depthFormat, self.stencilFormat )
 	self.previousTextureSize = { w, h }
 end
 
@@ -94,17 +105,33 @@ function TextureRenderTarget:initFrameBuffer( option )
 	local frameBuffer = MOAIFrameBufferTexture.new()
 	self.frameBuffer = frameBuffer
 
-	frameBuffer:setClearColor()
-	frameBuffer:setClearDepth( option.clearDpeth or false )
+	local clearColor = false
+	local clearDepth = option.clearDpeth or false   
+	local clearStencil = option.clearStencil or false 
+	frameBuffer:setClearColor   ( )
+	frameBuffer:setClearDepth   ( clearDepth )
+	frameBuffer:setClearStencil ( clearStencil )
 
-	local depthFormat = MOAITexture.GL_DEPTH_COMPONENT16
+	local useStencilBuffer  = option.useStencilBuffer or false
+	local useDepthBuffer    = option.useDepthBuffer or false
+
 	local colorFormat = option.colorFormat or nil
 	local filter      = option.filter or MOAITexture.GL_LINEAR
 	local scale       = option.scale or 1
 	
-	self.colorFormat = colorFormat
-	self.depthFormat = depthFormat
-	self.scale       = scale
+	local depthFormat   = false
+	local stencilFormat = false
+	if useDepthBuffer and useStencilBuffer then
+		depthFormat = MOAITexture.GL_DEPTH24_STENCIL8
+	else
+		depthFormat = useDepthBuffer and MOAITexture.GL_DEPTH_COMPONENT16 or false
+		stencilFormat =	useStencilBuffer and MOAITexture.GL_STENCIL_INDEX8 or false
+	end
+	
+	self.colorFormat   = colorFormat
+	self.depthFormat   = depthFormat
+	self.stencilFormat = stencilFormat
+	self.scale         = scale
 
 	frameBuffer:setFilter( filter )
 end

@@ -26,6 +26,7 @@ end
 local DefaultFrameBufferOptions = {
 	filter      = MOAITexture.GL_LINEAR,
 	clearDepth  = true,
+	clearStencil= true,
 	colorFormat = false,
 	scale       = 1,
 	size        = 'relative',
@@ -118,7 +119,7 @@ function CameraManager:_buildBufferTable( passQueue )
 	local currentCamera  = false
 	local bufferBatchMap = {}
 
-	local defaultOptions = { clearColor = {0,0,0,1}, clearDepth = true }
+	local defaultOptions = { clearColor = {0,0,0,1}, clearDepth = true, clearStencil = true }
 
 	local bufferInfoTable = {}
 	
@@ -199,8 +200,9 @@ function CameraManager:_buildBufferTable( passQueue )
 			frameRenderCommand:setEnabled( camera:isActive() )
 
 			local option = info.option
-			local clearColor = option and option.clearColor
-			local clearDepth = option and option.clearDepth
+			local clearColor   = option and option.clearColor
+			local clearDepth   = option and option.clearDepth
+			local clearStencil = option and option.clearStencil
 
 			local tt = type( clearColor )
 			if tt == 'table' then --color values
@@ -213,6 +215,7 @@ function CameraManager:_buildBufferTable( passQueue )
 				frameRenderCommand:setClearColor()
 			end
 			frameRenderCommand:setClearDepth( clearDepth ~= false )
+			frameRenderCommand:setClearStencil( clearStencil ~= false )
 			table.insert( currentCamerRenderCommands, frameRenderCommand )
 		end
 
@@ -241,6 +244,7 @@ function CameraManager:_buildBufferTable( passQueue )
 				buffer:setClearColor()
 			end
 			buffer:setClearDepth( ( option and option.clearDepth ) ~= false )
+			buffer:setClearStencil( ( option and option.clearStencil ) ~= false )
 		end
 
 		local universalRenderTable = {

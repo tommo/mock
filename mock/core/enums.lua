@@ -65,6 +65,8 @@ EnumDepthTestMode = {
 	{ 'always',        MOAIProp. DEPTH_TEST_ALWAYS        },
 	{ 'less',          MOAIProp. DEPTH_TEST_LESS          },
 	{ 'less_equal',    MOAIProp. DEPTH_TEST_LESS_EQUAL    },
+	{ 'equal',         MOAIProp. DEPTH_TEST_EQUAL         },
+	{ 'not_equal',     MOAIProp. DEPTH_TEST_NOT_EQUAL     },
 	{ 'greater',       MOAIProp. DEPTH_TEST_GREATER       },
 	{ 'greater_equal', MOAIProp. DEPTH_TEST_GREATER_EQUAL },
 }
@@ -76,6 +78,8 @@ EnumStencilTestMode = {
 	{ 'always',        MOAIProp. STENCIL_TEST_ALWAYS        },
 	{ 'less',          MOAIProp. STENCIL_TEST_LESS          },
 	{ 'less_equal',    MOAIProp. STENCIL_TEST_LESS_EQUAL    },
+	{ 'equal',         MOAIProp. STENCIL_TEST_EQUAL         },
+	{ 'not_equal',     MOAIProp. STENCIL_TEST_NOT_EQUAL     },
 	{ 'greater',       MOAIProp. STENCIL_TEST_GREATER       },
 	{ 'greater_equal', MOAIProp. STENCIL_TEST_GREATER_EQUAL },
 }

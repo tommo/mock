@@ -104,6 +104,7 @@ function DeckComponentArray:updateProps()
 	local billboard = self.billboard
 	local depthMask = self.depthMask
 	local depthTest = self.depthTest
+	local material = self:getMaterialObject()
 
 	for i = 1, count do
 		local prop = MOAIGraphicsProp.new()
@@ -113,9 +114,7 @@ function DeckComponentArray:updateProps()
 		linkBlendMode( prop, prop0 )
 		inheritTransformColorVisible( prop, prop0 )
 		inheritShader( prop, prop0 )
-		prop:setBillboard( billboard )
-		prop:setDepthMask( depthMask )
-		prop:setDepthTest( depthTest )
+		material:applyToMoaiProp( prop )
 	end 
 	self:updateDeck()
 end
@@ -165,4 +164,10 @@ function DeckComponentArray:clearProps()
 	end
 	self.props = {}
 end
+
+function DeckComponentArray:applyMaterial( mat )
+	for i, prop in ipairs( self.props ) do
+		mat:applyToMoaiProp( prop )
+	end
+end	
 

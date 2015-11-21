@@ -267,7 +267,7 @@ function TextLabel:setShader( shaderPath )
 end
 
 function TextLabel:applyMaterial( material )
-	material:appyToMoaiProp( self )
+	material:applyToMoaiProp( self.box )
 end
 
 registerComponent( 'TextLabel', TextLabel )

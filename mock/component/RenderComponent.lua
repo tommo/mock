@@ -54,6 +54,12 @@ function RenderComponent:getShader( s )
 	return self.shader
 end
 
+function RenderComponent:resetMaterial()
+	if self.material then
+		self:applyMaterial( self.material or getDefaultRenderMaterial() )
+	end
+end
+
 function RenderComponent:setVisible( f )
 end
 
