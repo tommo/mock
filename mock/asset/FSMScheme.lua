@@ -1,8 +1,8 @@
 module 'mock'
 
 ---DEAD LOCK DEBUG HELPER
-local DEADLOCK_THRESHOLD = 100 
-local DEADLOCK_TRACK     = 5
+local DEADLOCK_THRESHOLD = 100
+local DEADLOCK_TRACK     = 10
 local DEADLOCK_TRACK_ENABLED = true
 --------------------------------------------------------------------
 local function buildFSMScheme( scheme )
@@ -39,7 +39,10 @@ local function buildFSMScheme( scheme )
 				local step = controller[ stepname ]
 				local out  = true
 				--step return name of next state
-				if step then out = step( controller, dt ) end
+				if step then 
+					out = step( controller, dt )
+					dt = 0 --delta time is consumed
+				end
 				
 				----POST STEP TRANSISTION
 				if out and outStates then --approach next state
@@ -72,7 +75,7 @@ local function buildFSMScheme( scheme )
 					table.insert( trackedStates, name )
 					if switchCount > DEADLOCK_THRESHOLD + DEADLOCK_TRACK then
 						--state traceback
-						print( "state switch deadlock:" )
+						print( "state switch deadlock:", switchCount )
 						for i, s in ipairs( trackedStates ) do 
 							print( i, s )
 						end

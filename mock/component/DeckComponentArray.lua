@@ -73,26 +73,26 @@ function DeckComponentArray:fitDeckSize()
 	return self:setCellSize( w,h,d )
 end
 
-function DeckComponentArray:setBillboard( billboard )
-	for i, prop in ipairs( self.props ) do
-		prop:setBillboard( billboard )
-	end
-	return DeckComponentArray.__super.setBillboard( self, billboard )
-end
+-- function DeckComponentArray:setBillboard( billboard )
+-- 	for i, prop in ipairs( self.props ) do
+-- 		prop:setBillboard( billboard )
+-- 	end
+-- 	return DeckComponentArray.__super.setBillboard( self, billboard )
+-- end
 
-function DeckComponentArray:setDepthMask( enabled )
-	for i, prop in ipairs( self.props ) do
-		prop:setDepthMask( enabled )
-	end
-	return DeckComponentArray.__super.setDepthMask( self, enabled )
-end
+-- function DeckComponentArray:setDepthMask( enabled )
+-- 	for i, prop in ipairs( self.props ) do
+-- 		prop:setDepthMask( enabled )
+-- 	end
+-- 	return DeckComponentArray.__super.setDepthMask( self, enabled )
+-- end
 
-function DeckComponentArray:setDepthTest( mode )
-	for i, prop in ipairs( self.props ) do
-		prop:setDepthTest( mode )
-	end
-	return DeckComponentArray.__super.setDepthTest( self, mode )
-end
+-- function DeckComponentArray:setDepthTest( mode )
+-- 	for i, prop in ipairs( self.props ) do
+-- 		prop:setDepthTest( mode )
+-- 	end
+-- 	return DeckComponentArray.__super.setDepthTest( self, mode )
+-- end
 
 function DeckComponentArray:updateProps()
 	self:clearProps()
@@ -166,6 +166,7 @@ function DeckComponentArray:clearProps()
 end
 
 function DeckComponentArray:applyMaterial( mat )
+	mat:applyToMoaiProp( self.prop )
 	for i, prop in ipairs( self.props ) do
 		mat:applyToMoaiProp( prop )
 	end

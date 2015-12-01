@@ -59,6 +59,7 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 					instance:addLoc( ox, oy, oz )
 				end
 				ent:addChild( instance )
+				
 			elseif spawnMethod == 'sibling' then
 				if self.copyLoc then	instance:setLoc( ent:getLoc() ) end
 				if self.copyRot then	instance:setRot( ent:getRot() ) end
@@ -67,6 +68,7 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 					instance:addLoc( ox, oy, oz )
 				end
 				ent:addSibling( instance )
+
 			elseif spawnMethod == 'parent_sibling' then
 				ent:forceUpdate()
 				if self.copyLoc then	instance:setWorldLoc( ent:getWorldLoc() ) end
@@ -80,6 +82,7 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 				else
 					ent:getScene():addEntity( instance )				
 				end
+
 			elseif spawnMethod == 'root' then
 				ent:forceUpdate()
 				if self.copyLoc then	instance:setLoc( ent:getWorldLoc() ) end
@@ -89,7 +92,8 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 					instance:addLoc( ox, oy, oz )
 				end
 				instance:forceUpdate()
-				ent:getScene():addEntity( instance )				
+				ent:getScene():addEntity( instance )
+
 			end
 		end
 	end

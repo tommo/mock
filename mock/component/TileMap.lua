@@ -79,6 +79,7 @@ CLASS: TileMapLayer ()
 		Field 'tilesetPath' :asset( 'deck2d.tileset' );
 		Field 'visible' :boolean();
 		Field 'subdivision' :int() :range( 1, 4 );
+		Field 'material'    :asset( 'material' );
 	}
 
 function TileMapLayer:__init()
