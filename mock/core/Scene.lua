@@ -224,6 +224,7 @@ function Scene:threadMain( dt )
 	-- main loop
 	_stat( 'entering scene main loop', self )
 	dt = 0
+	
 	local lastTime = self:getTime()
 	while true do	
 		local nowTime = self:getTime()

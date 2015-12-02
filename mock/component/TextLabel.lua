@@ -268,6 +268,9 @@ end
 
 function TextLabel:applyMaterial( material )
 	material:applyToMoaiProp( self.box )
+	if not material.shader then
+		self.box:setShader( defaultShader )
+	end
 end
 
 registerComponent( 'TextLabel', TextLabel )

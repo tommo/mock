@@ -129,6 +129,7 @@ function Game:__init()
 	self.time          = 0
 	self.frame 				 = 0
 	self.mainScene     = Scene()
+	self.mainScene._MAIN_SCENE = true
 
 	local l = self:addLayer( 'main' )
 	l.default = true
@@ -206,8 +207,8 @@ function Game:initSystem( config, fromEditor )
 	self.isPaused = false
 
 
-	local rootUpdateCoroutine=MOAICoroutine.new()
-	rootUpdateCoroutine:run( function()
+	self.rootUpdateCoroutine=MOAICoroutine.new()
+	self.rootUpdateCoroutine:run( function()
 			while true do
 				local dt = coroutine.yield()
 				self:onRootUpdate( dt ) --delta time get passed in
@@ -237,9 +238,14 @@ function Game:initSystem( config, fromEditor )
 
 	----extra
 	_stat( '...extra init' )
-	
-	collectgarbage( 'setpause',   70  )
-	collectgarbage( 'setstepmul', 200 )	
+
+	if fromEditor then
+		collectgarbage( 'setpause',   70  )
+		collectgarbage( 'setstepmul', 140 )	
+	else
+		collectgarbage( 'setpause',   70  )
+		collectgarbage( 'setstepmul', 150 )	
+	end
 
 	-- MOAILuaRuntime.reportGC( true )
 	MOAISim.setStep( 1/60 )

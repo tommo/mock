@@ -477,6 +477,16 @@ function Entity:_detachProp( p, role )
 	self.layer:removeProp( p )
 end
 
+function Entity:_detachVisible( t, role )
+	local _prop = self:getProp( role )
+	clearInheritVisible( t, _prop )
+end
+
+function Entity:_detachColor( t, role )
+	local _prop = self:getProp( role )
+	clearInheritColor( t, _prop )
+end
+
 
 --------------------------------------------------------------------
 ------ Child Entity
