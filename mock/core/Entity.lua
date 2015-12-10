@@ -12,7 +12,7 @@ CLASS: Entity ( Actor )
 	:MODEL{
 		Field '__prefabId':string() :no_edit();
 		Field '_priority' :int() :no_edit()  :set('setPriority');
-		Field '_editLocked' :boolean() :no_edit();
+		-- Field '_editLocked' :boolean() :no_edit();
 		
 		----
 		Field 'name'      :string()  :getset('Name');

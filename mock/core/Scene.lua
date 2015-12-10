@@ -637,6 +637,19 @@ function Scene:getRootGroup()
 	return self.rootGroup
 end
 
+local function _collectEntityGroups( parentGroup, collected )
+	for group in pairs( parentGroup.childGroups ) do
+		collected[ group ] = true
+		_collectEntityGroups( group, collected )
+	end
+	return collected
+end
+
+function Scene:collectEntityGroups()
+	local groups = _collectEntityGroups( self.rootGroup, {} )
+	return groups
+end
+
 
 Scene.add = Scene.addEntity
 

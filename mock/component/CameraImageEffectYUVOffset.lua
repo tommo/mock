@@ -31,8 +31,8 @@ local function buildBloomShader()
 			gl_FragColor = texture2D ( sampler, uvVarying ) * 0.5; // * k;
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2( 0.0,  dv ) ) * 0.05 * vec4( 1.0, 0.0, 1.0, 1.0);
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2( 0.0, -dv ) ) * 0.05 * vec4( 0.0, 1.0, 0.0, 1.0);
-			gl_FragColor += texture2D ( sampler, uvVarying + vec2(  du, 0.0 ) ) * 0.4 * vec4( 1.0, 0.0, 1.0, 1.0);
-			gl_FragColor += texture2D ( sampler, uvVarying + vec2( -du, 0.0 ) ) * 0.4 * vec4( 0.0, 1.0, 0.0, 1.0);
+			gl_FragColor += texture2D ( sampler, uvVarying + vec2(  du, 0.0 ) ) * 0.3 * vec4( 1.0, 0.0, 1.0, 1.0);
+			gl_FragColor += texture2D ( sampler, uvVarying + vec2( -du, 0.0 ) ) * 0.3 * vec4( 0.0, 1.0, 0.0, 1.0);
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2(  du,  dv ) ) * 0.05 * vec4( 1.0, 0.0, 1.0, 1.0);
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2(  du, -dv ) ) * 0.05 * vec4( 1.0, 0.0, 1.0, 1.0);
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2( -du,  dv ) ) * 0.05 * vec4( 0.0, 1.0, 0.0, 1.0);

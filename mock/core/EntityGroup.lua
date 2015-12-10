@@ -7,7 +7,7 @@ local INHERIT_VISIBLE   = MOAIProp. INHERIT_VISIBLE
 CLASS: EntityGroup ()
 	:MODEL{
 		-- Field '__guid': string() :no_edit();
-		Field '_editLocked' :boolean() :no_edit();
+		-- Field '_editLocked' :boolean() :no_edit();
 		Field 'name': string() :getset( 'Name' ) ;
 		Field 'visible' :boolean() :get( 'isLocalVisible' ) :set( 'setVisible');
 	}
