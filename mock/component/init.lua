@@ -117,6 +117,7 @@ require 'mock.component.CameraImageEffectSharpen'
 require 'mock.component.CameraImageEffectBloom'
 require 'mock.component.CameraImageEffectRadialBlur'
 require 'mock.component.CameraImageEffectMosaic'
+require 'mock.component.CameraImageEffectYUVOffset'
 
 
 --------------------------------------------------------------------

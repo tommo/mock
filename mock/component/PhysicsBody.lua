@@ -254,6 +254,13 @@ function PhysicsBody:addAngle( da )
 	return self:setAngle( da + a )
 end
 
+function PhysicsBody:getTag()
+	if self.bodyDef then
+		return self.bodyDef.tag
+	end
+	return nil
+end
+
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',
 	'applyForce',

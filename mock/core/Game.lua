@@ -243,8 +243,8 @@ function Game:initSystem( config, fromEditor )
 		collectgarbage( 'setpause',   70  )
 		collectgarbage( 'setstepmul', 140 )	
 	else
-		collectgarbage( 'setpause',   70  )
-		collectgarbage( 'setstepmul', 150 )	
+		-- collectgarbage( 'setpause',   70  )
+		-- collectgarbage( 'setstepmul', 140 )	
 	end
 
 	-- MOAILuaRuntime.reportGC( true )
