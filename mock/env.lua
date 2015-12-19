@@ -87,6 +87,9 @@ require 'mock.preset.simpleAnimation'
 ----STORY
 require 'mock.story'
 
+----Sequence
+require 'mock.sequence'
+
 
 
 --------------------------------------------------------------------

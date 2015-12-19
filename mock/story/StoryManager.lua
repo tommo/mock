@@ -50,6 +50,7 @@ function StoryManager:unregisterActor( actor )
 end
 
 function StoryManager:onUpdate( game, dt )
+	if not self.globalContext then return end
 	self.globalContext:tryUpdate()
 end
 

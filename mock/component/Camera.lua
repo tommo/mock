@@ -14,7 +14,7 @@ CLASS: Camera ( Component )
 
 :MODEL{
 	Field 'active'           :boolean() :isset('Active') ;
-	Field 'zoom'             :number()  :getset('Zoom')   :range(0) ;
+	Field 'zoom'             :number()  :getset('Zoom')   :range(0) :meta{ step = 0.1} ;
 	'----';
 	Field 'perspective'      :boolean() :isset('Perspective');
 	Field 'nearPlane'        :number()  :getset('NearPlane');
