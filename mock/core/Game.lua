@@ -206,11 +206,11 @@ function Game:initSystem( config, fromEditor )
 	self.throttle = 1
 	self.isPaused = false
 
-
+	local yield = coroutine.yield
 	self.rootUpdateCoroutine=MOAICoroutine.new()
 	self.rootUpdateCoroutine:run( function()
 			while true do
-				local dt = coroutine.yield()
+				local dt = yield()
 				self:onRootUpdate( dt ) --delta time get passed in
 			end
 		end

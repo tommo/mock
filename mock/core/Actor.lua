@@ -323,7 +323,7 @@ end
 local function _coroDaemon( self, obj, f, ... )
 	local inner = self:addCoroutineFor( obj, f, ... )
 	while not inner:isDone() do
-		coroutine.yield()
+		yield()
 	end
 end
 
