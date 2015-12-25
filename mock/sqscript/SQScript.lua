@@ -75,6 +75,14 @@ function SQNode:getComment()
 	return self.comment
 end
 
+function SQNode:getRichText()
+	return 'SQNode'
+end
+
+function SQNode:getIcon()
+	return false
+end
+
 function SQNode:setComment( c )
 	self.comment = c
 end
@@ -139,15 +147,23 @@ function SQRoutine:__init()
 	self.rootNode = SQNode()	
 	self.rootNode.parentRoutine = self
 
-	self.name = ''
-	self.comment = ''
+	self.name = 'Routine'
+	self.comment = 'comment'
 end
 
-function SQNode:getComment()
+function SQRoutine:getName()
+	return self.name
+end
+
+function SQRoutine:setName( name )
+	self.name = name
+end
+
+function SQRoutine:getComment()
 	return self.comment
 end
 
-function SQNode:setComment( c )
+function SQRoutine:setComment( c )
 	self.comment = c
 end
 
@@ -182,6 +198,7 @@ end
 function SQScript:addRoutine( routine )
 	local routine = routine or SQRoutine()
 	routine.parentScript = self
+	routine:addNode( SQNodeLog() ).text = 'Test Test'
 	table.insert( self.routines, routine )
 	return routine
 end
@@ -191,6 +208,14 @@ function SQScript:removeRoutine( routine )
 	if not idx then return end
 	routine.parentRoutine = false
 	table.remove( self.routines, idx )
+end
+
+function SQScript:getRoutines()
+	return self.routines
+end
+
+function SQScript:getComment()
+	return self.comment
 end
 
 function SQScript:_postLoad( data )
@@ -287,9 +312,6 @@ function SQContext:update( dt )
 	end
 end
 
-function SQContext:_actionInner()
-
-end
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -310,4 +332,4 @@ function loadSQScript( node )
 end
 
 
-mock.registerAssetLoader( 'animator_data', loadSQScript )
+mock.registerAssetLoader( 'sq_script', loadSQScript )

@@ -88,7 +88,7 @@ require 'mock.preset.simpleAnimation'
 require 'mock.story'
 
 ----Sequence
-require 'mock.sequence'
+require 'mock.sqscript'
 
 
 
