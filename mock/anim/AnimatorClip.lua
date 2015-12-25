@@ -223,10 +223,10 @@ function AnimatorClipSubNode:toString()
 end
 
 --load from deserialize
-function AnimatorClipSubNode:_load()
+function AnimatorClipSubNode:_postLoad()
 	self:onLoad()
 	for _, child in ipairs( self.children ) do
-		child:_load()
+		child:_postLoad()
 	end
 end
 
@@ -837,12 +837,12 @@ function AnimatorClip:__init()
 	self.inherited = false
 end
 
-function AnimatorClip:_load()
+function AnimatorClip:_postLoad()
 	if not self.markers then
 		self.markers = {}
 	end
 	self:sortMarkers()
-	return self.root:_load()
+	return self.root:_postLoad()
 end
 
 function AnimatorClip:getName()
@@ -1096,12 +1096,12 @@ function AnimatorClipGroup:getChildNodes()
 	return table.mergearray( self.childGroups, self.childClips )
 end
 
-function AnimatorClipGroup:_load()
+function AnimatorClipGroup:_postLoad()
 	for i, clip in ipairs( self.childClips ) do
-		clip:_load()
+		clip:_postLoad()
 	end
 	for i, group in ipairs( self.childGroups ) do
-		group:_load()
+		group:_postLoad()
 	end
 end
 

@@ -10,3 +10,4 @@ require 'mock.sequence.SQNodeLoop'
 
 require 'mock.sequence.SQNodeWait'
 
+require 'mock.sequence.SQNodeSignal'

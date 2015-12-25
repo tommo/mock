@@ -5,8 +5,9 @@ CLASS: SQNodeLoopBase ( SQNode )
 	:MODEL{}
 
 function SQNodeLoopBase:executeChildNodes( context, env )
-	if self:isLoopDone( context, env ) then return end
-	return self:executeChildNodes( context )
+	while not self:isLoopDone( context, env ) do
+		SQNode.executeChildNodes( self, context, env )
+	end
 end
 
 function SQNodeLoopBase:isLoopDone( context, env )
@@ -14,10 +15,18 @@ function SQNodeLoopBase:isLoopDone( context, env )
 end
 
 --------------------------------------------------------------------
-CLASS: SQNodeCountedLoop ( SQNode )
+CLASS: SQNodeCountedLoop ( SQNodeLoopBase )
 	:MODEL{
 		Field 'count' :int() :range(0);
 	}
+
+function SQNodeCountedLoop:__init()
+	self.count = 0
+end
+
+function SQNodeCountedLoop:setLoopCount( count )
+	self.count = count or 0
+end
 
 function SQNodeCountedLoop:enter( context, env )
 	env.count = 0
@@ -31,7 +40,7 @@ function SQNodeCountedLoop:isLoopDone( context, env )
 end
 
 --------------------------------------------------------------------
-CLASS: SQNodeInfiniteLoop ( SQNode )
+CLASS: SQNodeInfiniteLoop ( SQNodeLoopBase )
 	:MODEL{
 	}
 

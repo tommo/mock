@@ -231,7 +231,7 @@ end
 
 --------------------------------------------------------------------
 local function serialize( obj, objMap )
-	assert( obj )
+	assert( obj, 'nil object' )
 	objMap = objMap or SerializeObjectMap()
 	local rootId = objMap:map( obj )
 	local map = {}

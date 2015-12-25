@@ -1,30 +1,71 @@
 module 'mock'
 
+local ccreate, cresume, cyield, cstatus
+	= coroutine.create, coroutine.resume, coroutine.yield, coroutine.status
 --------------------------------------------------------------------
+
 CLASS: SQNode ()
-	:MODEL{
+CLASS: SQRoutine ()
+
+CLASS: SQScript ()
+
+CLASS: SQContext ()
+
+
+
+--------------------------------------------------------------------
+SQNode :MODEL{
+		Field 'index'   :int();
+		Field 'comment' :string();
+		Field 'active'  :boolean();
+
+		Field 'parentRoutine' :type( SQRoutine ) :no_edit();
+		Field 'parentNode' :type( SQNode ) :no_edit();
+		Field 'children'   :array( SQNode ) :no_edit();
 }
 
 function SQNode:__init()
-	self.routine = false
+	self.parentRoutine = false
+	
+	self.index      = 0
+	self.active     = true
 	self.parentNode = false
-	self.index = 0
-	self.children = false
+	self.children   = {}
 
-	self.comment = ''
+	self.comment    = ''
+
 end
 
 function SQNode:getRoot()
-	return self.routine:getRootNode()
+	return self.parentRoutine:getRootNode()
 end
 
 function SQNode:getChildren()
 	return self.children
 end
 
--- function SQNode:getParentSequence()
--- 	local root = self:getRoot()
--- end
+function SQNode:getParent()
+	return self.parentNode
+end
+
+function SQNode:addChild( node, idx )
+	node.parentNode = self
+	node.parentRoutine = self.parentRoutine
+	if idx then
+		table.insert( self.children, idx, node )
+	else
+		table.insert( self.children, node )
+	end
+	return node
+end
+
+function SQNode:removeChild( node )
+	local idx = table.index( self.children, node )
+	if not idx then return false end
+	table.remove( self.children, idx )
+	node.parentNode = false
+	node.parentRoutine = false	
+end
 
 function SQNode:getName()
 	return 'node'
@@ -38,9 +79,8 @@ function SQNode:setComment( c )
 	self.comment = c
 end
 
-function SQNode:executeChildNodes( context )
+function SQNode:executeChildNodes( context, env )
 	local children = self.children
-	if not children then return false end
 	for i, child in ipairs( children ) do
 		child:execute( context )
 	end
@@ -48,6 +88,7 @@ function SQNode:executeChildNodes( context )
 end
 
 function SQNode:execute( context ) --inside a coroutine
+	-- print( 'execute node', self:getClassName() )
 	local env = {}
 	--node enter
 	local resultEnter = self:enter( context, env )
@@ -58,7 +99,7 @@ function SQNode:execute( context ) --inside a coroutine
 		while true do
 			local resultStep = self:step( context, env, dt )
 			if resultStep then break end
-			dt = coroutine.yield()
+			dt = cyield()
 		end
 	end
 
@@ -83,16 +124,20 @@ function SQNode:exit( context, env )
 	return true
 end
 
-
 --------------------------------------------------------------------
-CLASS: SQRoutine ()
-	:MODEL{}
+SQRoutine :MODEL{
+		Field 'name' :string();
+		Field 'comment' :string();
+
+		Field 'rootNode' :type( SQNode ) :no_edit();
+		Field 'parentScript' :type( SQScript ) :no_edit();
+}
 
 function SQRoutine:__init()
-	self.script   = false
+	self.parentScript   = false
 
 	self.rootNode = SQNode()	
-	self.rootNode.routine = self
+	self.rootNode.parentRoutine = self
 
 	self.name = ''
 	self.comment = ''
@@ -110,51 +155,159 @@ function SQRoutine:getRootNode()
 	return self.rootNode
 end
 
+function SQRoutine:addNode( node, idx )
+	return self.rootNode:addChild( node, idx )
+end
+
+function SQRoutine:removeNode( node )
+	return self.rootNode:removeChild( node )
+end
+
 function SQRoutine:execute( context )
 	return context:executeRoutine( self )
 end
 
 
 --------------------------------------------------------------------
-CLASS: SQScript ()
-	:MODEL{}
+SQScript :MODEL{
+		Field 'comment';	
+		Field 'routines' :array( SQRoutine ) :no_edit();
+}
 
 function SQScript:__init()
 	self.routines = {}
+	self.comment = ''
 end
 
-function SQScript:execute( context )
-	for i, routine in ipairs( self.routines ) do
-		routine:execute( context )
-	end
+function SQScript:addRoutine( routine )
+	local routine = routine or SQRoutine()
+	routine.parentScript = self
+	table.insert( self.routines, routine )
+	return routine
 end
 
+function SQScript:removeRoutine( routine )
+	local idx = table.index( self.routines, routine )
+	if not idx then return end
+	routine.parentRoutine = false
+	table.remove( self.routines, idx )
+end
+
+function SQScript:_postLoad( data )
+end
 
 --------------------------------------------------------------------
-CLASS: SQContext ()
-	:MODEL{}
+SQContext :MODEL{
+	
+}
 
 function SQContext:__init()
-	self.idleCoroutines = {}
-	self.activeCoroutines = {}
+	self.currentScript = false
+	self.running = false
+	self.paused  = false
+
+	self.coroutines = {}
+	self.signalCounters = {}
 end
 
-function SQContext:requestCoroutine()
-	local coroutine = MOAICoroutine.new()
-	return coroutine
+
+function SQContext:isPaused()
+	return self.paused
 end
 
-function SQContext:executeRoutine( routine )
-	local coro = self:requestCoroutine()
-	coro:run( function()
-		routine:getRootNode():execute( self )
-		self.activeCoroutines[ coro ] = nil
-	end)
-	self.activeCoroutines[ coro ] = true
+function SQContext:pause( paused )
+	self.paused = paused ~= false
 end
 
 function SQContext:isRunning()
-	if next( self.activeCoroutines ) then return true end
-	return false
+	return self.running
 end
 
+function SQContext:isDone()
+	return not self.running
+end
+
+function SQContext:loadScript( script )
+	self.running = true
+	self.currentScript = script
+	for i, routine in ipairs( script.routines ) do
+		self:executeRoutine( routine )
+	end
+end
+
+function SQContext:getSignalCounter( id )
+	return self.signalCounters[ id ] or 0
+end
+
+function SQContext:incSignalCounter( id )
+	local v = ( self.signalCounters[ id ] or 0 ) + 1
+	self.signalCounters[ id ] = v
+	return v
+end
+
+local function _SQConexteCoroutineFunc( context, routine )
+	local dt = cyield()
+	local node = routine:getRootNode()
+	-- print( 'starting routine', context, routine )
+	return node:execute( context )
+end
+
+function SQContext:executeRoutine( routine )
+	local coroutines = self.coroutines
+	local coro = ccreate( _SQConexteCoroutineFunc )
+	coroutines[ routine ] = coro
+	return cresume( coro, self, routine )
+end
+
+function SQContext:update( dt )
+	if self.paused then return end
+	local coroutines = self.coroutines
+	local done = false
+	for routine, coro in pairs( coroutines ) do
+		local succ, result = cresume( coro, dt )
+		if not succ then
+			if not done then done = {} end
+			done[ routine ] = true
+			print( result )
+			print( debug.traceback( coro ) )
+			error( 'error in SQRoutine execution:' )
+		elseif cstatus( coro ) == 'dead' then
+			if not done then done = {} end
+			done[ routine ] = true
+		end
+	end
+
+	if done then
+		for r in pairs( done ) do
+			coroutines[ r ] = nil
+		end
+		if not next( coroutines ) then
+			self.running = false
+		end
+	end
+end
+
+function SQContext:_actionInner()
+
+end
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+function loadSQScriptFromRaw( data )
+	local script = mock.deserialize( nil, data )
+	script:_postLoad()
+	return script
+end
+
+function loadSQScriptFromString( strData )
+	local t = MOAIJsonParser.decode( strData )
+	return loadSQScriptFromRaw( t )
+end
+
+function loadSQScript( node )
+	local data   = mock.loadAssetDataTable( node:getObjectFile('data') )
+	return loadSQScriptFromRaw( data )
+end
+
+
+mock.registerAssetLoader( 'animator_data', loadSQScript )

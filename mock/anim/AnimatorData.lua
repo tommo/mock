@@ -107,7 +107,7 @@ function AnimatorData:sortEvents() --pre-serialization
 	end
 end
 
-function AnimatorData:_load() --post-serialization
+function AnimatorData:_postLoad() --post-serialization
 	if not self.rootGroup then
 		self.rootGroup = AnimatorClipGroup()
 		self.rootGroup.name = '__root'
@@ -120,7 +120,7 @@ function AnimatorData:_load() --post-serialization
 		end
 	end
 	self:updateClipList()
-	self.rootGroup:_load()
+	self.rootGroup:_postLoad()
 	
 end
 
@@ -129,7 +129,7 @@ end
 --------------------------------------------------------------------
 function loadAnimatorDataFromRaw( data )
 	local animatorData = mock.deserialize( nil, data )
-	animatorData:_load()
+	animatorData:_postLoad()
 	return animatorData
 end
 

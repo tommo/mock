@@ -661,9 +661,9 @@ function Scene:initPhysics()
 	local option = game and game.physicsOption or table.simplecopy( DefaultPhysicsWorldOption )
 
 	local world
-	if option.world and _G[option.world] then
+	if option.world and _G[ option.world ] then
 		
-		local worldClass = rawget(_G, option.world)
+		local worldClass = rawget( _G, option.world )
 		world = worldClass.new()
 	else
 		world = MOAIBox2DWorld.new()

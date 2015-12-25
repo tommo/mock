@@ -15,9 +15,9 @@ function SQNodeWait:enter( context, env )
 end
 
 function SQNodeWait:step( context, env, dt )
-	local elpased = env.elapsed 
-	elpased = elpased + dt
-	if elpased >= self.duration then return true end
+	local elapsed = env.elapsed 
+	elapsed = elapsed + dt
+	if elapsed >= self.duration then return true end
 	env.elapsed = elapsed
 end
 
@@ -28,16 +28,16 @@ CLASS: SQNodeWaitFrame ( SQNode )
 		Field 'frameCount'
 	}
 
-function SQNodeWait:__init()
+function SQNodeWaitFrame:__init()
 	self.frameCount = 1
 end
 
-function SQNodeWait:enter( context, env )
+function SQNodeWaitFrame:enter( context, env )
 	env.elapsed = 0
 end
 
-function SQNodeWait:step( context, env, dt )
-	local elpased = env.elapsed 
+function SQNodeWaitFrame:step( context, env, dt )
+	local elapsed = env.elapsed 
 	elpased = elpased + 1
 	return elpased >= self.frameCount
 end
@@ -50,19 +50,20 @@ CLASS: SQNodeWaitRandom ( SQNode )
 		Field 'variation';
 	}
 
-function SQNodeWait:__init()
+function SQNodeWaitRandom:__init()
 	self.duration = 1
 	self.variation = 0.1
 end
 
-function SQNodeWait:enter( context, env )
+function SQNodeWaitRandom:enter( context, env )
 	env.duration = self.duration + noise( self.variation )
 	env.elapsed = 0
 end
 
-function SQNodeWait:step( context, env, dt )
+function SQNodeWaitRandom:step( context, env, dt )
 	local elpased = env.elapsed 
 	elpased = elpased + dt
 	if elpased >= env.duration then return true end
 	env.elapsed = elapsed
 end
+

@@ -8,5 +8,3 @@ CLASS: SQNodeScript ( SQNode )
 function SQNodeScript:__init()
 	self.script = ''
 end
-
-
