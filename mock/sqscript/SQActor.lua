@@ -29,6 +29,7 @@ end
 function SQActor:startScript()
 	if not self.script then return end
 	self.context = SQContext()
+	self.context:setEnv( 'actor', self )
 	self.context:loadScript( self.script )
 	self:findAndStopCoroutine( 'actionExecution' )
 	self:addCoroutine( 'actionExecution' )
@@ -47,7 +48,7 @@ function SQActor:actionExecution()
 	local dt = 0
 	while true do
 		context:update( dt )
-		local dt = coroutine.yield()
+		dt = coroutine.yield()
 	end
 end
 

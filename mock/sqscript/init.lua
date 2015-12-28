@@ -11,6 +11,7 @@ require 'mock.sqscript.SQNodeLoop'
 require 'mock.sqscript.SQNodeWait'
 
 require 'mock.sqscript.SQNodeSignal'
+require 'mock.sqscript.SQNodeMsg'
 
 
 --------------------------------------------------------------------

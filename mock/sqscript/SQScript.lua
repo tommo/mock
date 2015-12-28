@@ -73,6 +73,7 @@ function SQNode:removeChild( node )
 	table.remove( self.children, idx )
 	node.parentNode = false
 	node.parentRoutine = false	
+	return true
 end
 
 function SQNode:getName()
@@ -250,8 +251,18 @@ function SQContext:__init()
 
 	self.coroutines = {}
 	self.signalCounters = {}
+	self.env = {}
 end
 
+function SQContext:getEnv( key, default )
+	local v = self.env[ key ]
+	if v == nil then return default end
+	return v
+end
+
+function SQContext:setEnv( key, value )
+	self.env[ key ] = value
+end
 
 function SQContext:isPaused()
 	return self.paused

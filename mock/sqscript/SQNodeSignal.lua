@@ -14,6 +14,11 @@ function SQNodeSignal:enter( context, env )
 	context:incSignalCounter( self.signalId )
 end
 
+function SQNodeSignal:getRichText()
+	return string.format( '<cmd>SIG</cmd> <data>%s</data>', self.signalId )
+end
+
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeWaitSignal ( SQNode )
@@ -35,5 +40,10 @@ function SQNodeWaitSignal:step( context, env )
 	if counter ~= env.counter0 then return true end
 end
 
+function SQNodeWaitSignal:getRichText()
+	return string.format( '<cmd>WAIT_SIG</cmd> <data>%s</data>', self.signalId )
+end
 
 --------------------------------------------------------------------
+registerSQNode( 'signal', SQNodeSignal   )
+registerSQNode( 'wait_signal', SQNodeWaitSignal )
