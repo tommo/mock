@@ -4,6 +4,10 @@ module 'mock'
 CLASS: SQNodeLoopBase ( SQNode )
 	:MODEL{}
 
+function SQNodeLoopBase:isGroup()
+	return true
+end
+
 function SQNodeLoopBase:executeChildNodes( context, env )
 	while not self:isLoopDone( context, env ) do
 		SQNode.executeChildNodes( self, context, env )
@@ -15,35 +19,53 @@ function SQNodeLoopBase:isLoopDone( context, env )
 end
 
 --------------------------------------------------------------------
-CLASS: SQNodeCountedLoop ( SQNodeLoopBase )
+CLASS: SQNodeLoopCounted ( SQNodeLoopBase )
 	:MODEL{
 		Field 'count' :int() :range(0);
 	}
 
-function SQNodeCountedLoop:__init()
+function SQNodeLoopCounted:__init()
 	self.count = 0
 end
 
-function SQNodeCountedLoop:setLoopCount( count )
+function SQNodeLoopCounted:setLoopCount( count )
 	self.count = count or 0
 end
 
-function SQNodeCountedLoop:enter( context, env )
+function SQNodeLoopCounted:enter( context, env )
 	env.count = 0
 end
 
-function SQNodeCountedLoop:isLoopDone( context, env )
+function SQNodeLoopCounted:isLoopDone( context, env )
 	local count = env.count + 1
 	if count > self.count then return true end
 	env.count = count
 	return false
 end
 
+function SQNodeLoopCounted:getRichText()
+	return string.format(
+		'<cmd>LOOP</cmd> <data><number>%d</number> times</data>',
+		self.count
+	)
+end
+
 --------------------------------------------------------------------
-CLASS: SQNodeInfiniteLoop ( SQNodeLoopBase )
+CLASS: SQNodeLoopInfinite ( SQNodeLoopBase )
 	:MODEL{
 	}
 
-function SQNodeInfiniteLoop:isLoopDone( context, env )
+function SQNodeLoopInfinite:isLoopDone( context, env )
 	return true
 end
+
+function SQNodeLoopInfinite:getRichText()
+	return string.format(
+		'<cmd>LOOP_INIFINITE</cmd>'
+	)
+end
+
+
+--------------------------------------------------------------------
+registerSQNode( 'loop_counted', SQNodeLoopCounted )
+registerSQNode( 'loop_infinite', SQNodeLoopInfinite )

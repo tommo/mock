@@ -3,7 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: SQNodeLog ( SQNode )
 	:MODEL{
-		Field 'text'
+		Field 'text' :string();
 	}
 
 function SQNodeLog:__init()
@@ -15,5 +15,8 @@ function SQNodeLog:enter( context, env )
 end
 
 function SQNodeLog:getRichText()
-	return string.format( '<cmd>LOG</cmd> <data>%s</data>', self.text )
+	return string.format( '<cmd>LOG</cmd> <comment>%s</comment>', self.text )
 end
+
+--------------------------------------------------------------------
+registerSQNode( 'log', SQNodeLog )

@@ -15,9 +15,9 @@ CLASS: SQContext ()
 
 --------------------------------------------------------------------
 SQNode :MODEL{
-		Field 'index'   :int();
-		Field 'comment' :string();
-		Field 'active'  :boolean();
+		Field 'index'   :int() :no_edit(); 
+		Field 'comment' :string() :no_edit(); 
+		Field 'active'  :boolean() :no_edit(); 
 
 		Field 'parentRoutine' :type( SQRoutine ) :no_edit();
 		Field 'parentNode' :type( SQNode ) :no_edit();
@@ -48,6 +48,10 @@ function SQNode:getParent()
 	return self.parentNode
 end
 
+function SQNode:isGroup()
+	return false
+end
+
 function SQNode:addChild( node, idx )
 	node.parentNode = self
 	node.parentRoutine = self.parentRoutine
@@ -57,6 +61,10 @@ function SQNode:addChild( node, idx )
 		table.insert( self.children, node )
 	end
 	return node
+end
+
+function SQNode:indexOfChild( node )
+	return table.index( self.children, node )
 end
 
 function SQNode:removeChild( node )
@@ -132,6 +140,15 @@ function SQNode:exit( context, env )
 	return true
 end
 
+
+--------------------------------------------------------------------
+--CLASS RootNode
+CLASS: SQNodeRoot( SQNode )
+
+function SQNodeRoot:isGroup()
+	return true
+end
+
 --------------------------------------------------------------------
 SQRoutine :MODEL{
 		Field 'name' :string();
@@ -144,11 +161,11 @@ SQRoutine :MODEL{
 function SQRoutine:__init()
 	self.parentScript   = false
 
-	self.rootNode = SQNode()	
+	self.rootNode = SQNodeRoot()	
 	self.rootNode.parentRoutine = self
 
-	self.name = 'Routine'
-	self.comment = 'comment'
+	self.name = 'unnamed'
+	self.comment = ''
 end
 
 function SQRoutine:getName()
@@ -252,6 +269,10 @@ function SQContext:isDone()
 	return not self.running
 end
 
+function SQContext:stop()
+	self.running = false
+end
+
 function SQContext:loadScript( script )
 	self.running = true
 	self.currentScript = script
@@ -285,6 +306,7 @@ function SQContext:executeRoutine( routine )
 end
 
 function SQContext:update( dt )
+	if not self.running then return end
 	if self.paused then return end
 	local coroutines = self.coroutines
 	local done = false
@@ -312,6 +334,29 @@ function SQContext:update( dt )
 	end
 end
 
+
+--------------------------------------------------------------------
+local SQNodeRegistry = {}
+local defaultOptions = {}
+function registerSQNode( name, clas, options )
+	options = options or {}
+	local entry0 = SQNodeRegistry[ name ]
+	if entry0 then
+		_warn( 'duplicated SQNode:', name )
+	end
+	SQNodeRegistry[ name ] = {
+		clas     = clas,
+		comment  = options[ 'comment' ] or ''
+	}
+end
+
+function findInSQNodeRegistry( name )
+	return SQNodeRegistry[ name ]
+end
+
+function getSQNodeRegistry()
+	return SQNodeRegistry
+end
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------

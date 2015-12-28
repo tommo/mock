@@ -1,30 +1,55 @@
 module 'mock'
 --------------------------------------------------------------------
 CLASS: SQActor ( Behaviour )
-	:MODEL{}
+	:MODEL{
+		Field 'script' :asset( 'sq_script' ) :getset( 'Script' )
+}
+
+
 
 function SQActor:__init()
-	self.sequenceCoroutines = {}
+	self.context = false
 end
 
-function SQActor:_spawnThread()
+function SQActor:onStart( ent )
+	SQActor.__super.onStart( self, ent )
+	self:startScript()
 end
 
-function SQActor:updateThreads()
+function SQActor:getScript()
+	return self.scriptPath
 end
 
+function SQActor:setScript( path )
+	self.scriptPath = path
+	local script = loadAsset( path )
+	self.script = script
+end
 
--- --------------------------------------------------------------------
--- CLASS: SQMutex ()
--- 	:MODEL{}
+function SQActor:startScript()
+	if not self.script then return end
+	self.context = SQContext()
+	self.context:loadScript( self.script )
+	self:findAndStopCoroutine( 'actionExecution' )
+	self:addCoroutine( 'actionExecution' )
+end
 
--- function SQMutex:__init()
--- 	self.locked = {}
--- 	self.owner  = {} --key:
--- end
+function SQActor:stopScript()
+	if not self.context then return end
+	self.context:stop()
+	self.context = false
+	self:findAndStopCoroutine( 'actionExecution' )
+end
 
--- --------------------------------------------------------------------
+function SQActor:actionExecution()
+	local context = self.context
+	if not context then return end
+	local dt = 0
+	while true do
+		context:update( dt )
+		local dt = coroutine.yield()
+	end
+end
 
-
-CLASS: SQSemaphore ()
-	:MODEL{}
+--------------------------------------------------------------------
+mock.registerComponent( 'SQActor', SQActor )

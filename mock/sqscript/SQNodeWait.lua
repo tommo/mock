@@ -21,6 +21,10 @@ function SQNodeWait:step( context, env, dt )
 	env.elapsed = elapsed
 end
 
+function SQNodeWait:getRichText()
+	return string.format( '<cmd>WAIT</cmd> <data><number>%.2f</number> sec</data>', self.duration )
+end
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeWaitFrame ( SQNode )
@@ -40,6 +44,10 @@ function SQNodeWaitFrame:step( context, env, dt )
 	local elapsed = env.elapsed 
 	elpased = elpased + 1
 	return elpased >= self.frameCount
+end
+
+function SQNodeWaitFrame:getRichText()
+	return string.format( '<cmd>WAIT</cmd> <data><number>%d</number> frames</data>', self.frameCount )
 end
 
 
@@ -67,3 +75,17 @@ function SQNodeWaitRandom:step( context, env, dt )
 	env.elapsed = elapsed
 end
 
+function SQNodeWaitRandom:getRichText()
+	local min = math.max( self.duration - self.variation/2, 0 )
+	local max = self.duration + self.variation/2
+	return string.format(
+		'<cmd>WAIT</cmd> <data><number>%.2f</number> ~ <number>%.2f</number> sec </data>',
+	 min, 
+	 max
+	)
+end
+
+--------------------------------------------------------------------
+registerSQNode( 'wait', SQNodeWait             )
+registerSQNode( 'wait_frame', SQNodeWaitFrame   )
+registerSQNode( 'wait_random', SQNodeWaitRandom )
