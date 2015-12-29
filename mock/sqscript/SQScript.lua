@@ -47,6 +47,10 @@ function SQNode:getParent()
 	return self.parentNode
 end
 
+function SQNode:getRoutine()
+	return self.parentRoutine
+end
+
 function SQNode:isGroup()
 	return false
 end
@@ -72,6 +76,7 @@ function SQNode:removeChild( node )
 	table.remove( self.children, idx )
 	node.parentNode = false
 	node.parentRoutine = false	
+	node:unload()
 	return true
 end
 
@@ -98,7 +103,8 @@ end
 function SQNode:executeChildNodes( context, env )
 	local children = self.children
 	for i, child in ipairs( children ) do
-		child:execute( context )
+		local res = child:execute( context )
+		if res == 'jump' then return 'jump' end
 	end
 	return true
 end
@@ -107,26 +113,27 @@ function SQNode:execute( context ) --inside a coroutine
 	-- print( 'execute node', self:getClassName() )
 	local env = {}
 	--node enter
-	local resultEnter = self:enter( context, env )
-
+	local res = self:enter( context, env )
+	if res == 'jump' then	return 'jump'	end
+ 	
  	--node step
-	if resultEnter ~= false then
+	if res ~= false then
 		local dt = 0
 		while true do
-			local resultStep = self:step( context, env, dt )
-			if resultStep then break end
+			local res = self:step( context, env, dt )
+			if res then break end
 			dt = cyield()
 		end
 	end
 
 	--children
-	self:executeChildNodes( context, env )
+	local res = self:executeChildNodes( context, env )
+	if res == 'jump' then	return 'jump'	end
 
 	--node exit
 	return self:exit( context, env )
 	
 end
-
 
 function SQNode:enter( context, env )
 	return true
@@ -140,6 +147,15 @@ function SQNode:exit( context, env )
 	return true
 end
 
+function SQNode:_build()
+	self:build()
+	for i, child in ipairs( self.children ) do
+		child:_build()
+	end
+end
+
+function SQNode:build()
+end
 
 --------------------------------------------------------------------
 CLASS: SQNodeGroup ( SQNode )
@@ -188,10 +204,81 @@ function SQNodeLabel:getIcon()
 	return 'sq_node_label'
 end
 
+function SQNodeLabel:build()
+	local routine = self:getRoutine()
+	table.insert( routine.labelNodes, self )
+end
+
+
+--------------------------------------------------------------------
+CLASS: SQNodeGoto( SQNode )
+	:MODEL {
+		Field 'label' :string();
+}
+
+function SQNodeGoto:__init()
+	self.label = 'label'
+end
+
+function SQNodeGoto:enter( context, env )
+	local routine = self:getRoutine()
+	local targetNode = routine:findLabelNode( self.label )
+	if not targetNode then
+		_warn( 'target label not found', self.label )
+		context._jumpTargetNode = false
+	else
+		context._jumpTargetNode = targetNode
+	end
+	return 'jump'
+end
+
+function SQNodeGoto:getRichText()
+	return string.format(
+		'<cmd>GOTO</cmd> <label>%s</label>',
+		self.label
+		)
+end
+
+function SQNodeGoto:getIcon()
+	return 'sq_node_goto'
+end
+
+
+
+---------------------------------------------------------------------
+CLASS: SQNodeEnd( SQNode )
+	:MODEL{
+		Field 'stopAllRoutines' :boolean()
+}
+
+function SQNodeEnd:__init()
+	self.stopAllRoutines = false
+end
+
+function SQNodeEnd:enter( context )
+	if self.stopAllRoutines then
+		context:stop()
+		return 'jump'
+	else
+		context._jumpTargetNode = false --jump to end
+		return 'jump'
+	end
+end
+
+function SQNodeEnd:getRichText()
+	return string.format(
+		'<cmd>END</cmd> <flag>%s</flag>',
+		self.stopAllRoutines and 'All Routines' or ''
+		)
+end
+
+function SQNodeEnd:getIcon()
+	return 'sq_node_end'
+end
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeRoot( SQNodeGroup )
-
 
 
 
@@ -212,6 +299,15 @@ function SQRoutine:__init()
 
 	self.name = 'unnamed'
 	self.comment = ''
+
+	self.labelNodes = {}
+end
+
+function SQRoutine:findLabelNode( id )
+	for i, node in ipairs( self.labelNodes ) do
+		if node.id == id then return node end
+	end
+	return nil
 end
 
 function SQRoutine:getName()
@@ -246,6 +342,10 @@ function SQRoutine:execute( context )
 	return context:executeRoutine( self )
 end
 
+function SQRoutine:build()
+	self.rootNode:_build()
+end
+
 
 --------------------------------------------------------------------
 SQScript :MODEL{
@@ -256,6 +356,7 @@ SQScript :MODEL{
 function SQScript:__init()
 	self.routines = {}
 	self.comment = ''
+	self.built = false
 end
 
 function SQScript:addRoutine( routine )
@@ -281,6 +382,14 @@ function SQScript:getComment()
 end
 
 function SQScript:_postLoad( data )
+end
+
+function SQScript:build()
+	if self.built then return end
+	self.built = true
+	for i, routine in ipairs( self.routines ) do
+		routine:build()
+	end
 end
 
 --------------------------------------------------------------------
@@ -348,9 +457,21 @@ end
 
 local function _SQConexteCoroutineFunc( context, routine )
 	local dt = cyield()
-	local node = routine:getRootNode()
+	local entryNode = routine:getRootNode()
 	-- print( 'starting routine', context, routine )
-	return node:execute( context )
+	while true do
+		local res = entryNode:execute( context )
+		if res == 'jump' then
+			local targetNode = context._jumpTargetNode
+			context._jumpTargetNode = false
+			if not targetNode then --END
+				break
+			end
+			entryNode = targetNode:getParent() --TODO: use pointer instead of tree iteration.
+		else
+			break
+		end
+	end
 end
 
 function SQContext:executeRoutine( routine )
@@ -420,6 +541,7 @@ end
 function loadSQScriptFromRaw( data )
 	local script = mock.deserialize( nil, data )
 	script:_postLoad()
+	script:build()
 	return script
 end
 
@@ -436,5 +558,7 @@ end
 --------------------------------------------------------------------
 registerSQNode( 'group', SQNodeGroup )
 registerSQNode( 'label', SQNodeLabel )
+registerSQNode( 'end',   SQNodeEnd   )
+registerSQNode( 'goto',  SQNodeGoto  )
 
 mock.registerAssetLoader( 'sq_script', loadSQScript )

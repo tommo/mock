@@ -10,7 +10,8 @@ end
 
 function SQNodeLoopBase:executeChildNodes( context, env )
 	while not self:isLoopDone( context, env ) do
-		SQNode.executeChildNodes( self, context, env )
+		local res = SQNode.executeChildNodes( self, context, env )
+		if res == 'jump' then return res end
 	end
 end
 
