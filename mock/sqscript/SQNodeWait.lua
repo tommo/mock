@@ -22,7 +22,7 @@ function SQNodeWait:step( context, env, dt )
 end
 
 function SQNodeWait:getRichText()
-	return string.format( '<cmd>WAIT</cmd> <data><number>%.2f</number> sec</data>', self.duration )
+	return string.format( '<cmd>WAIT</cmd> <number>%.2f</number> sec', self.duration )
 end
 
 function SQNodeWait:getIcon()
@@ -51,7 +51,7 @@ function SQNodeWaitFrame:step( context, env, dt )
 end
 
 function SQNodeWaitFrame:getRichText()
-	return string.format( '<cmd>WAIT</cmd> <data><number>%d</number> frames</data>', self.frameCount )
+	return string.format( '<cmd>WAIT</cmd> <number>%d</number> frames', self.frameCount )
 end
 
 function SQNodeWaitFrame:getIcon()

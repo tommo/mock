@@ -6,7 +6,6 @@ local ccreate, cresume, cyield, cstatus
 
 CLASS: SQNode ()
 CLASS: SQRoutine ()
-
 CLASS: SQScript ()
 
 CLASS: SQContext ()
@@ -110,7 +109,7 @@ function SQNode:execute( context ) --inside a coroutine
 	--node enter
 	local resultEnter = self:enter( context, env )
 
-	--node step
+ 	--node step
 	if resultEnter ~= false then
 		local dt = 0
 		while true do
@@ -143,12 +142,58 @@ end
 
 
 --------------------------------------------------------------------
---CLASS RootNode
-CLASS: SQNodeRoot( SQNode )
+CLASS: SQNodeGroup ( SQNode )
+	:MODEL{
+		Field 'name' :string();
+}
 
-function SQNodeRoot:isGroup()
+function SQNodeGroup:__init()
+	self.name = 'group'
+end
+
+function SQNodeGroup:isGroup()
 	return true
 end
+
+function SQNodeGroup:getRichText()
+	return string.format(
+		'[ <group>%s</group> ]',
+		self.name
+		)
+end
+
+function SQNodeGroup:getIcon()
+	return 'sq_node_group'
+end
+
+
+--------------------------------------------------------------------
+CLASS: SQNodeLabel( SQNode )
+	:MODEL{
+		Field 'id' :string();
+}
+
+function SQNodeLabel:__init()
+	self.id = 'label'
+end
+
+function SQNodeLabel:getRichText()
+	return string.format(
+		'<label>%s</label>',
+		self.id
+		)
+end
+
+function SQNodeLabel:getIcon()
+	return 'sq_node_label'
+end
+
+
+--------------------------------------------------------------------
+CLASS: SQNodeRoot( SQNodeGroup )
+
+
+
 
 --------------------------------------------------------------------
 SQRoutine :MODEL{
@@ -216,7 +261,6 @@ end
 function SQScript:addRoutine( routine )
 	local routine = routine or SQRoutine()
 	routine.parentScript = self
-	routine:addNode( SQNodeLog() ).text = 'Test Test'
 	table.insert( self.routines, routine )
 	return routine
 end
@@ -369,6 +413,8 @@ function getSQNodeRegistry()
 	return SQNodeRegistry
 end
 
+
+
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 function loadSQScriptFromRaw( data )
@@ -387,5 +433,8 @@ function loadSQScript( node )
 	return loadSQScriptFromRaw( data )
 end
 
+--------------------------------------------------------------------
+registerSQNode( 'group', SQNodeGroup )
+registerSQNode( 'label', SQNodeLabel )
 
 mock.registerAssetLoader( 'sq_script', loadSQScript )

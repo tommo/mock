@@ -1,7 +1,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: SQNodeLoopBase ( SQNode )
+CLASS: SQNodeLoopBase ( SQNodeGroup )
 	:MODEL{}
 
 function SQNodeLoopBase:isGroup()
@@ -49,7 +49,7 @@ end
 
 function SQNodeLoopCounted:getRichText()
 	return string.format(
-		'<cmd>LOOP</cmd> <data><number>%d</number> times</data>',
+		'[ <cmd>LOOP</cmd> <number>%d</number> times ]',
 		self.count
 	)
 end
@@ -65,7 +65,7 @@ end
 
 function SQNodeLoopInfinite:getRichText()
 	return string.format(
-		'<cmd>LOOP_INIFINITE</cmd>'
+		'[ <cmd>LOOP_INIFINITE</cmd> ]'
 	)
 end
 
