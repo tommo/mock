@@ -93,7 +93,7 @@ end
 function SQNodeWaitRandom:getRichText()
 	local min, max = self:getRange()
 	return string.format(
-		'<cmd>WAIT</cmd> <data><number>%.2f</number> ~ <number>%.2f</number> sec </data>',
+		'<cmd>WAIT</cmd> <number>%.2f</number> ~ <number>%.2f</number> sec',
 	 min, 
 	 max
 	)

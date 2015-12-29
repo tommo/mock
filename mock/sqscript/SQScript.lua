@@ -76,7 +76,6 @@ function SQNode:removeChild( node )
 	table.remove( self.children, idx )
 	node.parentNode = false
 	node.parentRoutine = false	
-	node:unload()
 	return true
 end
 
