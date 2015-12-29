@@ -1133,3 +1133,11 @@ function _ENUM_V( t )
 	end
 	return t1
 end
+
+function _ENUM_NAME( enum, value, fallback )
+	for i, entry in ipairs( enum ) do
+		local n, v = unpack( entry )
+		if value == v then return n end
+	end
+	return fallback or nil
+end

@@ -2,18 +2,20 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: SQActor ( Behaviour )
 	:MODEL{
-		Field 'script' :asset( 'sq_script' ) :getset( 'Script' )
+		Field 'script' :asset( 'sq_script' ) :getset( 'Script' );
+		Field 'autoStart' :boolean();
 }
-
-
 
 function SQActor:__init()
 	self.context = false
+	self.autoStart = true
 end
 
 function SQActor:onStart( ent )
 	SQActor.__super.onStart( self, ent )
-	self:startScript()
+	if self.autoStart then
+		self:startScript()
+	end
 end
 
 function SQActor:getScript()
@@ -22,14 +24,15 @@ end
 
 function SQActor:setScript( path )
 	self.scriptPath = path
-	local script = loadAsset( path )
-	self.script = script
 end
 
 function SQActor:startScript()
+	local script = loadAsset( self.scriptPath )
+	self.script = script
 	if not self.script then return end
 	self.context = SQContext()
-	self.context:setEnv( 'actor', self )
+	self.context:setEnv( 'actor',  self )
+	self.context:setEnv( 'entity', self:getEntity() )
 	self.context:loadScript( self.script )
 	self:findAndStopCoroutine( 'actionExecution' )
 	self:addCoroutine( 'actionExecution' )

@@ -18,6 +18,10 @@ function SQNodeLoopBase:isLoopDone( context, env )
 	return true
 end
 
+function SQNodeLoopBase:getIcon()
+	return 'sq_node_loop'
+end
+
 --------------------------------------------------------------------
 CLASS: SQNodeLoopCounted ( SQNodeLoopBase )
 	:MODEL{

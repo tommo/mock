@@ -15,7 +15,7 @@ function SQNodeSignal:enter( context, env )
 end
 
 function SQNodeSignal:getRichText()
-	return string.format( '<cmd>SIG</cmd> <data>%s</data>', self.signalId )
+	return string.format( '<cmd>SIG</cmd> <signal>%s</signal>', self.signalId )
 end
 
 
@@ -41,7 +41,7 @@ function SQNodeWaitSignal:step( context, env )
 end
 
 function SQNodeWaitSignal:getRichText()
-	return string.format( '<cmd>WAIT_SIG</cmd> <data>%s</data>', self.signalId )
+	return string.format( '<cmd>WAIT_SIG</cmd> <signal>%s</signal>', self.signalId )
 end
 
 --------------------------------------------------------------------

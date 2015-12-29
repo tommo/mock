@@ -3,7 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: SQNodeWait ( SQNode )
 	:MODEL{
-		Field 'duration'
+		Field 'duration' :meta{ step=0.1 } :range( 0 );
 	}
 
 function SQNodeWait:__init()
@@ -25,11 +25,15 @@ function SQNodeWait:getRichText()
 	return string.format( '<cmd>WAIT</cmd> <data><number>%.2f</number> sec</data>', self.duration )
 end
 
+function SQNodeWait:getIcon()
+	return 'sq_node_wait'
+end
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeWaitFrame ( SQNode )
 	:MODEL{
-		Field 'frameCount'
+		Field 'frameCount' :range( 0 );
 	}
 
 function SQNodeWaitFrame:__init()
@@ -50,39 +54,53 @@ function SQNodeWaitFrame:getRichText()
 	return string.format( '<cmd>WAIT</cmd> <data><number>%d</number> frames</data>', self.frameCount )
 end
 
-
+function SQNodeWaitFrame:getIcon()
+	return 'sq_node_wait'
+end
 --------------------------------------------------------------------
 CLASS: SQNodeWaitRandom ( SQNode )
 	:MODEL{
-		Field 'duration';
-		Field 'variation';
+		Field 'minDuration' :meta{ step=0.1 } :range( 0 );
+		Field 'maxDuration' :meta{ step=0.1 } :range( 0 );
 	}
 
 function SQNodeWaitRandom:__init()
-	self.duration = 1
-	self.variation = 0.1
+	self.minDuration = 1
+	self.maxDuration = 2
 end
 
 function SQNodeWaitRandom:enter( context, env )
-	env.duration = self.duration + noise( self.variation )
+	local min, max = self:getRange()
+	env.duration = rand( min, max )
 	env.elapsed = 0
 end
 
+
 function SQNodeWaitRandom:step( context, env, dt )
-	local elpased = env.elapsed 
-	elpased = elpased + dt
-	if elpased >= env.duration then return true end
+	local elapsed = env.elapsed 
+	elapsed = elapsed + dt
+	if elapsed >= env.duration then return true end
 	env.elapsed = elapsed
 end
 
+function SQNodeWaitRandom:getRange()
+	local min, max = self.minDuration, self.maxDuration
+	min = math.max( min, 0 )
+	if max < min then max = min end
+	return min, max
+end
+
 function SQNodeWaitRandom:getRichText()
-	local min = math.max( self.duration - self.variation/2, 0 )
-	local max = self.duration + self.variation/2
+	local min, max = self:getRange()
 	return string.format(
 		'<cmd>WAIT</cmd> <data><number>%.2f</number> ~ <number>%.2f</number> sec </data>',
 	 min, 
 	 max
 	)
+end
+
+function SQNodeWaitRandom:getIcon()
+	return 'sq_node_wait'
 end
 
 --------------------------------------------------------------------

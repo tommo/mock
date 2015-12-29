@@ -39,6 +39,8 @@ function AnimatorState:__init()
 	self.startPos = 0
 	self.endPos   = 0
 
+	self.duration = 0
+
 end
 
 function AnimatorState:getMoaiAction()
@@ -84,6 +86,14 @@ end
 
 function AnimatorState:getRange()
 	return self.startPos, self.endPos
+end
+
+function AnimatorState:setDuration( duration )
+	self.duration = duration or 0
+end
+
+function AnimatorState:getDuration()
+	return self.duration
 end
 
 function AnimatorState:setMode( mode )
@@ -196,6 +206,10 @@ function AnimatorState:onUpdate( t, t0 )
 	for track, target in pairs( self.updateListenerTracks ) do
 		if self.stopping then return end --edge case: new clip started in apply
 		track:apply( self, target, t, t0 )
+	end
+	local duration = self.duration
+	if duration > 0 and t >= duration then
+		self:stop()
 	end
 end
 

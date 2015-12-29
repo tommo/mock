@@ -163,6 +163,14 @@ function Animator:resume()
 	return self:pause( false )
 end
 
+function Animator:startDefaultClip()
+	if self.default and self.data then
+		if self.default == '' then return end
+		return self:playClip( self.default, self.autoPlayMode )
+	end
+	return false
+end
+
 function Animator:setThrottle( th )
 	self.throttle = th
 	if self.activeState then
@@ -172,9 +180,8 @@ end
 
 -----
 function Animator:onStart( ent )	
-	if self.autoPlay and self.default and self.data then
-		if self.default == '' then return end
-		self:playClip( self.default, self.autoPlayMode )
+	if self.autoPlay then
+		self:startDefaultClip()
 	end
 end
 
