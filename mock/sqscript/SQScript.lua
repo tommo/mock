@@ -266,7 +266,7 @@ end
 
 function SQNodeEnd:getRichText()
 	return string.format(
-		'<cmd>END</cmd> <flag>%s</flag>',
+		'<end>END</end> <flag>%s</flag>',
 		self.stopAllRoutines and 'All Routines' or ''
 		)
 end

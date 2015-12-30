@@ -620,6 +620,15 @@ function Entity:findEntityCom( entName, comId )
 	return nil
 end
 
+function Entity:findSibling( name )
+	local parent = self.parent
+	if not parent then return nil end
+	for child in pairs( parent.children ) do
+		if child.name == name and child ~= self then return child end
+	end
+	return nil
+end
+
 function Entity:findChildCom( name, comId, deep )
 	local ent = self:findChild( name, deep )
 	if ent then return ent:com( comId ) end
