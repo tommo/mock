@@ -2,6 +2,8 @@ module 'mock'
 
 local ccreate, cresume, cyield, cstatus
 	= coroutine.create, coroutine.resume, coroutine.yield, coroutine.status
+
+local insert, remove = table.insert, table.remove
 --------------------------------------------------------------------
 
 CLASS: SQNode ()
@@ -59,9 +61,9 @@ function SQNode:addChild( node, idx )
 	node.parentNode = self
 	node.parentRoutine = self.parentRoutine
 	if idx then
-		table.insert( self.children, idx, node )
+		insert( self.children, idx, node )
 	else
-		table.insert( self.children, node )
+		insert( self.children, node )
 	end
 	return node
 end
@@ -73,7 +75,7 @@ end
 function SQNode:removeChild( node )
 	local idx = table.index( self.children, node )
 	if not idx then return false end
-	table.remove( self.children, idx )
+	remove( self.children, idx )
 	node.parentNode = false
 	node.parentRoutine = false	
 	return true
@@ -99,41 +101,6 @@ function SQNode:setComment( c )
 	self.comment = c
 end
 
-function SQNode:executeChildNodes( context, env )
-	local children = self.children
-	for i, child in ipairs( children ) do
-		local res = child:execute( context )
-		if res == 'jump' then return 'jump' end
-	end
-	return true
-end
-
-function SQNode:execute( context ) --inside a coroutine
-	-- print( 'execute node', self:getClassName() )
-	local env = {}
-	--node enter
-	local res = self:enter( context, env )
-	if res == 'jump' then	return 'jump'	end
- 	
- 	--node step
-	if res ~= false then
-		local dt = 0
-		while true do
-			local res = self:step( context, env, dt )
-			if res then break end
-			dt = cyield()
-		end
-	end
-
-	--children
-	local res = self:executeChildNodes( context, env )
-	if res == 'jump' then	return 'jump'	end
-
-	--node exit
-	return self:exit( context, env )
-	
-end
-
 function SQNode:enter( context, env )
 	return true
 end
@@ -149,6 +116,7 @@ end
 function SQNode:_build()
 	self:build()
 	for i, child in ipairs( self.children ) do
+		child.index = i
 		child:_build()
 	end
 end
@@ -205,7 +173,7 @@ end
 
 function SQNodeLabel:build()
 	local routine = self:getRoutine()
-	table.insert( routine.labelNodes, self )
+	insert( routine.labelNodes, self )
 end
 
 
@@ -224,9 +192,9 @@ function SQNodeGoto:enter( context, env )
 	local targetNode = routine:findLabelNode( self.label )
 	if not targetNode then
 		_warn( 'target label not found', self.label )
-		context._jumpTargetNode = false
+		context:setJumpTarget( false )
 	else
-		context._jumpTargetNode = targetNode
+		context:setJumpTarget( targetNode )
 	end
 	return 'jump'
 end
@@ -361,7 +329,7 @@ end
 function SQScript:addRoutine( routine )
 	local routine = routine or SQRoutine()
 	routine.parentScript = self
-	table.insert( self.routines, routine )
+	insert( self.routines, routine )
 	return routine
 end
 
@@ -369,7 +337,7 @@ function SQScript:removeRoutine( routine )
 	local idx = table.index( self.routines, routine )
 	if not idx then return end
 	routine.parentRoutine = false
-	table.remove( self.routines, idx )
+	remove( self.routines, idx )
 end
 
 function SQScript:getRoutines()
@@ -384,11 +352,161 @@ function SQScript:_postLoad( data )
 end
 
 function SQScript:build()
-	if self.built then return end
+	if self.built then return true end
 	self.built = true
 	for i, routine in ipairs( self.routines ) do
 		routine:build()
 	end
+	return true
+end
+
+
+--------------------------------------------------------------------
+CLASS: SQRoutineContext ()
+ 
+function SQRoutineContext:__init( context, routine )
+	self.parentContext = context
+	self.routine = routine
+	self.running = true
+	self.jumpTarget = false
+
+	self.nodeGroupStack = {}
+	self.currentParentNode = false
+	self.currentNode = false
+	self.currentNodeEnv = false
+
+	local rootNode = routine:getRootNode()
+	self.currentNode  = rootNode
+	self.currentQueue = {}
+	self.index = 1
+end
+
+
+function SQRoutineContext:getSignalCounter( id )
+	return self.parentContext:getSignalCounter( id )
+end
+
+function SQRoutineContext:incSignalCounter( id )
+	return self.parentContext:incSignalCounter( id )
+end
+
+function SQRoutineContext:getEnv( key, default )
+	return self.parentContext:getEnv( key, default )
+end
+
+function SQRoutineContext:setEnv( key, value )
+	return self.parentContext:setEnv( key, value )
+end
+
+
+function SQRoutineContext:popNodeGroupStack()
+	local entry = remove( self.nodeGroupStack, 1 )
+	local node, queue, env = unpack( entry )
+	self.currentNode  = node
+	self.currentQueue = queue
+	self.currentNodeEnv = env
+	self.index        = node.index
+end
+
+function SQRoutineContext:update( dt )
+	if not self.running then return end
+	self:updateNode( dt )
+end
+
+function SQRoutineContext:updateNode( dt )
+	local node = self.currentNode
+	if node then
+		local env = self.currentNodeEnv
+		local res = node:step( self, env, dt )
+		if res then
+			if res == 'jump' then
+				return self:doJump()
+			end
+			return self:exitNode()
+		end
+	else
+		return self:nextNode()
+	end
+end
+
+function SQRoutineContext:nextNode()
+	local index1 = self.index + 1
+	local node1 = self.currentQueue[ index1 ]
+	if not node1 then
+		return self:exitGroup()
+	end
+	self.index = index1
+	self.currentNode = node1
+	local env = {}
+	self.currentNodeEnv = env
+	local res = node1:enter( self, env )
+	if res == 'jump' then
+		return self:doJump()
+	end
+	return self:updateNode( 0 )
+end
+
+function SQRoutineContext:exitNode( fromGroup )
+	local node = self.currentNode
+	local res = node:exit( self, self.currentNodeEnv )
+	if res == 'jump' then
+		return self:doJump()
+	end
+	if node:isGroup() then
+		--ENTER Group
+		insert( self.nodeGroupStack, 1, 
+			{ node, self.currentQueue, self.currentNodeEnv }
+		)
+		self.index = 0
+		self.currentQueue = node.children
+	end
+	return self:nextNode()
+end
+
+function SQRoutineContext:exitGroup()
+	local stack = self.nodeGroupStack
+	local entry = stack[1]
+	if not entry then
+		--end of execution
+		self.running = false
+		return true
+	end
+
+	--exit group node
+	local node, queue, env = unpack( entry )
+	local res = node:exit( self, env )
+	if res == 'jump' then
+		return self:doJump()
+	elseif res == 'loop' then
+		--Loop
+		self.index = 0
+	else
+		remove( stack, 1 )
+		self.currentQueue   = queue
+		self.index = node.index
+		-- self.currentNode    = node
+		-- self.currentNodeEnv = env
+	end
+	return self:nextNode()
+end
+
+function SQRoutineContext:setJumpTarget( node )
+	self.jumpTarget = node
+end
+
+function SQRoutineContext:doJump()
+	local target = self.jumpTarget
+	if not target then
+		self.running = false
+		return false
+	end
+
+	self.jumpTarget = false
+	local parentNode = target.parentNode
+	self.currentQueue = parentNode.children
+	self.index = target.index - 1
+	return self:nextNode()
+	
 end
 
 --------------------------------------------------------------------
@@ -401,6 +519,7 @@ function SQContext:__init()
 	self.running = false
 	self.paused  = false
 
+	self.routineContexts = {}
 	self.coroutines = {}
 	self.signalCounters = {}
 	self.env = {}
@@ -415,6 +534,17 @@ end
 function SQContext:setEnv( key, value )
 	self.env[ key ] = value
 end
+
+function SQContext:getSignalCounter( id )
+	return self.signalCounters[ id ] or 0
+end
+
+function SQContext:incSignalCounter( id )
+	local v = ( self.signalCounters[ id ] or 0 ) + 1
+	self.signalCounters[ id ] = v
+	return v
+end
+
 
 function SQContext:isPaused()
 	return self.paused
@@ -437,77 +567,79 @@ function SQContext:stop()
 end
 
 function SQContext:loadScript( script )
+	script:build()
 	self.running = true
 	self.currentScript = script
 	for i, routine in ipairs( script.routines ) do
-		self:executeRoutine( routine )
+		local routineContext = SQRoutineContext( self, routine )
+		insert( self.routineContexts, routineContext )
 	end
-end
-
-function SQContext:getSignalCounter( id )
-	return self.signalCounters[ id ] or 0
-end
-
-function SQContext:incSignalCounter( id )
-	local v = ( self.signalCounters[ id ] or 0 ) + 1
-	self.signalCounters[ id ] = v
-	return v
-end
-
-local function _SQConexteCoroutineFunc( context, routine )
-	local dt = cyield()
-	local entryNode = routine:getRootNode()
-	-- print( 'starting routine', context, routine )
-	while true do
-		local res = entryNode:execute( context )
-		if res == 'jump' then
-			local targetNode = context._jumpTargetNode
-			context._jumpTargetNode = false
-			if not targetNode then --END
-				break
-			end
-			entryNode = targetNode:getParent() --TODO: use pointer instead of tree iteration.
-		else
-			break
-		end
-	end
-end
-
-function SQContext:executeRoutine( routine )
-	local coroutines = self.coroutines
-	local coro = ccreate( _SQConexteCoroutineFunc )
-	coroutines[ routine ] = coro
-	return cresume( coro, self, routine )
 end
 
 function SQContext:update( dt )
 	if not self.running then return end
 	if self.paused then return end
-	local coroutines = self.coroutines
-	local done = false
-	for routine, coro in pairs( coroutines ) do
-		local succ, result = cresume( coro, dt )
-		if not succ then
-			if not done then done = {} end
-			done[ routine ] = true
-			print( result )
-			print( debug.traceback( coro ) )
-			error( 'error in SQRoutine execution:' )
-		elseif cstatus( coro ) == 'dead' then
-			if not done then done = {} end
-			done[ routine ] = true
-		end
+	local running = false
+	for i, routineContext in ipairs( self.routineContexts ) do
+		running = running or routineContext.running
+		routineContext:update( dt )
 	end
-
-	if done then
-		for r in pairs( done ) do
-			coroutines[ r ] = nil
-		end
-		if not next( coroutines ) then
-			self.running = false
-		end
-	end
+	if not running then self.running = false end
 end
+
+-- local function _SQConexteCoroutineFunc( context, routine )
+-- 	local dt = cyield()
+-- 	local entryNode = routine:getRootNode()
+-- 	while true do
+-- 		local res = entryNode:execute( context )
+-- 		if res == 'jump' then
+-- 			local targetNode = context._jumpTargetNode
+-- 			context._jumpTargetNode = false
+-- 			if not targetNode then --END
+-- 				break
+-- 			end
+-- 			entryNode = targetNode:getParent() --TODO: use pointer instead of tree iteration.
+-- 		else
+-- 			break
+-- 		end
+-- 	end
+-- end
+
+-- function SQContext:executeRoutine0( routine )
+-- 	local coroutines = self.coroutines
+-- 	local coro = ccreate( _SQConexteCoroutineFunc )
+-- 	coroutines[ routine ] = coro
+-- 	return cresume( coro, self, routine )
+-- end
+
+-- function SQContext:update0( dt )
+-- 	if not self.running then return end
+-- 	if self.paused then return end
+-- 	local coroutines = self.coroutines
+-- 	local done = false
+-- 	for routine, coro in pairs( coroutines ) do
+-- 		local succ, result = cresume( coro, dt )
+-- 		if not succ then
+-- 			if not done then done = {} end
+-- 			done[ routine ] = true
+-- 			print( result )
+-- 			print( debug.traceback( coro ) )
+-- 			error( 'error in SQRoutine execution:' )
+-- 		elseif cstatus( coro ) == 'dead' then
+-- 			if not done then done = {} end
+-- 			done[ routine ] = true
+-- 		end
+-- 	end
+
+-- 	if done then
+-- 		for r in pairs( done ) do
+-- 			coroutines[ r ] = nil
+-- 		end
+-- 		if not next( coroutines ) then
+-- 			self.running = false
+-- 		end
+-- 	end
+-- end
 
 
 --------------------------------------------------------------------

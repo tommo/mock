@@ -51,6 +51,7 @@ function SQActor:actionExecution()
 	local dt = 0
 	while true do
 		context:update( dt )
+		if not context:isRunning() then break end
 		dt = coroutine.yield()
 	end
 end

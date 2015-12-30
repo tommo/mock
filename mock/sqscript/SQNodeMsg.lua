@@ -13,9 +13,9 @@ function SQNodeMsg:__init()
 end
 
 function SQNodeMsg:enter( context, env )
-	local actor = context:getEnv( 'actor' )
-	if not actor then return end
-	return actor:tell( self.msg, self.data )
+	local entity = context:getEnv( 'entity' )
+	if not entity then return end
+	return entity:tell( self.msg, self.data )
 end
 
 function SQNodeMsg:getRichText()
@@ -34,19 +34,19 @@ function SQNodeWaitMsg:__init()
 end
 
 function SQNodeWaitMsg:enter( context, env )
-	local actor = context:getEnv( 'actor' )
-	if not actor then return false end
+	local entity = context:getEnv( 'entity' )
+	if not entity then return false end
 	local msgListener = function( msg, data )
 		return self:onMsg( context, env, msg, data )
 	end
 	env.msgListener = msgListener
-	actor:getEntity():addMsgListener( msgListener )
+	entity:addMsgListener( msgListener )
 end
 
 function SQNodeWaitMsg:step( context, env )
 	if env.received then
-		local actor = context:getEnv( 'actor' )
-		actor:getEntity():removeMsgListener( env.msgListener )
+		local entity = context:getEnv( 'entity' )
+		entity:removeMsgListener( env.msgListener )
 		return true
 	end
 end

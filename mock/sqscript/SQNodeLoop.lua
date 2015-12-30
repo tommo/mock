@@ -8,15 +8,22 @@ function SQNodeLoopBase:isGroup()
 	return true
 end
 
-function SQNodeLoopBase:executeChildNodes( context, env )
-	while not self:isLoopDone( context, env ) do
-		local res = SQNode.executeChildNodes( self, context, env )
-		if res == 'jump' then return res end
-	end
+-- function SQNodeLoopBase:executeChildNodes( context, env )
+-- 	while not self:checkLoopDone( context, env ) do
+-- 		local res = SQNode.executeChildNodes( self, context, env )
+-- 		if res == 'jump' then return res end
+-- 	end
+-- end
+
+function SQNodeLoopBase:checkLoopDone( context, env )
+	return true
 end
 
-function SQNodeLoopBase:isLoopDone( context, env )
-	return true
+function SQNodeLoopBase:exit( context, env )
+	if not self:checkLoopDone( context, env ) then
+		--GOTO
+		return 'loop'
+	end
 end
 
 function SQNodeLoopBase:getIcon()
@@ -41,7 +48,7 @@ function SQNodeLoopCounted:enter( context, env )
 	env.count = 0
 end
 
-function SQNodeLoopCounted:isLoopDone( context, env )
+function SQNodeLoopCounted:checkLoopDone( context, env )
 	local count = env.count + 1
 	if count > self.count then return true end
 	env.count = count
@@ -60,7 +67,7 @@ CLASS: SQNodeLoopInfinite ( SQNodeLoopBase )
 	:MODEL{
 	}
 
-function SQNodeLoopInfinite:isLoopDone( context, env )
+function SQNodeLoopInfinite:checkLoopDone( context, env )
 	return true
 end
 
