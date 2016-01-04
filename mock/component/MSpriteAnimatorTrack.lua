@@ -6,7 +6,7 @@ CLASS: MSpriteAnimatorKey ( AnimatorEventKey )
 	:MODEL{
 		Field 'clip'  :string() :selection( 'getClipNames' ) :set( 'setClip' );
 		Field 'playMode' :enum( EnumTimerMode );
-		Field 'FPS'   :int();
+		Field 'FPS'   :number() ;
 		Field 'lockFrame' :int() :range(-1);
 		'----';
 		Field 'resetLength' :action( 'resetLength' );

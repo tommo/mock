@@ -670,7 +670,7 @@ function InputDevice:init()
 	self:initKeyboardEventHandler ()
 	self:initMouseEventHandler    ()
 	-- TODO: implement belows
-	self:initJoystickEventHandler ()
+	-- self:initJoystickEventHandler ()
 	-- self:initMotionEventHandler   ()
 	self:initAccelerometerEventHandler    ()
 	self:initGyroscopeEventHandler    ()
