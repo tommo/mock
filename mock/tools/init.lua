@@ -1,10 +1,13 @@
+--------------------------------------------------------------------
+--JoysticConfig
+require 'mock.tools.JoystickConfig'
+require 'mock.tools.SDLJoystickMapping'
+
+--------------------------------------------------------------------
 require 'mock.tools.TMXTool'
 require 'mock.tools.InputRecorder'
 require 'mock.tools.DrawHelpers'
 require 'mock.tools.UserAction' --non coroutine action
-
-require 'mock.tools.JoystickConfig'
-require 'mock.tools.SDLJoystickMapping'
 
 ---------------------------------------------------------------------
 --Stat
@@ -34,3 +37,12 @@ require 'mock.tools.GridStruct'
 require 'mock.tools.SpatialGrid'
 
 require 'mock.tools.EntityAlignment'
+
+--------------------------------------------------------------------
+--TOOLS
+require 'mock.tools.SimpleAnimationPreset'
+require 'mock.tools.PlaceHolder'
+-- require 'mock.tools.TouchButton'
+-- require 'mock.tools.FakeInput'
+
+

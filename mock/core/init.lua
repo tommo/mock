@@ -18,13 +18,16 @@ require 'mock.core.MOAIActionHelpers'
 require 'mock.core.MOAIPropHelpers'
 require 'mock.core.MOAINodeHelper'
 
-require 'mock.core.ThreadTask'
 require 'mock.core.DebugHelper'
 require 'mock.core.LogHelper'
+
 
 ----------------Core Modules
 require 'mock.core.defaults'
 require 'mock.core.Actor'
+
+----task
+require 'mock.core.task'
 
 ----common class
 require 'mock.core.GlobalManager'
@@ -64,4 +67,3 @@ require 'mock.core.EntityHelper'
 require 'mock.core.AnimCurve'
 
 require 'mock.core.SceneAssetWalker'
-

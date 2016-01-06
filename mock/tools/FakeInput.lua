@@ -23,6 +23,8 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
+--TODO: need rework!!
+
 CLASS: FakeInput ( Entity )
 -- function FakeInput:threadDrag(x0,y0,x1,y1,time)
 

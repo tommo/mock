@@ -3,7 +3,7 @@ module 'mock'
 local ProFi
 function startProfiler()
 	if not ProFi then
-		ProFi = require 'mock.tools.ProFi'
+		ProFi = require 'mock.3rdparty.ProFi'
 	end
 	ProFi:reset()
 	ProFi:start()	

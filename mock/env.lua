@@ -49,46 +49,48 @@ module( 'mock.env', package.seeall )
 
 require 'mock.core'
 --------------------------------------------------------------------
-require 'mock.task.basic'
 
 ----------------Asset Loaders
 require 'mock.asset'
 require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 
-
-----------------GUI system
-require 'mock.gui'
-
-----------------Builtin Components
-require 'mock.anim'
+--------------------------------------------------------------------
+----tools
+require 'mock.tools'
 
 --------------------------------------------------------------------
+--PACKAGES
+--------------------------------------------------------------------
+
+------Animator
+require 'mock.anim'
+
+----Common
+-- require 'mock.common'
 require 'mock.component'
 require 'mock.entity'
+
+
+------GUI system
+require 'mock.gui'
+
+------STORY
+require 'mock.story'
+
+------Sequence
+require 'mock.sqscript'
+
+------AI
+require 'mock.ai'
+
+----UI
+require 'mock.ui'
 
 ----Effects
 require 'mock.effect'
 
 ----CameraFX
 -- require 'mock.camerafx'
-
-----UI
-require 'mock.ui'
-
-----tools
-require 'mock.tools'
-
----prefabs
-require 'mock.prefabs.PlaceHolder'
-
----preset
-require 'mock.preset.simpleAnimation'
-
-----STORY
-require 'mock.story'
-
-----Sequence
-require 'mock.sqscript'
 
 
 

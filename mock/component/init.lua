@@ -91,10 +91,6 @@ require 'mock.component.SpineSpriteSimple'
 --------------------------------------------------------------------
 ---- AI
 require 'mock.component.FSMController'
-require 'mock.component.BTController'
-require 'mock.component.SteerController'
-require 'mock.component.WaypointGraph'
-require 'mock.component.WaypointPathFinder'
 
 --------------------------------------------------------------------
 require 'mock.component.Path'

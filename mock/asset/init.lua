@@ -40,8 +40,6 @@ require 'mock.asset.PhysicsMaterial'
 
 --LOGIC
 require 'mock.asset.FSMScheme'
-require 'mock.asset.BTScheme'
-require 'mock.asset.BTScript'
 
 --AUDIO
 require 'mock.asset.FMODDesignerProject'

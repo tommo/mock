@@ -1,3 +1,4 @@
+module 'mock'
 
 local function colorAnimations()
 	local ATTR_R_COL=MOAIColor.ATTR_R_COL
@@ -32,7 +33,6 @@ local function transformAnimations()
 		return prop:seekScl(0,0,1,t or 0.5,easetype)
 	end
 end
-
 
 
 colorAnimations()
