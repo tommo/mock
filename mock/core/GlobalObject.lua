@@ -7,13 +7,11 @@ CLASS: GlobalObjectNode ()
 		Field '_folded' :boolean() :no_edit(); 
 
 		Field 'name' :string() :set( 'setName' ); 
-		Field 'persistent' :boolean();
 	}
 
 function GlobalObjectNode:__init()
 	self.children = {}
 	self.name = self:getClassName()
-	self.persistent = false
 	self.type     = false
 	self.object   = false
 	self._folded  = false

@@ -63,7 +63,7 @@ function ControlVariable:save()
 		name  = self.name,
 		desc  = self.desc,
 		value = self.value,
-		type  = self.vtype
+		vtype  = self.vtype
 	}
 end
 
@@ -157,8 +157,9 @@ function ControlVariableSet:__deserialize( data )
 	for i, varData in ipairs( data ) do
 		local var = ControlVariable()
 		var:load( varData )
-		self.variables = variables
+		variables[ i ] = var
 	end
+	self.variables = variables
 end
 
 --------------------------------------------------------------------

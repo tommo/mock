@@ -151,16 +151,17 @@ local defaultGameConfig={
 
 function Game:loadConfig( path, fromEditor )
 	_stat( 'loading game config from :', path )
-	assert ( path, 'no config path!' )
-	local file = io.open( path, 'r' )
-	if not file then 
-		_error( 'game configuration not found:', path )
-		return 
-	end
+	local data = self:loadJSONData( path )
+	-- assert ( path, 'no config path!' )
+	-- local file = io.open( path, 'r' )
+	-- if not file then 
+	-- 	_error( 'game configuration not found:', path )
+	-- 	return 
+	-- end
 
-	local text = file:read('*a')
-	file:close()
-	local data = MOAIJsonParser.decode( text )
+	-- local text = file:read('*a')
+	-- file:close()
+	-- local data = MOAIJsonParser.decode( text )
 	if not data then
 		_error( 'game configuration not parsed:', path )
 		return
@@ -433,6 +434,24 @@ end
 function Game:saveConfigToFile( path )
 	local data = self:saveConfigToTable()
 	return self:saveJSONData( data, path, 'game config' )
+end
+
+function Game:saveGlobalObjectsToTable()
+	return getGlobalObjectLibrary():save()
+end
+
+function Game:saveGlobalObjectsToString()
+	return encodeJSON( self:saveGlobalObjectsToTable() )
+end
+
+function Game:saveGlobalObjectsToFile( path )
+	local data = self:saveGlobalObjectsToTable()
+	return self:saveJSONData( data, path, 'game objects' )
+end
+
+function Game:loadGlobalObjects( path )
+	local data = self:loadJSONData( path, 'game objects' )
+	return getGlobalObjectLibrary():load( data )
 end
 
 function Game:saveJSONData( data, path, dataInfo )
@@ -753,8 +772,8 @@ function Game:getActionRoot()
 end
 
 function Game:setThrottle(v)
-	self.throttle=v
-	return self.actionRoot:throttle(v*1)
+	self.throttle = v
+	return self.actionRoot:throttle( v * 1 )
 end
 
 
