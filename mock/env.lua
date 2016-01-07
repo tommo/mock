@@ -57,6 +57,7 @@ require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 --------------------------------------------------------------------
 ----tools
 require 'mock.tools'
+require 'mock.common'
 
 --------------------------------------------------------------------
 --PACKAGES
@@ -66,7 +67,6 @@ require 'mock.tools'
 require 'mock.anim'
 
 ----Common
--- require 'mock.common'
 require 'mock.component'
 require 'mock.entity'
 

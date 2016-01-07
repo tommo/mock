@@ -13,6 +13,8 @@ require 'mock.sqscript.SQNodeWait'
 require 'mock.sqscript.SQNodeSignal'
 require 'mock.sqscript.SQNodeMsg'
 
+require 'mock.sqscript.SQNodeCondition'
+
 require 'mock.sqscript.SQNodeAnimator'
 
 --------------------------------------------------------------------

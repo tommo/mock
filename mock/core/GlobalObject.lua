@@ -196,3 +196,15 @@ end
 function getGlobalObjectClassRegistry()
 	return GlobalObjectRegistry
 end
+
+
+--------------------------------------------------------------------
+local _globalObjectLibrary = GlobalObjectLibrary()
+function getGlobalObjectLibrary()
+	return _globalObjectLibrary
+end
+
+function getGlobalObject( id )
+	return _globalObjectLibrary:get( id )
+end
+

@@ -379,7 +379,7 @@ function _deserializeObject( obj, data, objMap, namespace, partialFields )
 
 	local __deserialize = obj.__deserialize
 	if __deserialize then
-		__deserialize( obj, data['extra'], namespace )
+		__deserialize( obj, data['extra'] )
 	end
 
 	return obj, objMap

@@ -937,6 +937,16 @@ function string.endwith(s,s1)
 	return ss==s1
 end
 
+function string.findlast( s, pattern )
+	local fp0, fp1
+	while true do
+		local p0, p1 = string.find( s, pattern, fp1 and ( fp1 + 1 ) or nil )
+		if not p0 then break end
+		fp0 = p0
+		fp1 = p1
+	end
+	return fp0, fp1
+end
 
 --------------------------------------------------------------------
 -------Debug Helper?

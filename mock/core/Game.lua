@@ -360,7 +360,7 @@ function Game:initCommonData( config, fromEditor )
 
 	--init global objects
 	_stat( '...loading global game objects' )
-	self.globalObjectLibrary = GlobalObjectLibrary()
+	self.globalObjectLibrary = getGlobalObjectLibrary()
 	self.globalObjectLibrary:load( config['global_objects'] )
 
 	----ask other systems to initialize
