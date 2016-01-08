@@ -30,11 +30,11 @@ CLASS: SQNodeBranchYes ( SQNodeBranch )
 	:MODEL{}
 
 function SQNodeBranchYes:getRichText()
-	return string.format( '<branch>Yes</branch>' )
+	return string.format( '<branch class="yes">Yes</branch>' )
 end
 
 function SQNodeBranchYes:getIcon()
-	return 'sq_node_branch_yes'
+	return 'sq_node_yes'
 end
 
 --------------------------------------------------------------------
@@ -42,11 +42,11 @@ CLASS: SQNodeBranchNope ( SQNodeBranch )
 	:MODEL{}
 
 function SQNodeBranchNope:getRichText()
-	return string.format( '<branch>No</branch>' )
+	return string.format( '<branch class="no">No</branch>' )
 end
 
 function SQNodeBranchNope:getIcon()
-	return 'sq_node_branch_no'
+	return 'sq_node_nope'
 end
 
 --------------------------------------------------------------------
@@ -125,7 +125,7 @@ function SQNodeIfExpr:checkCondition( context, env )
 end
 
 function SQNodeIfExpr:getRichText()
-	return string.format( '<condition>%s</condition>?', self.expr )
+	return string.format( '<condition>IF</condition> <string>%s</string>', self.expr )
 end
 
 
