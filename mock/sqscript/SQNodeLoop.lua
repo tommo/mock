@@ -49,7 +49,7 @@ function SQNodeLoopCounted:enter( context, env )
 end
 
 function SQNodeLoopCounted:checkLoopDone( context, env )
-	local count = env.count + 1
+	local count = (env.count or 0) + 1
 	if count > self.count then return true end
 	env.count = count
 	return false

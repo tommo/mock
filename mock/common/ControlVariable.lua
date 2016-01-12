@@ -42,8 +42,26 @@ function ControlVariable:set( v )
 	elseif t == 'int' then
 		self.value =math.floor( tonumber( v ) or 0 )
 	elseif t == 'boolean' then
-		self.value = v and true or false
+		local tt = type( v )
+		if tt == 'boolean' then
+			self.value = v
+		elseif tt == 'number' then
+			self.value = n ~= 0
+		elseif tt == 'string' then
+			local n = tonumber( v )
+			if n then
+				self.value = n ~= 0
+			else
+				v = v:upper()
+				if v == 'FALSE' or v == 'F' or v:trim() == '' then
+					self.value = false
+				else
+					self.value = true
+				end
+			end
+		end
 	end
+
 end
 
 function ControlVariable:get()
