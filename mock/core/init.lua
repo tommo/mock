@@ -66,4 +66,6 @@ require 'mock.core.SceneReference'
 require 'mock.core.EntityHelper'
 require 'mock.core.AnimCurve'
 
+--------------------------------------------------------------------
 require 'mock.core.SceneAssetWalker'
+require 'mock.core.EditorSupport'
