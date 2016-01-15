@@ -190,11 +190,6 @@ local function extractTileIdBase( id )
 	return head, tail
 end
 
-function NamedTileset:_load( data, texture )
-	self:loadData( data )
-	self:buildDeck( texture )
-end
-
 function NamedTileset:loadData( data )
 	self.name = data['name']
 	self.rawName = data['raw_name']
@@ -344,7 +339,8 @@ function NamedTilesetPack:load( json, texpath )
 	local setIdToName = {}
 	for k, tilesetData in pairs( data[ 'themes' ] ) do
 		local tileset = NamedTileset()
-		tileset:_load( tilesetData, texture )
+		tileset:loadData( tilesetData )
+		tileset:buildDeck( texture )
 		self.tilesets[ tilesetData[ 'name' ] ] = tileset
 	end
 end

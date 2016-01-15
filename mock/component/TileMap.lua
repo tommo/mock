@@ -77,7 +77,7 @@ CLASS: TileMapLayer ()
 		Field 'name'    :string();
 		Field 'tag'     :string();
 		Field 'tilesetPath' :asset( 'deck2d.tileset' );
-		Field 'visible' :boolean();
+		-- Field 'visible' :boolean();
 		Field 'subdivision' :int() :range( 1, 4 );
 		Field 'material'    :asset( 'material' );
 	}
@@ -289,8 +289,12 @@ end
 function TileMapLayer:onParentDetach( ent )
 end
 
+function TileMapLayer:onSetVisible( vis )
+end
+
 function TileMapLayer:setVisible( vis )
 	self.visible = vis
+	return self:onSetVisible( vis )
 end
 
 local drawLine = MOAIDraw.drawLine

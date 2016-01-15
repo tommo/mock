@@ -28,7 +28,9 @@ function TileMap2DLayer:applyMaterial( material )
 	material:applyToMoaiProp( self.prop )
 end
 
-
+function TileMap2DLayer:onSetVisible( vis )
+	self.prop:setVisible( vis )
+end
 --------------------------------------------------------------------
 CLASS: TileMap2D ( TileMap )
 	:MODEL{

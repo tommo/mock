@@ -222,3 +222,7 @@ end
 function NamedTileMapLayer:applyMaterial( material )
 	material:applyToMoaiProp( self.prop )
 end
+
+function NamedTileMapLayer:onSetVisible( vis )
+	self.prop:setVisible( vis )
+end

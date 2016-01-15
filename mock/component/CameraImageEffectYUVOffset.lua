@@ -25,9 +25,9 @@ local function buildBloomShader()
 		uniform float viewHeight;
 
 		void main () {
-			float du = 1.0/viewWidth  * 1.2;
-			float dv = 1.0/viewHeight * 1.2;
-			gl_FragColor = texture2D ( sampler, uvVarying ) * 0.6;
+			float du = 1.0/viewWidth  * 1.25;
+			float dv = 1.0/viewHeight * 1.5;
+			gl_FragColor = texture2D ( sampler, uvVarying ) * 0.5;
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2( 0.0,  dv ) ) * 0.05 * vec4( 1.0, 0.0, 1.0, 1.0);
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2( 0.0, -dv ) ) * 0.05 * vec4( 0.0, 1.0, 0.0, 1.0);
 			gl_FragColor += texture2D ( sampler, uvVarying + vec2(  du, 0.0 ) ) * 0.3 * vec4( 1.0, 0.0, 1.0, 1.0);
