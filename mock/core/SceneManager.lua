@@ -57,7 +57,17 @@ function SceneManager:reset()
 	self:onReset()
 end
 
+function SceneManager:start()
+	self:onStart()
+end
+
 function SceneManager:onReset()
+end
+
+function SceneManager:onStart()
+end
+
+function SceneManager:postStart()
 end
 
 function SceneManager:getScene()

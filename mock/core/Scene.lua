@@ -167,8 +167,7 @@ function Scene:serializeConfig()
 	
 	--managers
 	local managerConfigData = {}
-	for i, mgr in ipairs( self:getManagers() ) do
-		local key = mgr:getKey()
+	for key, mgr in pairs( self:getManagers() ) do
 		local data = mgr:serialize()
 		if data then
 			managerConfigData[ key ] = data
@@ -214,6 +213,11 @@ end
 
 function Scene:threadMain( dt )
 	_stat( 'entering scene main thread', self )
+
+	for key, mgr in pairs( self:getManagers() ) do
+		mgr:onStart()
+	end
+
 	-- first run
 	for ent in pairs( self.entities ) do
 		if not ent.parent then
@@ -221,6 +225,12 @@ function Scene:threadMain( dt )
 		end
 	end
 	self:flushPendingStart()
+	
+	-- 
+	for key, mgr in pairs( self:getManagers() ) do
+		mgr:postStart()
+	end
+
 	-- main loop
 	_stat( 'entering scene main loop', self )
 	dt = 0

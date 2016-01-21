@@ -87,6 +87,7 @@ end
 
 
 function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, namespace, modification, protoInfo )
+	
 	local deleted   = modification.deleted
 	local added     = modification.added
 
@@ -127,18 +128,20 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 	table.sort( childrenList, entitySortFunc )
 	
 	for i, child in ipairs( childrenList ) do
-		local guid = objMap:map( child )
-		local c = childrenIds[ guid ]
-		if c == nil then
-			--new object
-			local data = self:collectEntityWithProto( child, objMap, protoInfo )
-			if data then table.insert( newChildren, data ) end
-		else
-			--sub object
-			c[1] = true
-			local childEntry = c[2]
-			objMap:makeInternal( child )
-			self:_collecteProtoEntity( child, objMap, childEntry, namespace, modification, protoInfo )
+		if not ( child.FLAG_INTERNAL or child.FLAG_EDITOR_OBJECT ) then
+			local guid = objMap:map( child )
+			local c = childrenIds[ guid ]
+			if c == nil then
+				--new object
+				local data = self:collectEntityWithProto( child, objMap, protoInfo )
+				if data then table.insert( newChildren, data ) end
+			else
+				--sub object
+				c[1] = true
+				local childEntry = c[2]
+				objMap:makeInternal( child )
+				self:_collecteProtoEntity( child, objMap, childEntry, namespace, modification, protoInfo )
+			end
 		end
 	end
 
