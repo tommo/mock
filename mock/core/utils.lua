@@ -1254,3 +1254,6 @@ function stripdir(p)
 	return string.match(p, "[^\\/]+$")
 end
 
+function basename(p)
+	return stripext( stripdir(p) )
+end

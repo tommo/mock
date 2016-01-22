@@ -76,10 +76,10 @@ CLASS: TileMapLayer ()
 	:MODEL{
 		Field 'name'    :string();
 		Field 'tag'     :string();
-		Field 'tilesetPath' :asset( 'deck2d.tileset' );
+		Field 'tilesetPath' :asset( 'deck2d.tileset' )  :no_edit();
 		-- Field 'visible' :boolean();
-		Field 'subdivision' :int() :range( 1, 4 );
-		Field 'material'    :asset( 'material' );
+		Field 'subdivision' :int() :range( 1, 4 ) :no_edit();
+		Field 'material'    :asset( 'material' ) :getset( 'Material' );
 	}
 
 function TileMapLayer:__init()
@@ -100,12 +100,31 @@ function TileMapLayer:__init()
 
 	self.order     = 0 --order
 	self.subdivision = 1
+
+	self.material = false
 end
 
 function TileMapLayer:init( parentMap, tilesetPath, initFromEditor )
 	self.tilesetPath  = tilesetPath
 	self.tileset      = loadAsset( tilesetPath )
 	self:onInit( initFromEditor )
+end
+
+function TileMapLayer:getMaterial()
+	return self.materialPath
+end
+
+function TileMapLayer:setMaterial( path )
+	self.materialPath = path
+	self:updateMaterial()
+end
+
+function TileMapLayer:getMaterialName()
+	if not self.materialPath then 
+		return 'N/A'
+	else
+		return basename( self.materialPath )
+	end
 end
 
 function TileMapLayer:worldToModel( x, y )
@@ -193,6 +212,7 @@ function TileMapLayer:loadData( data, parentMap )
 	self.subdivision = data[ 'subdivision' ] or 1
 	self.name = data[ 'name' ]
 	self.tag  = data[ 'tag'  ]
+	self.materialPath = data[ 'material' ] or false
 	
 	self:init( parentMap, tilesetPath )
 	--TODO:verify size
@@ -209,6 +229,7 @@ function TileMapLayer:loadData( data, parentMap )
 
 	self:getGrid():loadTiles( data['tiles'] )
 	self:onLoadData( data )
+	self:updateMaterial()
 end
 
 function TileMapLayer:saveData()
@@ -222,6 +243,7 @@ function TileMapLayer:saveData()
 	data[ 'tileset'  ] = self:getTilesetPath()
 	data[ 'order'    ] = self.order
 	data[ 'subdivision' ] = self.subdivision
+	data[ 'material' ] = self.materialPath
 	self:onSaveData( data )
 	return data
 end
@@ -313,7 +335,15 @@ function TileMapLayer:onDrawGridLine()
 	end
 end
 
-function TileMapLayer:applyMaterial( material )
+function TileMapLayer:updateMaterial()
+	local materialObject = self.materialPath and loadAsset( self.materialPath )
+	if not materialObject then
+		materialObject = self.parentMap:getMaterialObject()
+	end
+	self:applyMaterial( materialObject )
+end
+
+function TileMapLayer:applyMaterial( materialObject )
 end
 
 
@@ -427,7 +457,8 @@ function TileMap:addLayer( l )
 	l.parentMap = self
 	if self._entity then
 		l:onParentAttach( self._entity )
-		l:applyMaterial( self:getMaterialObject() )
+		l:updateMaterial()
+		
 	end
 	return l
 end
@@ -574,6 +605,7 @@ end
 
 function TileMap:applyMaterial( material )
 	for i, layer in ipairs( self.layers ) do
-		layer:applyMaterial( material )
+		-- layer:applyMaterial( material )
+		layer:updateMaterial()
 	end
 end
