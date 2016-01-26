@@ -78,6 +78,24 @@ function PhysicsShapeBox:matchSize()
 	end
 end
 
+function PhysicsShapeBox:getLocalVerts()
+	local transform = MOAITransform.new()
+	transform:setLoc( self:getLoc() )
+	transform:setRot( 0,0, self.rotation )
+	transform:forceUpdate()
+	local x0, y0, x1, y1 = -self.w/2, -self.h/2, self.w/2, self.h/2
+	local result = {}
+	local x, y = transform:modelToWorld( x0, y0 )
+	table.append( result, x, y )
+	local x, y = transform:modelToWorld( x1, y0 )
+	table.append( result, x, y )
+	local x, y = transform:modelToWorld( x1, y1 )
+	table.append( result, x, y )
+	local x, y = transform:modelToWorld( x0, y1 )
+	table.append( result, x, y )
+	return result
+end
+
 --------------------------------------------------------------------
 CLASS: PhysicsShapeCircle ( PhysicsShape )
 	:MODEL{
@@ -128,6 +146,23 @@ function PhysicsShapeCircle:matchSize()
 		self:updateShape()
 	end
 end
+
+function PhysicsShapeCircle:getLocalVerts( steps )
+	steps = steps or 8
+	local r = self.radius
+	local x0, y0 = self:getLoc()
+	local interval = math.pi*2/steps
+	local cos ,sin = math.cos, math.sin
+	local result = {}
+	for i = 1, steps do
+		local a = interval * ( i - 1 )
+		local x = x0 + cos( a )*r
+		local y = y0 + sin( a )*r
+		table.append( result, x, y )
+	end
+	return result
+end
+
 
 --------------------------------------------------------------------
 CLASS: PhysicsShapePolygon ( PhysicsShape )

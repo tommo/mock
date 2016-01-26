@@ -76,9 +76,9 @@ CLASS: TileMapLayer ()
 	:MODEL{
 		Field 'name'    :string();
 		Field 'tag'     :string();
-		Field 'tilesetPath' :asset( 'deck2d.tileset' )  :no_edit();
+		Field 'tilesetPath' :asset( 'deck2d.tileset' )  :readonly();
 		-- Field 'visible' :boolean();
-		Field 'subdivision' :int() :range( 1, 4 ) :no_edit();
+		Field 'subdivision' :int() :range( 1, 4 ) :readonly();
 		Field 'material'    :asset( 'material' ) :getset( 'Material' );
 	}
 

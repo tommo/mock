@@ -149,6 +149,10 @@ function PhysicsShape:updateParentBody( body )
 	self:updateShape()
 end
 
+function PhysicsShape:getParentBody()
+	return self.parentBody
+end
+
 function PhysicsShape:updateShape()
 	if not self.active then return end
 	local shape = self.shape
@@ -191,6 +195,25 @@ function PhysicsShape:getCollisionHandler()
 	if self.handlerData then
 		return self.handlerData.func, self.handlerData.phaseMask, self.handlerData.categoryMask
 	end
+end
+
+function PhysicsShape:getLocalVerts( steps )
+	return {}
+end
+
+function PhysicsShape:getGlobalVerts( steps )
+	local localVerts = self:getLocalVerts( steps )
+	local globalVerts = {}
+	local ent = self:getEntity()
+	local count = #localVerts/2
+	ent:forceUpdate()
+	for i = 0, count - 1 do
+		local x = localVerts[ i * 2 + 1 ]
+		local y = localVerts[ i * 2 + 2 ]
+		local x, y = ent:modelToWorld( x, y )
+		table.append( globalVerts, x, y )
+	end
+	return globalVerts
 end
 
 _wrapMethods( PhysicsShape, 'shape', {

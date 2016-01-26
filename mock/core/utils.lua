@@ -23,6 +23,7 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 local pairs,ipairs = pairs,ipairs
+local tinsert      = table.insert
 local tremove      = table.remove
 local random       = math.random
 local floor        = math.floor
@@ -1257,3 +1258,35 @@ end
 function basename(p)
 	return stripext( stripdir(p) )
 end
+
+function table.sub( t, a, b )
+	b = b or -1
+	local l = #t
+	a = a > 0 and a or ( l + a + 1 )
+	b = b > 0 and b or ( l + b + 1 )
+	local t1 = {}
+	for i = a, b do
+		t1[ i - a + 1 ] = t[ i ]
+	end
+	return t1
+end
+
+function table.merge( t1, t2 )
+	local result = {}
+	local n1 = #t1
+	local n2 = #t2
+	for i = 1, n1 do
+		result[ i ] = t1[i]
+	end
+	for i = 1, n2 do
+		result[ i + n1 ] = t2[i]
+	end
+	return result
+end
+
+local function _table_append( t, a, b, ... )
+	tinsert( t, a )
+	if b == nil then return end
+	return _table_append( t, b, ... )
+end
+table.append = _table_append

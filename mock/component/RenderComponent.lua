@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: RenderComponent()
+CLASS: RenderComponent( Component )
 	:MODEL{
 		Field 'material' :asset( 'material' ) :getset( 'Material' );
 	}
