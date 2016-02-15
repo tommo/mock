@@ -112,7 +112,7 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 		end
 	end
 
-	--find children variation
+	--find children modification
 	local childrenIds = {}
 	for i, childEntry in ipairs( protoEntry.children ) do
 		local id = childEntry.id

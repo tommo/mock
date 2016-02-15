@@ -346,6 +346,15 @@ function Entity:getComponent( clas )
 		if comType == clas then return com end
 		if isClass( comType ) and comType:isSubclass( clas ) then return com end
 	end
+	return nil
+end
+
+function Entity:getComponentByAlias( alias )
+	if not self.components then return nil end
+	for com, comType in pairs( self.components ) do
+		if com._alias == alias then return com end
+	end
+	return nil
 end
 
 function Entity:getComponentByName( name )
@@ -356,6 +365,7 @@ function Entity:getComponentByName( name )
 			comType = comType.__super
 		end
 	end
+	return nil
 end
 
 function Entity:com( id )

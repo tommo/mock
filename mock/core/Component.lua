@@ -1,6 +1,8 @@
 module 'mock'
 CLASS: Component ()
- 	:MODEL{}
+ 	:MODEL{
+ 		Field '_alias' :string() :no_edit();
+ }
 
 --------------------------------------------------------------------
 wrapWithMoaiPropMethods( Component, '_entity._prop' )
@@ -11,6 +13,10 @@ wrapWithMoaiPropMethods( Component, '_entity._prop' )
 --------------------------------------------------------------------
 function Component:getEntity()
 	return self._entity
+end
+
+function Component:getAlias()
+	return self._alias
 end
 
 function Component:getEntityName()
