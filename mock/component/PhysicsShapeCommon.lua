@@ -64,6 +64,10 @@ function PhysicsShapeBox:setRotation( rotation )
 	self:updateShape()
 end
 
+function PhysicsShapeBox:getRotation()
+	return self.rotation
+end
+
 function PhysicsShapeBox:matchSize()
 	local deck = self._entity:com(mock.DeckComponent)
 	if deck then
@@ -166,8 +170,20 @@ end
 
 --------------------------------------------------------------------
 CLASS: PhysicsShapePolygon ( PhysicsShape )
-	:MODEL{}
+	:MODEL{
+		Field 'polyline'   :array();
+		Field 'verts'      :array();
+		Field 'trigulated' :array();
+	}
 
+function PhysicsShapePolygon:__init()
+	self.polylines = {}
+	self.verts     = {}
+end
+
+function PhysicsShapePolygon:getLocalVerts( steps )
+
+end
 -- mock.registerComponent( 'PhysicsShapePolygon', PhysicsShapePolygon )
 
 --------------------------------------------------------------------

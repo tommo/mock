@@ -16,7 +16,9 @@ function ControlVariable:initFromVar( v )
 	if tt == 'boolean' then 
 		return self:initBoolean( v )
 	else
-		return self:initNumber( v )
+		local n = tonumber( v )
+		if not n then return self:initString( v ) end
+		return self:initNumber( n )
 	end
 end
 
@@ -33,6 +35,11 @@ end
 function ControlVariable:initNumber( i )
 	self.vtype = 'number'
 	self.value = tonumber(i)
+end
+
+function ControlVariable:initString( s )
+	self.vtype = 'string'
+	self.value = tostring( s ) or 'none'
 end
 
 function ControlVariable:set( v )
@@ -60,6 +67,8 @@ function ControlVariable:set( v )
 				end
 			end
 		end
+	elseif t == 'string' then
+		self.value = tostring( v )
 	end
 
 end
@@ -140,6 +149,8 @@ function ControlVariableSet:addVar( name, vtype )
 		var:initBoolean( false )
 	elseif vtype == 'int' then
 		var:initInt( 0 )
+	elseif vtype == 'string' then
+		var:initString( 'none' )
 	else
 		var:initNumber( 0 )
 	end

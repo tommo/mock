@@ -46,3 +46,6 @@ require 'mock.tools.PlaceHolder'
 -- require 'mock.tools.FakeInput'
 
 
+--------------------------------------------------------------------
+--Shape
+require 'mock.tools.Shape2D'
