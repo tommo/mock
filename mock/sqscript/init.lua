@@ -17,6 +17,9 @@ require 'mock.sqscript.SQNodeCondition'
 
 require 'mock.sqscript.SQNodeAnimator'
 
+require 'mock.sqscript.SQNodeScript'
+
+
 --------------------------------------------------------------------
 --component
 require 'mock.sqscript.SQActor'

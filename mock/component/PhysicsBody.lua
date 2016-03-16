@@ -14,8 +14,8 @@ CLASS: PhysicsBody ( mock.Component )
 		Field 'mass'         :getset( 'Mass' );
 		Field 'transformSyncPolicy'   :enum( EnumBodyTransformSyncPolicy );
 		Field 'updateMassFromShape' :boolean();
-		Field 'Calc Mass'    :action('calcMass');
-		Field 'Test Mass'    :action('testMass');
+		-- Field 'Calc Mass'    :action('calcMass');
+		-- Field 'Test Mass'    :action('testMass');
 	}
 
 mock.registerComponent( 'PhysicsBody', PhysicsBody )

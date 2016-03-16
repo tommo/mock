@@ -3,6 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: PhysicsShape ( mock.Component )
 	:MODEL{
+		Field 'edit'     :action('editShape') :meta{ icon='edit', style='tool'};
 		Field 'active'   :boolean();
 		Field 'tag'       :string();
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
@@ -27,6 +28,10 @@ function PhysicsShape:clone(original)
 	copy:setMaterial(original:getMaterial())
 	copy.loc = { original.loc[1], original.loc[2] }
 	return copy
+end
+
+function PhysicsShape:editShape()
+	mock_edit.startAdhocSceneTool( 'physics_shape_editor', { target = self } )
 end
 
 function PhysicsShape:getTag()
