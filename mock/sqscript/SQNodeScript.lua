@@ -11,12 +11,13 @@ function enter( context, env )
 end
 
 --Callback on each step updating this node
-function step( context, env, dt )
-end
+--function step( context, env, dt )
+--	return true
+--end
 
 --Callback on exiting this node
-function exit( context, env )
-end
+--function exit( context, env )
+--end
 
 ]]
 
@@ -89,7 +90,11 @@ end
 
 function SQNodeScriptLua:step( context, env, dt )
 	local step = self.callbackStep
-	if step then return step( context, env, dt ) end
+	if step then
+		return step( context, env, dt )
+	else
+		return true
+	end
 end
 
 -------------------------------------------------------------------

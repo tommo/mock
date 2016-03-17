@@ -2,7 +2,9 @@ module 'mock'
 
 --------------------------------------------------------------------
 CLASS: SQNodeBranch ( SQNodeGroup )
-	:MODEL{}
+	:MODEL{
+		Field 'name' :string() :no_edit();
+}
 
 function SQNodeBranch:__init()
 	self.name = 'branch'
@@ -71,7 +73,7 @@ function SQNodeCondition:affirmBranches()
 	self.branchTrue = SQNodeBranchYes()
 	self.branchFalse = SQNodeBranchNope()
 	self.branchTrue.name = 'Yes'
-	self.branchTrue.name = 'No'
+	self.branchFalse.name = 'No'
 	self:addChild( self.branchTrue )
 	self:addChild( self.branchFalse )
 end
