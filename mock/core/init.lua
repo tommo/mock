@@ -21,6 +21,7 @@ require 'mock.core.MOAINodeHelper'
 require 'mock.core.DebugHelper'
 require 'mock.core.LogHelper'
 
+require 'mock.core.Palette'
 
 ----------------Core Modules
 require 'mock.core.defaults'

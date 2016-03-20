@@ -364,6 +364,11 @@ function Game:initCommonData( config, fromEditor )
 	self.globalObjectLibrary = getGlobalObjectLibrary()
 	self.globalObjectLibrary:load( config['global_objects'] )
 
+	--load palette
+	_stat( '...loading palette' )
+	self.paletteLibrary = getPaletteLibrary()
+	self.paletteLibrary:load( config['palettes'] )
+
 	----ask other systems to initialize
 	emitSignal( 'game.init', config )
 
@@ -420,7 +425,8 @@ function Game:saveConfigToTable()
 		global_objects = self.globalObjectLibrary:save(),
 		scenes         = self.scenes,
 		entry_scene    = self.entryScene,
-		previewing_scene  = self.previewingScene
+		previewing_scene  = self.previewingScene,
+		palettes       = self.paletteLibrary:save()
 	}
 	emitSignal( 'game_config.save', data )
 	return data
@@ -789,6 +795,23 @@ end
 
 function Game:getGlobalObject( path )
 	return self.globalObjectLibrary:get( path )
+end
+
+--------------------------------------------------------------------
+---------Palette
+--------------------------------------------------------------------
+function Game:getPaletteLibrary()
+	return self.paletteLibrary
+end
+
+function Game:findPalette( id )
+	return self.paletteLibrary:findPalette( id )
+end
+
+function Game:findColor( paletteId, itemId )
+	local pal = self:findPalette( paletteId )
+	if not pal then return nil end
+	return pal:getColor( itemId )
 end
 
 --------------------------------------------------------------------

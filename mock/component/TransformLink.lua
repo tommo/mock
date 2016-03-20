@@ -33,6 +33,7 @@ end
 CLASS: PartialTransformLink ()
 	:MODEL{
 		Field 'target' :type( mock.Entity ) :getset('Target');
+		Field 'transformRole' :string();
 		'----';
 		Field 'locX' :boolean();
 		Field 'locY' :boolean();
@@ -50,6 +51,7 @@ mock.registerComponent( 'PartialTransformLink', PartialTransformLink )
 
 
 function PartialTransformLink:__init()
+	self.transformRole = 'render'
 	self.locX = true
 	self.locY = true
 	self.locZ = true
@@ -79,8 +81,8 @@ end
 
 function PartialTransformLink:applyLink()
 	if self.target then
-		local ps = self.target:getProp()
-		local pt = self._entity:getProp()
+		local ps = self.target:getProp( self.transformRole )
+		local pt = self._entity:getProp( self.transformRole )
 		if self.locX then
 			pt:setAttrLink( MOAIProp.ATTR_X_LOC, ps, MOAIProp.ATTR_X_LOC )
 		end
