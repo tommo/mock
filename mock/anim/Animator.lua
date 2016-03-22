@@ -5,6 +5,8 @@ CLASS: Animator ( Component )
 	:MODEL{
 		Field 'data'         :asset('animator_data') :getset( 'DataPath' );
 		'----';
+		Field 'throttle'     :number() :range( 0 ) :meta{ step=0.1 } :getset( 'Throttle' );
+		'----';
 		Field 'default'      :string() :selection( 'getClipNames' );
 		Field 'autoPlay'     :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );
@@ -176,6 +178,10 @@ function Animator:setThrottle( th )
 	if self.activeState then
 		self.activeState:setThrottle( th )
 	end
+end
+
+function Animator:getThrottle()
+	return self.throttle
 end
 
 -----

@@ -30,6 +30,8 @@ function AnimatorState:__init()
 	self.attrLinks = {}
 	self.attrLinkCount = 0
 	self.throttle = 1
+	self.clipSpeed = 1
+	self.actualThrottle = 1
 	self.trackTargets = {}
 	self.stopping = false
 	self.previewing = false
@@ -53,11 +55,22 @@ end
 
 function AnimatorState:setThrottle( t )
 	self.throttle = t or 1
-	self.anim:throttle( t )
+	self:updateThrottle()
 end
 
 function AnimatorState:getThrottle()
 	return self.throttle
+end
+
+function AnimatorState:setClipSpeed( speed )
+	self.clipSpeed = speed
+	self:updateThrottle()
+end
+
+function AnimatorState:updateThrottle()
+	local t = self.throttle * self.clipSpeed
+	self.actualThrottle = t
+	self.anim:throttle( self.actualThrottle )
 end
 
 function AnimatorState:resetRange()

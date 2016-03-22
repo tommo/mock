@@ -18,8 +18,8 @@ CLASS: RenderMaterial ()
 		'----';
 		Field 'stencilTest'      :enum( EnumStencilTestMode );
 		Field 'stencilTestRef'   :int() :range(0,255);
-		Field 'stencilTestMask'  :int() :range(0,255);
-		Field 'stencilMask'      :int() :range(0,255);
+		Field 'stencilTestMask'  :int() :range(0,255) :widget( 'bitmask8' );
+		Field 'stencilMask'      :int() :range(0,255) :widget( 'bitmask8' );
 		Field 'stencilOpSFail'   :enum( EnumStencilOp );
 		Field 'stencilOpDPFail'  :enum( EnumStencilOp );
 		Field 'stencilOpDPPass'  :enum( EnumStencilOp );

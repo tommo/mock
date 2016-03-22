@@ -743,10 +743,24 @@ end
 CLASS: AnimatorClipBuildContext ()
 function AnimatorClipBuildContext:__init()
 	self.length         = 0
+	self.lengthFixed    = false
 	self.playableTracks = {}
 	self.eventKeys      = {}
 	self.attrLinkInfo   = {}
 	self.attrLinkCount  = 0
+end
+
+function AnimatorClipBuildContext:getLength()
+	return self.length
+end
+
+function AnimatorClipBuildContext:setFixedLength( l )
+	if l > 0 then
+		self.length = l
+		self.lengthFixed = true
+	else
+		self.lengthFixed = false
+	end
 end
 
 function AnimatorClipBuildContext:updateLength( l )
@@ -808,7 +822,7 @@ end
 AnimatorClip	:MODEL{
 		Field 'name' :string();		
 		Field 'loop' :boolean();
-		Field 'length' :int();
+		Field 'length' :number();
 		Field 'inherited' :boolean() :no_edit();
 		'----';
 		Field 'comment' :string();
@@ -902,10 +916,14 @@ end
 function AnimatorClip:prebuild()
 	local playableTrackList = {}
 	local buildContext = AnimatorClipBuildContext()
+	local length = self.length
+	if length > 0 then
+		buildContext:setFixedLength( length )
+	end
 	self.root:build( buildContext )
 	buildContext:finish()
 	self.builtContext = buildContext
-	self.length = buildContext.length
+	self.length = buildContext:getLength()
 end
 
 function AnimatorClip:getLength()
@@ -926,7 +944,11 @@ end
 
 function AnimatorClip:removeMarker( m )
 	local idx = table.index( self.markers, m )
-	if idx then table.remove( self.markers, idx ) end
+	if idx then 
+		table.remove( self.markers, idx )
+		return true
+	end
+	return false
 end
 
 function AnimatorClip:sortMarkers()

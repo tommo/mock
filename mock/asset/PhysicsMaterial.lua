@@ -12,8 +12,8 @@ CLASS: PhysicsMaterial ()
 		Field 'friction';
 		'----';
 		Field 'group'        :int();
-		Field 'categoryBits' :int();
-		Field 'maskBits'     :int();
+		Field 'categoryBits' :int() :widget( 'bitmask16' );
+		Field 'maskBits'     :int() :widget( 'bitmask16' );
 		'----';
 		Field 'isSensor'     :boolean();
 		'----';
