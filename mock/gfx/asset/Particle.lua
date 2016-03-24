@@ -1,5 +1,3 @@
-require 'mock.asset.ParticleHelper'
-require 'mock.asset.ParticleProcs'
 module 'mock'
 
 local makeParticleSystem, makeParticleForce, makeParticleEmitter

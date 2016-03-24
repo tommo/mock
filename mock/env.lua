@@ -51,25 +51,31 @@ require 'mock.core'
 --------------------------------------------------------------------
 
 ----------------Asset Loaders
-require 'mock.asset'
-require 'mock.asset.resloader'  --FIXME: removed this when finished porting
 
 --------------------------------------------------------------------
 ----tools
 require 'mock.tools'
 require 'mock.common'
 
+require 'mock.gfx.asset.resloader'  --FIXME: removed this when finished porting
+
 --------------------------------------------------------------------
 --PACKAGES
 --------------------------------------------------------------------
+------Animator
+require 'mock.animator'
 
 ------Animator
-require 'mock.anim'
+require 'mock.gfx'
 
-----Common
-require 'mock.component'
+------Animator
+require 'mock.physics'
+
+------Animator
+require 'mock.audio'
+
+----UNSORTED
 require 'mock.entity'
-
 
 ------GUI system
 require 'mock.gui'

@@ -22,8 +22,8 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
-require 'mock.asset.ParticleHelper'
-require 'mock.asset.ParticleProcs'
+require 'mock.gfx.asset.ParticleHelper'
+require 'mock.gfx.asset.ParticleProcs'
 
 globalTextScale=0.5
 useScaledText=false

@@ -7,35 +7,35 @@ EnumAnimCurveTweenMode = {
 }
 
 --------------------------------------------------------------------
-require 'mock.anim.AnimatorTargetId'
-require 'mock.anim.AnimatorState'
-require 'mock.anim.AnimatorClip'
-require 'mock.anim.AnimatorData'
-require 'mock.anim.Animator'
-require 'mock.anim.EmbedAnimator'
-require 'mock.anim.AnimatorEditorSupport'
+require 'mock.animator.AnimatorTargetId'
+require 'mock.animator.AnimatorState'
+require 'mock.animator.AnimatorClip'
+require 'mock.animator.AnimatorData'
+require 'mock.animator.Animator'
+require 'mock.animator.EmbedAnimator'
+require 'mock.animator.AnimatorEditorSupport'
 
 --------------------------------------------------------------------
 --value tracks
-require 'mock.anim.AnimatorEventTrack'
-require 'mock.anim.AnimatorValueTrack'
-require 'mock.anim.CustomAnimatorTrack'
+require 'mock.animator.AnimatorEventTrack'
+require 'mock.animator.AnimatorValueTrack'
+require 'mock.animator.CustomAnimatorTrack'
 
 --------------------------------------------------------------------
-require 'mock.anim.AnimatorTrackAttr'
+require 'mock.animator.AnimatorTrackAttr'
 
 --------------------------------------------------------------------
-require 'mock.anim.AnimatorTrackField'
-	require 'mock.anim.AnimatorTrackFieldNumber'	
-	require 'mock.anim.AnimatorTrackFieldInt'	
-	require 'mock.anim.AnimatorTrackFieldVec'
-	require 'mock.anim.AnimatorTrackFieldColor'
-	require 'mock.anim.AnimatorTrackFieldDiscrete'
-	require 'mock.anim.AnimatorTrackFieldBoolean'
-	require 'mock.anim.AnimatorTrackFieldString'
-	require 'mock.anim.AnimatorTrackFieldEnum'
-	require 'mock.anim.AnimatorTrackFieldAsset'
-	-- require 'mock.anim.AnimatorTrackFieldObjRef'
+require 'mock.animator.AnimatorTrackField'
+	require 'mock.animator.AnimatorTrackFieldNumber'	
+	require 'mock.animator.AnimatorTrackFieldInt'	
+	require 'mock.animator.AnimatorTrackFieldVec'
+	require 'mock.animator.AnimatorTrackFieldColor'
+	require 'mock.animator.AnimatorTrackFieldDiscrete'
+	require 'mock.animator.AnimatorTrackFieldBoolean'
+	require 'mock.animator.AnimatorTrackFieldString'
+	require 'mock.animator.AnimatorTrackFieldEnum'
+	require 'mock.animator.AnimatorTrackFieldAsset'
+	-- require 'mock.animator.AnimatorTrackFieldObjRef'
 
 	function getAnimatorTrackFieldClass( ftype )
 		if ftype == 'number' then
@@ -64,6 +64,6 @@ require 'mock.anim.AnimatorTrackField'
 --------------------------------------------------------------------
 --builtin custom track
 --------------------------------------------------------------------
-require 'mock.anim.tracks.AnimatorAnimatorTrack'
-require 'mock.anim.tracks.EntityMsgAnimatorTrack'
-require 'mock.anim.tracks.ScriptAnimatorTrack'
+require 'mock.animator.tracks.AnimatorAnimatorTrack'
+require 'mock.animator.tracks.EntityMsgAnimatorTrack'
+require 'mock.animator.tracks.ScriptAnimatorTrack'

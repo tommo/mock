@@ -22,7 +22,7 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
-require 'mock.asset.ParticleHelper'
+require 'mock.gfx.asset.ParticleHelper'
 
 local mt1={__newindex=function(t,k,v)
 	assert(type(v)=='function')

@@ -1,4 +1,9 @@
 --------------------------------------------------------------------
+---FSM
+require 'mock.ai.FSMScheme'
+require 'mock.ai.FSMController'
+
+--------------------------------------------------------------------
 ---- Behaviour Tree
 require 'mock.ai.BTScheme'
 require 'mock.ai.BTScript'
