@@ -254,6 +254,18 @@ end
 function AnimatorClipSubNode:onRestoreObjectRecordingState( animator, recordingState )
 end
 
+function AnimatorClipSubNode:calcLength()
+	return self:calcChildrenLength()
+end
+
+function AnimatorClipSubNode:calcChildrenLength()
+	local l = 0
+	for i, child in ipairs( self.children ) do
+		local l1 = child:calcLength()
+		if l1 > l then l = l1 end
+	end
+	return l
+end
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -278,8 +290,8 @@ function AnimatorKey:__init( pos, tweenMode )
 	self.length = 0
 	----
 	self.tweenMode = tweenMode or 0 --LINEAR
-	self.preBPX,  self.preBPY  = 0, 0
-	self.postBPX, self.postBPY = 0, 0
+	self.preBPX,  self.preBPY  = 0.5, 0
+	self.postBPX, self.postBPY = -0.5, 0
 	----
 	self.parentSpanId = 1
 end
@@ -600,14 +612,17 @@ function AnimatorTrack:buildCurve()
 	local spanSet    = {}
 	local keys = self.keys
 	local curve = MOAIAnimCurveEX.new()
-	curve:reserveKeys( #keys )
-	for i, key in ipairs( keys ) do
-		local t = key:getPos()
-		local v = key:getCurveValue()
-		curve:setKey( i, t, v )
-		curve:setKeyMode( i, key.tweenMode )
-		local preBPX, preBPY, postBPX, postBPY = key:getBezierPoints()
-		curve:setKeyParam( i, -preBPX, preBPY, postBPX, postBPY )
+	local keyCount = #keys
+	curve:reserveKeys( keyCount )
+	if keyCount > 0 then
+		for i, key in ipairs( keys ) do
+			local t = key:getPos()
+			local v = key:getCurveValue()
+			curve:setKey( i, t, v )
+			curve:setKeyMode( i, key.tweenMode )
+			local preBPX, preBPY, postBPX, postBPY = key:getBezierPoints()
+			curve:setKeyParam( i, preBPX, preBPY, postBPX, postBPY )
+		end
 	end
 	return curve
 end
@@ -823,6 +838,7 @@ AnimatorClip	:MODEL{
 		Field 'name' :string();		
 		Field 'loop' :boolean();
 		Field 'length' :number();
+		Field 'fixedLength' :number();
 		Field 'inherited' :boolean() :no_edit();
 		'----';
 		Field 'comment' :string();
@@ -845,6 +861,7 @@ function AnimatorClip:__init()
 	self.stateData = false
 	self.loop      = false
 	self.length    = -1
+	self.fixedLength = 0
 
 	self.builtContext = false
 
@@ -917,8 +934,8 @@ function AnimatorClip:prebuild()
 	local playableTrackList = {}
 	local buildContext = AnimatorClipBuildContext()
 	local length = self.length
-	if length > 0 then
-		buildContext:setFixedLength( length )
+	if self.fixedLength > 0 then
+		buildContext:setFixedLength( self.fixedLength )
 	end
 	self.root:build( buildContext )
 	buildContext:finish()
@@ -926,8 +943,17 @@ function AnimatorClip:prebuild()
 	self.length = buildContext:getLength()
 end
 
+
+function AnimatorClip:setFixedLength( l )
+	self.fixedLength = l
+end
+
 function AnimatorClip:getLength()
 	return self.length
+end
+
+function AnimatorClip:calcLength()
+	return self.root:calcLength()
 end
 
 function AnimatorClip:collectObjectRecordingState( animator, state )
