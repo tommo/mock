@@ -45,6 +45,7 @@ AnimatorClipSubNode
 	Field 'parentClip' :type( AnimatorClip ) :no_edit();
 	Field 'spans'      :array( AnimatorClipSubNodeSpan ) :no_edit();
 	Field 'parentSpanId' :int() :no_edit();
+	Field 'active'     :boolean();
 }
 
 function AnimatorClipSubNode:__init()
@@ -58,6 +59,7 @@ function AnimatorClipSubNode:__init()
 
 	--default span
 	self.spans[ 1 ] = AnimatorClipSubNodeSpan( 1 )
+	self.active = true
 end
 
 function AnimatorClipSubNode:getSpan( id )
@@ -121,6 +123,20 @@ function AnimatorClipSubNode:getParentSpan()
 	return self.parent:getSpan( self.parentSpanId )
 end
 
+function AnimatorClipSubNode:isLocalActive()
+	return self.active
+end
+
+function AnimatorClipSubNode:setActive( active )
+	self.active = active and true or false
+end
+
+function AnimatorClipSubNode:isActive()
+	local active = self.active
+	if not active then return false end
+	return self.parent:isActive()
+end
+
 function AnimatorClipSubNode:build( context )
 	self:buildChildren( context )
 	return true
@@ -148,9 +164,11 @@ end
 
 function AnimatorClipSubNode:buildChildren( context )
 	for _, child in ipairs( self.children ) do
-		child:build( context )
-		if child:isPlayable() and (not child:isEmpty()) then
-			context:addPlayableTrack( child )
+		if child.active then
+			child:build( context )
+			if child:isPlayable() and (not child:isEmpty()) then
+				context:addPlayableTrack( child )
+			end
 		end
 	end
 end
