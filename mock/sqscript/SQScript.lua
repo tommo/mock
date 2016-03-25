@@ -141,6 +141,10 @@ end
 function SQNode:build()
 end
 
+function SQNode:acceptSubNode( name )
+	return true
+end
+
 --------------------------------------------------------------------
 CLASS: SQNodeGroup ( SQNode )
 	:MODEL{

@@ -14,6 +14,7 @@ require 'mock.sqscript.SQNodeSignal'
 require 'mock.sqscript.SQNodeMsg'
 
 require 'mock.sqscript.SQNodeCondition'
+require 'mock.sqscript.SQNodeRandom'
 
 require 'mock.sqscript.SQNodeAnimator'
 

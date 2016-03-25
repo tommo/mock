@@ -213,14 +213,22 @@ function TextLabel:getBounds()
 	return self.box:getBounds()	
 end
 
+function TextLabel:getTextBounds( ... )
+	return self.box:getTextBounds( ... )	
+end
+
 function TextLabel:drawBounds()
 	GIIHelper.setVertexTransform( self._entity:getProp() )
 	if self.rectLimit then
 		local x1,y1, x2,y2 = self.box:getRect()	
 		MOAIDraw.drawRect( x1,-y1,x2,-y2 )
 	else
-		local x1,y1,z1, x2,y2,z2 = self.box:getBounds()	
-		MOAIDraw.drawLine( x1, -y2, x2, -y2 )
+		local x1,y1, x2,y2 = self.box:getTextBounds()	
+		MOAIDraw.drawRect( x1,-y1,x2,-y2 )
+		-- local x1,y1,z1, x2,y2,z2 = self.box:getBounds()	
+		-- if x1 then
+		-- 	MOAIDraw.drawLine( x1, -y2, x2, -y2 )
+		-- end
 	end
 end
 
