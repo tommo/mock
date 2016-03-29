@@ -260,6 +260,10 @@ function TextLabel:nextPage( reveal )
 	return self.box:nextPage( reveal )
 end
 
+function TextLabel:setSpeed( spd )
+	self.box:setSpeed( spd )
+end
+
 --------------------------------------------------------------------
 local defaultShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
 function TextLabel:setShader( shaderPath )

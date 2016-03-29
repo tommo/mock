@@ -3,10 +3,12 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: SQNodeRandomBranch ( SQNodeBranch )
 	:MODEL{
+		Field 'name'   :string();
 		Field 'weight' :int();
 }
 
 function SQNodeRandomBranch:__init()
+	self.name = 'Random Branch'
 	self.weight = 1
 end
 
@@ -33,6 +35,7 @@ CLASS: SQNodeRandom ( SQNodeGroup )
 
 function SQNodeRandom:__init()
 	self.brancheProbList = {}
+	self.name = 'RandomGroup'
 end
 
 function SQNodeRandom:acceptSubNode( name )

@@ -44,8 +44,10 @@ require 'mock.tools.SimpleAnimationPreset'
 require 'mock.tools.PlaceHolder'
 -- require 'mock.tools.TouchButton'
 -- require 'mock.tools.FakeInput'
-
+require 'mock.tools.DialogScript'
 
 --------------------------------------------------------------------
 --Shape
 require 'mock.tools.Shape2D'
+
+

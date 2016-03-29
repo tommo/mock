@@ -672,6 +672,10 @@ end
 function AnimatorTrack:init()
 end
 
+function AnimatorTrack:isPlayable()
+	return true
+end
+
 function AnimatorTrack:isCurveTrack()
 end
 
@@ -964,6 +968,10 @@ end
 
 function AnimatorClip:setFixedLength( l )
 	self.fixedLength = l
+end
+
+function AnimatorClip:getFixedLength()
+	return self.fixedLength
 end
 
 function AnimatorClip:getLength()
