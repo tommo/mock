@@ -24,12 +24,83 @@ local function _parseCmdSpan( text )
 	}
 end
 
+local function _insertPunctuation( symbol, cmd, text, i, collection )
+	local p, p1 = text:find( symbol, i )
+	if not p then	return false end
+	-- insert( collection, { tag = 'text', text = text:sub( i, p1 ) } )
+	-- insert( collection, { tag = 'cmd',  cmd = cmd, args = {} } )
+	return p, p1, cmd
+end
+
+local symbolToPuctuation = {
+	{ '%.%d+', false };
+	{ ',',   ','  };
+	{ ';',   ',,'  };
+	{ '[!%?][!%?]+',  ',,,' };
+	{ '%. ',  ',,' };
+	{ '%.',  ',' };
+	{ '!',  ',,' };
+	{ '%?',  ',,' };
+	--Chinese
+	{ '，',   ','  };
+	{ '；',   ',,'  };
+	{ '！？',  ',,,' };
+	{ '？！',  ',,,' };
+	{ '？？',  ',,,' };
+	{ '？？？',  ',,,' };
+	{ '！！！',  ',,,' };
+	{ '。',  ',,' };
+	{ '！',  ',,' };
+	{ '？',  ',,' };
+	{ '、',  ',' };
+}
+
+local function _insertText( text, collection )
+	--replace suspensions
+	text = text:gsub( '……', '...' )
+	text = text:gsub( '…', '...' )
+	--
+	local i = 1
+	while true do
+		local found = false
+		local fp0, fp1, fcmd
+		for _, entry in ipairs( symbolToPuctuation ) do
+			local symbol, cmd = unpack( entry )
+			local p, p1 = text:find( symbol, i )
+			if p1 then
+				if not found then
+					found = true
+					fp0 = p
+					fp1 = p1
+					fcmd = cmd
+				else
+					if p < fp0 then
+						fp0 = p
+						fp1 = p1
+						fcmd = cmd
+					end
+				end
+			end
+		end
+
+		if found then
+			insert( collection, { tag = 'text', text = text:sub( i, fp1 ) } )
+			if fcmd then
+				insert( collection, { tag = 'cmd',  cmd = fcmd, args = {} } )
+			end
+			i = fp1 + 1
+		else
+			return insert( collection, { tag = 'text', text = text:sub( i, -1 ) } )
+		end
+	end
+end
+
 local function _parse( text, pos, collection )
 	local p0, p01 = find( text, '{', pos )
 	if p0 then
 		if p0 > pos then
 			local span = ssub( text, pos, p0 - 1 )
-			insert( collection, { tag = 'text', text = span } )
+			_insertText( span, collection )
 		end
 		local p1, p11 = find( text, '}', p01 )
 		local cmdSpan = ssub( text, p01 + 1, p1 and (p1-1) or -1 )
@@ -40,7 +111,7 @@ local function _parse( text, pos, collection )
 	else
 		local span = ssub( text, pos, -1 )
 		if #span > 0 then
-			insert( collection, { tag = 'text', text = span } )
+			_insertText( span, collection )
 		end
 		return
 	end
@@ -52,6 +123,7 @@ local function parseDialogScript( text )
 	for line in text:gsplit( '\n', true ) do
 		if prevLineHasText then
 			insert( spans, { tag = 'text', text = '\n' } )
+			insert( spans, { tag = 'cmd', cmd = ',,' } )
 		end
 		prevLineHasText = false
 		local lineSpans = {}

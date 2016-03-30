@@ -24,7 +24,9 @@ CLASS: TextLabel ( RenderComponent )
 function TextLabel:__init(  )
 	local box = MOAITextBox.new()
 	box:setStyle( getFallbackTextStyle() )
-	box:setScl( 1,-1,1 )
+	-- box:setScl( 1,-1,1 )
+	-- box:setAutoFlip( true )
+	box:setYFlip( true )
 	self.box  = box
 	self.text = 'Sample Text'
 	self.blend = 'alpha'
@@ -150,11 +152,11 @@ function TextLabel:updateRect()
 			x = -w
 		end
 		if alignV == 'top' then
-			y = 0
+			y = -h
 		elseif alignV == 'center' then
 			y = -h/2
 		else --'right'
-			y = -h
+			y = 0
 		end
 		self.box:setRect( x, y, x + w, y + h )
 	end
@@ -221,10 +223,10 @@ function TextLabel:drawBounds()
 	GIIHelper.setVertexTransform( self._entity:getProp() )
 	if self.rectLimit then
 		local x1,y1, x2,y2 = self.box:getRect()	
-		MOAIDraw.drawRect( x1,-y1,x2,-y2 )
+		MOAIDraw.drawRect( x1,y1,x2,y2 )
 	else
 		local x1,y1, x2,y2 = self.box:getTextBounds()	
-		MOAIDraw.drawRect( x1,-y1,x2,-y2 )
+		MOAIDraw.drawRect( x1,y1,x2,y2 )
 		-- local x1,y1,z1, x2,y2,z2 = self.box:getBounds()	
 		-- if x1 then
 		-- 	MOAIDraw.drawLine( x1, -y2, x2, -y2 )
