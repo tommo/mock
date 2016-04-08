@@ -236,6 +236,13 @@ function table.reversed( t )
 	return t1
 end
 
+function table.affirm( t, k, default )
+	local v = t[ k ]
+	if v then return v end
+	t[ k ] = default
+	return default
+end
+
 --------------------------------------------------------------------
 ----MATH & Geometry
 --------------------------------------------------------------------

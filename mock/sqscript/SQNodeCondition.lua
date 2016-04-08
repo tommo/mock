@@ -10,8 +10,8 @@ function SQNodeBranch:__init()
 	self.name = 'branch'
 end
 
-function SQNodeBranch:exit( context, env )
-	context:setJumpTarget( self.parentNode:getNextSibling() )
+function SQNodeBranch:exit( state, env )
+	state:setJumpTarget( self.parentNode:getNextSibling() )
 	return 'jump'
 end
 
@@ -82,14 +82,14 @@ function SQNodeCondition:initFromEditor()
 	self:affirmBranches()
 end
 
-function SQNodeCondition:checkCondition( context, env )
+function SQNodeCondition:checkCondition( state, env )
 	return true
 end
 
-function SQNodeCondition:enter( context, env )
-	local checked = self:checkCondition( context, env )
+function SQNodeCondition:enter( state, env )
+	local checked = self:checkCondition( state, env )
 	local target = checked and self.branchTrue or self.branchFalse
-	context:setJumpTarget( target )
+	state:setJumpTarget( target )
 	return 'jump'
 end
 
@@ -122,7 +122,7 @@ function SQNodeIfExpr:__init()
 	self.expr = 'true'
 end
 
-function SQNodeIfExpr:checkCondition( context, env )
+function SQNodeIfExpr:checkCondition( state, env )
 	return true
 end
 
@@ -137,7 +137,7 @@ end
 -- 		Field 'varId' :string();
 -- 	}
 
--- function SQNodeIfVar:checkCondition( context, env )
+-- function SQNodeIfVar:checkCondition( state, env )
 -- 	return true
 -- end
 

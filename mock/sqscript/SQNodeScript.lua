@@ -3,20 +3,20 @@ module 'mock'
 local defaultSQScript = [[
 -- SQNode script
 -- callback param:
--- @context mock.SQContext
+-- @state mock.SQContext
 -- @env environment table for current SQNode
 
 --Callback on entering this node
-function enter( context, env )
+function enter( state, env )
 end
 
 --Callback on each step updating this node
---function step( context, env, dt )
+--function step( state, env, dt )
 --	return true
 --end
 
 --Callback on exiting this node
---function exit( context, env )
+--function exit( state, env )
 --end
 
 ]]
@@ -78,20 +78,20 @@ function SQNodeScriptLua:build()
 	self.callbackStep  = delegate.step
 end
 
-function SQNodeScriptLua:enter( context, env )
+function SQNodeScriptLua:enter( state, env )
 	local enter = self.callbackEnter
-	if enter then return enter( context, env ) end
+	if enter then return enter( state, env ) end
 end
 
-function SQNodeScriptLua:exit( context, env )
+function SQNodeScriptLua:exit( state, env )
 	local exit = self.callbackExit
-	if exit then return exit( context, env ) end
+	if exit then return exit( state, env ) end
 end
 
-function SQNodeScriptLua:step( context, env, dt )
+function SQNodeScriptLua:step( state, env, dt )
 	local step = self.callbackStep
 	if step then
-		return step( context, env, dt )
+		return step( state, env, dt )
 	else
 		return true
 	end

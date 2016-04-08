@@ -12,8 +12,8 @@ function SQNodeRandomBranch:__init()
 	self.weight = 1
 end
 
-function SQNodeRandomBranch:exit( context, env )
-	context:setJumpTarget( self.parentNode:getNextSibling() )
+function SQNodeRandomBranch:exit( state, env )
+	state:setJumpTarget( self.parentNode:getNextSibling() )
 	return 'jump'
 end
 
@@ -50,10 +50,10 @@ function SQNodeRandom:getRichText()
 	return string.format( '<cmd>RANDOM</cmd> [ <group>%s</group> ]', self.name )
 end
 
-function SQNodeRandom:enter( context, env )
+function SQNodeRandom:enter( state, env )
 	local jumpTo = probselect( self.brancheProbList )
 	if jumpTo then
-		context:setJumpTarget( jumpTo )
+		state:setJumpTarget( jumpTo )
 		return 'jump'
 	else
 		return true

@@ -10,7 +10,7 @@ function SQNodeLog:__init()
 	self.text = 'message'
 end
 
-function SQNodeLog:enter( context, env )
+function SQNodeLog:enter( state, env )
 	print( self.text )
 end
 

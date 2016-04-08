@@ -10,7 +10,7 @@ CLASS: SQNode ()
 CLASS: SQRoutine ()
 CLASS: SQScript ()
 
-CLASS: SQContext ()
+CLASS: SQState ()
 
 
 
@@ -34,6 +34,9 @@ function SQNode:__init()
 	self.children   = {}
 
 	self.comment    = ''
+
+	self.context    = false
+	self.tag        = false
 
 end
 
@@ -118,16 +121,24 @@ function SQNode:setComment( c )
 	self.comment = c
 end
 
-function SQNode:enter( context, env )
+function SQNode:enter( state, env )
 	return true
 end
 
-function SQNode:step( context, env, dt )
+function SQNode:step( state, env, dt )
 	return true
 end
 
-function SQNode:exit( context, env )
+function SQNode:exit( state, env )
 	return true
+end
+
+function SQNode:_load( data )
+	self.srcData = data
+	self:load( data )
+end
+
+function SQNode:load( data )
 end
 
 function SQNode:_build()
@@ -213,14 +224,18 @@ function SQNodeGoto:__init()
 	self.label = 'label'
 end
 
-function SQNodeGoto:enter( context, env )
+function SQNodeGoto:load( data )
+	self.label = data.args[1]
+end
+
+function SQNodeGoto:enter( state, env )
 	local routine = self:getRoutine()
 	local targetNode = routine:findLabelNode( self.label )
 	if not targetNode then
 		_warn( 'target label not found', self.label )
-		context:setJumpTarget( false )
+		state:setJumpTarget( false )
 	else
-		context:setJumpTarget( targetNode )
+		state:setJumpTarget( targetNode )
 	end
 	return 'jump'
 end
@@ -248,12 +263,12 @@ function SQNodeEnd:__init()
 	self.stopAllRoutines = false
 end
 
-function SQNodeEnd:enter( context )
+function SQNodeEnd:enter( state )
 	if self.stopAllRoutines then
-		context:stop()
+		state:stop()
 		return 'jump'
 	else
-		context._jumpTargetNode = false --jump to end
+		state._jumpTargetNode = false --jump to end
 		return 'jump'
 	end
 end
@@ -278,8 +293,8 @@ CLASS: SQNodeRoot( SQNodeGroup )
 --------------------------------------------------------------------
 SQRoutine :MODEL{
 		Field 'name' :string();
+		Field 'autoStart' :boolean();
 		Field 'comment' :string();
-
 		Field 'rootNode' :type( SQNode ) :no_edit();
 		Field 'parentScript' :type( SQScript ) :no_edit();
 }
@@ -289,6 +304,7 @@ function SQRoutine:__init()
 
 	self.rootNode = SQNodeRoot()	
 	self.rootNode.parentRoutine = self
+	self.autoStart = false
 
 	self.name = 'unnamed'
 	self.comment = ''
@@ -331,8 +347,8 @@ function SQRoutine:removeNode( node )
 	return self.rootNode:removeChild( node )
 end
 
-function SQRoutine:execute( context )
-	return context:executeRoutine( self )
+function SQRoutine:execute( state )
+	return state:executeRoutine( self )
 end
 
 function SQRoutine:build()
@@ -388,12 +404,13 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: SQRoutineContext ()
+CLASS: SQRoutineState ()
  
-function SQRoutineContext:__init( context, routine )
-	self.parentContext = context
+function SQRoutineState:__init( state, routine )
+	self.parentState = state
 	self.routine = routine
-	self.running = true
+	self.running = false
+	self.started = false
 	self.jumpTarget = false
 
 	self.currentParentNode = false
@@ -408,30 +425,57 @@ function SQRoutineContext:__init( context, routine )
 	self.nodeEnvMap = {}
 end
 
-
-function SQRoutineContext:getSignalCounter( id )
-	return self.parentContext:getSignalCounter( id )
+function SQRoutineState:start()
+	if self.started then return end
+	self.started = true
+	self.running = true
+	self.parentState.running = true
 end
 
-function SQRoutineContext:incSignalCounter( id )
-	return self.parentContext:incSignalCounter( id )
+function SQRoutineState:stop()
+	if self.running then
+		self.running = false
+	end
 end
 
-function SQRoutineContext:getEnv( key, default )
-	return self.parentContext:getEnv( key, default )
+function SQRoutineState:reset()
+	self.started = false
+	self.running = false
+	self.jumpTarget = false
+	self.nodeEnvMap = {}
+	self.currentParentNode = false
+	self.currentNodeEnv = false
+	self.currentNode = self.routine:getRootNode()
 end
 
-function SQRoutineContext:setEnv( key, value )
-	return self.parentContext:setEnv( key, value )
+function SQRoutineState:restart()
+	self:reset()
+	self:start()
+end
+
+function SQRoutineState:getSignalCounter( id )
+	return self.parentState:getSignalCounter( id )
+end
+
+function SQRoutineState:incSignalCounter( id )
+	return self.parentState:incSignalCounter( id )
+end
+
+function SQRoutineState:getEnv( key, default )
+	return self.parentState:getEnv( key, default )
+end
+
+function SQRoutineState:setEnv( key, value )
+	return self.parentState:setEnv( key, value )
 end
 
 
-function SQRoutineContext:update( dt )
+function SQRoutineState:update( dt )
 	if not self.running then return end
 	self:updateNode( dt )
 end
 
-function SQRoutineContext:updateNode( dt )
+function SQRoutineState:updateNode( dt )
 	local node = self.currentNode
 	if node then
 		local env = self.currentNodeEnv
@@ -447,7 +491,7 @@ function SQRoutineContext:updateNode( dt )
 	end
 end
 
-function SQRoutineContext:nextNode()
+function SQRoutineState:nextNode()
 	local index1 = self.index + 1
 	local node1 = self.currentQueue[ index1 ]
 	if not node1 then
@@ -461,10 +505,13 @@ function SQRoutineContext:nextNode()
 	if res == 'jump' then
 		return self:doJump()
 	end
+	if res == false then
+		return self:nextNode()
+	end
 	return self:updateNode( 0 )
 end
 
-function SQRoutineContext:exitNode( fromGroup )
+function SQRoutineState:exitNode( fromGroup )
 	local node = self.currentNode
 	if node:isGroup() then --Enter group
 		self.nodeEnvMap[ node ] = self.currentNodeEnv
@@ -479,7 +526,7 @@ function SQRoutineContext:exitNode( fromGroup )
 	return self:nextNode()
 end
 
-function SQRoutineContext:exitGroup()
+function SQRoutineState:exitGroup()
 	--exit group node
 	local groupNode = self.currentNode.parentNode
 	local env = self.nodeEnvMap[ groupNode ] or {}
@@ -501,11 +548,11 @@ function SQRoutineContext:exitGroup()
 	return self:nextNode()
 end
 
-function SQRoutineContext:setJumpTarget( node )
+function SQRoutineState:setJumpTarget( node )
 	self.jumpTarget = node
 end
 
-function SQRoutineContext:doJump()
+function SQRoutineState:doJump()
 	local target = self.jumpTarget
 	if not target then
 		self.running = false
@@ -521,81 +568,132 @@ function SQRoutineContext:doJump()
 end
 
 --------------------------------------------------------------------
-SQContext :MODEL{
+SQState :MODEL{
 	
 }
 
-function SQContext:__init()
+function SQState:__init()
 	self.currentScript = false
 	self.running = false
 	self.paused  = false
 
-	self.routineContexts = {}
+	self.routineStates = {}
 	self.coroutines = {}
 	self.signalCounters = {}
 	self.env = {}
 end
 
-function SQContext:getEnv( key, default )
+function SQState:getEnv( key, default )
 	local v = self.env[ key ]
 	if v == nil then return default end
 	return v
 end
 
-function SQContext:setEnv( key, value )
+function SQState:setEnv( key, value )
 	self.env[ key ] = value
 end
 
-function SQContext:getSignalCounter( id )
+function SQState:getSignalCounter( id )
 	return self.signalCounters[ id ] or 0
 end
 
-function SQContext:incSignalCounter( id )
+function SQState:incSignalCounter( id )
 	local v = ( self.signalCounters[ id ] or 0 ) + 1
 	self.signalCounters[ id ] = v
 	return v
 end
 
 
-function SQContext:isPaused()
+function SQState:isPaused()
 	return self.paused
 end
 
-function SQContext:pause( paused )
+function SQState:pause( paused )
 	self.paused = paused ~= false
 end
 
-function SQContext:isRunning()
+function SQState:isRunning()
 	return self.running
 end
 
-function SQContext:isDone()
+function SQState:isDone()
 	return not self.running
 end
 
-function SQContext:stop()
+function SQState:stop()
 	self.running = false
 end
 
-function SQContext:loadScript( script )
+function SQState:loadScript( script )
 	script:build()
-	self.running = true
 	self.currentScript = script
 	for i, routine in ipairs( script.routines ) do
-		local routineContext = SQRoutineContext( self, routine )
-		insert( self.routineContexts, routineContext )
+		local routineState = SQRoutineState( self, routine )
+		insert( self.routineStates, routineState )
+		if routine.autoStart then
+			routineState:start()
+		end
 	end
+	self.running = true
 end
 
-function SQContext:update( dt )
+function SQState:update( dt )
 	if not self.running then return end
 	if self.paused then return end
 	local running = false
-	for i, routineContext in ipairs( self.routineContexts ) do
-		running = running or routineContext.running
-		routineContext:update( dt )
+	for i, routineState in ipairs( self.routineStates ) do
+		running = running or routineState.running
+		routineState:update( dt )
 	end
 	if not running then self.running = false end
+end
+
+function SQState:findRoutineState( name )
+	for i, routineState in ipairs( self.routineStates ) do
+		if routineState.routine.name == name then return routineState end
+	end
+	return nil
+end
+
+function SQState:stopRoutine( name )
+	local rc = self:findRoutineState( name )
+	if rc then
+		rc:stop()
+		return true
+	end
+end
+
+function SQState:startRoutine( name )
+	local rc = self:findRoutineState( name )
+	if rc then
+		rc:start()
+		return true
+	end
+end
+
+function SQState:restartRoutine( name )
+	local rc = self:findRoutineState( name )
+	if rc then
+		rc:restart()
+		return true
+	end
+end
+
+function SQState:isRoutineRunning( name )
+	local rc = self:findRoutineState( name )
+	if rc then 
+		return rc.running
+	end
+	return nil
+end
+
+function SQState:startAllRoutines()
+	for i, routineState in ipairs( self.routineStates ) do
+		if not routineState.started then
+			routineState:start()
+		end
+	end
+	return true
 end
 
 --------------------------------------------------------------------
@@ -624,27 +722,73 @@ end
 
 
 --------------------------------------------------------------------
+local function loadSQNode( data, parentNode )
+	local node
+	local t = data.type
+	print( t, node )
+	if t == 'context' then
+		--TODO: context inference
+		return false
+
+	elseif t == 'tag'     then
+		--TODO: tag inference
+		return false
+
+	elseif t == 'label'   then
+		local labelNode = SQNodeLabel()
+		labelNode.id = data.id
+		return labelNode
+
+	elseif t == 'action' then
+		--find action node factory
+		local actionName = data.name
+		local entry = SQNodeRegistry[ actionName ]
+		if not entry then
+			_error( 'unkown action node type', actionName )
+			return SQNode() --dummy node
+		end
+		local clas = entry.clas
+		node = clas()
+		node:load( data )
+
+	elseif t == 'root' then
+		--pass
+		node = parentNode
+
+	else
+		--error
+		error( 'wtf?', t )
+	end
+
+	for i, childData in ipairs( data.children ) do
+		local childNode = loadSQNode( childData, childNode )
+		if childNode then
+			node:addChild( childNode )
+		end
+	end
+
+	return node
+
+end
+
 --------------------------------------------------------------------
-function loadSQScriptFromRaw( data )
-	local script = mock.deserialize( nil, data )
-	script:_postLoad()
-	script:build()
-	return script
-end
-
-function loadSQScriptFromString( strData )
-	local t = MOAIJsonParser.decode( strData )
-	return loadSQScriptFromRaw( t )
-end
-
 function loadSQScript( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('data') )
-	return loadSQScriptFromRaw( data )
+	local script = SQScript()
+	local routine = script:addRoutine()
+	routine.autoStart = true
+	loadSQNode( data, routine.rootNode )
+	script:build()
+	return script
+	-- local script = mock.deserialize( nil, data )
+	-- script:_postLoad()
+	-- script:build()
+	-- return script
 end
 
 --------------------------------------------------------------------
 registerSQNode( 'group', SQNodeGroup )
-registerSQNode( 'label', SQNodeLabel )
+-- registerSQNode( 'label', SQNodeLabel )
 registerSQNode( 'end',   SQNodeEnd   )
 registerSQNode( 'goto',  SQNodeGoto  )
 

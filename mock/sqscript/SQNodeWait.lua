@@ -10,11 +10,15 @@ function SQNodeWait:__init()
 	self.duration = 1
 end
 
-function SQNodeWait:enter( context, env )
+function SQNodeWait:load( data )
+	self.duration = tonumber( data.args[1] ) or 1
+end
+
+function SQNodeWait:enter( state, env )
 	env.elapsed = 0
 end
 
-function SQNodeWait:step( context, env, dt )
+function SQNodeWait:step( state, env, dt )
 	local elapsed = env.elapsed 
 	elapsed = elapsed + dt
 	if elapsed >= self.duration then return true end
@@ -40,11 +44,11 @@ function SQNodeWaitFrame:__init()
 	self.frameCount = 1
 end
 
-function SQNodeWaitFrame:enter( context, env )
+function SQNodeWaitFrame:enter( state, env )
 	env.elapsed = 0
 end
 
-function SQNodeWaitFrame:step( context, env, dt )
+function SQNodeWaitFrame:step( state, env, dt )
 	local elapsed = env.elapsed 
 	elpased = elpased + 1
 	return elpased >= self.frameCount
@@ -69,14 +73,14 @@ function SQNodeWaitRandom:__init()
 	self.maxDuration = 2
 end
 
-function SQNodeWaitRandom:enter( context, env )
+function SQNodeWaitRandom:enter( state, env )
 	local min, max = self:getRange()
 	env.duration = rand( min, max )
 	env.elapsed = 0
 end
 
 
-function SQNodeWaitRandom:step( context, env, dt )
+function SQNodeWaitRandom:step( state, env, dt )
 	local elapsed = env.elapsed 
 	elapsed = elapsed + dt
 	if elapsed >= env.duration then return true end

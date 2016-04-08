@@ -9,11 +9,11 @@ CLASS: SQNodeAnimatorControl ( SQNode )
 function SQNodeAnimatorControl:__init()
 end
 
-function SQNodeAnimatorControl:enter( context, env )
+function SQNodeAnimatorControl:enter( state, env )
 end
 
-function SQNodeAnimatorControl:checkAndGetAnimator( context )
-	local entity = context:getEnv( 'entity' )
+function SQNodeAnimatorControl:checkAndGetAnimator( state )
+	local entity = state:getEnv( 'entity' )
 	local animator = entity:getComponent( Animator )
 	if not animator then
 		_warn( 'no animator for entity:', entity:getName() )
@@ -30,8 +30,8 @@ end
 CLASS: SQNodeAnimatorStop ( SQNodeAnimatorControl )
 	:MODEL{}
 
-function SQNodeAnimatorStop:enter( context, env )
-	local animator = self:checkAndGetAnimator( context )
+function SQNodeAnimatorStop:enter( state, env )
+	local animator = self:checkAndGetAnimator( state )
 	if not animator then return false end
 	animator:stop()
 end
@@ -51,8 +51,8 @@ end
 CLASS: SQNodeAnimatorPause ( SQNodeAnimatorControl )
 	:MODEL{}
 
-function SQNodeAnimatorPause:enter( context, env )
-	local animator = self:checkAndGetAnimator( context )
+function SQNodeAnimatorPause:enter( state, env )
+	local animator = self:checkAndGetAnimator( state )
 	if not animator then return false end
 	animator:pause()
 end
@@ -72,8 +72,8 @@ end
 CLASS: SQNodeAnimatorResume ( SQNodeAnimatorControl )
 	:MODEL{}
 
-function SQNodeAnimatorResume:enter( context, env )
-	local animator = self:checkAndGetAnimator( context )
+function SQNodeAnimatorResume:enter( state, env )
+	local animator = self:checkAndGetAnimator( state )
 	if not animator then return false end
 	animator:resume()
 end
@@ -90,8 +90,8 @@ CLASS: SQNodeAnimatorThrottle ( SQNodeAnimatorControl )
 		Field 'throttle' :range( 0 );
 }
 
-function SQNodeAnimatorThrottle:enter( context, env )
-	local animator = self:checkAndGetAnimator( context )
+function SQNodeAnimatorThrottle:enter( state, env )
+	local animator = self:checkAndGetAnimator( state )
 	if not animator then return false end
 	animator:setThrottle( 'throttle' )
 end
@@ -130,8 +130,8 @@ function SQNodeAnimatorPlay:getRichText()
 	)
 end
 
-function SQNodeAnimatorPlay:enter( context, env )
-	local animator = self:checkAndGetAnimator( context )
+function SQNodeAnimatorPlay:enter( state, env )
+	local animator = self:checkAndGetAnimator( state )
 	if not animator then return false end
 	local state = animator:playClip( self.clip, self.mode )
 	if not state then 
@@ -146,7 +146,7 @@ function SQNodeAnimatorPlay:enter( context, env )
 	return true 
 end
 
-function SQNodeAnimatorPlay:step( context, env, dt )
+function SQNodeAnimatorPlay:step( state, env, dt )
 	if self.blocking then
 		local state = env.animState
 		if state:isDone() then return true end
@@ -156,8 +156,8 @@ function SQNodeAnimatorPlay:step( context, env, dt )
 end
 
 --------------------------------------------------------------------
-registerSQNode( 'animator_stop',      SQNodeAnimatorStop   )
-registerSQNode( 'animator_pause',     SQNodeAnimatorPause  )
-registerSQNode( 'animator_resume',    SQNodeAnimatorResume )
-registerSQNode( 'animator_throttle',  SQNodeAnimatorThrottle   )
-registerSQNode( 'animator_play',      SQNodeAnimatorPlay   )
+registerSQNode( 'AnimStop',      SQNodeAnimatorStop   )
+registerSQNode( 'AnimPause',     SQNodeAnimatorPause  )
+registerSQNode( 'AnimResume',    SQNodeAnimatorResume )
+registerSQNode( 'AnimThrottle',  SQNodeAnimatorThrottle   )
+registerSQNode( 'AnimPlay',      SQNodeAnimatorPlay   )

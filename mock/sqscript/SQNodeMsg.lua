@@ -12,8 +12,8 @@ function SQNodeMsg:__init()
 	self.data = ''
 end
 
-function SQNodeMsg:enter( context, env )
-	local entity = context:getEnv( 'entity' )
+function SQNodeMsg:enter( state, env )
+	local entity = state:getEnv( 'entity' )
 	if not entity then return end
 	return entity:tell( self.msg, self.data )
 end
@@ -33,25 +33,25 @@ function SQNodeWaitMsg:__init()
 	self.msg = ''
 end
 
-function SQNodeWaitMsg:enter( context, env )
-	local entity = context:getEnv( 'entity' )
+function SQNodeWaitMsg:enter( state, env )
+	local entity = state:getEnv( 'entity' )
 	if not entity then return false end
 	local msgListener = function( msg, data )
-		return self:onMsg( context, env, msg, data )
+		return self:onMsg( state, env, msg, data )
 	end
 	env.msgListener = msgListener
 	entity:addMsgListener( msgListener )
 end
 
-function SQNodeWaitMsg:step( context, env )
+function SQNodeWaitMsg:step( state, env )
 	if env.received then
-		local entity = context:getEnv( 'entity' )
+		local entity = state:getEnv( 'entity' )
 		entity:removeMsgListener( env.msgListener )
 		return true
 	end
 end
 
-function SQNodeWaitMsg:onMsg( context, env, msg, data )
+function SQNodeWaitMsg:onMsg( state, env, msg, data )
 	if msg == self.msg then
 		env.received = true
 	end

@@ -10,8 +10,8 @@ function SQNodeSignal:__init()
 	self.signalId = ''
 end
 
-function SQNodeSignal:enter( context, env )
-	context:incSignalCounter( self.signalId )
+function SQNodeSignal:enter( state, env )
+	state:incSignalCounter( self.signalId )
 end
 
 function SQNodeSignal:getRichText()
@@ -30,13 +30,13 @@ function SQNodeWaitSignal:__init()
 	self.signalId = ''
 end
 
-function SQNodeWaitSignal:enter( context, env )
-	local counter = context:getSignalCounter( self.signalId )
+function SQNodeWaitSignal:enter( state, env )
+	local counter = state:getSignalCounter( self.signalId )
 	env.counter0 = counter
 end
 
-function SQNodeWaitSignal:step( context, env )
-	local counter = context:getSignalCounter( self.signalId )
+function SQNodeWaitSignal:step( state, env )
+	local counter = state:getSignalCounter( self.signalId )
 	if counter ~= env.counter0 then return true end
 end
 

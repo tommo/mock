@@ -1,33 +1,10 @@
 module 'mock'
 
-local function gsplit(s, sep, plain )
-	sep = sep or '\n'
-	local start = 1
-	local done = false
-	local function pass(i, j, ...)
-		if i then
-			local seg = s:sub(start, i - 1)
-			start = j + 1
-			return seg, ...
-		else
-			done = true
-			return s:sub(start)
-		end
-	end
-	return function()
-		if done then return end
-		if sep == '' then done = true return s end
-		return pass( s:find(sep, start, plain) )
-	end
-end
-
-local match = string.match
-function trim(s)
-  return match(s,'^()%s*$') and '' or match(s,'^%s*(.*%S)')
-end
-
+local match  = string.match
+local trim   = string.trim
+local gsplit = string.gsplit
 local function calcIndent( l )
-	local k = string.match( l, '^\t*' )
+	local k = match( l, '^\t*' )
 	if not k then return 0 end
 	return #k
 end
@@ -360,7 +337,7 @@ end
 function ParseContextProto:parseSource( src )
 	self:init()
 	local lineNo = 0
-	for line in gsplit( src, '\n', true ) do
+	for line in string.gsplit( src, '\n', true ) do
 		lineNo = lineNo + 1
 		self.currentLineNo = lineNo
 		self:parseLine( lineNo, line )
