@@ -2,11 +2,13 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: SQActor ( Behaviour )
 	:MODEL{
+		Field 'name'     :string();
 		Field 'script' :asset( 'sq_script' ) :getset( 'Script' );
 		Field 'autoStart' :boolean();
 }
 
 function SQActor:__init()
+	self.name = ''
 	self.activeState = false
 	self.autoStart = true
 end
@@ -20,7 +22,36 @@ end
 
 function SQActor:onAttach( ent )
 	SQActor.__super.onAttach( self, ent )
+	local scene = ent:getScene()
+	local actorRegistry = scene:getUserObject( 'SQActors' )
+	if not actorRegistry then
+		actorRegistry = {}
+		scene:setUserObject( 'SQActors', actorRegistry )
+	end
+	actorRegistry[ self ] = true
 	self:loadScript()
+end
+
+function SQActor:onDetach( ent )
+	SQActor.__super.onDetach( self, ent )
+	local scene = ent:getScene()
+	local actorRegistry = scene:getUserObject( 'SQActors' )
+	actorRegistry[ self ] = nil
+end
+
+function SQActor:findActorByName( name )
+	local scene = self:getScene()
+	local actorRegistry = scene:getUserObject( 'SQActors' )
+	for actor in pairs( actorRegistry ) do
+		if actor.name == name then return actor end
+	end
+	return nil
+end
+
+function SQActor:onMsg( msg, data, source )
+	local state = self.activeState
+	if not state then return end
+	state:onMsg( msg, data, source )
 end
 
 function SQActor:getScript()
@@ -61,7 +92,6 @@ function SQActor:actionExecution()
 	local dt = 0
 	while true do
 		state:update( dt )
-		if not state:isRunning() then break end
 		dt = coroutine.yield()
 	end
 end

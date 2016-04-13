@@ -34,7 +34,7 @@ CLASS: SQNodeRandom ( SQNodeGroup )
 	:MODEL{}
 
 function SQNodeRandom:__init()
-	self.brancheProbList = {}
+	self.branchProbList = {}
 	self.name = 'RandomGroup'
 end
 
@@ -51,23 +51,35 @@ function SQNodeRandom:getRichText()
 end
 
 function SQNodeRandom:enter( state, env )
-	local jumpTo = probselect( self.brancheProbList )
+	local jumpTo = probselect( self.branchProbList )
 	if jumpTo then
 		state:setJumpTarget( jumpTo )
 		return 'jump'
 	else
-		return true
+		return false
 	end
 end
 
 function SQNodeRandom:build()
+	local children = self.children
+	self.children = {} --rebuild children list
 	local l = {}
-	for i,child in ipairs( self.children ) do
-		local entry = { child.weight, child }
+	for i, child in ipairs( children ) do
+		local branch
+		if child:isInstance( SQNodeRandomBranch ) then
+			branch = child
+			self:addChild( branch )
+		else
+			branch = SQNodeRandomBranch()
+			branch.weight = 1
+			self:addChild( branch )
+			branch:addChild( child )
+		end
+		local entry = { branch.weight, branch }
 		l[i] = entry
 	end
-	self.brancheProbList = l
+	self.branchProbList = l
 end
 
-registerSQNode( 'random',         SQNodeRandom  )
-registerSQNode( 'random_branch',  SQNodeRandomBranch  )
+registerSQNode( 'random',      SQNodeRandom  )
+registerSQNode( 'prob',        SQNodeRandomBranch  )

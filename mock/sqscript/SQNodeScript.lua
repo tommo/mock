@@ -43,6 +43,19 @@ function SQNodeScriptLua:__init()
 	self.callbackStep  = false
 end
 
+function SQNodeScriptLua:load( data )
+	local args = data.args
+	local script = false
+	for i, arg in ipairs( data.args ) do
+		if not script then
+			script = arg
+		else
+			script = script .. '\n' .. arg
+		end
+	end
+	self.script = script
+end
+
 function SQNodeScriptLua:getIcon()
 	return 'sq_node_script_lua'
 end
@@ -97,5 +110,7 @@ function SQNodeScriptLua:step( state, env, dt )
 	end
 end
 
+--TODO
+
 -------------------------------------------------------------------
-registerSQNode( 'script_lua',      SQNodeScriptLua )
+registerSQNode( 'script',      SQNodeScriptLua )

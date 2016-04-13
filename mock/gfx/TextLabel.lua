@@ -164,7 +164,8 @@ function TextLabel:updateRect()
 end
 	
 function TextLabel:setText( text )
-	self.text = tostring( text )
+	text = tostring( text )
+	self.text = text
 	self.box:setString( text )
 end
 

@@ -10,6 +10,19 @@ function SQNodeLog:__init()
 	self.text = 'message'
 end
 
+function SQNodeLog:load( data )
+	local args = data.args
+	local text = false
+	for i, arg in ipairs( data.args ) do
+		if not text then
+			text = arg
+		else
+			text = text .. '\n' .. arg
+		end
+	end
+	self.text = text
+end
+
 function SQNodeLog:enter( state, env )
 	print( self.text )
 end

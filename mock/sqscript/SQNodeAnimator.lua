@@ -1,18 +1,66 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: SQNodeAnimatorControl ( SQNode )
+CLASS: SQNodeAnimator ( SQNode )
 	:MODEL{
 
 	}
 
-function SQNodeAnimatorControl:__init()
+function SQNodeAnimator:__init()
+	self.cmd = 'play'
+	self.animState = false
+	self.blocking  = true
 end
 
-function SQNodeAnimatorControl:enter( state, env )
+function SQNodeAnimator:enter( state, env )
+	local animator = self:checkAndGetAnimator( state )
+	if not animator then return false end
+	local cmd = self.cmd
+	if cmd == 'play' then
+		if not self.argClipName then return false end
+		local animState = animator:playClip( self.argClipName, self.argMode )
+		if not animState then 
+			_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
+			return false
+		end
+		local duration = self.argDuration
+		if duration > 0 then
+			animState:setDuration( duration )
+		end
+		env.animState = animState
+		return true 
+
+	elseif cmd == 'stop' then
+		animator:stop()
+		return false
+
+	elseif cmd == 'resume' then
+		local animState = env.animState
+		if not animState then
+			return false
+		end
+		animator:resume()
+		return true
+
+	elseif cmd == 'throttle' then
+		animator:setThrottle( self.argThrottle )
+		return false
+
+	else
+		return false
+	end
 end
 
-function SQNodeAnimatorControl:checkAndGetAnimator( state )
+function SQNodeAnimator:step( state, env, dt )
+	if self.blocking then
+		local animState = env.animState
+		if animState:isDone() then return true end
+	else
+		return true
+	end
+end
+
+function SQNodeAnimator:checkAndGetAnimator( state )
 	local entity = state:getEnv( 'entity' )
 	local animator = entity:getComponent( Animator )
 	if not animator then
@@ -21,143 +69,33 @@ function SQNodeAnimatorControl:checkAndGetAnimator( state )
 	return animator
 end
 
-function SQNodeAnimatorControl:getIcon()
+function SQNodeAnimator:getIcon()
 	return 'sq_node_animator'
 end
 
+function SQNodeAnimator:load( data )
+	local args = data.args
+	local cmd = args[1]
+	if not cmd then return end
+	if cmd == 'play' then
+		--
+		self.argClipName = args[2] or false
+		self.argMode = args[3] or 'normal'
+		self.argDuration = tonumber( args[4] ) or 0
 
---------------------------------------------------------------------
-CLASS: SQNodeAnimatorStop ( SQNodeAnimatorControl )
-	:MODEL{}
-
-function SQNodeAnimatorStop:enter( state, env )
-	local animator = self:checkAndGetAnimator( state )
-	if not animator then return false end
-	animator:stop()
-end
-
-function SQNodeAnimatorStop:getRichText()
-	return string.format(
-		'<cmd>STOP_ANIMATOR</cmd>'
-	)
-end
-
-function SQNodeAnimatorStop:getIcon()
-	return 'sq_node_animator_stop'
-end
-
-
---------------------------------------------------------------------
-CLASS: SQNodeAnimatorPause ( SQNodeAnimatorControl )
-	:MODEL{}
-
-function SQNodeAnimatorPause:enter( state, env )
-	local animator = self:checkAndGetAnimator( state )
-	if not animator then return false end
-	animator:pause()
-end
-
-function SQNodeAnimatorPause:getRichText()
-	return string.format(
-		'<cmd>PAUSE_ANIMATOR</cmd>'
-	)
-end
-
-function SQNodeAnimatorPause:getIcon()
-	return 'sq_node_animator_pause'
-end
-
-
---------------------------------------------------------------------
-CLASS: SQNodeAnimatorResume ( SQNodeAnimatorControl )
-	:MODEL{}
-
-function SQNodeAnimatorResume:enter( state, env )
-	local animator = self:checkAndGetAnimator( state )
-	if not animator then return false end
-	animator:resume()
-end
-
-function SQNodeAnimatorResume:getRichText()
-	return string.format(
-		'<cmd>RESUME_ANIMATOR</cmd>'
-	)
-end
-
---------------------------------------------------------------------
-CLASS: SQNodeAnimatorThrottle ( SQNodeAnimatorControl )
-	:MODEL{
-		Field 'throttle' :range( 0 );
-}
-
-function SQNodeAnimatorThrottle:enter( state, env )
-	local animator = self:checkAndGetAnimator( state )
-	if not animator then return false end
-	animator:setThrottle( 'throttle' )
-end
-
-function SQNodeAnimatorThrottle:getRichText()
-	return string.format(
-		'<cmd>RESUME_ANIMATOR</cmd>'
-	)
-end
-
---------------------------------------------------------------------
-CLASS: SQNodeAnimatorPlay ( SQNodeAnimatorControl )
-	:MODEL{
-		Field 'clip' :string();
-		Field 'mode' :enum( EnumTimerMode );
-		Field 'duration' :range(0);
-		Field 'blocking' :boolean();
-	}
-
-function SQNodeAnimatorPlay:__init()
-	self.clip = ''
-	self.mode = MOAITimer.NORMAL
-	self.duration = 0 --use clip time
-	self.blocking = true
-end
-
-function SQNodeAnimatorPlay:getRichText()
-	local duration = self.duration
-	local blocking = self.blocking
-	return string.format(
-		'<cmd>PLAY_ANIM</cmd> "<string>%s</string>" mode:<data>%s</data> duration:<number>%s</number> <flag>%s</flag>',
-		self.clip,
-		_ENUM_NAME( EnumTimerMode, self.mode, '????' ),
-		duration == 0 and 'auto' or string.format( '%.2f', duration ),
-		blocking and 'blocked' or ''
-	)
-end
-
-function SQNodeAnimatorPlay:enter( state, env )
-	local animator = self:checkAndGetAnimator( state )
-	if not animator then return false end
-	local state = animator:playClip( self.clip, self.mode )
-	if not state then 
-		_warn( 'no animator clip found:', animator:getEntity():getName(), self.clip )
+	elseif cmd == 'stop' then
+		--no args
+	elseif cmd == 'pause' then
+		--no args
+	elseif cmd == 'resume' then
+		--no args
+	elseif cmd == 'throttle' then
+		self.argThrottle = tonumber( args[2] ) or 1
+	else
+		_warn( 'unkown animator command', tostring(cmd) )
 		return false
 	end
-	local duration = self.duration
-	if duration > 0 then
-		state:setDuration( duration )
-	end
-	env.animState = state
-	return true 
-end
-
-function SQNodeAnimatorPlay:step( state, env, dt )
-	if self.blocking then
-		local state = env.animState
-		if state:isDone() then return true end
-	else
-		return true
-	end
 end
 
 --------------------------------------------------------------------
-registerSQNode( 'AnimStop',      SQNodeAnimatorStop   )
-registerSQNode( 'AnimPause',     SQNodeAnimatorPause  )
-registerSQNode( 'AnimResume',    SQNodeAnimatorResume )
-registerSQNode( 'AnimThrottle',  SQNodeAnimatorThrottle   )
-registerSQNode( 'AnimPlay',      SQNodeAnimatorPlay   )
+registerSQNode( 'anim', SQNodeAnimator   )

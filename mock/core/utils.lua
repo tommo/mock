@@ -531,6 +531,12 @@ function isFractal(v)
 	return math.floor(v) ~= v
 end
 
+function isNonEmptyString( s )
+	local tt = type( s )
+	if tt == 'string' then return #s > 0 end
+	return false
+end
+
 --------------------------------------------------------------------
 -------Table Helpers
 --------------------------------------------------------------------

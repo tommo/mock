@@ -12,9 +12,16 @@ function SQNodeMsg:__init()
 	self.data = ''
 end
 
+function SQNodeMsg:load( data )
+	local args = data.args
+	self.msg = args[1] or false
+	self.data = args[2] or ''
+end
+
 function SQNodeMsg:enter( state, env )
 	local entity = state:getEnv( 'entity' )
 	if not entity then return end
+	if not self.msg then return false end
 	return entity:tell( self.msg, self.data )
 end
 
