@@ -1,5 +1,15 @@
 module 'mock'
 
+local NameToAnimMode = {
+	['normal']           = MOAITimer.NORMAL;
+	['reverse']          = MOAITimer.REVERSE;
+	['continue']         = MOAITimer.CONTINUE;
+	['continue_reverse'] = MOAITimer.CONTINUE_REVERSE;
+	['loop']             = MOAITimer.LOOP;
+	['loop_reverse']     = MOAITimer.LOOP_REVERSE;
+	['ping_pong']        = MOAITimer.PING_PONG;
+}
+
 --------------------------------------------------------------------
 CLASS: SQNodeAnimator ( SQNode )
 	:MODEL{
@@ -9,7 +19,7 @@ CLASS: SQNodeAnimator ( SQNode )
 function SQNodeAnimator:__init()
 	self.cmd = 'play'
 	self.animState = false
-	self.blocking  = true
+	self.blocking  = false
 end
 
 function SQNodeAnimator:enter( state, env )
@@ -77,11 +87,20 @@ function SQNodeAnimator:load( data )
 	local args = data.args
 	local cmd = args[1]
 	if not cmd then return end
+	self.cmd = cmd
 	if cmd == 'play' then
 		--
 		self.argClipName = args[2] or false
-		self.argMode = args[3] or 'normal'
+		self.argMode = NameToAnimMode[ args[3] or 'normal' ] or 0
 		self.argDuration = tonumber( args[4] ) or 0
+		self.blocking = true
+
+	elseif cmd == 'loop' then
+		self.cmd = 'play'
+		self.argClipName = args[2] or false
+		self.argDuration = tonumber( args[3] ) or 0
+		self.argMode = NameToAnimMode[ 'loop' ]
+		self.blocking = false 
 
 	elseif cmd == 'stop' then
 		--no args

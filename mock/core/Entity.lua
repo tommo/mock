@@ -1,5 +1,8 @@
-module 'mock'
+--------------------------------------------------------------------
+-- The basic element of scenegraph.
+-- @classmod Entity
 
+module 'mock'
 --------------------------------------------------------------------
 local insert, remove = table.insert, table.remove
 local pairs, ipairs  = pairs, ipairs
@@ -8,6 +11,8 @@ local unpack = unpack
 --------------------------------------------------------------------
 ----- ENTITY CLASS
 --------------------------------------------------------------------
+
+---------------------------------------------------------------------
 CLASS: Entity ( Actor )
 	:MODEL{
 		Field '__prefabId':string() :no_edit();
@@ -146,11 +151,14 @@ end
 --------------------------------------------------------------------
 ------ Destructor
 --------------------------------------------------------------------
+
+--- Destroy the Entity if it's inserted into a scene, deferred. ( scene checking )
 function Entity:tryDestroy()
 	if not self.scene then return end
 	return self:destroy()
 end
 
+--- Destroy the Entity, deferred. ( without scene checking, unsafe )
 function Entity:destroy()
 	assert( self.scene )
 	local scene = self.scene
@@ -169,11 +177,14 @@ function Entity:destroy()
 	end
 end
 
+--- Destroy the Entity later.
+-- @p float delay delaying time to the destruction in seconds
 function Entity:destroyLater( delay )
 	assert( self.scene )
 	self.scene.laterDestroy[ self ]= self:getTime() + delay
 end
 
+--- Destroy the Entity immediately.
 function Entity:destroyWithChildrenNow()
 	for child in pairs( self.children ) do
 		child:destroyWithChildrenNow()
@@ -247,6 +258,10 @@ end
 --------------------------------------------------------------------
 ------- Component Attach/Detach
 --------------------------------------------------------------------
+
+--- Attach a component
+-- @p Component com the component instance to be attached
+-- @ret Component the component attached ( same as the input )
 function Entity:attach( com )
 	if not self.components then 
 		_error('attempt to attach component to a dead entity')
@@ -275,17 +290,25 @@ function Entity:attach( com )
 	return com
 end
 
+--- Attach an internal component ( invisible in the editor )
+-- @p Component com the component instance to be inserted
+-- @ret Component the component attached ( same as the input )
 function Entity:attachInternal( com )
 	com.FLAG_INTERNAL = true
 	return self:attach( com )
 end
 
+--- Attach an array of components
+-- @p {Component} components an array of components to be attached
 function Entity:attachList( l )
 	for i, com in ipairs( l ) do
 		self:attach( com )
 	end
 end
 
+--- Detach given component
+-- @p Component com component to be detached
+-- @p ?string reason reason to detaching
 function Entity:detach( com, reason, _skipDisconnection )
 	local components = self.components
 	if not components[ com ] then return end
@@ -305,6 +328,8 @@ function Entity:detach( com, reason, _skipDisconnection )
 	return com
 end
 
+--- Detach all the components
+-- @p ?string reason reason to detaching
 function Entity:detachAll( reason )
 	local components = self.components
 	while true do
@@ -314,12 +339,16 @@ function Entity:detachAll( reason )
 	end
 end
 
+--- Detach the component in next update cycle
+-- @p Component com the component to be detached
 function Entity:detachLater( com )
 	if self.scene then
 		self.scene.pendingDetach[ com ] = true
 	end
 end
 
+--- Get the component table [ com ] = Class
+-- @return the component table
 function Entity:getComponents()
 	return self.components
 end
@@ -328,7 +357,8 @@ end
 local function componentSortFunc( a, b )
 	return ( a._componentID or 0 ) < ( b._componentID or 0 )
 end
-
+--- Get the sorted component list
+-- @ret {Component} the sorted component array
 function Entity:getSortedComponentList()
 	local list = {}
 	local i = 0
@@ -339,7 +369,9 @@ function Entity:getSortedComponentList()
 	return list
 end
 
-
+--- Get the first component of asking type
+-- @p Class clas the component class to be looked for
+-- @ret Component|nil
 function Entity:getComponent( clas )
 	if not self.components then return nil end
 	for com, comType in pairs( self.components ) do
@@ -349,6 +381,9 @@ function Entity:getComponent( clas )
 	return nil
 end
 
+--- Get component by alias
+-- @p string alias alias to be looked for
+-- @ret Component the found component
 function Entity:getComponentByAlias( alias )
 	if not self.components then return nil end
 	for com, comType in pairs( self.components ) do
@@ -357,6 +392,9 @@ function Entity:getComponentByAlias( alias )
 	return nil
 end
 
+--- Get component by class name
+-- @p string name component class name to be looked for
+-- @ret Component the found component
 function Entity:getComponentByName( name )
 	if not self.components then return nil end
 	for com, comType in pairs( self.components ) do
@@ -368,6 +406,10 @@ function Entity:getComponentByName( name )
 	return nil
 end
 
+
+--- Get component either by class name or by class
+-- @p nil|string|Class  component type to be looked for, return the first component if no target specified.
+-- @ret Component the found component
 function Entity:com( id )
 	if not self.components then return nil end
 	local tt = type(id)
@@ -383,11 +425,17 @@ function Entity:com( id )
 	end
 end
 
+--- Check if the entity has given component type
+-- @p Class  component type to be looked for
+-- @ret boolean result
 function Entity:hasComponentOf( clas )
 	if self:getComponent( clas ) then return true end
 	return false
 end
 
+--- Get all components of given type, by class or by class name
+-- @p string|Class  component type to be looked for
+-- @ret {Component} array of result
 function Entity:getAllComponentsOf( id )
 
 	local found = {}
@@ -419,16 +467,24 @@ function Entity:getAllComponentsOf( id )
 	return found
 end
 
+
+--- Create a 'each' accessor for all the attached components
+-- @return a 'each' accessor
+-- @usage entity:eachComponet():setActive()
 function Entity:eachComponent()
 	local list = table.keys( self:getComponents() )
 	return eachT( list )
 end
 
+--- Create a 'each' accessor for all the attached components with given type
+-- @p string|Class component type
+-- @return a 'each' accessor
 function Entity:eachComponentOf( id )
 	local list = self:getAllComponentsOf( id )
 	return eachT( list )
 end
 
+--- Print attached Components
 function Entity:printComponentClassNames()
 	for com in pairs( self.components ) do
 		print( com:getClassName() )
@@ -501,6 +557,10 @@ end
 --------------------------------------------------------------------
 ------ Child Entity
 --------------------------------------------------------------------
+
+--- Add a sibling entity
+-- @p Entity entity entity to be added
+-- @p[opt] string layerName name of target layer, default is the same as _self_
 function Entity:addSibling( entity, layerName )	
 	if self.parent then
 		return self.parent:addChild( entity, layerName )

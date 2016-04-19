@@ -1,6 +1,10 @@
 module 'mock'
 
 --------------------------------------------------------------------
+--- Shape
+-- @type Shape2D
+-- @string name name of the shape
+
 CLASS: Shape2D ()
 	:MODEL{
 		Field 'name' :string();  
@@ -24,6 +28,9 @@ function Shape2D:getIcon()
 	return 'shape'
 end
 
+--- get converted PolyLines
+-- @int  steps for PolyLines generation
+-- @return list of PolyLines
 function Shape2D:toPolyLines( steps )
 	return {}
 end

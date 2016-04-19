@@ -1,9 +1,11 @@
+--------------------------------------------------------------------
+--@classmod Geometry
 module 'mock'
 
 local draw = MOAIDraw
 local gfx  = MOAIGfxDevice
 
---------------------------------------------------------------------
+
 CLASS: GeometryComponent( DrawScript )
 	:MODEL{
 		Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
@@ -33,7 +35,6 @@ function GeometryComponent:getPickingProp()
 end
 
 --------------------------------------------------------------------
-
 CLASS: GeometryRect ( GeometryComponent )
 	:MODEL{
 		Field 'w';

@@ -12,7 +12,7 @@ end
 --------------------------------------------------------------------
 CLASS: EmbedAnimator ( Animator )
 	:MODEL{
-		Field 'serializedData' :string() :no_edit() :getset( 'SerializedData');
+		Field 'serializedData' :string() :no_edit() :getset( 'SerializedData' );
 		Field 'data' :asset('animator_data')  :no_edit() :no_save();
 		Field 'uniqueKey' :string() :no_edit();
 	}
@@ -21,7 +21,7 @@ registerComponent( 'EmbedAnimator', EmbedAnimator )
 
 function EmbedAnimator:__init()
 	self.data = AnimatorData()
-	self.serializedData = 'shit'
+	self.serializedData = ''
 	self.uniqueKey = ''
 end
 

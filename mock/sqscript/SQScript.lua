@@ -36,8 +36,23 @@ function SQNode:__init()
 	self.comment    = ''
 
 	self.context    = false
-	self.tag        = false
+	self.tags       = false
 
+end
+
+function SQNode:getFirstContext()
+	if self.context then
+		return self.context[ 1 ]
+	else
+		return nil
+	end
+end
+
+function SQNode:hasTag( t )
+	for i, tag in ipairs( self.tags ) do
+		if tag == t then return true end
+	end
+	return false
 end
 
 function SQNode:getRoot()
@@ -157,20 +172,29 @@ end
 function SQNode:load( data )
 end
 
-function SQNode:_build()
-	self:build()
-	self:buildChildren()
+function SQNode:applyNodeContext( buildContext )
+	self.context = buildContext.context
+	self.tags = buildContext.tags
+	buildContext.tags = {}
+end
+
+function SQNode:_build( buildContext )
+	self:applyNodeContext( buildContext )
+	self:build( buildContext )
+	self:buildChildren( buildContext )
 	self.executeQueue = self:buildExecuteQueue() or {}
 	-- self.executeQueue = self.children
 end
 
-function SQNode:build()
+function SQNode:build( buildContext )
 end
 
-function SQNode:buildChildren()
+function SQNode:buildChildren( buildContext )
+	local context0 = buildContext.context
 	for i, child in ipairs( self.children ) do
-		child:_build()
+		child:_build( buildContext )
 	end
+	buildContext.context = context0
 end
 
 function SQNode:buildExecuteQueue()
@@ -332,6 +356,43 @@ end
 
 
 --------------------------------------------------------------------
+CLASS: SQNodeContext ( SQNode )
+function SQNodeContext:__init()
+	self.contextNames = {}
+end
+
+function SQNodeContext:applyNodeContext( buildContext )
+	buildContext.context = self.contextNames
+end
+
+function SQNodeContext:isExecutable()
+	return false
+end
+
+function SQNodeContext:load( data )
+	self.contextNames = data.names
+end
+
+
+--------------------------------------------------------------------
+CLASS: SQNodeTag ( SQNode )
+function SQNodeTag:__init()
+	self.tagNames = {}
+end
+
+function SQNodeTag:applyNodeContext( buildContext )
+	buildContext.tags = table.merge( buildContext.tags or {}, self.tagNames )
+end
+
+function SQNodeTag:isExecutable()
+	return false
+end
+
+function SQNodeTag:load( data )
+	self.tagNames = data.tags or {}
+end
+
+--------------------------------------------------------------------
 CLASS: SQNodeMsgCallback ( SQNodeGroup )
 	:MODEL{
 		Field 'msg' :string()
@@ -350,7 +411,7 @@ function SQNodeMsgCallback:load( data )
 	self.msg = args[1] or false
 end
 
-function SQNodeMsgCallback:build()
+function SQNodeMsgCallback:build( buildContext )
 	local routine = self:getRoutine()
 	local msg = self.msg
 	if not isNonEmptyString( msg ) then return end
@@ -456,7 +517,11 @@ function SQRoutine:execute( state )
 end
 
 function SQRoutine:build()
-	self.rootNode:_build()
+	local context = {
+		context = {},
+		tags    = {}
+	}
+	self.rootNode:_build( context )
 end
 
 
@@ -891,15 +956,18 @@ end
 --------------------------------------------------------------------
 local SQNodeRegistry = {}
 local defaultOptions = {}
-function registerSQNode( name, clas, options )
-	options = options or {}
+function registerSQNode( name, clas, overwrite, info )
+	info = info or {}
 	local entry0 = SQNodeRegistry[ name ]
 	if entry0 then
-		_warn( 'duplicated SQNode:', name )
+		if not overwrite then
+			_warn( 'duplicated SQNode:', name )
+			return false
+		end
 	end
 	SQNodeRegistry[ name ] = {
 		clas     = clas,
-		comment  = options[ 'comment' ] or ''
+		info     = info
 	}
 end
 
@@ -918,12 +986,14 @@ local function loadSQNode( data, parentNode )
 	local node
 	local t = data.type
 	if t == 'context' then
-		--TODO: context inference
-		return false
+		node = SQNodeContext()
+		node:_load( data )
+		parentNode:addChild( node )
 
 	elseif t == 'tag'     then
-		--TODO: tag inference
-		return false
+		node = SQNodeTag()
+		node:_load( data )
+		parentNode:addChild( node )
 
 	elseif t == 'label'   then
 		local labelNode = SQNodeLabel()
@@ -975,6 +1045,7 @@ end
 
 --------------------------------------------------------------------
 registerSQNode( 'group', SQNodeGroup )
+registerSQNode( 'do', SQNodeGroup )
 -- registerSQNode( 'label', SQNodeLabel )
 registerSQNode( 'end',   SQNodeEnd   )
 registerSQNode( 'goto',  SQNodeGoto  )

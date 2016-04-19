@@ -1,3 +1,9 @@
+--------------------------------------------------------------------
+-- @classmod Component
+
+---
+-- @section Members
+
 module 'mock'
 CLASS: Component ()
  	:MODEL{
@@ -11,67 +17,109 @@ wrapWithMoaiPropMethods( Component, '_entity._prop' )
 --------------------------------------------------------------------
 --basic
 --------------------------------------------------------------------
+
+--- Get owner entity
+-- @ret Entity the owner entity
 function Component:getEntity()
 	return self._entity
 end
 
+--- Get component alias ID
+-- @ret string alias of the component
 function Component:getAlias()
 	return self._alias
 end
 
+--- Get the name of the owner entity
+-- @ret string owner entity's name
 function Component:getEntityName()
 	return self._entity:getName()
 end
 
+--- Get the tags of the owner entity
+-- @ret string owner entity's tags
 function Component:getEntityTags()
 	return self._entity:getTags()
 end
 
+--- Destroy the owner entity
 function Component:destroyEntity()
 	if self._entity then self._entity:destroy() end
 end
 
+--- Find entity by name in current scene
+-- @tparam string name the name to look for
+-- @ret Entity result of search
 function Component:findEntity( name )
 	return self._entity:findEntity( name )
 end
 
-function Component:findEntityByPath( name )
-	return self._entity:findEntityByPath( name )
+--- Find entity in current scene by full entity 'path'
+-- @p string path the entity path to look for
+-- @ret Entity result of search
+function Component:findEntityByPath( path )
+	return self._entity:findEntityByPath( path )
 end
 
+--- Find entity by name within owner entity's children
+-- @p string name the name to look for
+-- @p[opt=false] bool deep should do deep-search
+-- @ret Entity result of search
 function Component:findChild( name, deep )
 	return self._entity:findChild( name, deep )
 end
 
+--- Find child entity by relative entity 'path'
+-- @p string path the entity path to look for
+-- @ret Entity result of search
 function Component:findChildByPath( path )
 	return self._entity:findChildByPath( path )
 end
 
+--- Get parent entity of hte owner
+-- @ret Entity the parent of owner entity
 function Component:getParent()
 	return self._entity.parent
 end
 
+--- Shortcut method to get component from a named entity, in scene-scope
+-- @p string name name of the entity
+-- @p string|Class component type to be looked for
+-- @ret Entity the parent of owner entity
 function Component:findEntityCom( name, comId )
 	return self._entity:findEntityCom( name, comId )
 end
 
+--- Shortcut method to get component from a named child entity
+-- @p string name name of the child entity
+-- @p string|Class component type to be looked for
+-- @ret Entity the parent of owner entity
 function Component:findChildCom( name, comId, deep )
 	return self._entity:findChildCom( name, comId, deep )
 end
 
---------------------------------------------------------------------
+--- Get component of given type from owner entity
+-- @p Class type of component
+-- @ret Component result
 function Component:getComponent( comType )
 	return self._entity:getComponent( comType )
 end
 
+--- Get component of given type name from owner entity
+-- @p string name of component class
+-- @ret Component result
 function Component:getComponentByName( comTypeName )
 	return self._entity:getComponentByName( comTypeName )
 end
 
+--- Get component of given type from owner entity, either by name of by class
+-- @p string|Class type of component
+-- @ret Component result
 function Component:com( id )
 	return self._entity:com( id )
 end
 
+--- Detach this component from owner entity
 function Component:detachFromEntity()
 	if self._entity then
 		self._entity:detach( self )
@@ -81,11 +129,15 @@ end
 --------------------------------------------------------------------
 --Scene
 --------------------------------------------------------------------
+--- Get owner entity's scene
+-- @ret Scene owner scene
 function Component:getScene()
 	local ent = self._entity
 	return ent and ent.scene
 end
 
+--- Get owner entity's layer name
+-- @ret string layer's name
 function Component:getLayer()
 	local ent = self._entity
 	return ent and ent:getLayer()
@@ -107,34 +159,62 @@ end
 --------------------------------------------------------------------
 --message & state
 --------------------------------------------------------------------
+
+--- Send message to owner entity
+-- @p string msg message to be sent
+-- @param data message data
+-- @param source source object 
 function Component:tell( ... )
 	return self._entity:tell( ... )
 end
 
+--- Send message to owner entity and oall its children entities
+-- @p string msg message to be sent
+-- @param data message data
+-- @param source source object 
 function Component:tellSelfAndChildren( ... )
 	return self._entity:tellSelfAndChildren( ... )
 end
 
+--- Send message to all owner entity's children entities
+-- @p string msg message to be sent
+-- @param data message data
+-- @param source source object 
 function Component:tellChildren( ... )
 	return self._entity:tellChildren( ... )
 end
 
+--- Send message to owner entity's siblings
+-- @p string msg message to be sent
+-- @param data message data
+-- @param source source object 
 function Component:tellSiblings( ... )
 	return self._entity:tellSiblings( ... )
 end
 
+--- Get owner entity's current state
+-- @ret string current entity state
 function Component:getState()
 	return self._entity.state()
 end
 
+--- Check if entity is in one of the given states
+-- @p {string,...} states state names to be checked against
+-- @ret bool result
 function Component:inState( ... )
 	return self._entity:inState( ... )
 end
 
+
+--- Set owner entity's state
+-- @p string state new state to be set
 function Component:setState( state )
 	return self._entity:setState( state )
 end
 
+--- Check if entity's current state is sub state of one of the given states
+-- @p {string,...} stateGroups state group names to be checked against
+-- @ret bool result
 function Component:inStateGroup( ... )
 	return self._entity:inStateGroup( ... )
 end
@@ -163,6 +243,10 @@ end
 --------------------------------------------------------------------
 --signals
 --------------------------------------------------------------------
+
+--- Connect signal with method of this instance
+-- @p Signal sig target signal
+-- @p string methodName name of the slot method
 function Component:connect( sig, methodName )	
 	return self._entity:connectForObject( self, sig, methodName )
 end

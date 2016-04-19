@@ -23,6 +23,11 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
+--------------------------------------------------------------------
+-- The game object.
+-- It's the signleton for the main application control.
+-- @classmod Game
+
 module 'mock'
 
 local gii = rawget( _G, 'gii' )
@@ -106,15 +111,11 @@ registerGlobalSignals{
 }
 
 
-
 --------------------------------------------------------------------
 CLASS: Game () 
 	
 --------------------------------------------------------------------
---- INITIALIZATION
---------------------------------------------------------------------
-
-function Game:__init()
+function Game:__init() --INITIALIZATION
 
 	self.initialized          = false
 	self.graphicsInitialized  = false
@@ -267,15 +268,15 @@ function Game:initSystem( config, fromEditor )
 end
 
 function Game:initSubSystems( config, fromEditor )
-	----make inputs work
+	--make inputs work
 	_stat( 'init input handlers' )
 	initDefaultInputEventHandlers()
 
-	----audio
+	--audio
 	_stat( 'init audio' )
 	AudioManager.get():init()
 
-	----physics
+	--physics
 	--config for default physics world
 	self.physicsOption = table.simplecopy( DefaultPhysicsWorldOption )
 	if config['physics'] then
@@ -369,10 +370,10 @@ function Game:initCommonData( config, fromEditor )
 	self.paletteLibrary = getPaletteLibrary()
 	self.paletteLibrary:load( config['palettes'] )
 
-	----ask other systems to initialize
+	--ask other systems to initialize
 	emitSignal( 'game.init', config )
 
-	----load scenes
+	--load scenes
 	if config['scenes'] then
 		for alias, scnPath in pairs( config['scenes'] ) do
 			self.scenes[ alias ] = scnPath
@@ -538,6 +539,8 @@ function Game:initGraphics( option, fromEditor )
 
 end
 
+--- Get the scale( conent size ) of the main viewport
+-- @ret float,float width, height
 function Game:getViewportScale()
 	return self.width, self.height
 end
