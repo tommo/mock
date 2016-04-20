@@ -183,7 +183,11 @@ function AnimatorState:pause( paused )
 end
 
 function AnimatorState:resume()
-	self.anim:resume()
+	local anim = self.anim
+	if not anim:isBusy() then
+		anim:start()
+	end
+	anim:pause( false )
 end
 
 function AnimatorState:getTime()

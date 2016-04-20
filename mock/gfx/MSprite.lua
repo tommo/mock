@@ -274,6 +274,7 @@ function MSprite:createAnimState( clipName, mode )
 	-- animState:setLink( 2, offsetXCurve, self.prop, MOAIProp.ATTR_X_LOC )
 	-- animState:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )
 	animState:setMode( mode or clip.mode or MOAITimer.NORMAL )
+	animState.length = clip.length
 	return animState, clip
 end
 

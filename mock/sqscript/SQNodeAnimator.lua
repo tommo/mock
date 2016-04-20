@@ -40,21 +40,59 @@ function SQNodeAnimator:enter( state, env )
 		env.animState = animState
 		return true 
 
+	elseif cmd == 'load' then
+		if not self.argClipName then return false end
+		local animState = animator:playClip( self.argClipName, self.argMode )
+		if not animState then 
+			_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
+			return false
+		end
+		animState:pause()
+		return false
+
 	elseif cmd == 'stop' then
 		animator:stop()
 		return false
 
 	elseif cmd == 'resume' then
-		local animState = env.animState
-		if not animState then
+		local state = animator:getActiveState()
+		if not state then
 			return false
 		end
 		animator:resume()
+		env.animState = state
 		return true
 
 	elseif cmd == 'throttle' then
 		animator:setThrottle( self.argThrottle )
 		return false
+
+	elseif cmd == 'seek' then
+		local state = animator:getActiveState()
+		if not state then
+			return false
+		end
+		state:seek( self.argPosFrom )
+
+	elseif cmd == 'to' then
+		local state = animator:getActiveState()
+		if not state then
+			return false
+		end
+		state:setRange( nil, self.argPosTo )
+		state:resume()
+		env.animState = state
+		return true
+
+	elseif cmd == 'range' then
+		local state = animator:getActiveState()
+		if not state then
+			return false
+		end
+		state:setRange( self.argPosFrom, self.argPosTo )
+		state:resume()
+		env.animState = state
+		return true
 
 	else
 		return false
@@ -95,6 +133,11 @@ function SQNodeAnimator:load( data )
 		self.argDuration = tonumber( args[4] ) or 0
 		self.blocking = true
 
+	elseif cmd == 'load' then
+		self.argClipName = args[2] or false
+		self.argMode = NameToAnimMode[ args[3] or 'normal' ] or 0
+		self.blocking  = false
+
 	elseif cmd == 'loop' then
 		self.cmd = 'play'
 		self.argClipName = args[2] or false
@@ -110,6 +153,15 @@ function SQNodeAnimator:load( data )
 		--no args
 	elseif cmd == 'throttle' then
 		self.argThrottle = tonumber( args[2] ) or 1
+	elseif cmd == 'seek' then
+		self.argPosFrom = tonumber( args[2] ) or args[2]
+	elseif cmd == 'to' then
+		self.argPosTo = tonumber( args[2] ) or args[2]
+		self.blocking = true
+	elseif cmd == 'range' then
+		self.argPosFrom = tonumber( args[2] ) or args[2]
+		self.argPosTo = tonumber( args[3] ) or args[3]
+		self.blocking = true
 	else
 		_warn( 'unkown animator command', tostring(cmd) )
 		return false

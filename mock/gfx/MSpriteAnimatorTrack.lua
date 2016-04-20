@@ -79,6 +79,7 @@ function MSpriteAnimatorTrack:build( context )
 	context:updateLength( self:calcLength() )
 end
 
+local min = math.min
 function MSpriteAnimatorTrack:apply( state, playContext, t, t0 )
 	local spanId  = self.spanCurve:getValueAtTime( t )
 	local key     = self.keys[ spanId ]
@@ -86,7 +87,7 @@ function MSpriteAnimatorTrack:apply( state, playContext, t, t0 )
 	local sprite  = playContext.sprite
 	local animState = playContext[ spanId ]
 	if lockFrame < 0 then
-		local subTime = ( t - key.pos ) * key.FPS
+		local subTime = min( key.length, ( t - key.pos ) ) * key.FPS
 		local conv = animState.timeConverter
 		if conv then
 			subTime = conv( subTime, animState.length )

@@ -1,4 +1,20 @@
 module 'mock'
+
+---------------------------------------------------------------------
+CLASS: SQContextProvider ()
+	:MODEL{}
+
+function SQContextProvider:get( actor, contextId )
+	return nil
+end
+
+
+local SQContextProviders = {}
+function registerSQContextProvider( id, provider )
+	SQContextProviders[ id ] = provider
+end
+
+
 --------------------------------------------------------------------
 CLASS: SQActor ( Behaviour )
 	:MODEL{
@@ -125,6 +141,43 @@ function SQActor:startAllRoutines()
 	if not self.activeState then return end
 	return self.activeState:startAllRoutines()
 end
+
+function SQActor:_findContextEntity( id )
+	for key, provider in pairs( SQContextProviders ) do
+		local ent = provider:get( self, id )
+		if ent then return ent end
+	end
+	return nil
+end
+
+function SQActor:getContextEntity( contextId )
+	if not contextId or contextId == 'self' then
+		return self:getEntity()
+	end
+	return self:_findContextEntity( contextId )
+end
+
+function SQActor:getContextEntities( contexts )
+	local result = {}
+	local n = #contexts
+	if n == 0 then
+		return { self:getEntity() }
+	end
+	for i, id in ipairs( contexts ) do
+		local ent
+		if id == 'self' then
+			ent = self:getEntity()
+		else
+			ent = self:_findContextEntity( id )
+		end
+		if ent then
+			table.insert( result, ent )
+		end
+	end
+	return result
+end
+
+--------------------------------------------------------------------
 
 
 --------------------------------------------------------------------

@@ -160,6 +160,16 @@ function SQNode:exit( state, env )
 	return true
 end
 
+function SQNode:getContextEntity( state )
+	local actor = state:getActor()
+	return actor:getContextEntity( self.context[1] )
+end
+
+function SQNode:getContextEntities( state )
+	local actor = state:getActor()
+	return actor:getContextEntities( self.context )
+end
+
 function SQNode:onMsg( state, env, msg, data, source )
 	return true
 end
@@ -596,6 +606,10 @@ function SQRoutineState:__init( entryNode, routine )
 	return self:reset()
 end
 
+function SQRoutineState:getActor()
+	return self.globalState:getActor()
+end
+
 function SQRoutineState:setLocalRunning( localRunning )
 	self.localRunning = localRunning
 	if self.parentState then
@@ -839,6 +853,10 @@ end
 
 function SQState:setEnv( key, value )
 	self.env[ key ] = value
+end
+
+function SQState:getActor()
+	return self.env['actor']
 end
 
 function SQState:getSignalCounter( id )

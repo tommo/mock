@@ -104,17 +104,18 @@ function Animator:hasClip( name )
 	return self.data:getClip( name ) and true or false
 end
 
-function Animator:_loadClip( clip, previewing )
-	self:stop()
+function Animator:_loadClip( clip, makeActive )
 	local state = AnimatorState()
 	state:setThrottle( self.throttle )
-	state.previewing = previewing or false
 	state:loadClip( self, clip )
-	self.activeState = state
+	if makeActive ~= false then 
+		self:stop()
+		self.activeState = state
+	end
 	return state
 end
 
-function Animator:loadClip( name )
+function Animator:loadClip( name, makeActive )
 	if not self.data then
 		_warn('Animator has no data')
 		return false
@@ -124,10 +125,10 @@ function Animator:loadClip( name )
 		_warn( 'Animator has no clip', name )
 		return false
 	end
-	return self:_loadClip( clip )
+	return self:_loadClip( clip, makeActive )
 end
 
-function Animator:getAnimatorState()
+function Animator:getActiveState()
 	return self.activeState
 end
 
