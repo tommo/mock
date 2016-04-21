@@ -84,12 +84,19 @@ function AnimatorAnimatorTrack:apply( state, playContext, t, t0 )
 	local key     = self.keys[ spanId ]
 	local sprite  = playContext.sprite
 	local animState = playContext[ spanId ]
+	local prevState = playContext.currentState
+	if prevState ~= animState then
+		playContext.currentState = animState
+		animState:resetContext()
+	end
+
 	local subTime = min( key.length, ( t - key.pos ) ) * key.throttle
 	local conv = animState.timeConverter
 	if conv then
 		subTime = conv( subTime, animState.clipLength )
 	end
 	animState:apply( subTime )
+
 end
 
 local max = math.max
@@ -142,6 +149,7 @@ function AnimatorAnimatorTrack:onStateLoad( state )
 		animState.timeConverter = timeMapFuncs[ key.playMode ]
 		playContext[ i ] = animState
 	end
+	playContext.currentState = false
 	state:addUpdateListenerTrack( self, playContext )
 end
 

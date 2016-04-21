@@ -101,5 +101,9 @@ function ScriptAnimatorTrack:apply( state, playContext, t )
 	end
 end
 
+function ScriptAnimatorTrack:reset( state, playContext )
+	-- playContext[2] = 0
+end
+
 --------------------------------------------------------------------
 registerCommonCustomAnimatorTrackType( 'Script', ScriptAnimatorTrack )

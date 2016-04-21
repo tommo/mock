@@ -688,10 +688,13 @@ end
 function AnimatorTrack:pause( state, paused )
 end
 
-function AnimatorTrack:apply( state, t )
+function AnimatorTrack:apply( state, context, t )
 end
 
-function AnimatorTrack:apply2( state, t0, t1 )
+function AnimatorTrack:reset( state, context )
+end
+
+function AnimatorTrack:apply2( state, context, t0, t1 )
 end
 
 function AnimatorTrack:build( context )

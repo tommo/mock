@@ -66,5 +66,9 @@ function EntityMessageAnimatorTrack:apply( state, playContext, t )
 	end
 end
 
+function EntityMessageAnimatorTrack:reset( state, playContext )
+	-- playContext[2] = 0
+end
+
 --------------------------------------------------------------------
 registerCustomAnimatorTrackType( Entity, 'Message', EntityMessageAnimatorTrack )

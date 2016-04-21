@@ -45,6 +45,11 @@ function AnimatorState:__init()
 
 end
 
+function AnimatorState:getClipName()
+	if not self.clip then return nil end
+	return self.clip:getName()
+end
+
 function AnimatorState:getMoaiAction()
 	return self.anim
 end
@@ -154,6 +159,7 @@ function AnimatorState:stop()
 end
 
 function AnimatorState:reset()
+	self:resetContext()
 	self:seek( 0 )
 end
 
@@ -220,13 +226,19 @@ end
 
 --
 function AnimatorState:onUpdate( t, t0 )
-	for track, target in pairs( self.updateListenerTracks ) do
+	for track, context in pairs( self.updateListenerTracks ) do
 		if self.stopping then return end --edge case: new clip started in apply
-		track:apply( self, target, t, t0 )
+		track:apply( self, context, t, t0 )
 	end
 	local duration = self.duration
 	if duration > 0 and t >= duration then
 		self:stop()
+	end
+end
+
+function AnimatorState:resetContext()
+	for track, context in pairs( self.updateListenerTracks ) do
+		track:reset( self, context )
 	end
 end
 

@@ -110,6 +110,7 @@ local function MSpriteLoader( node )
 	for id, animation in pairs( data.anims ) do
 		local name = animation.name
 		local sequence = animation.seq
+		local srcType  = animation.src_type or 'ase'
 		--create anim curve
 		local indexCurve   = MOAIAnimCurve.new()
 		local offsetXCurve = MOAIAnimCurve.new()
@@ -131,7 +132,6 @@ local function MSpriteLoader( node )
 			offsetYCurve:setKey( fid, ftime, -oy, offsetEaseType )
 			indexCurve  :setKey( fid, ftime, frame.index, EaseFlat )
 
-			delay = math.max( delay, 1 )
 			ftime = ftime + delay  --will use anim:setSpeed to fit real playback FPS
 
 			if fid == count then --copy last frame to make loop smooth

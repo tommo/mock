@@ -78,5 +78,11 @@ function SoundSourceAnimatorTrack:apply( state, playContext, t )
 	end
 end
 
+function SoundSourceAnimatorTrack:reset( state, playContext )
+	-- playContext[2] = 0
+end
+
+
+
 --------------------------------------------------------------------
 registerCustomAnimatorTrackType( SoundSource, 'clips', SoundSourceAnimatorTrack )

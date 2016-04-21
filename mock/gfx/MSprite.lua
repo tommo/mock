@@ -30,7 +30,6 @@ CLASS: MSprite ( GraphicsPropComponent )
 		'----';
 		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
 		Field 'default' :string() :selection( 'getClipNames' ) :set('setDefaultClip');
-		Field 'playFPS' :int() :getset('FPS');
 		Field 'autoPlay' :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );
 		'----';
@@ -50,7 +49,6 @@ function MSprite:__init()
 	self.animState   = MOAIAnim.new()
 	self.spriteData  = false
 	self.currentClip = false
-	self.playFPS     = 10
 	self.playSpeed   = 1
 	self.animState:reserveLinks( 3 ) --offset x & offset y & frame index	
 	self.featureMask = {}
@@ -111,11 +109,18 @@ function MSprite:getFeatureNames()
 	return {}
 end
 
+function MSprite:setBaseFeatureHidden( value )
+	if not self.deckInstance then return end
+	return self.deckInstance:setMask( 0, value ~= false )
+end
+
 function MSprite:setFeatureHidden( featureName, value )
 	if not self.deckInstance then return end
 	local features = self.spriteData.features
-	local bit = features and features[ featureName ] or 0
-	self.deckInstance:setMask( bit, value ~= false )
+	local bit = features and features[ featureName ]
+	if bit then
+		return self.deckInstance:setMask( bit, value ~= false )
+	end
 	-- self.featureMask[ bit ] = value ~= false
 	-- if not self.deckInstance then return end
 end
@@ -188,7 +193,7 @@ function MSprite:getClipLength( name )
 	else
 		clip = self.currentClip
 	end
-	if clip then return clip.length / self.playFPS end
+	return clip.length
 end
 
 function MSprite:getClipFrameCount( name )
@@ -223,7 +228,6 @@ function MSprite:setClip( name, mode )
 	if self.animState then self.animState:stop() end
 	self.currentClip=clip
 	self.animState = animState
-	self:setFPS(self.playFPS)
 	self:apply( 0 )
 	self:setTime( 0 )
 	return true
@@ -240,21 +244,11 @@ function MSprite:setFlipX( flip )
 	setSclX( self.prop, flip and -1 or 1 )
 end
 
------------
-function MSprite:setFPS( fps )
-	self.playFPS = fps
-	self:setSpeed( self.playSpeed )
-end
-
-function MSprite:getFPS()
-	return self.playFPS
-end
-
 function MSprite:setSpeed( speed )
 	speed = speed or 1
 	self.playSpeed = speed
 	if self.animState then
-		self.animState:setSpeed( speed * self.playFPS )
+		self.animState:setSpeed( speed )
 	end
 end
 
@@ -287,7 +281,7 @@ function MSprite:setTime( time )
 end
 
 function MSprite:apply( time )
-	return self.animState:apply( time / self.playFPS )
+	return self.animState:apply( time )
 end
 
 -----------Play control
