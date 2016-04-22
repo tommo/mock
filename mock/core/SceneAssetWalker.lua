@@ -13,10 +13,11 @@ local function needPreload( field )
 end
 
 local function collectAssetFromFields( obj, field, collected )
-	if field.__type == '@asset' and field.__meta then
+	if field.__type == '@asset' then
 		local v = field:getValue( obj )
 		if v then
-			collected[ v ] = true
+			local meta = field.__meta
+			collected[ v ] = meta and meta[ 'preload' ] and 'preload' or 'dep'
 		end
 	end
 end

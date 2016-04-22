@@ -76,10 +76,10 @@ CLASS: TileMapLayer ()
 	:MODEL{
 		Field 'name'    :string();
 		Field 'tag'     :string();
-		Field 'tilesetPath' :asset( 'deck2d.tileset' )  :readonly();
+		Field 'tilesetPath' :asset_pre( 'deck2d.tileset' )  :readonly();
 		-- Field 'visible' :boolean();
 		Field 'subdivision' :int() :range( 1, 4 ) :readonly();
-		Field 'material'    :asset( 'material' ) :getset( 'Material' );
+		Field 'material'    :asset_pre( 'material' ) :getset( 'Material' );
 	}
 
 function TileMapLayer:__init()

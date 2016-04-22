@@ -5,7 +5,7 @@ CLASS: SpineSpriteBase ()
 		Field 'shader' :asset('shader') :set( 'setShader' );
 		Field 'preAlpha' :boolean();
 		'----';
-		Field 'sprite' :asset('spine') :getset('Sprite') :label('Sprite');
+		Field 'sprite' :asset_pre('spine') :getset('Sprite') :label('Sprite');
 	}
 
 function SpineSpriteBase:__init()

@@ -28,7 +28,7 @@ module 'mock'
 CLASS: MSprite ( GraphicsPropComponent )
 	:MODEL {
 		'----';
-		Field 'sprite' :asset( 'msprite' ) :getset('Sprite');
+		Field 'sprite' :asset_pre( 'msprite' ) :getset('Sprite');
 		Field 'default' :string() :selection( 'getClipNames' ) :set('setDefaultClip');
 		Field 'autoPlay' :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );

@@ -23,8 +23,6 @@ function AnimatorState:__init()
 
 	self.anim = MOAIAnim.new()
 	self.anim.source = self
-	self.anim:setListener( MOAIAnim.EVENT_ACTION_POST_UPDATE, _onAnimUpdate )
-	self.anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
 	self.trackContexts = {}
 	self.updateListenerTracks = {}
 	self.attrLinks = {}
@@ -203,10 +201,9 @@ end
 function AnimatorState:apply( t )
 	local anim = self.anim
 	local t0 = anim:getTime()
-	anim:setTime( t )
 	anim:apply( t0, t )
-	-- t = anim:getTime()
-	-- self:onUpdate( t, t0 )
+	anim:setTime( t )
+	anim:forceUpdate()
 end
 
 function AnimatorState:findMarker( id )
@@ -278,7 +275,8 @@ function AnimatorState:loadClip( animator, clip )
 	
 	--range init
 	anim:setSpan( self.clipLength )
-
+	anim:setListener( MOAIAnim.EVENT_ACTION_POST_UPDATE, _onAnimUpdate )
+	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
 end
 
 function AnimatorState:addUpdateListenerTrack( track, context )

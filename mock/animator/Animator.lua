@@ -3,7 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: Animator ( Component )
 	:MODEL{
-		Field 'data'         :asset('animator_data') :getset( 'DataPath' );
+		Field 'data'         :asset_pre('animator_data') :getset( 'DataPath' );
 		'----';
 		Field 'throttle'     :number() :range( 0 ) :meta{ step=0.1 } :getset( 'Throttle' );
 		'----';

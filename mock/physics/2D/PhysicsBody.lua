@@ -9,7 +9,7 @@ EnumBodyTransformSyncPolicy = _ENUM_V {
 --------------------------------------------------------------------
 CLASS: PhysicsBody ( mock.Component )
 	:MODEL{
-		Field 'bodyDef'      :asset( 'physics_body_def' ) :getset( 'BodyDef' );
+		Field 'bodyDef'      :asset_pre( 'physics_body_def' ) :getset( 'BodyDef' );
 		'----';
 		Field 'mass'         :getset( 'Mass' );
 		Field 'transformSyncPolicy'   :enum( EnumBodyTransformSyncPolicy );

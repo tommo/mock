@@ -69,18 +69,23 @@ function MSpriteAnimatorTrack:build( context )
 	self:sortKeys()
 	local count = #self.keys
 	local spanCurve    = MOAIAnimCurve.new()
-	spanCurve:reserveKeys( count )
+	spanCurve:reserveKeys( count + 2 )
+	spanCurve:setKey( 1, 0, -1, MOAIEaseType.FLAT )
+	local pos = 0
 	for i = 1, count do
 		local key = self.keys[ i ]
-		spanCurve   :setKey( i, key.pos, i,  MOAIEaseType.FLAT )
+		spanCurve:setKey( i + 1, key.pos, i,  MOAIEaseType.FLAT )
 	end
+	local l = self:calcLength()
+	spanCurve:setKey( count + 2, l, -1, MOAIEaseType.FLAT )
 	self.spanCurve    = spanCurve
-	context:updateLength( self:calcLength() )
+	context:updateLength( l )
 end
 
 local min = math.min
 function MSpriteAnimatorTrack:apply( state, playContext, t, t0 )
 	local spanId  = self.spanCurve:getValueAtTime( t )
+	if spanId < 0 then return end
 	local key     = self.keys[ spanId ]
 	local lockFrame = key.lockFrame
 	local sprite  = playContext.sprite

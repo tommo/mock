@@ -744,7 +744,7 @@ AnimatorClipMarker
 	:MODEL {
 		Field 'pos'     :range(0) :meta{ step = 0.1 };
 		Field 'name'    :string();
-		Field 'comment' :string() :widget( 'textbox' );
+		Field 'comment' :string();
 	}
 
 function AnimatorClipMarker:__init()

@@ -10,7 +10,7 @@ CLASS: TextLabel ( RenderComponent )
 		'----';
 		Field 'text'          :string()  :set('setText') :widget('textbox');
 		'----';
-		Field 'stylesheet'    :asset('stylesheet') :getset( 'StyleSheet');
+		Field 'stylesheet'    :asset_pre('stylesheet') :getset( 'StyleSheet');
 		Field 'defaultStyle'  :string()  :label('default') :set('setDefaultStyle') :selection( 'getStyleNames' );
 		'----';
 		Field 'rectLimit'     :boolean() :set( 'setRectLimit' ); --TODO:update this

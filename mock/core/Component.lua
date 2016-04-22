@@ -304,6 +304,10 @@ function Component:wait( a )
 	return self._entity:wait( a )
 end
 
+function Component:skip( duration )
+	return self._entity:skip( duration )
+end
+
 --------------------------------------------------------------------
 ---------coroutine control
 --------------------------------------------------------------------

@@ -7,7 +7,7 @@ CLASS: PhysicsShape ( mock.Component )
 		Field 'active'   :boolean();
 		Field 'tag'       :string();
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
-		Field 'material'  :asset( 'physics_material' ) :getset( 'Material' );
+		Field 'material'  :asset_pre( 'physics_material' ) :getset( 'Material' );
 	}
 
 function PhysicsShape:__init()

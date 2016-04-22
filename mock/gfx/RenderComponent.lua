@@ -2,7 +2,7 @@ module 'mock'
 
 CLASS: RenderComponent( Component )
 	:MODEL{
-		Field 'material' :asset( 'material' ) :getset( 'Material' );
+		Field 'material' :asset_pre( 'material' ) :getset( 'Material' );
 	}
 
 --------------------------------------------------------------------

@@ -3,7 +3,7 @@ module 'mock'
 CLASS: ProtoContainer ( mock.Entity )
 	:MODEL{
 		'----';
-		Field 'proto' :asset( 'proto' ) :set( 'setProto' );
+		Field 'proto' :asset_pre( 'proto' ) :set( 'setProto' );
 		'----';
 		Field 'resetLoc' :boolean() :onset( 'refreshProto' );
 		Field 'resetScl' :boolean() :onset( 'refreshProto' );

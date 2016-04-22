@@ -278,7 +278,7 @@ function Actor:_createCoroutine( defaultParent, func, obj, ... )
 	--TODO: use pool
 	local coro = newCoroutine()
 
-	if defaultParent then coro:setDefaultParent( defaultParent ) end
+	if defaultParent then coro:setDefaultParent() end
 	local tt = type( func )
 	if tt == 'string' then --method name
 		local _func = obj[ func ]
@@ -512,6 +512,15 @@ function Actor:wait(a)
 		return self:waitSignal(a)
 	elseif a then
 		return block(a)
+	end
+end
+
+---Keep coroutine running for nothing for given duration
+--@p float duration duration, in seconds
+function Actor:skip( duration ) 
+	local elapsed = 0
+	while elapsed < duration do
+			elapsed = elapsed + yield()
 	end
 end
 ----------MOAIAction control

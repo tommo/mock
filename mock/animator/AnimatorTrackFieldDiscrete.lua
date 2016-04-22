@@ -23,6 +23,8 @@ function AnimatorTrackFieldDiscrete:apply( state, context, t )
 		newId > 0 then
 		local value = self.keys[ newId ].value
 		context[2] = newId
+		-- print( debug.traceback() )
+		-- print( 'newid', newId, value )
 		return self.targetField:setValue( target, value )
 	end
 end

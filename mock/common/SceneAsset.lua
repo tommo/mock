@@ -775,8 +775,8 @@ local function sceneLoader( node, option )
 
 	local dep = data['asset_dependency']
 	if dep then
-		for assetPath in pairs( dep ) do
-			if canPreload( assetPath ) then
+		for assetPath, tag in pairs( dep ) do
+			if tag == 'preload' and canPreload( assetPath ) then
 				mock.loadAsset( assetPath, { preload = true } )
 			end
 		end
