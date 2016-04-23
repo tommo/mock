@@ -5,43 +5,55 @@ module 'mock'
 	
 ]]
 --------------------------------------------------------------------
-
-local function needPreload( field )
-	if field.__type ~= '@asset' then return false end
-	local meta = field.__meta
-	return meta and meta[ 'preload' ]
+local function _defaultCollector( obj, field, value, collected )
+	collected[ value ] = true
 end
 
-local function collectAssetFromFields( obj, field, collected )
-	if field.__type == '@asset' then
-		local v = field:getValue( obj )
-		if v then
-			local meta = field.__meta
-			collected[ v ] = meta and meta[ 'preload' ] and 'preload' or 'dep'
-		end
-	end
-end
-
-local function collectAssetFromObject( obj, collected )
+local function _collectAssetFromObject( obj, collected, collector )
+	collector = collector or _defaultCollector
 	local model = Model.fromObject( obj )
 	if not model then return end
 	local fields = model:getFieldList( true )
 	for i, field in ipairs( fields ) do
-		collectAssetFromFields( obj, field, collected )
+		if field.__type == '@asset' then
+			local value = field:getValue( obj )
+			if value then
+				collector( obj, field, value, collected )
+			end
+		end
 	end
 end
 
-local function collectAssetFromEntity( ent, collected )
-	collectAssetFromObject( ent, collected )
+local function _collectAssetFromEntity( ent, collected, collector )
+	_collectAssetFromObject( ent, collected, collector )
 	for com in pairs( ent.components ) do
-		collectAssetFromObject( com, collected )
+		_collectAssetFromObject( com, collected, collector )
 	end
+end
+
+
+--------------------------------------------------------------------
+local function _dependencyCollector( obj, field, value, collected )
+	local meta = field.__meta
+	collected[ value ] = meta and meta[ 'preload' ] and 'preload' or 'dep'
+end
+
+function collectAssetFromObject( obj, collected, collector )
+	collected = collected or {}
+	_collectAssetFromObject( obj, collected, collector or _defaultCollector )
+	return collected
+end
+
+function collectAssetFromEntity( ent, collected, collector )
+	collected = collected or {}
+	_collectAssetFromEntity( ent, collected, collector or _defaultCollector )
+	return collected
 end
 
 function collectSceneAssetDependency( scn )
 	local collected = {}
 	for ent in pairs( scn.entities ) do
-		collectAssetFromEntity( ent, collected )
+		_collectAssetFromEntity( ent, collected, _dependencyCollector )
 	end
 	return collected
 end
