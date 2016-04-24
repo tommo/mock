@@ -21,6 +21,9 @@ require 'mock.animator.AnimatorEventTrack'
 require 'mock.animator.AnimatorValueTrack'
 require 'mock.animator.CustomAnimatorTrack'
 
+require 'mock.animator.AnimatorKeyVec'
+require 'mock.animator.AnimatorKeyColor'
+
 --------------------------------------------------------------------
 require 'mock.animator.AnimatorTrackAttr'
 

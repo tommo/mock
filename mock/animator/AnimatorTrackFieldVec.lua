@@ -35,6 +35,11 @@ end
 
 --------------------------------------------------------------------
 CLASS: AnimatorTrackFieldVecCommon ( AnimatorTrackField )
+
+function AnimatorTrackFieldVecCommon:__init()
+	self.splitted = false
+end
+
 function AnimatorTrackFieldVecCommon:getComponentCount()
 	return 1
 end
@@ -65,6 +70,45 @@ function AnimatorTrackFieldVecCommon:createSubComponentTrackKey( comId, pos, val
 	local key = track:createKey( pos )
 	key:setValue( value )
 	return key
+end
+
+function AnimatorTrackFieldVecCommon:updateParentKey( parentKey, changedKey )
+	local childKeys = parentKey:getChildKeys()
+	if not childKeys then return end
+	local vec = {}
+	for i, k in ipairs( childKeys ) do
+		local childTrack = k:getTrack()
+		local comId = childTrack.comId
+		vec[ comId ] = k.value
+		k.pos = parentKey.pos
+	end
+	parentKey:setValue( unpack( vec ) )
+
+end
+
+function AnimatorTrackFieldVecCommon:updateChildKeys( parentKey )
+	local childKeys = parentKey:getChildKeys()
+	if not childKeys then return end
+	local vec = { parentKey:getValue() }
+	for i, k in ipairs( childKeys ) do
+		local childTrack = k:getTrack()
+		local comId = childTrack.comId
+		k.value = vec[ i ]
+		k.pos = parentKey.pos
+	end
+end
+
+
+function AnimatorTrackFieldVecCommon:unsplitKeys()
+	if not self.splitted then return end
+	self.splitted = false
+	local keys = {}
+end
+
+function AnimatorTrackFieldVecCommon:splitKeys()
+	if self.splitted then return end
+	self.splitted = true
+	self.keys = {}
 end
 
 function AnimatorTrackFieldVecCommon:apply( state, target, t )
@@ -110,13 +154,24 @@ function AnimatorTrackFieldVec3:init()
 	self:createSubComponentTrack( 3, 'z' )
 end
 
+function AnimatorTrackFieldVec3:getComponentCount()
+	return 3
+end
+
 function AnimatorTrackFieldVec3:createKey( pos, context )
 	local target = context.target
 	local x,y,z = self.targetField:getValue( target )
 	local keyX = self:createSubComponentTrackKey( 1, pos, x )
 	local keyY = self:createSubComponentTrackKey( 2, pos, y )
 	local keyZ = self:createSubComponentTrackKey( 3, pos, z )
-	return keyX, keyY, keyZ
+	local masterKey = AnimatorKeyVec3()
+	masterKey.pos = pos
+	masterKey:addChildKey( keyX )
+	masterKey:addChildKey( keyY )
+	masterKey:addChildKey( keyZ )
+	masterKey:setValue( x,y,z )
+	self:addKey( masterKey )
+	return masterKey, keyX, keyY, keyZ
 end
 
 function AnimatorTrackFieldVec3:apply( state, target, t )
@@ -161,12 +216,22 @@ function AnimatorTrackFieldVec2:init()
 	self:createSubComponentTrack( 2, 'y' )
 end
 
+function AnimatorTrackFieldVec3:getComponentCount()
+	return 2
+end
+
 function AnimatorTrackFieldVec2:createKey( pos, context )
 	local target = context.target
-	local x,y,z = self.targetField:getValue( target )
+	local x,y = self.targetField:getValue( target )
 	local keyX = self:createSubComponentTrackKey( 1, pos, x )
 	local keyY = self:createSubComponentTrackKey( 2, pos, y )
-	return keyX, keyY, keyZ
+	local masterKey = AnimatorKeyVec2()
+	masterKey.pos = pos
+	masterKey:addChildKey( keyX )
+	masterKey:addChildKey( keyY )
+	masterKey:setValue( x,y )
+	self:addKey( masterKey )
+	return masterKey, keyX, keyY
 end
 
 function AnimatorTrackFieldVec2:apply( state, target, t )

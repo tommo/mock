@@ -292,6 +292,9 @@ AnimatorKey
 :MODEL{		
 	--
 	Field 'parent' :type( AnimatorTrack ) :no_edit();		
+	Field 'parentKey' :type( AnimatorKey ) :no_edit();		
+	Field 'childKeys' :array( AnimatorKey ) :ref() :no_edit();
+
 	Field 'parentSpanId' :int()  :no_edit();
 	--
 	Field 'pos'    :float() :range(0)  :getset('Pos')      :meta{ decimals = 3, step = 0.01 };
@@ -311,6 +314,9 @@ function AnimatorKey:__init( pos, tweenMode )
 	self.preBPX,  self.preBPY  = 0.5, 0
 	self.postBPX, self.postBPY = -0.5, 0
 	----
+	self.parent = false
+	self.parentKey = false
+	self.childKeys = false
 	self.parentSpanId = 1
 end
 
@@ -373,6 +379,32 @@ end
 
 function AnimatorKey:getTrack()
 	return self.parent
+end
+
+function AnimatorKey:getParentKey()
+	return self.parentKey
+end
+
+function AnimatorKey:addChildKey( k )
+	if not self.childKeys then
+		self.childKeys = {}
+	end
+	table.insert( self.childKeys, k )
+	k.parentKey = self
+end
+
+function AnimatorKey:getChildKeys()
+	return self.childKeys
+end
+
+function AnimatorKey:updateDependecy()
+	if self.childKeys then
+		self:getTrack():updateChildKeys( self )
+	end
+	local parentKey = self.parentKey
+	if parentKey then
+		parentKey:getTrack():updateParentKey( parentKey, self )
+	end
 end
 
 function AnimatorKey:getAction()	
@@ -454,7 +486,7 @@ end
 --------------------------------------------------------------------
 AnimatorTrack
 :MODEL{
-		Field 'keys' :array( AnimatorKey ) :no_edit() :sub();		
+		Field 'keys' :array( AnimatorKey ) :no_edit() :ref();		
 		Field 'enabled' :boolean();
 		Field 'targetPath'  :no_edit() :get( 'serializeTargetPath' ) :set( 'deserializeTargetPath' );
 	}
@@ -532,10 +564,24 @@ function AnimatorTrack:removeKey( key )
 		if k == key then 
 			key.parent = false
 			table.remove( self.keys, i )
+			--remove childkeys
+			if key.childKeys then
+				for j, child in ipairs( key.childKeys ) do
+					local track = child:getTrack()
+					if track then track:removeKey( child ) end
+				end
+			end
 			return true
 		 end
 	end	
 	return false
+end
+
+function AnimatorTrack:clearKeys()
+	for i, k in ipairs( self.keys ) do
+		key.parent = false
+	end
+	self.keys = {}
 end
 
 function AnimatorTrack:cloneKey( key )
@@ -711,6 +757,12 @@ function AnimatorTrack:canReparent( node )
 	if node:isInstance( AnimatorTrackGroup ) then
 		return true
 	end
+end
+
+function AnimatorTrack:updateParentKey( parentKey )
+end
+
+function AnimatorTrack:updateChildKeys( parentKey )
 end
 
 --------------------------------------------------------------------

@@ -61,6 +61,31 @@ function AnimatorTrackFieldColor:createSubComponentTrackKey( comId, pos, value )
 	return key
 end
 
+function AnimatorTrackFieldColor:updateParentKey( parentKey )
+	local childKeys = parentKey:getChildKeys()
+	if not childKeys then return end
+	local value = {}
+	for i, k in ipairs( childKeys ) do
+		local childTrack = k:getTrack()
+		local comId = childTrack.comId
+		value[ comId ] = k.value
+		k.pos = parentKey.pos
+	end
+	parentKey:setValue( unpack( value ) )
+end
+
+function AnimatorTrackFieldColor:updateChildKeys( parentKey )
+	local childKeys = parentKey:getChildKeys()
+	if not childKeys then return end
+	local value = { parentKey:getValue() }
+	for i, k in ipairs( childKeys ) do
+		local childTrack = k:getTrack()
+		local comId = childTrack.comId
+		k:setValue( value[ i ] )
+		k.pos = parentKey.pos
+	end
+end
+
 function AnimatorTrackFieldColor:createKey( pos, context )
 	local target = context.target
 	local r,g,b,a = self.targetField:getValue( target )
@@ -68,7 +93,15 @@ function AnimatorTrackFieldColor:createKey( pos, context )
 	local keyG = self:createSubComponentTrackKey( 2, pos, g )
 	local keyB = self:createSubComponentTrackKey( 3, pos, b )
 	local keyA = self:createSubComponentTrackKey( 4, pos, a )
-	return keyR, keyG, keyB, keyA
+	local masterKey = AnimatorKeyColor()
+	masterKey:setValue( r,g,b,a )
+	masterKey:setPos( pos )
+	masterKey:addChildKey( keyR )
+	masterKey:addChildKey( keyG )
+	masterKey:addChildKey( keyB )
+	masterKey:addChildKey( keyA )
+	self:addKey( masterKey )
+	return masterKey, keyR, keyG, keyB, keyA
 end
 
 function AnimatorTrackFieldColor:apply( state, target, t )
