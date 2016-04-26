@@ -962,7 +962,7 @@ function AnimatorClip:getFullName()
 end
 
 function AnimatorClip:getGroup()
-	return self.group
+	return self.parentGroup
 end
 
 function AnimatorClip:setParentGroup( group )
@@ -970,11 +970,15 @@ function AnimatorClip:setParentGroup( group )
 end
 
 function AnimatorClip:getParentGroup()
-	return self.group
+	return self.parentGroup
 end
 
 function AnimatorClip:getRootGroup()
-	return self.group:getRootGroup()
+	return self.parentGroup:getRootGroup()
+end
+
+function AnimatorClip:getParentPackage()
+	return self.parentGroup:getParentPackage()
 end
 
 function AnimatorClip:isInGroup( group )
@@ -1194,7 +1198,7 @@ function AnimatorClipGroup:addChildClip( c )
 	end
 	table.insert( self.childClips, c )
 	c.parentGroup = self
-	self:getParentPackage():updateClipList()	
+	self:getParentPackage():updateClipList()
 	return c
 end
 

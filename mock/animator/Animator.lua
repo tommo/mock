@@ -21,7 +21,8 @@ function Animator:__init()
 	self.scale       = 1
 	self.autoPlay    = true
 	self.autoPlayMode= MOAITimer.LOOP 
-	self.params      = {}
+	self.vars        = {}
+	self.varSeq      = 0
 end
 
 --------------------------------------------------------------------
@@ -45,29 +46,9 @@ end
 function Animator:getClipNames()
 	local data = self.data
 	if not data then return nil end
-	local result = {}
-	for _, clip in ipairs( data.clips ) do
-		local name = clip.name
-		table.insert( result, { name, name } )
-	end
-	return result
+	return data:getClipNames()
 end
 
---------------------------------------------------------------------
---Parameters
---------------------------------------------------------------------
-function Animator:setParam( key, value )
-	self.params[ key ] = value
-end
-
-function Animator:getParam( key, default )
-	local v = self.params[ key ]
-	return v ~= nil and v or default
-end
-
-function Animator:hasParam( key )
-	return self.params[ key ] ~= nil
-end
 
 --------------------------------------------------------------------
 --Track access
@@ -104,8 +85,9 @@ function Animator:hasClip( name )
 	return self.data:getClip( name ) and true or false
 end
 
-function Animator:_loadClip( clip, makeActive )
+function Animator:_loadClip( clip, makeActive, _previewing )
 	local state = AnimatorState()
+	state.previewing = _previewing
 	state:setThrottle( self.throttle )
 	state:loadClip( self, clip )
 	if makeActive ~= false then 
@@ -115,7 +97,7 @@ function Animator:_loadClip( clip, makeActive )
 	return state
 end
 
-function Animator:loadClip( name, makeActive )
+function Animator:loadClip( name, makeActive, _previewing )
 	if not self.data then
 		_warn('Animator has no data')
 		return false
@@ -125,7 +107,7 @@ function Animator:loadClip( name, makeActive )
 		_warn( 'Animator has no clip', name )
 		return false
 	end
-	return self:_loadClip( clip, makeActive )
+	return self:_loadClip( clip, makeActive, _previewing )
 end
 
 function Animator:getActiveState()
@@ -147,10 +129,6 @@ function Animator:playClip( clipName, option )
 	end
 	return state
 end
-
--- function Animator:play( ... )
--- 	return self:playClip( ... )
--- end
 
 function Animator:stop()
 	if not self.activeState then return end
@@ -194,6 +172,22 @@ end
 
 function Animator:onDetach( ent )
 	self:stop()
+end
+
+----
+function Animator:setVar( id, value )
+	self.vars[ id ] = value
+	self.varSeq = self.varSeq + 1
+end
+
+function Animator:getVar( id, default )
+	local v = self.vars[ id ]
+	if v == nil then return default end
+	return v
+end
+
+function Animator:seekVar( id, value, duration ,easeMode )
+	--TODO
 end
 
 --------------------------------------------------------------------

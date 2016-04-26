@@ -50,6 +50,13 @@ function AnimatorData:createClip( name, parentGroup )
 	return self:addClip( clip, parentGroup )	
 end
 
+function AnimatorData:createClipTree( name, parentGroup )
+	if not self.clips then self.clips = {} end
+	local clip = AnimatorClipTree()
+	clip.name = name
+	return self:addClip( clip, parentGroup )	
+end
+
 function AnimatorData:addClip( clip, parentGroup )
 	parentGroup = parentGroup or self.rootGroup
 	--assert self:hasGroup( parentGroup )
@@ -98,6 +105,16 @@ function AnimatorData:getClip( name )
 	end
 	return nil
 end
+
+function AnimatorData:getClipNames()
+	local result = {}
+	for _, clip in ipairs( self.clips ) do
+		local name = clip.name
+		table.insert( result, { name, name } )
+	end
+	return result
+end
+
 
 function AnimatorData:sortEvents() --pre-serialization
 	for i, clip in ipairs( self.clips ) do

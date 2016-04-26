@@ -20,7 +20,6 @@ CLASS: AnimatorState ()
 	:MODEL{}
 
 function AnimatorState:__init()
-
 	self.anim = MOAIAnim.new()
 	self.anim.source = self
 	self.trackContexts = {}
@@ -35,12 +34,16 @@ function AnimatorState:__init()
 	self.previewing = false
 	self.length = 0
 	self.clip   = false
+	self.clipMode = 'clip'
+
 	
 	self.startPos = 0
 	self.endPos   = 0
 
 	self.duration = 0
 
+	self.vars = {}
+	self.fixedMode = false
 end
 
 function AnimatorState:getClipName()
@@ -112,7 +115,13 @@ function AnimatorState:getDuration()
 	return self.duration
 end
 
+function AnimatorState:setFixedMode( mode )
+	self.fixedMode = true
+	self.anim:setMode( mode or MOAITimer.NORMAL )
+end
+
 function AnimatorState:setMode( mode )
+	if self.fixedMode then return end
 	self.anim:setMode( mode or MOAITimer.NORMAL )
 end
 
@@ -308,4 +317,3 @@ end
 function AnimatorState:setListener( evId, func )
 	self.anim:setListener( evId, func )
 end
-

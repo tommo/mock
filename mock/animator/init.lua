@@ -10,6 +10,7 @@ EnumAnimCurveTweenMode = {
 require 'mock.animator.AnimatorTargetId'
 require 'mock.animator.AnimatorState'
 require 'mock.animator.AnimatorClip'
+require 'mock.animator.AnimatorClipTree'
 require 'mock.animator.AnimatorData'
 require 'mock.animator.Animator'
 require 'mock.animator.EmbedAnimator'
@@ -64,9 +65,19 @@ require 'mock.animator.AnimatorTrackField'
 	end
 --------------------------------------------------------------------
 
+---------------------------------------------------------------------
+--tree
+require 'mock.animator.AnimatorClipTreeNodePlay'
+require 'mock.animator.AnimatorClipTreeNodeThrottle'
+require 'mock.animator.AnimatorClipTreeNodeSelect'
+
 --------------------------------------------------------------------
 --builtin custom track
 --------------------------------------------------------------------
 require 'mock.animator.tracks.AnimatorAnimatorTrack'
 require 'mock.animator.tracks.EntityMsgAnimatorTrack'
 require 'mock.animator.tracks.ScriptAnimatorTrack'
+
+
+--------------------------------------------------------------------
+require 'mock.animator.AnimatorFSM'

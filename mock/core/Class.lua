@@ -150,7 +150,12 @@ function BaseClass:isSubclassByName( superclassName )
 	return false
 end
 
---Instance Method
+function BaseClass:isValidClass()
+	return globalClassRegistry[ self.__fullname ] == self
+end
+
+
+--Instance Methods
 function BaseClass:getClass()
 	return self.__class
 end
