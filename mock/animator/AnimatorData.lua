@@ -141,6 +141,10 @@ function AnimatorData:_postLoad() --post-serialization
 	
 end
 
+function AnimatorData:prebuildAll()
+	return self.rootGroup:prebuildAll()
+end
+
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------

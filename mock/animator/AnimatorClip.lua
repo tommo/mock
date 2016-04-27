@@ -1238,6 +1238,14 @@ function AnimatorClipGroup:_postLoad()
 	end
 end
 
+function AnimatorClipGroup:prebuildAll()
+	for i, group in ipairs( self.childGroups ) do
+		group:prebuildAll()
+	end
+	for i, clip in ipairs( self.childClips ) do
+		clip:prebuild()
+	end
+end
 
 --------------------------------------------------------------------
 updateAllSubClasses( AnimatorClipSubNode )

@@ -463,7 +463,9 @@ function InputDevice:sendKeyEvent( key, down, mockup )
 		self.keyStates[ key ] = state
 	end
 	state.down = down
-	state.hit  = state.hit + 1
+	if down then
+		state.hit  = state.hit + 1
+	end
 	for func in pairs( self.keyboardListeners ) do
 		func( key, down, mockup )
 	end

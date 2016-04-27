@@ -47,6 +47,13 @@ function Actor:__init()
 	self.state  = 'normal'
 	self.msgListeners = {}
 	self.coroutines = false
+	self.stateVars = false
+end
+
+--------------------------------------------------------------------
+-- State Vars
+--------------------------------------------------------------------
+function Actor:getVar()
 end
 
 --------------------------------------------------------------------

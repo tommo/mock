@@ -33,6 +33,7 @@ end
 function Animator:setDataPath( dataPath )
 	self.dataPath = dataPath
 	self.data = mock.loadAsset( dataPath )
+	self.data:prebuildAll()
 end
 
 function Animator:getDataPath()

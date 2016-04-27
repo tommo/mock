@@ -75,10 +75,10 @@ function AnimatorClipTreeState:loadTree( rootNode, animator )
 	self.treeRoot = rootNode
 	self.animator = animator
 	self.treeRoot:onStateLoad( self )
-	self:update()
+	self:evaluateTree()
 end
 
-function AnimatorClipTreeState:update()
+function AnimatorClipTreeState:evaluateTree()
 	--reset
 	for key, entry in pairs( self.subStates ) do
 		entry.throttle = 1
@@ -96,13 +96,13 @@ function AnimatorClipTreeState:updateSubState( key, weight, throttle )
 end
 
 function AnimatorClipTreeState:addSubState( key, clip, mode )
-	local animState = self.animator:loadClip( clip, false )
+	local animState = clip and self.animator:loadClip( clip, false ) or false
 	self.subStates[ key ] = {
 		state = animState,
 		weight = 1,
 		throttle = 1
 	}
-	if animState.clipMode ~= 'tree' then
+	if animState and animState.clipMode ~= 'tree' then
 		animState.timeConverter = mode and timeMapFuncs[ mode ] or false
 	end
 	return animState
@@ -217,16 +217,22 @@ function AnimatorClipTreeNode:getTypeName()
 	return 'AnimatorClipTreeNode'
 end
 
-function AnimatorClipTreeNode:prebuild( context )
-	for i, child in ipairs( self.children ) do
-		child:prebuild( context )
-	end
+function AnimatorClipTreeNode:build( context )
 	self:onBuild( context )
+	for i, child in ipairs( self.children ) do
+		child:build( context )
+	end
 end
 
 function AnimatorClipTreeNode:onBuild( context )
 end
 
+function AnimatorClipTreeNode:isVirtual()
+	return false
+end
+
+function AnimatorClipTreeNode:initFromEditor()
+end
 
 --------------------------------------------------------------------
 CLASS: AnimatorClipTreeNodeRoot ( AnimatorClipTreeNode )
@@ -290,7 +296,7 @@ function AnimatorClipTreeTrack:apply( state, playContext, t, t0 )
 	local seq = state.animator.varSeq
 	if playContext.varSeq ~= seq then
 		playContext.varSeq = seq
-		treeState:update()		
+		treeState:evaluateTree()		
 	end
 	return treeState:apply( t )
 end
@@ -312,12 +318,12 @@ end
 
 function AnimatorClipTree:prebuild()
 	AnimatorClipTree.__super.prebuild( self )
-	self.treeRoot:prebuild()
+	self.treeRoot:build()
 	local context = self.builtContext
 	--build a virtual track for playback
 	local track = AnimatorClipTreeTrack( self )
 	context:addPlayableTrack( track )
-	context:setFixedLength( 1 )
+	context:setFixedLength( 10000 )
 end
 
 function AnimatorClipTree:_postLoad()

@@ -60,7 +60,8 @@ end
 function AnimatorClipTreeNodeSelectCase:checkCondition( treeState )
 	local func = self.checkFunc
 	if func then
-		return self.checkFunc( treeState )
+		local r = self.checkFunc( treeState )
+		return r
 	else
 		return false
 	end
@@ -83,6 +84,8 @@ local function makeConditionChecker( var, cond )
 			body = body .. ' or ' .. string.format( 'v==true' )
 		elseif part == 'false' then
 			body = body .. ' or ' .. string.format( 'v==false' )
+		elseif part == 'nil' then
+			body = body .. ' or ' .. string.format( 'v==nil' )
 		else
 			--try range
 			local r0, r1 = part:match( '^([%d%-%.]+)%s*:%s*([%d%-%.]+)$')
@@ -96,7 +99,6 @@ local function makeConditionChecker( var, cond )
 	local tail = ';end'
 	local src = head .. body .. tail
 	local funcFunc, err  = loadstring( src )
-	-- print( src )
 	if funcFunc then
 		local func = funcFunc( isNumber )
 		return func
@@ -111,7 +113,7 @@ function AnimatorClipTreeNodeSelectCase:onBuild( context )
 	if not parent:isInstance( AnimatorClipTreeNodeSelect ) then return end
 	local var = parent.var
 	local value = self.value
-	if var:trim() == '' then self.checkFunc = false end
+	if var:trim() == ''   then self.checkFunc = false end
 	if value:trim() == '' then self.checkFunc = false end
 	self.checkFunc = makeConditionChecker( var, value ) or false
 end
