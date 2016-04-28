@@ -36,6 +36,17 @@ EnumTimerMode = {
 	{ 'ping_pong'         , MOAITimer.PING_PONG        } ,
 }
 
+EnumTimerModeWithDefault = {
+	{ 'default'           , false                      } ,
+	{ 'normal'            , MOAITimer.NORMAL           } ,
+	{ 'reverse'           , MOAITimer.REVERSE          } ,
+	{ 'continue'          , MOAITimer.CONTINUE         } ,
+	{ 'continue_reverse'  , MOAITimer.CONTINUE_REVERSE } ,
+	{ 'loop'              , MOAITimer.LOOP             } ,
+	{ 'loop_reverse'      , MOAITimer.LOOP_REVERSE     } ,
+	{ 'ping_pong'         , MOAITimer.PING_PONG        } ,
+}
+
 --------------------------------------------------------------------
 EnumTextureFilter = {
 	{ 'Linear',    'linear'  },

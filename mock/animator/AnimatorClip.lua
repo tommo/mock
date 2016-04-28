@@ -917,6 +917,8 @@ AnimatorClip	:MODEL{
 		Field 'length' :number();
 		Field 'fixedLength' :number();
 		Field 'inherited' :boolean() :no_edit();
+		Field 'defaultMode' :enum( EnumTimerMode );
+
 		'----';
 		Field 'comment' :string();
 		--
@@ -943,6 +945,8 @@ function AnimatorClip:__init()
 	self.builtContext = false
 
 	self.inherited = false
+
+	self.defaultMode = MOAITimer.NORMAL
 end
 
 function AnimatorClip:_postLoad()

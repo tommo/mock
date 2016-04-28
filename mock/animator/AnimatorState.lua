@@ -36,6 +36,7 @@ function AnimatorState:__init()
 	self.clip   = false
 	self.clipMode = 'clip'
 
+	self.defaultMode = false
 	
 	self.startPos = 0
 	self.endPos   = 0
@@ -44,6 +45,16 @@ function AnimatorState:__init()
 
 	self.vars = {}
 	self.fixedMode = false
+
+	self.elapsedTimer = MOAITimer.new()
+	self.elapsedTimer:setMode( MOAITimer.CONTINUE )
+	self.elapsedTimer:attach( self.anim )
+	self.elapsedTimer:setListener(
+		MOAIAnim.EVENT_TIMER_END_SPAN, 
+		function() 
+			self:stop()
+		end
+	)
 end
 
 function AnimatorState:getClipName()
@@ -77,6 +88,7 @@ function AnimatorState:updateThrottle()
 	local t = self.throttle * self.clipSpeed
 	self.actualThrottle = t
 	self.anim:throttle( self.actualThrottle )
+	self.elapsedTimer:throttle( 1/self.actualThrottle )
 end
 
 function AnimatorState:resetRange()
@@ -101,6 +113,7 @@ function AnimatorState:setRange( startPos, endPos )
 	self.startPos = p0
 	self.endPos   = p1
 	self.anim:setSpan( p0, p1 )
+
 end
 
 function AnimatorState:getRange()
@@ -109,6 +122,7 @@ end
 
 function AnimatorState:setDuration( duration )
 	self.duration = duration or 0
+	self:updateDuration()
 end
 
 function AnimatorState:getDuration()
@@ -117,12 +131,12 @@ end
 
 function AnimatorState:setFixedMode( mode )
 	self.fixedMode = true
-	self.anim:setMode( mode or MOAITimer.NORMAL )
+	self.anim:setMode( mode or self.defaultMode or MOAITimer.NORMAL )
 end
 
 function AnimatorState:setMode( mode )
 	if self.fixedMode then return end
-	self.anim:setMode( mode or MOAITimer.NORMAL )
+	self.anim:setMode( mode or self.defaultMode or MOAITimer.NORMAL )
 end
 
 function AnimatorState:getMode()
@@ -207,6 +221,10 @@ function AnimatorState:getTime()
 	return self.anim:getTime()
 end
 
+function AnimatorState:getElapsed()
+	return self.elapsedTimer:getTime()
+end
+
 function AnimatorState:apply( t )
 	local anim = self.anim
 	local t0 = anim:getTime()
@@ -236,10 +254,6 @@ function AnimatorState:onUpdate( t, t0 )
 		if self.stopping then return end --edge case: new clip started in apply
 		track:apply( self, context, t, t0 )
 	end
-	local duration = self.duration
-	if duration > 0 and t >= duration then
-		self:stop()
-	end
 end
 
 function AnimatorState:resetContext()
@@ -256,6 +270,7 @@ function AnimatorState:loadClip( animator, clip )
 	local context = clip:getBuiltContext()
 	self.clip        = clip
 	self.clipLength  = context.length
+	self.defaultMode = clip.defaultMode
 
 	local anim = self.anim
 	
@@ -286,6 +301,18 @@ function AnimatorState:loadClip( animator, clip )
 	anim:setSpan( self.clipLength )
 	anim:setListener( MOAIAnim.EVENT_ACTION_POST_UPDATE, _onAnimUpdate )
 	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
+	self.elapsedTimer:setTime( 0 )
+	self:updateDuration()
+end
+
+function AnimatorState:updateDuration()
+	local duration = self.duration
+	if duration > 0 then
+		self.elapsedTimer:setSpan( duration )
+		self.elapsedTimer:pause( false )
+	else
+		self.elapsedTimer:pause( true )
+	end
 end
 
 function AnimatorState:addUpdateListenerTrack( track, context )

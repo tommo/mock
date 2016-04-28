@@ -71,29 +71,39 @@ local function isNumber( v )
 	return type( v ) == 'number'
 end
 
+local function parseConditionPart( part )
+	local part = part:trim()
+	if tonumber( part ) then
+		return string.format( 'v==%s', part )
+	elseif part == 'true' then
+		return string.format( 'v==true' )
+	elseif part == 'false' then
+		return string.format( 'v==false' )
+	elseif part == 'nil' then
+		return string.format( 'v==nil' )
+	end
+	--try range
+	local r0, r1 = part:match( '^([%d%-%.]+)%s*:%s*([%d%-%.]+)$')
+	if tonumber(r0) and tonumber(r1) then
+		return string.format( '(isn(v) and (v>=%s and v<=%s))', r0, r1 )
+	end
+	--try gt
+	local op,r = part:match( '^([<>]=?)%s([%d%-%.]+)$')
+	if tonumber( r ) then
+		return string.format( '(isn(v) and (v%s%s)', 90, r )
+	end
+	return string.format( 'v==%q', part )
+end
+
 local function makeConditionChecker( var, cond )
 	local head = string.format(
 		'local isn=...; return function(state) local v=state:getVar(%q);', var
 		)
 	local body = 'return false'
 	for part in cond:gsplit( ',' ) do
-		part = part:trim()
-		if tonumber( part ) then
-			body = body .. ' or ' .. string.format( 'v==%s', part )
-		elseif part == 'true' then
-			body = body .. ' or ' .. string.format( 'v==true' )
-		elseif part == 'false' then
-			body = body .. ' or ' .. string.format( 'v==false' )
-		elseif part == 'nil' then
-			body = body .. ' or ' .. string.format( 'v==nil' )
-		else
-			--try range
-			local r0, r1 = part:match( '^([%d%-%.]+)%s*:%s*([%d%-%.]+)$')
-			if tonumber(r0) and tonumber(r1) then
-				body = body .. ' or ' .. string.format( '(isn(v) and (v>=%s and v<=%s))', r0, r1 )
-			else
-				body = body .. ' or ' .. string.format( 'v==%q', part )
-			end
+		local code = parseConditionPart( part )
+		if code then
+			body = body .. ' or ' .. code
 		end
 	end
 	local tail = ';end'

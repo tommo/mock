@@ -447,6 +447,9 @@ function InputDevice:pollKeyHit(key) --get key hit counts since last polling
 	return count
 end
 
+function InputDevice:isKeyHit( key )
+	return self:pollKeyHit( key ) > 0
+end
 
 function InputDevice:addKeyboardListener( func )
 	self.keyboardListeners[ func ] = true
@@ -782,6 +785,10 @@ end
 
 function pollKeyHit(key) --get key hit counts since last polling
 	return _defaultInputDevice:pollKeyHit(key)	
+end
+
+function isKeyHit(key)
+	return _defaultInputDevice:isKeyHit(key)
 end
 
 function addKeyboardListener( func )

@@ -22,10 +22,6 @@ function TexturePlane:__init()
 	self.prop:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )
 end
 
-function TexturePlane:setLayer( layer )
-	layer:insertProp( self.prop )
-end
-
 function TexturePlane:getTexture()
 	return self.texture
 end

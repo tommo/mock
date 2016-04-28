@@ -42,6 +42,8 @@ local function buildFSMScheme( scheme )
 				if step then 
 					out = step( controller, dt )
 					dt = 0 --delta time is consumed
+				elseif step == nil then
+					controller[ stepname ] = false
 				end
 				
 				----POST STEP TRANSISTION
@@ -97,6 +99,8 @@ local function buildFSMScheme( scheme )
 				local exit = controller[ exitname ]
 				if exit then --exit previous state
 					exit( controller, nextStateName, transMsg, transMsgArg )
+				elseif exit == nil then
+					controller[ exitname ] = false
 				end
 
 			else --group transitions
@@ -105,6 +109,8 @@ local function buildFSMScheme( scheme )
 				local exit = controller[ exitname ]
 				if exit then --exit previous state
 					exit( controller, nextStateName, transMsg, transMsgArg )
+				elseif exit == nil then
+					controller[ exitname ] = false
 				end
 				--extra state group exit/enter
 				for i = 1, l-1 do
@@ -121,9 +127,12 @@ local function buildFSMScheme( scheme )
 			if not nextStateBody then
 				error( 'state body not found:' .. nextStateName, 2 )
 			end
-			local enter = controller[ nextStateBody.entername ]
+			local entername = nextStateBody.entername
+			local enter = controller[ entername ]
 			if enter then --entering new state
 				enter( controller, name, transMsg, transMsgArg )
+			elseif enter == nil then
+				controller[ entername ] = false
 			end
 			--activate and enter new state handler
 			local nextFunc = nextStateBody.func
@@ -133,6 +142,7 @@ local function buildFSMScheme( scheme )
 		end
 
 		stateBody.func      = stateStep
+		stateBody.stepname  = stepname
 		stateBody.entername = entername
 		stateBody.exitname  = exitname
 

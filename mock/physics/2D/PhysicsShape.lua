@@ -105,12 +105,15 @@ function PhysicsShape:updateMaterial()
 	shape:setRestitution  ( material.restitution )
 	shape:setSensor       ( material.isSensor )
 	-- print('categoryBits: ', bit.tohex(material.categoryBits), ' maskBits: ', bit.tohex(material.maskBits))
-	shape:setFilter       ( material.categoryBits or 1, material.maskBits or 0xffffffff, material.group or 0 )
+	shape:setFilter       ( 
+		material.categoryBits or 1,
+		material.maskBits or 0xffffffff,
+		material.group or 0
+	)
 	self.parentBody:updateMass()
 end
 
 function PhysicsShape:setFilter(categoryBits, maskBits, group)
-	group = group or 0
 
 	local material, shape = self.material, self.shape
 	if not shape then return end
@@ -119,7 +122,10 @@ function PhysicsShape:setFilter(categoryBits, maskBits, group)
 		self.material = material
 	end
 
-	shape:setFilter(categoryBits, maskBits, group)
+	shape:setFilter(
+		categoryBits or material.categoryBits or 1,
+		maskBits or material.maskBits or 0xffff,
+		group or material.group or 0 )
 	-- update material as well
 	-- TODO: remove this
 	material.categoryBits = categoryBits

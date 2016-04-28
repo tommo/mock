@@ -9,7 +9,7 @@ CLASS: Animator ( Component )
 		'----';
 		Field 'default'      :string() :selection( 'getClipNames' );
 		Field 'autoPlay'     :boolean();
-		Field 'autoPlayMode' :enum( EnumTimerMode );
+		Field 'autoPlayMode' :enum( EnumTimerModeWithDefault );
 	}
 
 function Animator:__init()
@@ -20,7 +20,7 @@ function Animator:__init()
 	self.throttle    = 1
 	self.scale       = 1
 	self.autoPlay    = true
-	self.autoPlayMode= MOAITimer.LOOP 
+	self.autoPlayMode= false
 	self.vars        = {}
 	self.varSeq      = 0
 end
@@ -33,7 +33,9 @@ end
 function Animator:setDataPath( dataPath )
 	self.dataPath = dataPath
 	self.data = mock.loadAsset( dataPath )
-	self.data:prebuildAll()
+	if self.data then
+		self.data:prebuildAll()
+	end
 end
 
 function Animator:getDataPath()
@@ -115,17 +117,10 @@ function Animator:getActiveState()
 	return self.activeState
 end
 
-function Animator:playClip( clipName, option )
+function Animator:playClip( clipName, mode )
 	local state = self:loadClip( clipName )
 	if state then	
-		tt = type( option )
-		if tt == 'string' then --play mode only
-		elseif tt == 'table' then --advcanced options
-			--TODO
-		elseif option then
-			local playMode = option
-			state:setMode( playMode )
-		end
+		state:setMode( mode )
 		state:start()
 	end
 	return state
