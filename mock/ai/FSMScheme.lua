@@ -4,6 +4,26 @@ module 'mock'
 local DEADLOCK_THRESHOLD = 100
 local DEADLOCK_TRACK     = 10
 local DEADLOCK_TRACK_ENABLED = true
+
+local function tovalue( v )
+	v = v:trim()
+	if value == 'true' then
+		return true, true
+	elseif value == 'false' then
+		return true, false
+	elseif value == 'nil' then
+		return true, nil
+	else
+		local n = tonumber( v )
+		if n then return true, n end
+		local s = v:match( [[^'(.*)'$]])
+		if s then return true, s end
+		local s = v:match( [[^"(.*)"$]])
+		if s then return true, s end
+	end
+	return false
+end
+
 --------------------------------------------------------------------
 local function buildFSMScheme( scheme )
 	-- assert(targetClass,'Target Class required')
@@ -15,15 +35,85 @@ local function buildFSMScheme( scheme )
 	--
 	local stateFuncs    = {}
 
+	---
+	local function parseExprJump( msg )
+		local content = msg:match('%s*if%s*%((.*)%)%s*')
+		if not content then return nil end
+		content=content:trim()
+		local var, op, value = content:match( '^([%w_.]+)%s*([><~=]=?)%s*(.*)%s*$' )
+		if var then
+			local succ, value = tovalue( value )
+			if succ then
+				if op=='~' or op=='=' then
+					_warn( 'invalid fsm transition experssion operartor', msg )
+					return false
+				end
+				local src
+				if op == '==' or op == '~=' then
+					src = string.format(
+						[[
+						local print = ...
+						local function exprFunc(controller) 
+							if controller:getVar(%q)%s%s then return controller:tell( exprFunc ) end
+						end
+						return exprFunc
+						]]
+						,var ,op ,value )
+				else
+					src = string.format(
+						[[
+						local print = ...
+						local function exprFunc(controller) 
+							local nv = controller:getVarN(%q)
+							if nv and (nv%s%s) then return controller:appendMsg( exprFunc ) end
+						end
+						return exprFunc
+						]]
+						,var ,op ,value )
+				end
+				local checkerFuncBuilder, err = loadstring( src )
+				if not checkerFuncBuilder then
+					print( err )
+					_warn( 'fail building invalid fsm transition experssion', msg )
+					return false
+				end
+				local exprFunc = checkerFuncBuilder( print )
+				return exprFunc
+			end
+		end
+
+		_warn( 'invalid fsm transition experssion', msg )
+		return false
+	end
+
+	--build state funcs
 	for name, stateBody in pairs( scheme ) do
 		local id         = stateBody.id     --current state id
 		local jump       = stateBody.jump   --transition trigger by msg
 		local outStates  = stateBody.next   --transition trigger by state return value
 
 		local localName  = stateBody.localName		
-		local stepname   = id .. '__step'
-		local exitname   = id .. '__exit'
-		local entername  = id .. '__enter'
+		local stepName   = id .. '__step'
+		local exitName   = id .. '__exit'
+		local enterName  = id .. '__enter'
+
+		local exprJump = false
+		if jump then
+			for msg, target in pairs( jump ) do
+				local exprFunc = parseExprJump( msg )
+				if exprFunc then
+					if not exprJump then exprJump = {} end
+					exprJump[ msg ] = exprFunc
+					-- print( name, msg, exprFunc, exprJump )
+				end
+			end
+			if exprJump then
+				for msg, exprFunc in pairs( exprJump ) do --replace msg
+					jump[ exprFunc ] = jump[ msg ]
+					jump[ msg ] = nil
+				end
+			end
+		end
 		--generated function
 		local function stateStep( controller, dt, switchCount )
 			----PRE STEP TRANSISTION
@@ -36,14 +126,14 @@ local function buildFSMScheme( scheme )
 				nextState, transMsg, transMsgArg = unpack( forceJumping )
 			else
 				---STEP
-				local step = controller[ stepname ]
+				local step = controller[ stepName ]
 				local out  = true
 				--step return name of next state
 				if step then 
 					out = step( controller, dt )
 					dt = 0 --delta time is consumed
 				elseif step == nil then
-					controller[ stepname ] = false
+					controller[ stepName ] = false
 				end
 				
 				----POST STEP TRANSISTION
@@ -96,21 +186,21 @@ local function buildFSMScheme( scheme )
 			local tt = type( nextState )
 			if tt == 'string' then --direct transition
 				nextStateName = nextState
-				local exit = controller[ exitname ]
+				local exit = controller[ exitName ]
 				if exit then --exit previous state
 					exit( controller, nextStateName, transMsg, transMsgArg )
 				elseif exit == nil then
-					controller[ exitname ] = false
+					controller[ exitName ] = false
 				end
 
 			else --group transitions
 				local l = #nextState
 				nextStateName = nextState[l]
-				local exit = controller[ exitname ]
+				local exit = controller[ exitName ]
 				if exit then --exit previous state
 					exit( controller, nextStateName, transMsg, transMsgArg )
 				elseif exit == nil then
-					controller[ exitname ] = false
+					controller[ exitName ] = false
 				end
 				--extra state group exit/enter
 				for i = 1, l-1 do
@@ -127,37 +217,43 @@ local function buildFSMScheme( scheme )
 			if not nextStateBody then
 				error( 'state body not found:' .. nextStateName, 2 )
 			end
-			local entername = nextStateBody.entername
-			local enter = controller[ entername ]
-			if enter then --entering new state
-				enter( controller, name, transMsg, transMsgArg )
-			elseif enter == nil then
-				controller[ entername ] = false
-			end
+			local enterName = nextStateBody.enterName
 			--activate and enter new state handler
 			local nextFunc = nextStateBody.func
 			controller.currentStateFunc = nextFunc
+			controller.currentExprJump  = nextStateBody.exprJump
+			local enter = controller[ enterName ]
+			if enter then --entering new state
+				enter( controller, name, transMsg, transMsgArg )
+			elseif enter == nil then
+				controller[ enterName ] = false
+			end
+			controller:updateExprJump()
 			return nextFunc( controller, dt, switchCount )
 			
 		end
 
 		stateBody.func      = stateStep
-		stateBody.stepname  = stepname
-		stateBody.entername = entername
-		stateBody.exitname  = exitname
+		stateBody.stepName  = stepName
+		stateBody.enterName = enterName
+		stateBody.exitName  = exitName
+		stateBody.exprJump  = exprJump
 
 	end
-	local startEnterName = scheme['start'].entername
+
 	local startFunc      = scheme['start'].func
+	local startEnterName = scheme['start'].enterName
+	local startExprJump  = scheme['start'].exprJump
 	scheme[0] = function( controller, dt )
+		controller.currentStateFunc = startFunc
+		controller.currentExprJump  = startExprJump
 		local f = controller[ startEnterName ]
 		if f then
 			f( controller ) --fsm.start:enter
 		end
-		controller.currentStateFunc = startFunc
+		controller:updateExprJump()
 		return startFunc( controller, dt, 0 )
 	end
-
 end
 
 --------------------------------------------------------------------

@@ -79,7 +79,7 @@ function AnimatorFSM:updateScheme()
 	local scheme = self.scheme
 	if not scheme then return end
 	for name, stateBody in pairs( scheme ) do
-		if type( stateBody ) == 'table' then
+		if name ~= 0 then
 			local stepname = stateBody.stepname
 			self[stepname] = function( controller, dt )
 				local animState = controller.currentAnimState

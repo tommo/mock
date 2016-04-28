@@ -72,6 +72,10 @@ function FSMController:__init()
 	end
 	self._msgFilterSetter = function( f ) msgFilter = f end
 	self.forceJumping = false
+
+	self.vars        = {}
+	self.varDirty    = true
+	self.currentExprJump = false
 end
 
 function FSMController:setMsgFilter( func )
@@ -123,7 +127,11 @@ function FSMController:clearMsgBox()
 end
 
 function FSMController:pushTopMsg( msg, data, source )
-	insert( self.msgBox, 1, { msg, data, source } )
+	return insert( self.msgBox, 1, { msg, data, source } )
+end
+
+function FSMController:appendMsg( msg, data, source )
+	return insert( self.msgBox, { msg, data, source } )
 end
 
 function FSMController:pollMsg()
@@ -177,6 +185,9 @@ function FSMController:onThreadFSMUpdate()
 	local dt = 0
 	while true do
 		self.stateElapsedTime = self.stateElapsedTime + dt
+		if self.varDirty then
+			self:updateExprJump()
+		end
 		self:updateFSM( dt )
 		dt = coroutine.yield()
 	end
@@ -184,6 +195,38 @@ end
 
 function FSMController:getStateElapsedTime()
 	return self.stateElapsedTime
+end
+
+----
+function FSMController:setVar( id, value )
+	self.vars[ id ] = value
+	self.varDirty = true
+end
+
+function FSMController:getVar( id, default )
+	local v = self.vars[ id ]
+	if v == nil then return default end
+	return v
+end
+
+function FSMController:getVarN( id, default )
+	local v = self.vars[ id ]
+	v = tonumber( v )
+	if not v then return default end
+	return v
+end
+
+function FSMController:seekVar( id, value, duration ,easeMode )
+	--TODO
+end
+
+function FSMController:updateExprJump()
+	self.varDirty = false
+	local exprJump = self.currentExprJump
+	if not exprJump then return end
+	for msg, exprFunc in pairs( exprJump ) do
+		exprFunc( self )
+	end
 end
 
 registerComponent( 'FSMController', FSMController )
