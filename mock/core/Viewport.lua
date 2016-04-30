@@ -67,6 +67,7 @@ function Viewport:__init( mode )
 	self._viewport             = MOAIViewport.new()
 
 	self._viewport.source      = self
+	self.zoomSize        = { 1, 1 }
 
 end
 
@@ -89,7 +90,6 @@ function Viewport:setKeepAspect( keep )
 	if self.mode == 'relative' then self:updateSize() end
 end
 
-
 function Viewport:setRect( x0, y0, x1, y1 )
 	self.rect = { x0, y0, x1, y1 }
 	if self.mode == 'relative' then self:updateSize() end
@@ -98,6 +98,15 @@ end
 function Viewport:setSize( w, h )
 	local x0, y0 = self.rect[1], self.rect[2]
 	self:setRect( x0, y0, x0+w, y0+h )
+end
+
+function Viewport:setZoom( w, h )
+	self.zoomSize = { w, h }
+	self:updateSize()
+end
+
+function Viewport:getZoom()
+	return unpack( self.zoomSize )
 end
 
 function Viewport:setPixelRect( x0, y0, x1, y1 )
@@ -167,8 +176,9 @@ function Viewport:updateScale()
 	if (not self.fixedScale) and self.parent then
 		local w, h = self.parent:getScale()
 		local rw, rh = self:getRelativeSize()
+		local zw, zh = self:getZoom()
 		self.scaleSize = {
-			w * rw, h * rh
+			w * rw / zw, h * rh / zh
 		}
 	end
 	self:onUpdateScale()

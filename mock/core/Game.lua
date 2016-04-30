@@ -520,6 +520,7 @@ function Game:initGraphics( option, fromEditor )
 
 	self.mainRenderTarget:setAspectRatio( self.width/self.height )
 	self.mainRenderTarget:setKeepAspect( true )
+	self.mainRenderTarget:setFixedScale( self.width, self.height )
 
 	_stat( 'opening window', self.title, w, h )
 	if not fromEditor then

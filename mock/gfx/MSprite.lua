@@ -33,6 +33,8 @@ CLASS: MSprite ( GraphicsPropComponent )
 		Field 'autoPlay' :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );
 		'----';
+		Field 'hiddenFeatures' :collection( 'string' ) :selection( 'getAvailFeatures' ) :getset( 'HiddenFeatures' );
+		'----';
 		Field 'flipX' :boolean() :set( 'setFlipX' );
 		Field 'flipY' :boolean() :set( 'setFlipY' );
 
@@ -56,7 +58,7 @@ function MSprite:__init()
 	self.autoPlayMode= MOAITimer.LOOP 
 	self.flipX = false
 	self.flipY = false
-	
+	self.hiddenFeatures = {}
 end
 
 function MSprite:onAttach( entity )
@@ -87,20 +89,26 @@ function MSprite:setSprite( path )
 		local instance = MOAIGfxMaskedQuadListDeck2DInstance.new()
 		instance:setSource( spriteData.frameDeck )
 		self.deckInstance = instance
-		-- self:_updateFeatureMask()
 		self.prop:setDeck( instance )
 		self.prop:setIndex( 1 )
 		self.prop:forceUpdate()
+		self:updateFeatures()
 	end
 
 end
--- function MSprite:_updateFeatureMask()
--- 	if not self.deckInstance then return end
--- 	local instance = self.deckInstance
--- 	for i = 1, 64 do
--- 		instance:setMask( i, self.featureMask[ i ] ~= false )
--- 	end
--- end
+
+
+function MSprite:getAvailFeatures()
+	local result = {
+		{ '__base__', '__base__' }
+	}
+	if self.spriteData then
+		for i, n in ipairs( self.spriteData.featureNames ) do
+			result[ i+1 ] = { n, n }
+		end
+	end
+	return result
+end
 
 function MSprite:getFeatureNames()
 	if self.spriteData then
@@ -108,6 +116,38 @@ function MSprite:getFeatureNames()
 	end
 	return {}
 end
+
+function MSprite:setHiddenFeatures( hiddenFeatures )
+	self.hiddenFeatures = hiddenFeatures or {}
+	--update hiddenFeatures
+	if self.spriteData then return self:updateFeatures() end
+end
+
+function MSprite:getHiddenFeatures()
+	return self.hiddenFeatures
+end
+
+function MSprite:updateFeatures()
+	if not self.deckInstance then return end
+	local featureTable = self.spriteData.features
+	if not featureTable then return end
+	local instance = self.deckInstance
+	for i = 0, 64 do --hide all
+		instance:setMask( i, false )
+	end
+	for i, featureName in ipairs( self.hiddenFeatures ) do
+		local bit
+		if featureName == '__base__' then
+			bit = 0
+		else
+			bit = featureTable[ featureName ]
+		end
+		if bit then
+			instance:setMask( bit, true ) --show target feature
+		end
+	end
+end
+
 
 function MSprite:setBaseFeatureHidden( value )
 	if not self.deckInstance then return end
@@ -123,22 +163,6 @@ function MSprite:setFeatureHidden( featureName, value )
 	end
 	-- self.featureMask[ bit ] = value ~= false
 	-- if not self.deckInstance then return end
-end
-
-function MSprite:setupFeatures( featureNames )
-	if not self.deckInstance then return end
-	local features = self.spriteData.features
-	if not features then return end
-	local instance = self.deckInstance
-	for i = 1, 64 do --hide all
-		instance:setMask( i, true )
-	end
-	for i, featureName in ipairs( featureNames ) do
-		local bit = features[ featureName ]
-		if bit then
-			instance:setMask( bit, false ) --show target feature
-		end
-	end
 end
 
 function MSprite:getSprite()

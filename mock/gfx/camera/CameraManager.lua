@@ -22,17 +22,6 @@ local function buildCallbackLayer( func )
 	return layer
 end
 
-
-local DefaultFrameBufferOptions = {
-	filter      = MOAITexture.GL_LINEAR,
-	clearDepth  = true,
-	clearStencil= true,
-	colorFormat = false,
-	scale       = 1,
-	size        = 'relative',
-	autoResize  = true
-}
-
 --------------------------------------------------------------------
 CLASS: CameraManager ()
 	:MODEL{}
@@ -113,28 +102,39 @@ end
 
 function CameraManager:_buildBufferTable( passQueue )
 	local currentRenderTarget = false
+	local defaultBuffer  = false
 	local currentBuffer  = false
 	local currentOption  = false
 	local currentBatch   = false
 	local currentCamera  = false
 	local bufferBatchMap = {}
 
-	local defaultOptions = { clearColor = {0,0,0,1}, clearDepth = true, clearStencil = true }
+	local defaultOptions = { 
+		clearColor   = {0,0,0,0}, 
+		clearDepth   = true, 
+		clearStencil = true
+	}
+
+	local emptyOptions = { 
+		clearColor   = false, 
+		clearDepth   = false, 
+		clearStencil = false
+	}
 
 	local bufferInfoTable = {}
 	
 	--TODO:replace with canvas context
 	currentRenderTarget = game:getMainRenderTarget()
-	currentBuffer       = currentRenderTarget and currentRenderTarget:getFrameBuffer() or MOAIGfxDevice.getFrameBuffer()
+	defaultBuffer       = currentRenderTarget and currentRenderTarget:getFrameBuffer() or MOAIGfxDevice.getFrameBuffer()
 	
 
 	--collect batches
 	for i, entry in ipairs( passQueue ) do
 		local tag = entry.tag
-
 		local camera = entry.camera
 		local cameraChanged = false
 		if camera ~= currentCamera then
+			currentBuffer = defaultBuffer
 			cameraChanged = true
 			currentCamera = camera
 		end
@@ -143,7 +143,6 @@ function CameraManager:_buildBufferTable( passQueue )
 			local renderTarget = entry.renderTarget
 			local buffer = renderTarget:getFrameBuffer()
 			local option = entry.option or defaultOptions
-			
 			if (buffer ~= currentBuffer) or cameraChanged then
 				currentBatch = {}
 				table.insert( bufferInfoTable,
@@ -164,7 +163,7 @@ function CameraManager:_buildBufferTable( passQueue )
 				table.insert( bufferInfoTable,
 					{
 						buffer = currentBuffer,
-						option = defaultOptions,
+						option = emptyOptions,
 						batch  = currentBatch,
 						camera = currentCamera
 					}
@@ -274,8 +273,7 @@ function CameraManager:_buildBufferTable( passQueue )
 
 		return resultBufferTable, resultRenderTableMap
 	end
-
-
+	
 end
 
 function CameraManager:onLayerUpdate( layer, var )

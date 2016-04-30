@@ -5,14 +5,24 @@ CLASS: RenderTargetTexture ( Texture )
 		Field 'height' :int();
 		Field 'filter' :enum( EnumTextureFilter );
 		Field 'depth'  :boolean();
+		Field 'stencil':boolean();
 	}
+
+
+local _filterNameToFilter = {
+	linear  = MOAITexture.GL_LINEAR,
+	nearest = MOAITexture.GL_NEAREST,
+}
 
 function RenderTargetTexture:__init()
 	self.framebuffer = MOAIFrameBufferTexture.new()
 	self.renderTarget = TextureRenderTarget()
 	self.renderTarget.owner = self
 	self.updated = false
-	self.depth  = false
+	
+	self.depth   = false
+	self.stencil = false
+
 	self.width  = 256
 	self.height = 256
 	self.filter = 'linear'
@@ -43,9 +53,15 @@ end
 
 function RenderTargetTexture:update()
 	if self.updated then return end
-	self.renderTarget:initFrameBuffer()
+	local option = {
+		useStencilBuffer = self.stencil,
+		useDepthBuffer   = self.depth,
+		filter           = _filterNameToFilter[ self.filter ]
+	}
+	self.renderTarget:initFrameBuffer( option )
 	self.renderTarget.mode = 'fixed'
 	self.renderTarget:setPixelSize( self.width, self.height )
+	self.renderTarget:setFixedScale( self.width, self.height )
 	self.updated = true
 end
 

@@ -137,6 +137,10 @@ function AnimatorClipSubNode:isActive()
 	return self.parent:isActive()
 end
 
+function AnimatorClipSubNode:getPriority()
+	return 0
+end
+
 function AnimatorClipSubNode:build( context )
 	self:buildChildren( context )
 	return true

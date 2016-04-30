@@ -51,6 +51,10 @@ function AnimatorAnimatorTrack:getIcon()
 	return 'track_anim'
 end
 
+function AnimatorAnimatorTrack:getPriority()
+	return 100
+end
+
 function AnimatorAnimatorTrack:toString()
 	local pathText = self.targetPath:toString()
 	return pathText..'<clips>'

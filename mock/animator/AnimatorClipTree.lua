@@ -118,7 +118,6 @@ function AnimatorClipTreeState:apply( t )
 				if conv then
 					subTime = conv( subTime, animState.clipLength )
 				end
-				-- print( subTime, conv,animState.clipLength)
 				animState:apply( subTime )
 			end
 		end
@@ -266,6 +265,10 @@ function AnimatorClipTreeTrack:__init( clipTree )
 	self.parentClip = clipTree
 end
 
+function AnimatorClipTreeTrack:getPriority()
+	return 1000
+end
+
 function AnimatorClipTreeTrack:build( context )
 end
 
@@ -285,7 +288,7 @@ function AnimatorClipTreeTrack:onStateLoad( state )
 	treeState:loadTree( self.parentClip.treeRoot, animator )
 	local playContext = { 
 		treeState = treeState,
-		varSeq    = animator.varSeq
+		varSeq    = 0
 	}
 	state:addUpdateListenerTrack( self, playContext )
 	state:setFixedMode( MOAITimer.CONTINUE )

@@ -71,17 +71,16 @@ function CameraPass:pushPassData( data )
 	table.insert( self.passes, data )
 end
 
-function CameraPass:pushRenderLayer( layer, renderTarget, option )
+function CameraPass:pushRenderLayer( layer, layerType )
 	if not layer then 
 		_error( 'no render layer given!' )
 		return
 	end
-	if renderTarget or option then
-		self:pushRenderTarget( renderTarget, option )
-	end
+	
 	self:pushPassData {
 		tag   = 'layer',
-		layer = layer
+		layer = layer,
+		type  = layerType or 'render'
 	}
 	return layer
 end
@@ -311,13 +310,17 @@ function CameraPass:buildCallbackRenderLayer( func )
 end
 
 function CameraPass:pushGfxPass( passId )
-	self:pushRenderLayer( self:buildCallbackRenderLayer( function()
-		MOAIGfxDevice.setPass( passId )
-	end) )
+	return self:pushCallback( 
+		function() return MOAIGfxDevice.setPass( passId ) end, 
+		'gfx-pass'
+	)
 end
 
-function CameraPass:pushCallback( func )
-	self:pushRenderLayer( self:buildCallbackRenderLayer( func ) )
+function CameraPass:pushCallback( func, layerType )
+	return self:pushRenderLayer(
+			self:buildCallbackRenderLayer( func ),
+			layerType or 'call'
+		)
 end
 
 

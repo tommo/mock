@@ -80,8 +80,8 @@ function AnimatorFSM:updateScheme()
 	if not scheme then return end
 	for name, stateBody in pairs( scheme ) do
 		if name ~= 0 then
-			local stepname = stateBody.stepname
-			self[stepname] = function( controller, dt )
+			local stepName = stateBody.stepName
+			self[stepName] = function( controller, dt )
 				local animState = controller.currentAnimState
 				if not animState then return true end
 				return not animState:isBusy()
@@ -107,7 +107,7 @@ function AnimatorFSM:setState( state )
 		local duration = args['duration']
 		local throttle = args['throttle']
 		local mode = args['mode']
-		print( throttle, duration )
+		-- print( throttle, duration )
 		if mode then
 			state:setMode( mode )
 		end

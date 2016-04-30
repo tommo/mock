@@ -344,10 +344,6 @@ function Camera:worldToView( x, y, z )
 	return self.dummyLayer:worldToView( x, y, z )
 end
 
-function Camera:getScreenRect() --todo: kill me
-	return game:getViewportRect()
-end
-
 function Camera:getScreenSize()
 	local x, y, x1, y1 = game:getViewportRect()
 	return  x1 - x, y1 - y
@@ -365,17 +361,22 @@ end
 function Camera:updateZoom()
 	local zoom = self:getZoom()
 	if zoom <= 0 then zoom = 0.00001 end
-	local sw, sh = self:getScreenScale()
-	if not sw then return end
-	local w, h   = sw / zoom, sh / zoom
-	if self.perspective then
-		local dx,dy,dx1,dy1 = self:getScreenRect()
-		local dw = dx1-dx
-		local dh = dy1-dy
-		self.renderTarget:setFixedScale( w, h )
-	else
-		self.renderTarget:setFixedScale( w, h )
-	end
+	self.renderTarget:setZoom( zoom, zoom )
+	-- local w, h = self:getOutputRenderTarget():getScale()
+	-- print( w, h )
+	-- self.renderTarget:setFixedScale( w/zoom, h/zoom )
+	-- local sw, sh = self:getScreenScale()
+	-- if not sw then return end
+	-- self.renderTarget:setScale()
+	-- local w, h   = sw / zoom, sh / zoom
+	-- if self.perspective then
+	-- 	local dx,dy,dx1,dy1 = self:getScreenRect()
+	-- 	local dw = dx1-dx
+	-- 	local dh = dy1-dy
+	-- 	self.renderTarget:setFixedScale( w, h )
+	-- else
+	-- 	self.renderTarget:setFixedScale( w, h )
+	-- end
 end
 
 function Camera:getRenderTarget()

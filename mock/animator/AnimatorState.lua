@@ -250,14 +250,18 @@ end
 
 --
 function AnimatorState:onUpdate( t, t0 )
-	for track, context in pairs( self.updateListenerTracks ) do
+	for i, entry in ipairs( self.updateListenerTracks ) do
 		if self.stopping then return end --edge case: new clip started in apply
+		local track = entry[1]
+		local context = entry[2]
 		track:apply( self, context, t, t0 )
 	end
 end
 
 function AnimatorState:resetContext()
-	for track, context in pairs( self.updateListenerTracks ) do
+	for i, entry in ipairs( self.updateListenerTracks ) do
+		local track = entry[1]
+		local context = entry[2]
 		track:reset( self, context )
 	end
 end
@@ -303,6 +307,20 @@ function AnimatorState:loadClip( animator, clip )
 	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
 	self.elapsedTimer:setTime( 0 )
 	self:updateDuration()
+
+	--sort update listeners
+	table.sort(
+		self.updateListenerTracks, 
+		function(lhs, rhs)
+			local t1 = lhs[1]
+			local t2 = rhs[1]
+			return t1:getPriority() < t2:getPriority()
+		end
+	)
+	-- print( '\n\nupdate track order' )
+	-- for i, entry in ipairs( self.updateListenerTracks ) do
+	-- 	print( entry[1]:getClassName() )
+	-- end
 end
 
 function AnimatorState:updateDuration()
@@ -316,7 +334,7 @@ function AnimatorState:updateDuration()
 end
 
 function AnimatorState:addUpdateListenerTrack( track, context )
-	self.updateListenerTracks[ track ] = context
+	table.insert( self.updateListenerTracks, { track, context } )
 end
 
 function AnimatorState:addAttrLink( track, curve, target, id, asDelta )
