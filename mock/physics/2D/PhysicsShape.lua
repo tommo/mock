@@ -80,11 +80,11 @@ end
 
 function PhysicsShape:setMaterial( path )
 	self.materialPath = path
-	if not path then
+	if path then
+		self.material = loadAsset( path )
+	else
 		self.material = false
-		return
 	end
-	self.material = loadAsset( path )
 	self:updateMaterial()
 end
 
@@ -92,11 +92,15 @@ function PhysicsShape:getMaterialTag()
 	return self.material and self.material.tag
 end
 
+function PhysicsShape:getDefaultMaterial()
+	return self.parentBody and self.parentBody:getDefaultMaterial() or getDefaultPhysicsMaterial()
+end
+
 function PhysicsShape:updateMaterial()
 	local material, shape = self.material, self.shape
 	if not shape then return end
 	if not material then 
-		material = getDefaultPhysicsMaterial() 
+		material = self:getDefaultMaterial()
 		self.material = material
 	end
 	

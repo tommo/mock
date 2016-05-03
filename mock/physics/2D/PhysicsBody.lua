@@ -221,8 +221,15 @@ function PhysicsBody:calcMass()
 	end
 end
 
-
-
+function PhysicsBody:getDefaultMaterial()
+	if self.bodyDef then
+		local materialPath = self.bodyDef.defaultMaterial
+		if materialPath then
+			return loadAsset( materialPath )
+		end
+	end
+	return false
+end
 
 function PhysicsBody:_removeJoint( j )
 	self.joints[ j ] = nil
