@@ -79,7 +79,6 @@ function MSpriteCopy:updateFeatures()
 			bit = featureTable[ featureName ]
 		end
 		if bit then
-			print( 'hide feature', featureName, bit )
 			instance:setMask( bit, true ) --show target feature
 		end
 	end

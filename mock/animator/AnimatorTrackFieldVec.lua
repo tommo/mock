@@ -171,7 +171,7 @@ function AnimatorTrackFieldVec3:createKey( pos, context )
 	masterKey:addChildKey( keyZ )
 	masterKey:setValue( x,y,z )
 	self:addKey( masterKey )
-	return masterKey, keyX, keyY, keyZ
+	return keyX, keyY, keyZ, masterKey
 end
 
 function AnimatorTrackFieldVec3:apply( state, target, t )
@@ -231,7 +231,7 @@ function AnimatorTrackFieldVec2:createKey( pos, context )
 	masterKey:addChildKey( keyY )
 	masterKey:setValue( x,y )
 	self:addKey( masterKey )
-	return masterKey, keyX, keyY
+	return keyX, keyY, masterKey
 end
 
 function AnimatorTrackFieldVec2:apply( state, target, t )

@@ -1,5 +1,10 @@
 module 'mock'
 
+local GlobalAnimatorVarChangeListeners = {}
+function addGlobalAnimatorVarChangeListener( l )
+	GlobalAnimatorVarChangeListeners[ l ] = true
+end
+
 --------------------------------------------------------------------
 CLASS: Animator ( Component )
 	:MODEL{
@@ -23,6 +28,7 @@ function Animator:__init()
 	self.autoPlayMode= false
 	self.vars        = {}
 	self.varSeq      = 0
+	self.states      = table.weak_k()
 end
 
 --------------------------------------------------------------------
@@ -97,6 +103,7 @@ function Animator:_loadClip( clip, makeActive, _previewing )
 		self:stop()
 		self.activeState = state
 	end
+	self.states[ state ] = true
 	return state
 end
 
@@ -170,10 +177,18 @@ function Animator:onDetach( ent )
 	self:stop()
 end
 
-----
 function Animator:setVar( id, value )
 	self.vars[ id ] = value
 	self.varSeq = self.varSeq + 1
+	-- for state in pairs( self.states ) do
+	-- 	local onVarChanged = state.onVarChanged
+	-- 	if onVarChanged then
+	-- 		onVarChanged( state, id, value )
+	-- 	end
+	-- end
+	for listener in pairs( GlobalAnimatorVarChangeListeners ) do
+		listener( self, id, value )
+	end
 end
 
 function Animator:getVar( id, default )
@@ -184,6 +199,10 @@ end
 
 function Animator:seekVar( id, value, duration ,easeMode )
 	--TODO
+end
+
+function Animator:getDepAnimators()
+
 end
 
 --------------------------------------------------------------------

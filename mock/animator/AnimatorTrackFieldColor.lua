@@ -101,7 +101,7 @@ function AnimatorTrackFieldColor:createKey( pos, context )
 	masterKey:addChildKey( keyB )
 	masterKey:addChildKey( keyA )
 	self:addKey( masterKey )
-	return masterKey, keyR, keyG, keyB, keyA
+	return keyR, keyG, keyB, keyA, masterKey
 end
 
 function AnimatorTrackFieldColor:apply( state, target, t )

@@ -279,7 +279,7 @@ end
 function MSprite:createAnimState( clipName, mode )
 	local clip = self:getClip( clipName )
 	if not clip then 
-		_error( 'animation clip not found:'..clipName )
+		_warn( 'msprite animation clip not found:'..clipName, self.spritePath )
 		return false
 	end	
 	---bind animcurve to animState

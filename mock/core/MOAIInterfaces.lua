@@ -551,6 +551,14 @@ MOAITapjoy = MOAITapjoyAndroid or MOAITapjoyIOS
 math.random=MOAIMath.randSFMT
 math.seedrandom=MOAIMath.seedSFMT
 MOAIMath.seedSFMT(1)
+local _globalSFMTSeed = 1
+math.randomseed=function( seed )
+	seed = seed or 0
+	local seed0 = _globalSFMTSeed
+	_globalSFMTSeed = seed
+	MOAIMath.seedSFMT( seed )
+	return seed0
+end
 
 MOAITwitter = MOAITwitterAndroid or MOAITwitterIOS
 

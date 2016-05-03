@@ -537,7 +537,6 @@ function Game:initGraphics( option, fromEditor )
 	MOAIGfxResourceMgr.setResourceLoadingPolicy( 
 		MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
 	)
-
 end
 
 --- Get the scale( conent size ) of the main viewport

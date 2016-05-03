@@ -7,6 +7,7 @@ CLASS: GlobalObjectNode ()
 		Field '_folded' :boolean() :no_edit(); 
 
 		Field 'name' :string() :set( 'setName' ); 
+		Field 'priority' :int();
 	}
 
 function GlobalObjectNode:__init()
@@ -14,6 +15,7 @@ function GlobalObjectNode:__init()
 	self.name = self:getClassName()
 	self.type     = false
 	self.object   = false
+	self.priority = 0
 	self._folded  = false
 end
 
@@ -27,6 +29,7 @@ end
 
 function GlobalObjectNode:setName( name )
 	--build fullpath for object	
+	--TODO: rename object if duplicated name found
 	local parent = self.parent
 	if self.name then
 		parent.children[ self.name ] = nil
@@ -73,6 +76,57 @@ function GlobalObjectNode:removeNode( name )
 	return false
 end
 
+function GlobalObjectNode:reparent( obj )
+	if self.parent then
+		self.parent.children[ self.name ] = nil
+	end
+	obj:addNode( self.name, self )
+end
+
+function GlobalObjectNode:save()
+	local tt = self.type
+	if tt == 'group' then
+		local children = {}
+		for name, child in pairs( self.children ) do
+			children[ name ] = child:save()
+		end
+		return {
+			name   = self.name,
+			children = children,
+			type   = 'group'
+		}
+	else
+		return {
+			name   = self.name,
+			object = serialize( self.object ),
+			type   = 'object'
+		}
+	end
+end
+
+function GlobalObjectNode:loadGroup( data )
+	for name ,childData in pairs( data['children'] ) do
+		local tt   = childData['type']
+		if tt == 'group' then
+			local node = self:addGroup( name )
+			node:loadGroup( childData )
+		else
+			local node = self:addNode( name )
+			node:loadObject( childData )
+		end
+	end
+end
+
+function GlobalObjectNode:loadObject( data )
+	local tt = data['type']
+	assert( tt == 'object' )
+	self.type = 'object'
+
+	local object = deserialize( nil, data['object'] )
+	self.object = object
+	self.objectType = object:getClassName()
+end
+
 ---------------------------------------------------------------------
 CLASS: GlobalObjectLibrary ()
 	:MODEL{}
@@ -88,71 +142,13 @@ function GlobalObjectLibrary:__init()
 	self.root  = root
 end
 
-local function _loadGlobalObject( objData, parent )
-	assert( objData['type'] == 'group' )
-
-	for name ,childData in pairs( objData['children'] ) do
-		local tt   = childData['type']
-		if tt == 'group' then
-			local node = parent:addGroup( name )
-			_loadGlobalObject( childData, node )
-		else
-			local object = deserialize( nil, childData['object'] )
-			local node = parent:addObject( name, object )
-		end
-	end
-	
-end
-
 function GlobalObjectLibrary:load( data )
 	if not data then return end
-	_loadGlobalObject( data, self.root )	
-end
-
--- local function _reloadGlobalObject( node )
--- 	local tt = node.type
--- 	if tt == 'group' then
--- 		for name, child in pairs( node.children ) do
--- 			_reloadGlobalObject( child )
--- 		end
--- 	else
--- 		local data = serialize( node.object )
--- 		deserialize( node.object, data )
--- 	end
--- end
-
--- function GlobalObjectLibrary:reload()
--- 	_reloadGlobalObject( self.root )
--- end
-
-function GlobalObjectLibrary:reload()
-	local data = self:save()
-	self:load( data )
-end
-
-local function _saveGlobalObject( node )
-	local tt = node.type
-	if tt == 'group' then
-		local children = {}
-		for name, child in pairs( node.children ) do
-			children[ name ] = _saveGlobalObject( child )
-		end
-		return {
-			name   = node.name,
-			children = children,
-			type   = 'group'
-		}
-	else
-		return {
-			name   = node.name,
-			object = serialize( node.object ),
-			type   = 'object'
-		}
-	end
+	return self.root:loadGroup( data )
 end
 
 function GlobalObjectLibrary:save()
-	return _saveGlobalObject( self.root )	
+	return self.root:save()
 end
 
 function GlobalObjectLibrary:get( path )
@@ -178,6 +174,8 @@ function GlobalObjectLibrary:getNodeList()
 	_collectChildNode( self.root, list )
 	return list
 end
+
+
 
 --------------------------------------------------------------------
 function registerGlobalObject( name, clas ) --TODO:icon?

@@ -55,6 +55,8 @@ function AnimatorState:__init()
 			self:stop()
 		end
 	)
+
+	self.onVarChanged = false
 end
 
 function AnimatorState:getClipName()

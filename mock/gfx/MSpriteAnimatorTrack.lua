@@ -90,6 +90,7 @@ function MSpriteAnimatorTrack:apply( state, playContext, t, t0 )
 	local lockFrame = key.lockFrame
 	local sprite  = playContext.sprite
 	local animState = playContext[ spanId ]
+	if not animState then return end
 	if lockFrame < 0 then
 		local subTime = min( key.length, ( t - key.pos ) ) * key.throttle
 		local conv = animState.timeConverter
@@ -149,9 +150,14 @@ function MSpriteAnimatorTrack:onStateLoad( state )
 	local playContext = { sprite = sprite }
 	for i, key in ipairs( self.keys ) do
 		local animState, clip = sprite:createAnimState( key.clip, key.playMode )
-		animState.timeConverter = timeMapFuncs[ key.playMode ]
-		animState.length = clip.length
-		playContext[ i ] = animState
+		if animState then
+			animState.timeConverter = timeMapFuncs[ key.playMode ]
+			animState.length = clip.length
+			playContext[ i ] = animState
+		else
+			_warn( 'no msprite clip named', key.clip, 'in', sprite.spritePath )
+			playContext[ i ] = false
+		end
 	end
 	state:addUpdateListenerTrack( self, playContext )
 end
