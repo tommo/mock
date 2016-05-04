@@ -163,6 +163,21 @@ function SoundSource:clearInstances()
 	self.eventInstances = t1
 end
 
+function SoundSource:pauseInstances( paused )
+	if not self.eventInstances then return end
+	for evt in pairs( self.eventInstances ) do
+		evt:pause( paused ~= false )
+	end
+end
+
+function SoundSource:resumeInstances()
+	if not self.eventInstances then return end
+	for evt in pairs( self.eventInstances ) do
+		evt:pause( false )
+	end
+end
+
+
 --------------------------------------------------------------------
 function SoundSource:onBuildGizmo()
 	local giz = mock_edit.IconGizmo()
