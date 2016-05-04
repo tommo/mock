@@ -19,10 +19,11 @@ function SQNodeMsg:load( data )
 end
 
 function SQNodeMsg:enter( state, env )
-	local entity = state:getEnv( 'entity' )
-	if not entity then return end
-	if not self.msg then return false end
-	return entity:tell( self.msg, self.data )
+	if not self.msg or self.msg == '' then return false end
+	local targets = self:getContextEntities( state )
+	for i, target in ipairs( targets ) do
+		target:tell( self.msg, self.data )
+	end
 end
 
 function SQNodeMsg:getRichText()

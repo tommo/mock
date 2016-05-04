@@ -41,6 +41,7 @@ function SpineSpriteBase:setSprite( path, alphaBlend )
 		else
 			self.skeleton:load( self.skeletonData, 0.001, not self.preAlpha )
 		end
+		self.skeleton:setSkin( '000_Rumpus' )
 		self:updateShader()
 	end
 end

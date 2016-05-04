@@ -100,6 +100,7 @@ end
 function loadSpineAtlas( node )
 	local atlasNodePath = node:getChildPath( node:getBaseName() .. '_spine_atlas' )
 	local atlasTexture, atlasNode = loadAsset( atlasNodePath, { skip_parent = true } )
+	print( atlasTexture, atlasNode )
 	local atlas      = atlasTexture:getPrebuiltAtlas()
 	local spineAtlas = MOAISpineAtlas.new()
 	--load atlas items
@@ -131,16 +132,19 @@ function SpineJSONLoader( node )
 	local jsonPath  = node:getAbsObjectFile( 'skel' )
 	local atlas     = loadSpineAtlas( node ) --test	
 	local skeletonData = MOAISpineSkeletonData.new()
-	skeletonData:loadWithAtlas( jsonPath, atlas )
-	skeletonData.atlas = atlas	
-	skeletonData._animationTable = skeletonData:getAnimationNames()
-	skeletonData._slotTable      = skeletonData:getSlotNames()
-	skeletonData._skinTable      = skeletonData:getSkinNames()
-	skeletonData._boneTable      = skeletonData:getBoneNames()
+	if skeletonData:loadWithAtlas( jsonPath, atlas ) then
+		skeletonData.atlas = atlas	
+		skeletonData._animationTable = skeletonData:getAnimationNames()
+		skeletonData._slotTable      = skeletonData:getSlotNames()
+		skeletonData._skinTable      = skeletonData:getSkinNames()
+		skeletonData._boneTable      = skeletonData:getBoneNames()
 
-	skeletonData._jsonPath = jsonPath
-	
-	return skeletonData
+		skeletonData._jsonPath = jsonPath
+		return skeletonData
+	else
+		_warn( 'failed to load Spine json data', node:getNodePath() )
+		return false
+	end
 end
 
 function findSpineEventFrame( data, animName, eventName )

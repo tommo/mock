@@ -39,4 +39,28 @@ function SQNodeEntity:enter( state, env )
 	end
 end
 
+
 registerSQNode( 'entity', SQNodeEntity   )
+
+
+-- --------------------------------------------------------------------
+-- CLASS: SQNodeEntitySubCommand ()
+-- 	:MODEL{}
+
+-- --class
+-- function SQNodeEntitySubCommand.register( class, id )
+-- 	return class
+-- end
+
+-- function SQNodeEntitySubCommand:load( data )
+-- end
+
+-- function SQNodeEntitySubCommand:enter( state, env, dt )
+-- end
+
+-- function SQNodeEntitySubCommand:step( state, env, dt )
+-- end
+
+-- function SQNodeEntitySubCommand:exit( state, env )
+-- end
+
