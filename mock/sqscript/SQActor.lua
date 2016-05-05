@@ -64,12 +64,6 @@ function SQActor:findActorByName( name )
 	return nil
 end
 
-function SQActor:onMsg( msg, data, source )
-	local state = self.activeState
-	if not state then return end
-	state:onMsg( msg, data, source )
-end
-
 function SQActor:getScript()
 	return self.scriptPath
 end

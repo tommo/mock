@@ -170,10 +170,6 @@ function SQNode:getContextEntities( state )
 	return actor:getContextEntities( self.context )
 end
 
-function SQNode:onMsg( state, env, msg, data, source )
-	return true
-end
-
 function SQNode:_load( data )
 	self.srcData = data
 	self:load( data )
@@ -402,44 +398,6 @@ function SQNodeTag:load( data )
 	self.tagNames = data.tags or {}
 end
 
---------------------------------------------------------------------
-CLASS: SQNodeMsgCallback ( SQNodeGroup )
-	:MODEL{
-		Field 'msg' :string()
-	}
-
-function SQNodeMsgCallback:__init()
-	self.msg = false
-end
-
-function SQNodeMsgCallback:isExecutable()
-	return false
-end
-
-function SQNodeMsgCallback:load( data )
-	local args = data.args
-	self.msg = args[1] or false
-end
-
-function SQNodeMsgCallback:build( buildContext )
-	local routine = self:getRoutine()
-	local msg = self.msg
-	if not isNonEmptyString( msg ) then return end
-	routine:addMsgCallback( self.msg, self )
-end
-
-function SQNodeMsgCallback:enter( state, env )
-end
-
-function SQNodeMsgCallback:exit( state, env )
-	return 'end'
-end
-
-function SQNodeMsgCallback:getRichText()
-	return string.format( '<cmd>SIG</cmd> <signal>%s</signal>', self.msg )
-end
-
-
 
 --------------------------------------------------------------------
 SQRoutine :MODEL{
@@ -461,7 +419,7 @@ function SQRoutine:__init()
 	self.comment = ''
 
 	self.labelNodes = {}
-	self.msgCallbacks = {}
+	self.msgCallbackNodes = {}
 end
 
 function SQRoutine:getScript()
@@ -479,18 +437,9 @@ function SQRoutine:addLabel( labelNode )
 	insert( self.labelNodes, labelNode )
 end
 
-function SQRoutine:findMsgCallback( msg )
-	local queue = self.msgCallbacks[ msg ]
-	return queue
-end
 
 function SQRoutine:addMsgCallback( msg, node )
-	local queue = self.msgCallbacks[ msg ]
-	if not queue then
-		queue = {}
-		self.msgCallbacks[ msg ] = queue
-	end
-	insert( queue, node )
+	table.insert( self.msgCallbackNodes, node )
 	return node
 end
 
@@ -543,7 +492,6 @@ SQScript :MODEL{
 
 function SQScript:__init()
 	self.routines = {}
-	self.msgCallbacks = {}
 	self.comment = ''
 	self.built = false
 end
@@ -602,6 +550,8 @@ function SQRoutineState:__init( entryNode, routine )
 	self.index = 1
 	self.nodeEnvMap = {}
 
+	self.msgListeners = {}
+
 	self.subRoutineStates = {}
 	return self:reset()
 end
@@ -632,10 +582,13 @@ function SQRoutineState:updateChildrenRunningState()
 	self.childrenRunning = childrenRunning or false
 end
 
-function SQRoutineState:start()
+function SQRoutineState:start( sub )
 	if self.started then return end
 	self.started = true
 	self:setLocalRunning( true )
+	if not sub then
+		self:registerMsgCallbacks()
+	end
 end
 
 function SQRoutineState:stop()
@@ -677,13 +630,29 @@ function SQRoutineState:restart()
 	self:start()
 end
 
-function SQRoutineState:onMsg( msg, data, source )
-	local node = self.currentNode
-	if node then
-		node:onMsg( self, self.currentNodeEnv, msg, source )
+function SQRoutineState:registerMsgCallbacks()
+	local msgListeners = table.weak_k()
+	-- for i, entryNode in ipairs( )
+	for i, callbackNode in ipairs( self.routine.msgCallbackNodes ) do
+		for j, target in ipairs( callbackNode:getContextEntities( self ) ) do
+			local msg1 = callbackNode.msg
+			local listener = function( msg, data, src )
+				if msg == msg1 then
+					return self:startSubRoutine( callbackNode )
+				end
+			end
+			print( target:getName() )
+			target:addMsgListener( listener )
+			msgListeners[ target ] = listener
+		end
 	end
-	for i, subState in ipairs( self.subRoutineStates ) do
-		subState:onMsg( msg, data, source )
+	self.msgListeners = msgListeners
+end
+
+function SQRoutineState:unregisterMsgCallbacks()
+	if not self.msgListeners then return end
+	for target, listener in pairs( self.msgListeners ) do
+		target:removeMsgListener( listener )
 	end
 end
 
@@ -701,7 +670,7 @@ function SQRoutineState:startSubRoutine( entryNode )
 	subState.globalState = self.globalState
 	subState.parentState = self
 	insert( self.subRoutineStates, subState )
-	subState:start()
+	subState:start( 'sub' )
 end
 
 function SQRoutineState:getSignalCounter( id )
@@ -962,15 +931,6 @@ function SQState:startAllRoutines()
 	return true
 end
 
-function SQState:onMsg( msg, data, source )
-	for i, routineState in ipairs( self.routineStates ) do
-		routineState:startMsgCallback( msg )
-	end
-	for i, routineState in ipairs( self.routineStates ) do
-		routineState:onMsg( msg, data, source )
-	end
-end
-
 --------------------------------------------------------------------
 local SQNodeRegistry = {}
 local defaultOptions = {}
@@ -1063,11 +1023,9 @@ end
 
 --------------------------------------------------------------------
 registerSQNode( 'group', SQNodeGroup )
-registerSQNode( 'do', SQNodeGroup )
--- registerSQNode( 'label', SQNodeLabel )
+registerSQNode( 'do',    SQNodeGroup )
 registerSQNode( 'end',   SQNodeEnd   )
 registerSQNode( 'goto',  SQNodeGoto  )
-registerSQNode( 'skip',  SQNodeSkip )
-registerSQNode( 'on',    SQNodeMsgCallback )
+registerSQNode( 'skip',  SQNodeSkip  )
 
 mock.registerAssetLoader( 'sq_script', loadSQScript )

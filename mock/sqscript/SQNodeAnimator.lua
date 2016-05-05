@@ -29,6 +29,7 @@ function SQNodeAnimator:enter( state, env )
 	if cmd == 'play' then
 		if not self.argClipName then return false end
 		local animState = animator:playClip( self.argClipName, self.argMode )
+		print( 'play animation', animator:getEntityName(), self.argClipName )
 		if not animState then 
 			_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
 			return false
@@ -109,10 +110,10 @@ function SQNodeAnimator:step( state, env, dt )
 end
 
 function SQNodeAnimator:checkAndGetAnimator( state )
-	local entity = state:getEnv( 'entity' )
-	local animator = entity:getComponent( Animator )
+	local target = self:getContextEntity( state )
+	local animator = target:getComponent( Animator )
 	if not animator then
-		_warn( 'no animator for entity:', entity:getName() )
+		_warn( 'no animator for target:', target:getName() )
 	end
 	return animator
 end
