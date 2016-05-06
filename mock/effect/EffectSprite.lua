@@ -117,6 +117,78 @@ function EffectAuroraSprite:onStop( fxState )
 	fxState:unlinkPartition( sprite.prop )
 end
 
+
+--------------------------------------------------------------------
+--MSprite
+--------------------------------------------------------------------
+CLASS: EffectMSprite ( EffectTransformNode )
+	:MODEL{
+		Field 'material'   :asset( 'material' );
+		Field 'color'      :type( 'color' ) :getset( 'Color');
+		Field 'spritePath' :asset( 'msprite' );
+		Field 'clip'  :string() :selection( 'getClipNames' );
+		Field 'mode'  :enum( EnumTimerMode );
+		Field 'throttle';
+	}
+
+function EffectMSprite:__init()
+	self.material = false
+	self.blend = 'alpha'
+	self.mode  = MOAITimer.NORMAL
+	self.throttle = 1
+	self.color = {1,1,1,1}
+end
+
+function EffectMSprite:getColor()
+	return unpack( self.color )
+end
+
+function EffectMSprite:setColor( r,g,b,a )
+	self.color = {r,g,b,a}
+end
+
+function EffectMSprite:getDefaultName()
+	return 'msprite'
+end
+
+function EffectMSprite:getTypeName()
+	return 'msprite'
+end
+
+function EffectMSprite:onLoad( fxState )
+	local sprite = MSprite()
+	sprite:setSprite( self.spritePath )
+	sprite:getMoaiProp():setColor( self:getColor() )
+	sprite:getMoaiProp():setVisible( true )
+	local state = sprite:play( self.clip, self.mode )
+	state:throttle( self.throttle )
+	state:setListener( MOAITimer.EVENT_TIMER_END_SPAN, function()
+		sprite:getMoaiProp():setVisible( false )
+	end )
+	sprite:setMaterial( self.material )
+	-- sprite:setBlend( self.blend )
+	self:applyTransformToProp( sprite )
+	fxState:linkTransform( sprite.prop )
+	fxState:linkPartition( sprite.prop )
+	fxState:attachAction ( state, self:getDelay() )
+	fxState[ self ] = sprite	
+end
+
+function EffectMSprite:getClipNames()
+	local data = mock.loadAsset( self.spritePath )
+	if not data then return nil end
+	local result = {}
+	for k,i in pairs( data.animations ) do
+		table.insert( result, { k, k } )
+	end
+	return result
+end
+
+function EffectMSprite:onStop( fxState )
+	local sprite = fxState[ self ]
+	fxState:unlinkPartition( sprite.prop )
+end
+
 --------------------------------------------------------------------
 --Aurora Sprite
 --------------------------------------------------------------------
@@ -215,8 +287,8 @@ registerTopEffectNodeType(
 
 
 registerTopEffectNodeType(
-	'sprite-aurora',
-	EffectAuroraSprite,
+	'sprite-msprite',
+	EffectMSprite,
 	EffectCategoryTransform
 )
 

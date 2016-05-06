@@ -82,6 +82,13 @@ function PhysicsBody:onStart( entity )
 	self:updateMass()
 end
 
+function PhysicsBody:setTransformSyncPolicy( policy )
+	self.transformSyncPolicy = policy
+	if self.body then
+		return self:updateTransformSyncPolicy()
+	end
+end
+
 function PhysicsBody:updateTransformSyncPolicy( entity )
 	local prop = entity:getProp( 'physics' )
 	local body = self.body
@@ -95,7 +102,16 @@ function PhysicsBody:updateTransformSyncPolicy( entity )
 		prop:setAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D, body, MOAIProp.TRANSFORM_TRAIT )
 
 	elseif policy == 'use_entity_transform'	then
+		-- break prop->body position link 
 		-- prop:setWorldLoc(body:getPosition())
+		prop:clearAttrLink ( MOCKProp.SYNC_WORLD_LOC_2D )
+		body:setAttrLink ( MOAIProp.ATTR_X_LOC, prop, MOAIProp.ATTR_WORLD_X_LOC ) 
+		body:setAttrLink ( MOAIProp.ATTR_Y_LOC, prop, MOAIProp.ATTR_WORLD_Y_LOC ) 
+		body:setAttrLink ( MOAIProp.ATTR_Z_LOC, prop, MOAIProp.ATTR_WORLD_Z_LOC )
+		body:setAttrLink ( MOAIProp.ATTR_Z_ROT, prop, MOAIProp.ATTR_WORLD_Z_ROT ) 
+
+	else
+		--TODO
 
 	end
 
@@ -106,10 +122,11 @@ function PhysicsBody:onDetach( entity )
 		local body = self.body
 		body:clearAttrLink( MOAIProp.ATTR_X_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Y_LOC )
+		body:clearAttrLink( MOAIProp.ATTR_Z_LOC )
 		body:clearAttrLink( MOAIProp.ATTR_Z_ROT )
 		local prop = entity:getProp( 'physics' )
-		prop:clearAttrLink ( MOAIProp.ATTR_X_LOC )
-		prop:clearAttrLink ( MOAIProp.ATTR_Y_LOC )
+		-- prop:clearAttrLink ( MOAIProp.ATTR_X_LOC )
+		-- prop:clearAttrLink ( MOAIProp.ATTR_Y_LOC )
 		prop:clearAttrLink ( MOAIProp.ATTR_Z_ROT )
 		prop:clearAttrLink( MOCKProp.SYNC_WORLD_LOC_2D )
 		self.body = false

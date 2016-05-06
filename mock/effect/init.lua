@@ -17,3 +17,4 @@ require 'mock.effect.EffectSubEffect'
 --------------------------------------------------------------------
 --COM
 require 'mock.effect.EffectEmitter'
+require 'mock.effect.EffectCenter'

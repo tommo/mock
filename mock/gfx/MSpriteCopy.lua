@@ -29,6 +29,7 @@ function MSpriteCopy:onAttach( ent )
 end
 
 function MSpriteCopy:setSourceSprite( sprite )
+	if self.sourceSprite == sprite then return end
 	self.sourceSprite = sprite
 	if not sprite then return end
 	local spriteData = sprite.spriteData

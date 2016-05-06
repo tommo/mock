@@ -25,7 +25,7 @@ CLASS: Entity ( Actor )
 		Field 'tags'      :string()  :getset('Tags');
 		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
-		Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
+		-- Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
 		Field 'layer'     :type('layer')  :getset( 'Layer' ) :no_nil();
 		'----';
 		Field 'loc'       :type('vec3') :getset('Loc') :label('Loc'); 

@@ -49,6 +49,7 @@ function SQNode:getFirstContext()
 end
 
 function SQNode:hasTag( t )
+	if not self.tags then return false end
 	for i, tag in ipairs( self.tags ) do
 		if tag == t then return true end
 	end
@@ -752,10 +753,12 @@ end
 function SQRoutineState:exitGroup()
 	--exit group node
 	local groupNode = self.currentNode.parentNode
+
 	if not groupNode then
 		self:setLocalRunning( false )
 		return true
 	end
+
 	local env = self.nodeEnvMap[ groupNode ] or {}
 	local res = groupNode:exit( self, env )
 	if res == 'jump' then
@@ -768,7 +771,7 @@ function SQRoutineState:exitGroup()
 		return true
 	else
 		local parentNode = groupNode.parentNode
-		if not parentNode then
+		if (not parentNode) or parentNode == self.entryNode then
 			self:setLocalRunning( false )
 			return true
 		end
@@ -935,6 +938,7 @@ end
 local SQNodeRegistry = {}
 local defaultOptions = {}
 function registerSQNode( name, clas, overwrite, info )
+	assert( clas, 'nil class?')
 	info = info or {}
 	local entry0 = SQNodeRegistry[ name ]
 	if entry0 then

@@ -699,12 +699,14 @@ function AnimatorTrack:buildIdCurve()
 	self:sortKeys()
 	local idCurve = MOAIAnimCurve.new()
 	local keys = self.keys
-	idCurve:reserveKeys( #keys + 1 )
+	local count = #keys
+	idCurve:reserveKeys( count + 2 )
 	idCurve:setKey( 1, 0, 0, MOAIEaseType.FLAT )
 	for i, key in ipairs( keys ) do
 		local t = key:getPos()
 		idCurve:setKey( i+1, t, i, MOAIEaseType.FLAT )
 	end
+	idCurve:setKey( count + 2, 1000000, 0, MOAIEaseType.FLAT )
 	return idCurve
 end
 

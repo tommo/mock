@@ -89,15 +89,16 @@ function ScriptAnimatorTrack:apply( state, playContext, t )
 	local target = playContext[1]
 	local keyId = playContext[2]
 	local newId = self.idCurve:getValueAtTime( t )
-	if keyId ~= newId and newId > 0 then
+	if keyId ~= newId then
 		local key = self.keys[ newId ]
 		playContext[2] = newId
-		if key.isCoroutine then
-			--TODO
-		else
-			key.compiledFunc( target, t )
+		if newId > 0  then
+			if key.isCoroutine then
+				--TODO
+			else
+				key.compiledFunc( target, t )
+			end
 		end
-		
 	end
 end
 

@@ -132,6 +132,14 @@ function SoundSource:playEvent2D( event )
 	return self:_playEvent2D( event, nil )
 end
 
+function SoundSource:playEvent( event )
+	if self.is3D then
+		return self:playEvent3D( event )
+	else
+		return self:playEvent2D( event )
+	end
+end
+
 function SoundSource:loopEvent3DAt( event, x,y,z, follow )
 	return self:_playEvent3DAt( event, x,y,z, follow, true )
 end
