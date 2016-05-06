@@ -34,12 +34,12 @@ function MSpriteCopy:setSourceSprite( sprite )
 	if not sprite then return end
 	local spriteData = sprite.spriteData
 	if not spriteData then return end
-	if self.sourceSprite == sprite and self.linked then return end
+	-- if self.sourceSprite == sprite and self.linked then return end
 	self.deckInstance:setSource( spriteData.frameDeck )
 	self.prop:setAttrLink( MOAIProp.ATTR_INDEX, sprite.prop, MOAIProp.ATTR_INDEX )
 	linkTransform( self.prop, sprite.prop )
 	self:updateFeatures()
-	self.linked = true
+	-- self.linked = true
 end
 
 function MSpriteCopy:getTargetData()
