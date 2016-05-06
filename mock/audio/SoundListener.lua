@@ -3,7 +3,7 @@ module 'mock'
 --SOUND Listener
 --------------------------------------------------------------------
 --TODO: add multiple listener support (need host works) ?
-CLASS: SoundListener ()
+CLASS: SoundListener ( Component )
 :MODEL{
 	Field 'forward'    :type('vec3') :getset('VectorForward');
 	Field 'up'         :type('vec3') :getset('VectorUp') ;

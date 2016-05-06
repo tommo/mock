@@ -265,7 +265,7 @@ end
 function PhysicsBody:setAngle( dir )
 	local body = self.body
 	local x, y = body:getPosition()
-	body:setTransform( x, y, angle )
+	body:setTransform( x, y, dir )
 end
 
 function PhysicsBody:addPosition( dx, dy )

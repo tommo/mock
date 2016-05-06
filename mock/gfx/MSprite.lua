@@ -59,6 +59,7 @@ function MSprite:__init()
 	self.flipX = false
 	self.flipY = false
 	self.hiddenFeatures = {}
+	self.listenerOnStop = false
 end
 
 function MSprite:onAttach( entity )
@@ -284,6 +285,10 @@ function MSprite:createAnimState( clipName, mode )
 	end	
 	---bind animcurve to animState
 	local animState    = MOAIAnim.new()
+	 
+	if self.listenerOnStop then
+		animState:setListener(MOAITimer.EVENT_TIMER_END_SPAN, listener)
+	end
 	local indexCurve   = clip.indexCurve
 	-- local offsetXCurve = clip.offsetXCurve
 	-- local offsetYCurve = clip.offsetYCurve
@@ -363,3 +368,9 @@ function MSprite:getPickingProp()
 	return self.prop
 end
 
+function MSprite:setListenerOnStop( listener )
+	self.listenerOnStop = listener or false
+	if self.animState then
+		self.animState:setListener(MOAITimer.EVENT_TIMER_END_SPAN, listener)
+	end
+end
