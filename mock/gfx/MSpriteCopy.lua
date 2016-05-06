@@ -16,6 +16,7 @@ registerComponent( 'MSpriteCopy', MSpriteCopy )
 
 function MSpriteCopy:__init()
 	self.sourceSprite = false
+	self.linked = false
 	self.flipX = false
 	self.flipY = false
 	self.overrideFeatures = false
@@ -29,15 +30,16 @@ function MSpriteCopy:onAttach( ent )
 end
 
 function MSpriteCopy:setSourceSprite( sprite )
-	if self.sourceSprite == sprite then return end
 	self.sourceSprite = sprite
 	if not sprite then return end
 	local spriteData = sprite.spriteData
 	if not spriteData then return end
+	if self.sourceSprite == sprite and self.linked then return end
 	self.deckInstance:setSource( spriteData.frameDeck )
 	self.prop:setAttrLink( MOAIProp.ATTR_INDEX, sprite.prop, MOAIProp.ATTR_INDEX )
 	linkTransform( self.prop, sprite.prop )
 	self:updateFeatures()
+	self.linked = true
 end
 
 function MSpriteCopy:getTargetData()
