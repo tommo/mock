@@ -73,12 +73,18 @@ end
 --------------------------------------------------------------------
 CLASS: CameraImageEffectRadialBlur ( CameraImageEffect )
 	:MODEL{
-		Field 'intensity' :onset( 'updateIntensity' ) :meta{ step=0.1 };
+		Field 'intensity' :getset( 'Intensity' ) :meta{ step=0.1 };
 	}
 
 function CameraImageEffectRadialBlur:__init()
-	self.intensity = 1
 	self.shader = false
+	self.controlNode = MOAIScriptNode.new()
+	self.controlNode:reserveAttrs( 1 )
+	self.controlNode.source = self
+	self.controlNode:setCallback( function( node )
+		return node.source:onUpdate()
+	end )
+	self:setIntensity(1)
 end
 
 function CameraImageEffectRadialBlur:getPassCount()
@@ -91,9 +97,29 @@ function CameraImageEffectRadialBlur:onBuild( prop, frameBuffer, layer, passId )
 	self:updateIntensity()
 end
 
+function CameraImageEffectRadialBlur:seekIntensity( intensity, time, easeMode )
+	return self.controlNode:seekAttr( 0, intensity, time, easeMode )
+end
+
+function CameraImageEffectRadialBlur:moveIntensity( intensity, time, easeMode )
+	return self.controlNode:seekAttr( 0, intensity + self:getIntensity(), time, easeMode )
+end
+
+function CameraImageEffectRadialBlur:setIntensity( intensity )
+	return self.controlNode:setAttr( 0, intensity or 1 )
+end
+
+function CameraImageEffectRadialBlur:getIntensity()
+	return self.controlNode:getAttr( 0 )
+end
+
+function CameraImageEffectRadialBlur:onUpdate()
+	self:updateIntensity()
+end
+
 function CameraImageEffectRadialBlur:updateIntensity()
 	if not self.shader then return end
-	self.shader:setAttr( 'intensity', self.intensity )
+	self.shader:setAttr( 'intensity', self:getIntensity() )
 end
 
 mock.registerComponent( 'CameraImageEffectRadialBlur', CameraImageEffectRadialBlur )
