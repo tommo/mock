@@ -8,27 +8,12 @@ local function prioritySortFunc( a, b )
 	return pa < pb
 end
 
-local function buildCallbackLayer( func )
-	local layer = MOAILayer.new()
-	local viewport = MOAIViewport.new()
-	viewport:setSize( 1,1 )
-	layer:setViewport( viewport )
-	local dummyProp = MOAIProp.new()
-	local dummyDeck = MOAIScriptDeck.new()
-	dummyProp:setDeck( dummyDeck )
-	dummyDeck:setDrawCallback( func )
-	dummyDeck:setRect( -10000, -10000, 10000, 10000 )
-	layer:insertProp( dummyProp )
-	return layer
-end
-
 --------------------------------------------------------------------
 CLASS: CameraManager ()
 	:MODEL{}
 
 function CameraManager:__init()
-	self.cameras = {}
-	self.passQueue = {}
+	self.cameras    = {}
 end
 
 function CameraManager:register( cam )
@@ -53,7 +38,6 @@ function CameraManager:getCameraList()
 end
 
 function CameraManager:update()
-	--TODO: render order of renderTargets
 	local contextMap = {}
 
 	local renderTableMap = {}
@@ -76,17 +60,13 @@ function CameraManager:update()
 	end
 
 	for context, renderData in pairs( contextMap ) do
-		local passQueue = {}
+		local bufferTable = {}
 		for _, cam in ipairs( renderData.cameras ) do
-			for _, camPass in ipairs( cam.passes ) do				
-				for i, passEntry in ipairs( camPass:build() ) do
-					table.insert( passQueue, passEntry )
-				end
-			end
+			local cameraRenderCommands = cam:buildRenderCommandTable()
+			table.insert( bufferTable, cameraRenderCommands )
 		end
-		local bufferTable, renderTableMap = buildBufferTableFromPassQueue( passQueue )
 		renderData.bufferTable    = bufferTable
-		renderData.renderTableMap = renderTableMap
+		renderData.renderTableMap = {} --legacy?
 	end
 
 	for context, renderData in pairs( contextMap ) do

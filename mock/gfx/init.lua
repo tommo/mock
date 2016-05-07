@@ -84,3 +84,6 @@ require 'mock.gfx.SpineSpriteBase'
 require 'mock.gfx.SpineSprite'
 require 'mock.gfx.SpineSpriteSimple'
 
+--------------------------------------------------------------------
+---Camera Fx
+require 'mock.gfx.camerafx'

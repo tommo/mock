@@ -95,9 +95,6 @@ require 'mock.ui'
 ----Effects
 require 'mock.effect'
 
-----CameraFX
--- require 'mock.camerafx'
-
 
 
 --------------------------------------------------------------------

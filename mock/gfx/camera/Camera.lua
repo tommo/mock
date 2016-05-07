@@ -86,7 +86,7 @@ function Camera:__init( option )
 end
 
 function Camera:_initDefault()
-	self:setOutputRenderTarget( false )
+	-- self:setOutputRenderTarget( false )
 	
 	self:setFOV( 90 )
 	local defaultNearPlane, defaultFarPlane = -10000, 10000
@@ -105,6 +105,9 @@ function Camera:_initDefault()
 end
 
 function Camera:onAttach( entity )
+	if not self.outputRenderTarget then
+		self:setOutputRenderTarget( false )
+	end
 	self.scene = entity.scene
 	entity:_attachTransform( self._camera, 'render' )
 	self:updateViewport()
@@ -119,6 +122,13 @@ function Camera:onDetach( entity )
 		pass:release()
 	end
 	self.renderTarget:clear()
+end
+
+
+function Camera:buildRenderCommandTable()
+	local renderCommandTable = buildCameraRenderCommandTable( self )
+	self._renderCommandTable = renderCommandTable
+	return renderCommandTable
 end
 
 -- function Camera:setActive( active )
@@ -197,18 +207,7 @@ function Camera:_isLayerExcluded( name, allowEditorLayer )
 end
 
 function Camera:updateRenderLayers()
-	-- local layers = {}
-	-- for i, pass in ipairs( self.passes ) do
-	-- 	local passLayers = pass:build()
-	-- 	if passLayers then
-	-- 		for i, l in ipairs( passLayers ) do
-	-- 			insert( layers, l )
-	-- 		end
-	-- 	end
-	-- end	
-	-- self.renderLayers = layers
-	-- self:reorderRenderLayers()
-	getCameraManager():update()
+	return getCameraManager():update()
 end
 
 local function _prioritySortFunc( a, b )	
@@ -251,7 +250,7 @@ function Camera:setPriority( p )
 	local p = p or 0
 	if self.priority ~= p then
 		self.priority = p
-		getCameraManager():update()
+		getCameraManager():reorderCameras()
 	end
 end
 
@@ -511,18 +510,18 @@ end
 
 --------------------------------------------------------------------
 --image effect support
-function Camera:addImageEffect( imageEffect )
+function Camera:addImageEffect( imageEffect, update )
 	table.insert( self.imageEffects, imageEffect )
 	self.hasImageEffect = next( self.imageEffects ) ~= nil
-	self:reloadPasses()
+	if update ~= false then self:reloadPasses() end
 end
 
-function Camera:removeImageEffect( imageEffect )
+function Camera:removeImageEffect( imageEffect, update )
 	local idx = table.index( self.imageEffects, imageEffect )
 	if not idx then return end
 	table.remove( self.imageEffects, idx )
 	self.hasImageEffect = next( self.imageEffects ) ~= nil
-	self:reloadPasses()
+	if update ~= false then self:reloadPasses() end
 end
 
 function Camera:setImageEffectVisible( imageEffect )
@@ -577,6 +576,10 @@ function Camera:drawBounds()
 	mock_edit.applyColor( 'camera-bound' )
 	local x0,y0,x1,y1 = self:getViewportLocalRect()
 	MOAIDraw.drawRect( x0,y0,x1,y1 )
+end
+
+function Camera:grabNextFrame( filename )
+	grabNextFrame( filename, self:getOutputRenderTarget():getFrameBuffer() )
 end
 
 --------------------------------------------------------------------

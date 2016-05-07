@@ -29,6 +29,15 @@ function RenderTargetTexture:__init()
 	self.type   = 'framebuffer'
 end
 
+function RenderTargetTexture:init( w, h, filter )
+	if self.updated then return false end
+	self.width = w
+	self.height = h
+	self.filter = filter
+	self:update()
+	return true
+end
+
 function RenderTargetTexture:getSize()
 	return self.width, self.height
 end
