@@ -35,7 +35,7 @@ function PrefabContainer:refreshPrefab()
 	end
 	
 	if self.prefab then
-		local instance = loadPrefab( self.prefab )
+		local instance = createPrefabInstance( self.prefab )
 		if not instance then return end
 		self:addInternalChild( instance )
 		--todo: layer

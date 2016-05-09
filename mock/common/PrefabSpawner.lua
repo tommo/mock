@@ -45,7 +45,7 @@ function PrefabSpawner:spawn()
 	local ent = self._entity
 	local instance
 	if self.prefab then
-		instance = loadPrefab( self.prefab )
+		instance = createPrefabInstance( self.prefab )
 		if instance then
 			local spawnMethod = self.spawnMethod
 			if spawnMethod == 'child' then

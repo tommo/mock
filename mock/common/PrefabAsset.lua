@@ -22,7 +22,7 @@ function Prefab:createInstance()
 end
 
 --------------------------------------------------------------------
-function loadPrefab( path )
+function createPrefabInstance( path )
 	local prefab, node = loadAsset( path )
 	if prefab and node:getType() == 'prefab' then
 		return prefab:createInstance()
