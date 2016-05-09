@@ -6,6 +6,13 @@ CLASS: Prefab ()
 function Prefab:__init( data, id )
 	self.data = data
 	self.id = id
+	self.rootId    = data.entities[1]['id']
+	local rootData = data.map[ self.rootId ]
+	self.rootName  = rootData['body']['name']
+end
+
+function Prefab:getRootName()
+	return self.rootName
 end
 
 function Prefab:createInstance()
@@ -35,6 +42,7 @@ end
 --------------------------------------------------------------------
 function saveEntityToPrefab( entity, prefabFile )
 	local data = serializeEntity( entity )
+	data.guid = {}
 	local str  = encodeJSON( data )
 	local file = io.open( prefabFile, 'wb' )
 	if file then
