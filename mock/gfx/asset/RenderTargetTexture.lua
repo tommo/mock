@@ -27,13 +27,15 @@ function RenderTargetTexture:__init()
 	self.height = 256
 	self.filter = 'linear'
 	self.type   = 'framebuffer'
+	self.colorFormat = false
 end
 
-function RenderTargetTexture:init( w, h, filter )
+function RenderTargetTexture:init( w, h, filter, colorFormat )
 	if self.updated then return false end
 	self.width = w
 	self.height = h
 	self.filter = filter
+	self.colorFormat = colorFormat
 	self:update()
 	return true
 end
@@ -65,7 +67,8 @@ function RenderTargetTexture:update()
 	local option = {
 		useStencilBuffer = self.stencil,
 		useDepthBuffer   = self.depth,
-		filter           = _filterNameToFilter[ self.filter ]
+		filter           = _filterNameToFilter[ self.filter ],
+		colorFormat      = self.colorFormat
 	}
 	self.renderTarget:initFrameBuffer( option )
 	self.renderTarget.mode = 'fixed'

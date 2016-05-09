@@ -338,6 +338,7 @@ end
 
 math.clamp = clamp
 math.wrap  = wrap
+math.wrapangle = wrapAngle
 
 --Vector helpers
 function distance3(x1,y1,z1, x2,y2,z2 )

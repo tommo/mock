@@ -168,6 +168,15 @@ end
 
 function CameraPass:buildRenderTarget( option, srcRenderTarget )
 	local renderTarget = TextureRenderTarget()
+	local option = option and table.simplecopy( option ) or {}
+	local rootRenderTarget = srcRenderTarget and srcRenderTarget:getRootRenderTarget()
+	if rootRenderTarget and rootRenderTarget:isInstance( TextureRenderTarget ) then
+		if option.colorFormat      == nil then option.colorFormat      = rootRenderTarget.colorFormat end
+		if option.useDepthBuffer   == nil then option.useDepthBuffer   = rootRenderTarget.useDepthBuffer end
+		if option.useStencilBuffer == nil then option.useStencilBuffer = rootRenderTarget.useStencilBuffer end
+		if option.depthFormat      == nil then option.depthFormat      = rootRenderTarget.depthFormat end
+		if option.stencilFormat    == nil then option.stencilFormat    = rootRenderTarget.stencilFormat end
+	end
 	renderTarget:initFrameBuffer( option )
 	srcRenderTarget = srcRenderTarget or self:getDefaultRenderTarget()
 	srcRenderTarget:addSubViewport( renderTarget )

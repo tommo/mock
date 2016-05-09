@@ -31,6 +31,17 @@ function RenderTarget:setClearStencil( clear )
 	self:getFrameBuffer():setClearStencil( clear )
 end
 
+function RenderTarget:getRootRenderTarget()
+	local r = self
+	while true do
+		local p = r.parent
+		if not p then break end
+		if not p:isInstance( RenderTarget ) then break end
+		r = p
+	end
+	return r
+end
+
 --------------------------------------------------------------------
 CLASS: DeviceRenderTarget ( RenderTarget )
 	:MODEL{}
@@ -111,7 +122,6 @@ function TextureRenderTarget:initFrameBuffer( option )
 	frameBuffer:setClearColor   ( )
 	frameBuffer:setClearDepth   ( clearDepth )
 	frameBuffer:setClearStencil ( clearStencil )
-
 	local useStencilBuffer  = option.useStencilBuffer or false
 	local useDepthBuffer    = option.useDepthBuffer or false
 
@@ -119,6 +129,7 @@ function TextureRenderTarget:initFrameBuffer( option )
 	local filter      = option.filter or MOAITexture.GL_LINEAR
 	local scale       = option.scale or 1
 	
+	print ( colorFormat )
 	local depthFormat   = false
 	local stencilFormat = false
 	if useDepthBuffer and useStencilBuffer then
@@ -128,6 +139,8 @@ function TextureRenderTarget:initFrameBuffer( option )
 		stencilFormat =	useStencilBuffer and MOAITexture.GL_STENCIL_INDEX8 or false
 	end
 	
+	self.useDepthBuffer = useDepthBuffer
+	self.useStencilBuffer = useStencilBuffer
 	self.colorFormat   = colorFormat
 	self.depthFormat   = depthFormat
 	self.stencilFormat = stencilFormat
