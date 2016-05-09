@@ -207,7 +207,7 @@ end
 
 function PhysicsShape:updateCollisionHandler()
 	if not self.shape then return end
-	if not self.handlerData then return
+	if not self.handlerData then return end
 	self.shape:setCollisionHandler(
 		self.handlerData.func,
 		self.handlerData.phaseMask,
