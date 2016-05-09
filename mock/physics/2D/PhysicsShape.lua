@@ -188,6 +188,7 @@ function PhysicsShape:updateShape()
 	--apply material
 	--TODO
 	self:updateMaterial()
+	self:updateCollisionHandler()
 end
 
 function PhysicsShape:createShape( body )
@@ -196,14 +197,22 @@ function PhysicsShape:createShape( body )
 end
 
 function PhysicsShape:setCollisionHandler(handler, phaseMask, categoryMask)
-	if not self.shape then return end
 	self.handlerData = {
 		func         = handler,
 		phaseMask    = phaseMask,
 		categoryMask = categoryMask
 	}
+	return self:updateCollisionHandler()
+end
 
-	self.shape:setCollisionHandler(handler, phaseMask, categoryMask)
+function PhysicsShape:updateCollisionHandler()
+	if not self.shape then return end
+	if not self.handlerData then return
+	self.shape:setCollisionHandler(
+		self.handlerData.func,
+		self.handlerData.phaseMask,
+		self.handlerData.categoryMask
+	)
 end
 
 function PhysicsShape:getCollisionHandler()

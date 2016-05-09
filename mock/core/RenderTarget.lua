@@ -129,7 +129,6 @@ function TextureRenderTarget:initFrameBuffer( option )
 	local filter      = option.filter or MOAITexture.GL_LINEAR
 	local scale       = option.scale or 1
 	
-	print ( colorFormat )
 	local depthFormat   = false
 	local stencilFormat = false
 	if useDepthBuffer and useStencilBuffer then
