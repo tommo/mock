@@ -11,11 +11,11 @@ end
 function Prefab:createInstance()
 	local instance
 	local data = self.data
-	if not data.body then
+	if not data.entities then
 		_stat('loading empty prefab')
 		instance = Entity()
 	else
-		instance = deserializeEntityLegacy( data )
+		instance = deserializeEntity( data )
 	end
 	instance.__prefabId = self.id or true
 	return instance
@@ -30,6 +30,21 @@ function loadPrefab( path )
 		_warn( 'prefab not found:', path )
 		return nil
 	end
+end
+
+--------------------------------------------------------------------
+function saveEntityToPrefab( entity, prefabFile )
+	local data = serializeEntity( entity )
+	local str  = encodeJSON( data )
+	local file = io.open( prefabFile, 'wb' )
+	if file then
+		file:write( str )
+		file:close()
+	else
+		_error( 'can not write to scene file', prefabFile )
+		return false
+	end
+	return true
 end
 
 --------------------------------------------------------------------
