@@ -72,5 +72,10 @@ function EntityMessageAnimatorTrack:reset( state, playContext )
 	-- playContext[2] = 0
 end
 
+function EntityMessageAnimatorTrack:isPreviewable()
+	return false
+end
+
+
 --------------------------------------------------------------------
 registerCustomAnimatorTrackType( Entity, 'Message', EntityMessageAnimatorTrack )

@@ -13,8 +13,43 @@ function ColorGradingBuildingContext:build()
 end
 
 --------------------------------------------------------------------
+CLASS: ColorGradingNode ()
+	:MODEL{
+		Field 'active' :boolean();
+		Field 'intensity' :range(0,1) :meta{ step = 0.1 };
+}
+
+function ColorGradingNode:__init()
+	self.parentConfig = false
+	self.active = true
+	self.intensity = 1
+	self.dirty = true
+end
+
+function ColorGradingNode:markDirty()
+	self.dirty = true
+	self.parentConfig:markDirty()
+end
+
+function ColorGradingNode:setIntensity( i )
+	self.intensity = i
+	self:markDirty()
+end
+
+function ColorGradingNode:build( buildContext )
+	self:onBuild( buildContext )
+	self.dirty = false
+end
+
+function ColorGradingNode:onBuild( buildContext )
+end
+
+
+--------------------------------------------------------------------
 CLASS: ColorGradingConfig ()
-	:MODEL{}
+	:MODEL{
+		Field 'nodeList' :array( ColorGradingNode )
+}
 
 function ColorGradingConfig:__init()
 	self.nodeList = {}
@@ -68,82 +103,11 @@ function ColorGradingConfig:build( forced )
 end
 
 --------------------------------------------------------------------
-CLASS: ColorGradingNode ()
-	:MODEL{
-		Field 'active' :boolean();
-		Field 'intensity' :range(0,1) :meta{ step = 0.1 };
-}
-
-function ColorGradingNode:__init()
-	self.parentConfig = false
-	self.active = true
-	self.intensity = 1
-	self.dirty = true
+function ColorGradingConfigLoader( node )
+	local data   = mock.loadAssetDataTable( node:getObjectFile('data') )
+	local config = deserialize( nil, data )
+	config:build()
+	return config
 end
 
-function ColorGradingNode:markDirty()
-	self.dirty = true
-	self.parentConfig:markDirty()
-end
-
-function ColorGradingNode:setIntensity( i )
-	self.intensity = i
-	self:markDirty()
-end
-
-function ColorGradingNode:build( buildContext )
-	self:onBuild( buildContext )
-	self.dirty = false
-end
-
-function ColorGradingNode:onBuild( buildContext )
-end
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeInvert ( ColorGradingNode )
-	:MODEL{
-}
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeBW ( ColorGradingNode )
-	:MODEL{}
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeHSL ( ColorGradingNode )
-	:MODEL{
-		Field 'hue';
-		Field 'saturation';
-		Field 'lightness';
-}
-
-function ColorGradingNodeHSL:__init()
-	self.hue = 0 
-	self.saturation = 0
-	self.lightness = 0
-end
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeCurve ( ColorGradingNode )
-	:MODEL{}
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeColorBalance ( ColorGradingNode )
-	:MODEL{
-		Field 'preserveLightness' :boolean();
-}
-
-function ColorGradingNodeColorBalance:__init()
-	self.preserveLightness = false
-end
-
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeHueFocus ( ColorGradingNode )
-	:MODEL{}
-
---------------------------------------------------------------------
-CLASS: ColorGradingNodeReference ( ColorGradingNode )
-	:MODEL{
-		Field 'source' :asset( 'color_grading_config' )
-}
-
+registerAssetLoader ( 'color_grading', ColorGradingConfigLoader )
