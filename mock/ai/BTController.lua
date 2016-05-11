@@ -1202,7 +1202,10 @@ function BTController:getParam( k, default )
 	return self.context:getParam( k, default )
 end
 
-function BTController:setCondition( k, v )
+function BTController:setCondition( k, v, scheduleUpdate )
+	if scheduleUpdate ~= false then
+		self:scheduleUpdate()
+	end
 	return self.context:setCondition( k, v )
 end
 
