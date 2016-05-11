@@ -437,6 +437,10 @@ function InputDevice:isAltDown()
 	return self:isKeyDown( 'lalt' ) or self:isKeyDown( 'ralt' )
 end
 
+function InputDevice:isMetaDown()
+	return self:isKeyDown( 'lmeta' ) or self:isKeyDown( 'rmeta' )
+end
+
 function InputDevice:pollKeyHit(key) --get key hit counts since last polling
 	local keyStates = self.keyStates
 
