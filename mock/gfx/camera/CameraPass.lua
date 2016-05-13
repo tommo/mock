@@ -381,9 +381,8 @@ function CameraPass:buildImageEffects()
 	local backbuffer  = defaultRenderTarget
 	local frontbuffer = outputRenderTarget
 	if effectPassCount > 1 then --need backbuffer
-		frontbuffer = self:buildRenderTarget( nil, self.outputRenderTarget )
+		frontbuffer = self:buildRenderTarget( nil, outputRenderTarget )
 	end
-
 	local totalEffectPassId = 0
 	for i, imageEffect in ipairs( imageEffects ) do
 		local passCount = imageEffect:getPassCount()
@@ -531,6 +530,7 @@ function buildCameraRenderCommandTable( camera )
 
 	local cameraRenderCommands = {}
 	camera._renderCommandTable = cameraRenderCommands
+	-- table.clear( cameraRenderCommands )
 
 	for i, info in ipairs( bufferInfoTable ) do
 		local frameRenderCommand = MOAIFrameBufferRenderCommand.new()

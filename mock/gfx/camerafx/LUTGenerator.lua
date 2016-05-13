@@ -9,8 +9,9 @@ end
 
 function LUTGeneratorCameraPass:onBuild()
 	--OUPUT
-	self:pushDefaultRenderTarget()
+	self:pushDefaultRenderTarget{clearColor = '#c7af3e'}
 	local layer, prop, quad = self:buildSingleQuadRenderLayer( TextureHelper.buildBaseLUT() )
+	self:pushCallback( function() print( 'render' ) end )
 	self:pushRenderLayer( layer )
 end
 
@@ -35,4 +36,10 @@ end
 
 function LUTGeneratorCamera:loadPasses()
 	self:addPass( LUTGeneratorCameraPass() )
+end
+
+function LUTGeneratorCamera:manualRender()
+	local renderCommandTable = self:buildRenderCommandTable()
+	MOAINodeMgr.update()
+	MOAIRenderMgr.renderTable( renderCommandTable )
 end

@@ -139,6 +139,12 @@ function table.randremove(t)
 	end
 end
 
+function table.clear( t )
+	for _, k in ipairs( table.keys( t ) ) do
+		t[ k ] = nil
+	end
+end
+
 function table.extractvalues( t )
 	local r = {}
 	local i = 1
@@ -398,7 +404,12 @@ function rectCenterTop(x,y,w,h)
 end
 
 function vecAngle( angle, length )
-	return length * cos( angle * D2R ), length * sin( angle * D2R )
+	local d = angle * D2R
+	if length then
+		return length * cos( d ), length * sin( d )
+	else
+		return cos( d ), sin( d )
+	end
 end
 
 function dotProduct(x1, y1, x2, y2)

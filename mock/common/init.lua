@@ -27,6 +27,7 @@ require 'mock.common.TransformLink'
 require 'mock.common.ProtoSpawner'
 require 'mock.common.ProtoArraySpawner'
 require 'mock.common.PrefabSpawner'
+require 'mock.common.TimedProtoSpawner'
 
 
 require 'mock.common.BehaviourScript'

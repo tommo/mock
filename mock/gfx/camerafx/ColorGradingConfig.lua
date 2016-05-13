@@ -1,16 +1,5 @@
 module 'mock'
 
---------------------------------------------------------------------
-CLASS: ColorGradingBuildingContext ()
-	:MODEL{}
-
-function ColorGradingBuildingContext:__init()
-	self.outputFrameBuffer = false
-end
-
-function ColorGradingBuildingContext:build()
-
-end
 
 --------------------------------------------------------------------
 CLASS: ColorGradingNode ()
@@ -53,6 +42,8 @@ CLASS: ColorGradingConfig ()
 
 function ColorGradingConfig:__init()
 	self.nodeList = {}
+	self.lutGenerator = LUTGeneratorCamera()
+	self.texture = self.lutGenerator.targetTexture
 end
 
 function ColorGradingConfig:appendNode( node )
@@ -100,6 +91,11 @@ function ColorGradingConfig:build( forced )
 	end
 	self.dirty = false
 
+end
+
+function ColorGradingConfig:getTexture()
+	self:build()
+	return self.texture
 end
 
 --------------------------------------------------------------------

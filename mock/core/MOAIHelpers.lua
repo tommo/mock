@@ -137,6 +137,18 @@ end
 
 LOG = MOAILogMgr.log
 
+local function postProcessFramebufferAlpha( image )
+	local w,h = image:getSize()
+	local setRGBA = image.setRGBA
+	local getRGBA = image.getRGBA
+	io.write('postprocessing...')
+	for y=1,h do
+		for x=1,w do
+			local r,g,b,a=getRGBA(image,x,y)
+			if a<1 then	setRGBA(image,x,y,r,g,b,1) end
+		end
+	end
+end
 
 function grabNextFrame( filepath, frameBuffer )
 	local image = MOAIImage.new()
@@ -144,21 +156,20 @@ function grabNextFrame( filepath, frameBuffer )
 	frameBuffer:grabNextFrame(
 		image,
 		function()
-			local w,h = image:getSize()
-			local setRGBA = image.setRGBA
-			local getRGBA = image.getRGBA
-			io.write('postprocessing...')
-			for y=1,h do
-				for x=1,w do
-					local r,g,b,a=getRGBA(image,x,y)
-					if a<1 then	setRGBA(image,x,y,r,g,b,1) end
-				end
-			end
+			postProcessFramebufferAlpha( image )
 			image:writePNG(filepath)
 			io.write('saved:   ',filepath,'\n')
 		end)
 end
 
+function grabCurrentFrame( filepath, frameBuffer )
+	local image = MOAIImage.new()
+	frameBuffer = frameBuffer or MOAIGfxDevice.getFrameBuffer()
+	frameBuffer:grabCurrentFrame( image )	
+	postProcessFramebufferAlpha( image )
+	image:writePNG(filepath)
+	io.write('saved:   ',filepath,'\n')
+end
 
 -------replace system os.clock
 os._clock=os.clock

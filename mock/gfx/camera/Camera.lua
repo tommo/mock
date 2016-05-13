@@ -578,8 +578,21 @@ function Camera:drawBounds()
 	MOAIDraw.drawRect( x0,y0,x1,y1 )
 end
 
-function Camera:grabNextFrame( filename )
-	grabNextFrame( filename, self:getOutputRenderTarget():getFrameBuffer() )
+function Camera:grabNextFrame( output )
+	local tt = type( output )
+	if tt == 'string' then
+		grabNextFrame( output, self:getOutputRenderTarget():getFrameBuffer() )
+	elseif tt == 'userdata' then
+		--TODO
+	end
+end
+
+function Camera:grabCurrentFrame( output )
+	local tt = type( output )
+	if tt == 'string' then
+		--TODO
+		grabCurrentFrame( output, self:getOutputRenderTarget():getFrameBuffer() )
+	end
 end
 
 --------------------------------------------------------------------

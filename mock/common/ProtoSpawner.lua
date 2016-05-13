@@ -7,7 +7,7 @@ local enumSpawnMethod = _ENUM_V {
 	'parent_sibling'
 }
 
-CLASS: ProtoSpawner ()
+CLASS: ProtoSpawner ( Component )
 	:MODEL{
 		Field 'proto'         :asset('proto');
 		Field 'spawnName'      :string();

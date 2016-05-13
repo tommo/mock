@@ -466,6 +466,15 @@ end
 function AnimatorKey:executeEvent( state, time )
 end
 
+function AnimatorKey:clone()
+	local key1 = clone( self )
+	local track = self:getTrack()
+	if track then
+		track:addKey( key1 )
+	end
+	return key1
+end
+
 --------------------------------------------------------------------
 --VIRTUAL
 function AnimatorKey:getCurveValue()

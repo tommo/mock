@@ -15,7 +15,6 @@ local _filterNameToFilter = {
 }
 
 function RenderTargetTexture:__init()
-	self.framebuffer = MOAIFrameBufferTexture.new()
 	self.renderTarget = TextureRenderTarget()
 	self.renderTarget.owner = self
 	self.updated = false
@@ -54,7 +53,7 @@ end
 
 function RenderTargetTexture:getMoaiFrameBuffer()
 	self:update()
-	return self.framebuffer
+	return self.renderTarget:getFrameBuffer()
 end
 
 function RenderTargetTexture:getRenderTarget()
