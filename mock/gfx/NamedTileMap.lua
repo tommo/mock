@@ -141,7 +141,8 @@ function NamedTileMapLayer:onInit()
 end
 
 function NamedTileMapLayer:onResize( w, h )
-	self.mapGrid:resize( w, h, self.tileWidth, self.tileHeight, 0, 0, 1, 1 )
+	local tw, th = self:getTileSize()
+	self.mapGrid:resize( w, h, tw, th, 0, 0, 1, 1 )
 end
 
 function NamedTileMapLayer:worldToModel( x, y )

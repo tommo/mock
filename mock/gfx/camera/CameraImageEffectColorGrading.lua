@@ -23,6 +23,8 @@ local function buildLUTShader()
 		uniform sampler2D sampler;
 		uniform sampler2D samplerLUT1;
 		uniform sampler2D samplerLUT2;
+		uniform float size1;
+		uniform float size2;
 		uniform float LUTMix;
 		uniform float intensity;
 
@@ -45,8 +47,8 @@ local function buildLUTShader()
 		void main () {
 			LOWP vec4 pixel = texture2D ( sampler, uvVarying );
 			vec4 gradedPixel = mix(
-					sampleAs3DTexture( samplerLUT1, pixel.rgb, 32.0 ), 
-					sampleAs3DTexture( samplerLUT2, pixel.rgb, 32.0 ),
+					sampleAs3DTexture( samplerLUT1, pixel.rgb, size1 ), 
+					sampleAs3DTexture( samplerLUT2, pixel.rgb, size2 ),
 					LUTMix
 				);
 			gradedPixel.a = pixel.a;
@@ -73,6 +75,16 @@ local function buildLUTShader()
 				value = 3
 			},
 			{
+				name = "size1",
+				type = "float",
+				value = 32.0
+			},
+			{
+				name = "size2",
+				type = "float",
+				value = 32.0
+			},
+			{
 				name = "LUTMix",
 				type = "float",
 				value = 0.0
@@ -93,7 +105,7 @@ CLASS: CameraImageEffectColorGrading ( CameraImageEffect )
 	:MODEL{
 		Field 'LUT'  :asset( 'texture;color_grading' ) :getset( 'LUT' );
 		Field 'LUT2' :asset( 'texture;color_grading' ) :getset( 'LUT2' );
-		Field 'mix'  :onset( 'updateMix' ) :range(0,1) :meta{ step = 0.1 };
+		Field 'mix'  :onset( 'updateMix' ) :range(0,1) :meta{ step = 0.1 } :widget('slider');
 		Field 'intensity' :onset( 'updateIntensity' ) :meta{ step = 0.1 };
 }
 
@@ -103,6 +115,8 @@ function CameraImageEffectColorGrading:__init()
 	self.lutPath2 = false
 	self.lutTex1  = false
 	self.lutTex2  = false
+	self.size1 = 32
+	self.size2 = 32
 	self.mix   = 0
 	self.tex = MOAIMultiTexture.new()
 	self.tex:reserve( 3 )
@@ -123,7 +137,8 @@ function CameraImageEffectColorGrading:setLUT( path )
 	if atype == 'color_grading' then
 		self.lutTex1 = mock.loadAsset( path ):getTexture()
 	elseif atype == 'texture' then
-		self.lutTex1 = mock.loadAsset( path )
+		local t = mock.loadAsset( path )
+		self.lutTex1 = t and t:getMoaiTexture()
 	end
 	return self:updateTex()
 end
@@ -138,7 +153,8 @@ function CameraImageEffectColorGrading:setLUT2( path )
 	if atype == 'color_grading' then
 		self.lutTex2 = mock.loadAsset( path ):getTexture()
 	elseif atype == 'texture' then
-		self.lutTex2 = mock.loadAsset( path )
+		local t = mock.loadAsset( path )
+		self.lutTex2 = t and t:getMoaiTexture()
 	end
 	return self:updateTex()
 end
@@ -147,10 +163,30 @@ function CameraImageEffectColorGrading:getLUT2()
 	return self.lutPath2
 end
 
+local function getTextureSize( tex )
+	local w, h = tex:getSize()
+	if w == 0 and tex._ownerObject then
+		return tex._ownerObject:getSize()
+	end
+	return w, h 
+end
+
 function CameraImageEffectColorGrading:updateTex()
 	local t1 ,t2 = self.lutTex1, self.lutTex2
-	self.tex:setTexture( 2, t1 and t1:getMoaiTexture() or nil )
-	self.tex:setTexture( 3, t2 and t2:getMoaiTexture() or nil )
+	self.tex:setTexture( 2, t1 )
+	self.tex:setTexture( 3, t2 )
+	local h1 = 32
+	local h2 = 32
+	if t1 then
+		local w, h = getTextureSize( t1 )
+		h1 = h
+	end
+	if t2 then
+		local w, h = getTextureSize( t2 )
+		h2 = h
+	end
+	self.size1 = h1
+	self.size2 = h2
 	self:updateMix()
 	self:updateIntensity()
 end
@@ -162,7 +198,9 @@ end
 
 function CameraImageEffectColorGrading:updateMix()
 	if not self.shader then return end
-	local a, b=  self.lutTex1, self.lutTex2
+	local a, b = self.lutTex1, self.lutTex2
+	self.shader:setAttr( 'size1', self.size1 )
+	self.shader:setAttr( 'size2', self.size2 )
 	if a and b then
 		return self.shader:setAttr( 'LUTMix', self.mix )
 	else

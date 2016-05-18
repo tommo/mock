@@ -9,9 +9,12 @@ end
 
 function LUTGeneratorCameraPass:onBuild()
 	--OUPUT
-	self:pushDefaultRenderTarget{clearColor = '#c7af3e'}
-	local layer, prop, quad = self:buildSingleQuadRenderLayer( TextureHelper.buildBaseLUT() )
-	self:pushCallback( function() print( 'render' ) end )
+	local size = self:getCamera().LUTSize
+	self:pushDefaultRenderTarget()
+	local layer, prop, quad = self:buildSingleQuadRenderLayer( 
+		TextureHelper.buildBaseLUT( size )
+	)
+	prop:setScl( 1, -1, 1 )
 	self:pushRenderLayer( layer )
 end
 
@@ -20,14 +23,13 @@ end
 CLASS: LUTGeneratorCamera ( Camera )
 	:MODEL{}
 
-function LUTGeneratorCamera:__init()
+function LUTGeneratorCamera:__init( size )
+	self.LUTSize = 32
 	self.targetTexture = RenderTargetTexture()
-	self.targetTexture:init( 1024, 32, 'linear', MOAITexture.GL_RGBA16F )
-	self:setOutputRenderTarget( self.targetTexture:getRenderTarget() )
 end
 
-function LUTGeneratorCamera:getLUT()
-	return self.targetTexture
+function LUTGeneratorCamera:setLUTSize( size )
+	self.LUTSize = size
 end
 
 function LUTGeneratorCamera:getMoaiFrameBuffer()
@@ -35,6 +37,9 @@ function LUTGeneratorCamera:getMoaiFrameBuffer()
 end
 
 function LUTGeneratorCamera:loadPasses()
+	local size = self.LUTSize
+	self.targetTexture:init( size*size, size, 'linear', MOAITexture.GL_RGBA16F )
+	self:setOutputRenderTarget( self.targetTexture:getRenderTarget() )
 	self:addPass( LUTGeneratorCameraPass() )
 end
 
@@ -42,4 +47,8 @@ function LUTGeneratorCamera:manualRender()
 	local renderCommandTable = self:buildRenderCommandTable()
 	MOAINodeMgr.update()
 	MOAIRenderMgr.renderTable( renderCommandTable )
+end
+
+function LUTGeneratorCamera:getTexture()
+	return self.targetTexture
 end

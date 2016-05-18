@@ -534,9 +534,9 @@ function Game:initGraphics( option, fromEditor )
 	end
 	self:setClearColor( 0, 0, 0, 1 )
 
-	MOAIGfxResourceMgr.setResourceLoadingPolicy( 
-		MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
-	)
+	-- MOAIGfxResourceMgr.setResourceLoadingPolicy( 
+	-- 	MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
+	-- )
 end
 
 --- Get the scale( conent size ) of the main viewport

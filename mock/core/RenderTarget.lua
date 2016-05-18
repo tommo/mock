@@ -115,7 +115,7 @@ function TextureRenderTarget:initFrameBuffer( option )
 	option = table.extend( table.simplecopy( DefaultFrameBufferOptions ), option or {} )
 	local frameBuffer = MOAIFrameBufferTexture.new()
 	self.frameBuffer = frameBuffer
-
+	
 	local clearColor = false
 	local clearDepth = option.clearDpeth or false   
 	local clearStencil = option.clearStencil or false 

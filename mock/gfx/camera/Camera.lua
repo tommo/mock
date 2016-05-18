@@ -584,6 +584,7 @@ function Camera:grabNextFrame( output )
 		grabNextFrame( output, self:getOutputRenderTarget():getFrameBuffer() )
 	elseif tt == 'userdata' then
 		--TODO
+		self:getOutputRenderTarget():getFrameBuffer():grabNextFrame( output )
 	end
 end
 
@@ -592,6 +593,9 @@ function Camera:grabCurrentFrame( output )
 	if tt == 'string' then
 		--TODO
 		grabCurrentFrame( output, self:getOutputRenderTarget():getFrameBuffer() )
+	elseif tt == 'userdata' then
+		--TODO
+		self:getOutputRenderTarget():getFrameBuffer():grabCurrentFrame( output )
 	end
 end
 

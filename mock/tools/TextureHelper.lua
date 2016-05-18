@@ -1,26 +1,32 @@
 module 'mock'
 
 --------------------------------------------------------------------
-local function _generateLUT()
+local function _generateLUT( size )
+	size = size or 32
 	local img = MOAIImageTexture.new()
-	img:init( 1024, 32 )
+	img:init( size*size, size )
 	local set = img.setRGBA
-	for z = 1, 32 do
-		for x = 1, 32 do
-			for y = 1, 32 do 
-				local r,g,b = (x-1)/31, (y-1)/31, (z-1)/31
-				set( img, x + ( z - 1 ) * 32 - 1, y - 1, r, g, b, 1 )
+	for z = 0, size - 1 do
+		for x = 0, size - 1 do
+			for y = 0, size - 1 do 
+				local r,g,b = x/(size-1), y/(size-1), z/(size-1)
+				set( img, x + z * size, y, r, g, b, 1 )
 			end
 		end
 	end
 	return img
 end
 
-local BaseLUT = false
-local function buildBaseLUT()
-	if BaseLUT then return BaseLUT end
-	BaseLUT = _generateLUT()
-	return BaseLUT
+local BaseLUTs = {}
+local function buildBaseLUT( size )
+	size = size or 32
+	local lut = BaseLUTs[ size ]
+	if lut then
+		return lut
+	end
+	lut = _generateLUT( size )
+	BaseLUTs[ size ] = lut
+	return lut
 end
 
 --------------------------------------------------------------------
