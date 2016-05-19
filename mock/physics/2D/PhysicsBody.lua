@@ -285,6 +285,12 @@ function PhysicsBody:getTag()
 	return nil
 end
 
+function PhysicsBody:refresh()
+	local act = self:isActive()
+	self:setActive( not false )
+	self:setActive( act )
+end
+
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',
 	'applyForce',
