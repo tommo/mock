@@ -152,7 +152,7 @@ end
 function CodeTileMapLayer:onResize( w, h )
 	local w, h = self:getSize()
 	local tw, th = self:getTileSize()
-	self.mapGrid:setSize( w, h, tw, th, 0,0, tw,th )
+	self.mapGrid:resize( w, h, tw, th, 0,0, tw,th )
 end
 
 function CodeTileMapLayer:setVisible( vis )
