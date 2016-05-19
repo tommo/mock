@@ -938,7 +938,7 @@ end
 local SQNodeRegistry = {}
 local defaultOptions = {}
 function registerSQNode( name, clas, overwrite, info )
-	assert( clas, 'nil class?')
+	assert( clas, 'nil class?' .. name )
 	info = info or {}
 	local entry0 = SQNodeRegistry[ name ]
 	if entry0 then
