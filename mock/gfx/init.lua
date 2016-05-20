@@ -38,6 +38,7 @@ require 'mock.gfx.asset.AuroraSprite'
 --------------------------------------------------------------------
 --Common
 require 'mock.gfx.RenderComponent'
+require 'mock.gfx.UVTransform'
 require 'mock.gfx.GraphicsPropComponent'
 
 --------------------------------------------------------------------

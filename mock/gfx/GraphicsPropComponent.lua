@@ -123,5 +123,9 @@ function GraphicsPropComponent:applyMaterial( material )
 	material:applyToMoaiProp( self.prop )
 end
 
+function GraphicsPropComponent:setUVTransform( trans )
+	print( 'setting uv transform', trans )
+	return self.prop:setUVTransform( trans )
+end
 
 wrapWithMoaiPropMethods( GraphicsPropComponent, ':getMoaiProp()' )
