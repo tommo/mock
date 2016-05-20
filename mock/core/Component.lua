@@ -24,6 +24,14 @@ function Component:getEntity()
 	return self._entity
 end
 
+
+--- Check if owner entity is started
+-- @ret boolean started
+function Component:isEntityStarted()
+	local ent = self._entity
+	return ent and ent.started or false
+end
+
 --- Get component alias ID
 -- @ret string alias of the component
 function Component:getAlias()
