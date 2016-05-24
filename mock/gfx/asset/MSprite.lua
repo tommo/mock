@@ -124,10 +124,12 @@ local function MSpriteLoader( node )
 		--TODO: support flags? or just forbid it!!!!
 		local offsetEaseType = EaseLinear
 		local ftime = 0
+		local frames = {}
 		for fid, f in ipairs( sequence ) do
 
 			local frameId, delay, ox, oy = unpack( f )
 			local frame = data.frames[ frameId ]
+			frames[ fid ] = ftime
 			offsetXCurve:setKey( fid, ftime, ox, offsetEaseType )
 			offsetYCurve:setKey( fid, ftime, -oy, offsetEaseType )
 			indexCurve  :setKey( fid, ftime, frame.index, EaseFlat )
@@ -141,14 +143,15 @@ local function MSpriteLoader( node )
 			end
 
 		end
-
-		animations[ name ] = {
+		local clipData = {
 			offsetXCurve = offsetXCurve,
 			offsetYCurve = offsetYCurve,
 			indexCurve   = indexCurve,
 			length       = ftime,
 			name         = name,
-		}
+			frames       = frames
+		} 
+		animations[ name ] = clipData
 	end
 
 	local sprite = {

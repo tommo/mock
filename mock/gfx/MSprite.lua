@@ -277,6 +277,7 @@ function MSprite:setSpeed( speed )
 	end
 end
 
+
 function MSprite:createAnimState( clipName, mode )
 	local clip = self:getClip( clipName )
 	if not clip then 
@@ -298,6 +299,8 @@ function MSprite:createAnimState( clipName, mode )
 	-- animState:setLink( 3, offsetYCurve, self.prop, MOAIProp.ATTR_Y_LOC )
 	animState:setMode( mode or clip.mode or MOAITimer.NORMAL )
 	animState.length = clip.length
+	animState.clip   = clip
+
 	return animState, clip
 end
 

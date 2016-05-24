@@ -156,8 +156,6 @@ end
 --------------------------------------------------------------------
 --EDITOR Support
 function EffectEmitter:onBuildGizmo()
-	local giz = mock_edit.IconGizmo()
-	giz:setIcon( 'effect.png' )
-	giz:setParentEntity( self._entity )
+	local giz = mock_edit.IconGizmo( 'effect.png' )
 	return giz
 end

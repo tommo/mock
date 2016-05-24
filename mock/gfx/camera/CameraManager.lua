@@ -69,6 +69,17 @@ function CameraManager:update()
 		renderData.renderTableMap = {} --legacy?
 	end
 
+	if not contextMap[ 'game' ] then
+		local placeHolderRenderCommand = MOAIFrameBufferRenderCommand.new()
+		placeHolderRenderCommand:setClearColor( hexcolor'#4d543c' )
+		placeHolderRenderCommand:setFrameBuffer( MOAIGfxDevice.getFrameBuffer() )
+		contextMap[ 'game' ] = {
+			deviceRenderTable = {},
+			renderTableMap    = {},
+			bufferTable       = { placeHolderRenderCommand },
+		}
+	end
+	
 	for context, renderData in pairs( contextMap ) do
 		game:setRenderStack(
 			context,
