@@ -188,9 +188,7 @@ end
 
 --------------------------------------------------------------------
 function SoundSource:onBuildGizmo()
-	local giz = mock_edit.IconGizmo()
-	giz:setIcon( 'sound.png' )
-	giz:setParentEntity( self._entity )
+	local giz = mock_edit.IconGizmo( 'sound.png' )
 	return giz
 end
 

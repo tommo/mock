@@ -120,8 +120,6 @@ end
 --------------------------------------------------------------------
 --EDITOR Support
 function ProtoSpawner:onBuildGizmo()
-	local giz = mock_edit.IconGizmo()
-	giz:setIcon( 'spawn.png' )
-	giz:setParentEntity( self._entity )
+	local giz = mock_edit.IconGizmo( 'spawn.png' )
 	return giz
 end

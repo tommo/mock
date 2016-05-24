@@ -339,6 +339,24 @@ function Entity:detachAll( reason )
 	end
 end
 
+
+--- Detach all components of given type
+-- @p string|Class comType component type to be looked for
+-- @p ?string reason reason to detaching
+function Entity:detachAllOf( comType, reason )
+	for i, com in ipairs( self:getAllComponentsOf( comType ) ) do
+		self:detach( com, reason )
+	end
+end
+
+--- Detach all components of given type later
+-- @p string|Class comType component type to be looked for
+function Entity:detachAllOfLater( comType )
+	for i, com in ipairs( self:getAllComponentsOf( comType ) ) do
+		self:detachLater( com )
+	end
+end
+
 --- Detach the component in next update cycle
 -- @p Component com the component to be detached
 function Entity:detachLater( com )

@@ -196,7 +196,6 @@ function Game:init( config, fromEditor )
 	if not fromEditor then --initCommonData will get called after scanning asset modifications
 		self:initCommonData( config, fromEditor )
 	end
-	self:applyPlaceHolderRenderTable()
 end
 
 
@@ -532,7 +531,8 @@ function Game:initGraphics( option, fromEditor )
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
-	self:setClearColor( 0, 0, 0, 1 )
+
+	self:applyPlaceHolderRenderTable()
 
 	-- MOAIGfxResourceMgr.setResourceLoadingPolicy( 
 	-- 	MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
@@ -938,7 +938,6 @@ end
 --Context Related
 --------------------------------------------------------------------
 function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTableMap )
-
 	if gii then
 		local renderContext = gii.getRenderContext( context )
 		assert( renderContext, 'render context not found:' .. context )
@@ -952,27 +951,21 @@ function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTab
 	elseif context ~= 'game' then
 		_error( 'no gii module found for render context functions')
 	end
-	local emptyRenderStack = true
+
 	if context == self.currentRenderContext then
-		for framebuffer, renderTable in pairs( renderTableMap ) do
-			framebuffer:setRenderTable( renderTable )
-			if #renderTable>0 then emptyRenderStack = false end
+		if bufferTable then
+			if #bufferTable > 0 then 
+				emptyRenderStack = false
+				MOAIRenderMgr.setBufferTable( bufferTable )
+			end
 		end
-		if deviceRenderTable then
-			if #deviceRenderTable then emptyRenderStack = false end
-			MOAIGfxDevice.getFrameBuffer():setRenderTable( deviceRenderTable )	
-		end
-		MOAIRenderMgr.setBufferTable( bufferTable )
-		-- if emptyRenderStack then
-		-- 	self:applyPlaceHolderRenderTable()
-		-- end
 	end
 end
 
 function Game:applyPlaceHolderRenderTable()
 	local t = self.placeHolderRenderTable
 	if not t then
-		local layer = MOAILayer.new()
+		local renderLayer = MOAILayer.new()
 		local placeHolderRect = MOAIGraphicsProp.new()
 		local deck = MOAIScriptDeck.new()
 		deck:setDrawCallback( function()
@@ -981,14 +974,15 @@ function Game:applyPlaceHolderRenderTable()
 		end)
 		deck:setRect( -10000,-10000,10000,10000 )
 		placeHolderRect:setDeck( deck )
-		layer:insertProp( placeHolderRect )
-		local t = {
-			layer
-		}
-		self.placeHolderRenderTable = t
+		renderLayer:insertProp( placeHolderRect )
+		local frameRenderCommand = MOAIFrameBufferRenderCommand.new()
+		frameRenderCommand:setClearColor( .1,1,.1,1 )
+		frameRenderCommand:setFrameBuffer( MOAIGfxDevice.getFrameBuffer() )
+		frameRenderCommand:setRenderTable( { renderLayer } )
+		self.placeHolderRenderTable = { frameRenderCommand }
+		t = self.placeHolderRenderTable
 	end
-	MOAIGfxDevice.getFrameBuffer():setRenderTable( t )
-	MOAIRenderMgr.setBufferTable{ MOAIGfxDevice.getFrameBuffer() }
+	MOAIRenderMgr.setBufferTable( t )
 end
 
 function Game:setCurrentRenderContext( key )

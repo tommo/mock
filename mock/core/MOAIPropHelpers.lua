@@ -519,6 +519,10 @@ function wrapWithMoaiTransformMethods( clas, propName )
 			'setBillboard',
 			'modelToWorld',
 
+			'setShearByX',
+			'setShearByY',
+			'setShearByZ',
+
 
 		})
 
