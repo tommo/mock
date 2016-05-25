@@ -9,7 +9,10 @@ CLASS: PhysicsShape ( mock.Component )
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
 		Field 'material'  :asset_pre( 'physics_material' ) :getset( 'Material' );
 	}
-
+	:META{
+		category = 'physics'
+	}
+	
 function PhysicsShape:__init()
 	self.active = true 
 	self.tag = false

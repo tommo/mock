@@ -8,7 +8,7 @@ module 'mock'
 CLASS: Component ()
  	:MODEL{
  		Field '_alias' :string() :no_edit();
- }
+	}
 
 --------------------------------------------------------------------
 wrapWithMoaiPropMethods( Component, '_entity._prop' )
@@ -405,12 +405,15 @@ end
 -------Component management
 --------------------------------------------------------------------
 local componentRegistry = {}
-function registerComponent( name, creator )
+function registerComponent( name, clas )
 	-- assert( not componentRegistry[ name ], 'duplicated component type:'..name )
-	if not creator then
+	if not clas then
 		_error( 'no component to register', name )
 	end
-	componentRegistry[ name ] = creator
+	if not isClass( clas ) then
+		_error( 'attempt to register non-class component', name )
+	end
+	componentRegistry[ name ] = clas
 end
 
 function registerEntityWithComponent( name, ... )
@@ -433,6 +436,33 @@ end
 function getComponentType( name )
 	return componentRegistry[ name ]
 end
+
+function buildComponentCategories()
+	local categories = {}
+	local unsorted   = {}
+	for name, comClass in pairs( componentRegistry ) do
+		local model = Model.fromClass( comClass )
+		local category
+		if model then
+			local meta = model:getCombinedMeta()
+			category = meta[ 'category' ]
+		end
+		local entry = { name, comClass, category }
+		if not category then
+			table.insert( unsorted, entry )
+		else
+			local catTable = categories[ category ]
+			if not catTable then
+				catTable = {}
+				categories[ category ] = catTable
+			end
+			table.insert( catTable, entry )
+		end
+	end
+	categories[ '__unsorted__' ] = unsorted
+	return categories
+end
+
 
 
 --------------------------------------------------------------------

@@ -12,8 +12,6 @@ function Prop( option )
 	return prop
 end
 
-registerComponent( 'Prop', Prop )
-
 function Entity:addProp( option )
 	return self:attach( Prop( option ) )
 end

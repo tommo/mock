@@ -33,7 +33,9 @@ CLASS: SoundSource ( Component )
 		Field 'autoPlay'    :boolean();
 		Field 'is3D' :boolean();
 	}
-
+	:META{
+		category = 'audio'
+	}
 function SoundSource:__init()
 	self.eventInstances = {}
 	self.eventNamePrefix = false

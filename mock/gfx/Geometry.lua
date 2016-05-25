@@ -10,6 +10,7 @@ CLASS: GeometryComponent( DrawScript )
 	:MODEL{
 		Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
 	}
+
 function GeometryComponent:__init()
 	self.color = {1,1,1,1}
 end

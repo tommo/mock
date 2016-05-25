@@ -1,13 +1,16 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: PhysicsJoint ( mock.Component )
+CLASS: PhysicsJoint ( Component )
 	:MODEL{
 		Field 'target' :type( PhysicsBody ) :set('setTarget');
 		'----';
 		Field 'offsetA' :type( 'vec2' ) :tuple_getset( 'offsetA');
 		Field 'offsetB' :type( 'vec2' ) :tuple_getset( 'offsetB');
 		'----';
+	}
+	:META{
+		category = 'physics'
 	}
 
 function PhysicsJoint:__init()

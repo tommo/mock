@@ -8,7 +8,9 @@ CLASS: SoundListener ( Component )
 	Field 'forward'    :type('vec3') :getset('VectorForward');
 	Field 'up'         :type('vec3') :getset('VectorUp') ;
 	Field 'syncRot'    :boolean();
-	
+}
+:META{
+	category = 'audio'
 }
 wrapWithMoaiTransformMethods( SoundListener, '_listener' )
 

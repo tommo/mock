@@ -1116,7 +1116,10 @@ CLASS: BTController ( UpdateListener )
 	:MODEL{
 		Field 'scheme' :asset( '(bt_scheme|bt_script)' ) :getset('Scheme');
 	}
-
+	:META{
+		category = 'behaviour'
+	}
+	
 mock.registerComponent( 'BTController', BTController )
 
 local startCountDown = 0

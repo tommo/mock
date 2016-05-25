@@ -25,6 +25,9 @@ function EntityGroup:__init()
 	self.icon = false
 end
 
+function EntityGroup:forceUpdate()
+end
+
 function EntityGroup:getName()
 	return self.name
 end
