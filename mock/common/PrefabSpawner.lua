@@ -20,7 +20,10 @@ CLASS: PrefabSpawner ()
 		Field 'spawnMethod'    :enum( enumSpawnMethod )
 		-- Field 'spawnAsChild'   :boolean();
 	}
-
+	:META{
+		category = 'spawner'
+	}
+	
 registerComponent( 'PrefabSpawner', PrefabSpawner )
 registerEntityWithComponent( 'PrefabSpawner', PrefabSpawner )
 

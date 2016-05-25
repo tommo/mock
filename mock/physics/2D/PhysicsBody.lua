@@ -17,7 +17,9 @@ CLASS: PhysicsBody ( mock.Component )
 		-- Field 'Calc Mass'    :action('calcMass');
 		-- Field 'Test Mass'    :action('testMass');
 	}
-
+	:META{
+		category = 'physics'
+	}
 mock.registerComponent( 'PhysicsBody', PhysicsBody )
 
 function PhysicsBody:__init()

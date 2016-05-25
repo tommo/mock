@@ -12,8 +12,11 @@ CLASS: EffectEmitter ( Component )
 		Field 'effect'        :asset('effect') :set('setEffect');
 		Field 'autoPlay'      :boolean();
 		Field 'actionOnStop'  :enum( EnumActionOnStop );
-}
-
+	}
+	:META{
+		category = 'FX'
+	}
+	
 mock.registerComponent( 'EffectEmitter', EffectEmitter )
 --------------------------------------------------------------------
 

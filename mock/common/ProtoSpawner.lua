@@ -21,6 +21,9 @@ CLASS: ProtoSpawner ( Component )
 		Field 'spawnMethod'    :enum( enumSpawnMethod )
 		-- Field 'spawnAsChild'   :boolean();
 	}
+	:META{
+		category = 'spawner'
+	}
 
 registerComponent( 'ProtoSpawner', ProtoSpawner )
 registerEntityWithComponent( 'ProtoSpawner', ProtoSpawner )

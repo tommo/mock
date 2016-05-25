@@ -53,7 +53,9 @@ CLASS:  FSMController ( Behaviour )
 		Field 'scheme' :asset('fsm_scheme') :getset('Scheme');
 		Field 'syncEntityState' :boolean();
 	}
-
+	:META{
+		category = 'behaviour'
+	}
 -----fsm state method collector
 FSMController.fsm = newStateMethodCollector( FSMController ) 
 

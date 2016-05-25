@@ -31,7 +31,9 @@ CLASS: Camera ( Component )
 	Field 'showDebugLines'   :boolean() :set( 'setShowDebugLines' );
 	'----';
 	Field 'outputTarget'     :asset('render_target')  :getset('OutputRenderTargetPath');
-
+}
+:META{
+	category = 'camera'
 }
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )

@@ -1,7 +1,10 @@
 module 'mock'
 CLASS: Behaviour ( Component )
  	:MODEL{}
-
+	:META{
+		category = 'behaviour'
+	}
+	
 --------------------------------------------------------------------
 function Behaviour:installInputListener( option )
 	return installInputListener( self, option )

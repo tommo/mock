@@ -692,7 +692,6 @@ function Model:getCombinedMeta()
 	return _collectMeta( self.__src_class )
 end
 
-
 function Model:getSuperModel( name )
 	local superclass = self.__src_class.__super
 	if not superclass then return nil end

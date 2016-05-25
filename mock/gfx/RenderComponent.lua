@@ -4,6 +4,9 @@ CLASS: RenderComponent( Component )
 	:MODEL{
 		Field 'material' :asset_pre( 'material' ) :getset( 'Material' );
 	}
+	:META{
+		category = 'graphics'
+	}
 
 --------------------------------------------------------------------
 local DEPTH_TEST_DISABLE = MOAIProp.DEPTH_TEST_DISABLE
