@@ -105,7 +105,7 @@ end
 
 Profiler = { coroWrapped = false }
 function Profiler:start( time, reportPath )
-	local ProFi=require 'mock.tools.ProFi'	
+	local ProFi=require 'mock.3rdparty.ProFi'	
 	self.ProFi = ProFi
 	
 	--wrap moai coroutine

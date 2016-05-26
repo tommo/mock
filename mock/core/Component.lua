@@ -77,6 +77,10 @@ function Component:findChild( name, deep )
 	return self._entity:findChild( name, deep )
 end
 
+function Component:findSibling( name )
+	return self._entity:findSibling( name )
+end
+
 --- Find child entity by relative entity 'path'
 -- @p string path the entity path to look for
 -- @ret Entity result of search

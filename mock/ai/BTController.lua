@@ -104,7 +104,7 @@ function BTContext:__init( owner )
 	self._runningQueue = {}
 	self._runningQueueNeedShrink = false
 	self._active        = true
-	self._activeActions = {}
+	self._activeActions = table.weak_v()
 	self._conditions    = {}
 	self._params        = {}
 	self._owner         = owner or false
@@ -135,6 +135,19 @@ end
 function BTContext:executeTree( tree )
 	self._conditionDirty = false
 	tree.root:execute( self )
+end
+
+function BTContext:buildDebugInfo()
+	local _activeActions = self._activeActions
+	local _runningQueue = self._runningQueue
+	local out = ''
+	for i, node in pairs( _runningQueue ) do
+		local action = _activeActions[ node ]
+		if action then
+			out = out .. string.format( '%s:%s\n', node.name, node.actionName or '<NIL>' )
+		end
+	end
+	return out
 end
 
 ---------
@@ -197,6 +210,7 @@ end
 function BTContext:completeEvaluation( res )
 	--TODO: delegate?
 	self._runningQueue = {}
+	self._nodeContext  = {}
 	return 'complete'
 end
 
@@ -240,6 +254,7 @@ function BTContext:removeRunningChildNodes( parentNode )
 			--stop this & exclude this in new queue
 			--TODO: stop the nodes in reversed order?
 			local action = _activeActions[ node ]
+			print( 'remving node', node.actionName )
 			if action then
 				local stop   = action.stop
 				if stop then stop( action, self ) end
@@ -467,7 +482,6 @@ end
 
 function BTLoggingNode:execute( context )
 	print( self.logText )
-
 	return self:returnUpLevel( 'ignore', context )
 end
 
@@ -1171,6 +1185,10 @@ function BTController:onDetach( ent )
 	--clear running actions
 	self.context:clearRunningNode()
 	BTController.__super.onDetach( self, ent )
+end
+
+function BTController:buildDebugInfo()
+	return self.context:buildDebugInfo()
 end
 
 function BTController:getScheme()
