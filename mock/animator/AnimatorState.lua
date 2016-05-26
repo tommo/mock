@@ -232,8 +232,8 @@ function AnimatorState:apply( t )
 	local t0 = anim:getTime()
 	anim:apply( t0, t )
 	anim:setTime( t )
-	-- anim:forceUpdate()
-	anim:flushUpdate()
+	anim:forceUpdate()
+	-- anim:flushUpdate()
 end
 
 function AnimatorState:findMarker( id )
