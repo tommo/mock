@@ -70,5 +70,5 @@ function SQNodeWaitMsg:getRichText()
 end
 
 --------------------------------------------------------------------
-registerSQNode( 'msg', SQNodeMsg   )
+registerSQNode( 'tell', SQNodeMsg   )
 registerSQNode( 'wait_msg', SQNodeWaitMsg )

@@ -29,7 +29,7 @@ function SQNodeAnimator:enter( state, env )
 	if cmd == 'play' then
 		if not self.argClipName then return false end
 		local animState = animator:playClip( self.argClipName, self.argMode )
-		print( 'play animation', animator:getEntityName(), self.argClipName )
+		-- print( 'play animation', animator:getEntityName(), self.argClipName )
 		if not animState then 
 			_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
 			return false

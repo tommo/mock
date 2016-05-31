@@ -225,3 +225,24 @@ function enableInfiniteLoopChecking()
 	end
 	debug.sethook( _callback, 'l' )
 end
+
+local function defaultErrorHandler ( status )
+	print( 'ERROR:', status )
+	print( debug.traceback( 2 ) )
+end
+
+
+local function _innerTry( errFunc, ok, ... )
+	print( errFunc, ok, ... )
+	if ok then
+		return ...
+	end
+	local status = ...
+	errFunc = errFunc or defaultErrorHandler
+	errFunc( status )
+	return nil
+end
+
+function try( func, errFunc )
+	return _innerTry( errFunc, pcall( func ) )
+end
