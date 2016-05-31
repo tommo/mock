@@ -372,11 +372,11 @@ local function stripNode( n )
 	return n
 end
 
-function loadBTScript( src )
+function loadBTScript( src, name )
 	local context = setmetatable( {}, ParseContextMT )
-	local outputNode = context:parseSource( src )
+	local outputNode =  try( function() return context:parseSource( src ) end )
 	if not outputNode then
-		_error( 'failed parsing behaviour tree or no root node specified' )
+		_error( 'failed parsing behaviour tree or no root node specified', name or '<unknown>')
 		return false
 	end
 	outputNode = stripNode( outputNode )
@@ -389,7 +389,7 @@ function loadBTScriptFromFile( path )
 	local f = io.open( path, 'r' )
 	if f then
 		local src = f:read( '*a' )
-		return loadBTScript( src )
+		return loadBTScript( src, path )
 	end
 	return false
 end
@@ -399,8 +399,11 @@ function parseBTScriptFile( path )
 	if f then
 		local src = f:read( '*a' )
 		local context = setmetatable( {}, ParseContextMT )
-		local outputNode = context:parseSource( src )
-		if outputNode then 
+		local outputNode =  try( function() return context:parseSource( src ) end )
+		if not outputNode then
+			_error( 'failed parsing behaviour tree or no root node specified', path or '<unknown>')
+			return false
+		else
 			printBTScriptNode( outputNode )
 		end
 	end
