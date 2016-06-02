@@ -51,6 +51,8 @@ function Scene:__init( option )
 	--action groups direclty attached to game.actionRoot
 	self.globalActionGroups = {} 
 
+	self.debugDrawQueue = DebugDrawQueue()
+
 	return self
 end
 
@@ -235,6 +237,7 @@ function Scene:threadMain( dt )
 	_stat( 'entering scene main loop', self )
 	dt = 0
 	
+	local debugDrawQueue = self.debugDrawQueue
 	local lastTime = self:getTime()
 	while true do	
 		local nowTime = self:getTime()
@@ -297,6 +300,9 @@ function Scene:threadMain( dt )
 		end
 
 		dt = coroutine.yield()
+		
+		debugDrawQueue:update( dt )
+
 		if self.exiting then 
 			self:exitNow() 
 		elseif self.exitingTime and self.exitingTime <= self:getTime() then
@@ -305,6 +311,16 @@ function Scene:threadMain( dt )
 		end
 	--end of main loop
 	end
+end
+
+local setCurrentDebugDrawQueue = setCurrentDebugDrawQueue
+function Scene:preUpdate()
+	local debugDrawQueue = self.debugDrawQueue
+	debugDrawQueue:clear()
+	setCurrentDebugDrawQueue( debugDrawQueue )
+end
+
+function Scene:postUpdate()
 end
 
 --obj with onUpdate( dt ) interface
@@ -364,6 +380,9 @@ function Scene:resetActionRoot()
 			end
 		end	
 	)
+	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, function() self:preUpdate() end )	
+	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, function() self:postUpdate() end )	
+
 	self.actionRoot:attach( self:getParentActionRoot() )
 
 	_stat( 'scene timer reset ')
@@ -716,6 +735,9 @@ function Scene:pauseBox2DWorld( paused )
 	self.b2world:pause( paused )
 end
 
+function Scene:getDebugDrawQueue()
+	return self.debugDrawQueue
+end
 
 function Scene:getEntityCount()
 	return table.len( self.entities )

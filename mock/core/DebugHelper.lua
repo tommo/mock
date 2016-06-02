@@ -233,7 +233,7 @@ end
 
 
 local function _innerTry( errFunc, ok, ... )
-	print( errFunc, ok, ... )
+	-- print( errFunc, ok, ... )
 	if ok then
 		return ...
 	end

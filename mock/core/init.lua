@@ -11,6 +11,7 @@ require 'mock.core.ClassHelpers'
 require 'mock.core.Serializer'
 
 require 'mock.core.ScriptHelper'
+require 'mock.core.DebugDrawQueue'
 
 require 'mock.core.JSONHelper'
 
