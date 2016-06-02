@@ -202,7 +202,8 @@ function CameraPass:buildDebugDrawLayer()
 	local world = self.camera.scene:getBox2DWorld()
 	world:setDebugDrawEnabled( true )
 	table.insert( renderTable, world )
-
+	local debugDrawQueue = self.camera.scene:getDebugDrawQueue()
+	table.insert( renderTable, debugDrawQueue:getMoaiProp() )
 	layer:setOverlayTable( renderTable )
 	-- if world then layer:setBox2DWorld( world ) end
 

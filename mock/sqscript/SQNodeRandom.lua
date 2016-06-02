@@ -1,7 +1,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: SQNodeRandomBranch ( SQNodeBranch )
+CLASS: SQNodeRandomBranch ( SQNodeGroup )
 	:MODEL{
 		Field 'name'   :string();
 		Field 'weight' :int();

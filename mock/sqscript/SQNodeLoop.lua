@@ -8,13 +8,6 @@ function SQNodeLoopBase:isGroup()
 	return true
 end
 
--- function SQNodeLoopBase:executeChildNodes( state, env )
--- 	while not self:checkLoopDone( state, env ) do
--- 		local res = SQNode.executeChildNodes( self, state, env )
--- 		if res == 'jump' then return res end
--- 	end
--- end
-
 function SQNodeLoopBase:checkLoopDone( state, env )
 	return true
 end

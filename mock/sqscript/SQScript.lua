@@ -29,6 +29,7 @@ function SQNode:__init()
 	self.parentRoutine = false
 	
 	self.index      = 0
+	self.depth      = 0
 	self.active     = true
 	self.parentNode = false
 	self.children   = {}
@@ -72,10 +73,18 @@ function SQNode:getParent()
 	return self.parentNode
 end
 
+function SQNode:getPrevSibling()
+	local p = self.parentNode
+	local siblings = p and p.children
+	local index = table.index( siblings, self )
+	return siblings[ index - 1 ]
+end
+
 function SQNode:getNextSibling()
 	local p = self.parentNode
 	local siblings = p and p.children
-	return siblings[ self.index + 1 ]
+	local index = table.index( siblings, self )
+	return siblings[ index + 1 ]
 end
 
 function SQNode:getRoutine()
@@ -108,6 +117,7 @@ end
 function SQNode:addChild( node, idx )
 	node.parentNode = self
 	node.parentRoutine = assert( self.parentRoutine )
+	node.depth = self.depth + 1
 	if idx then
 		insert( self.children, idx, node )
 	else
@@ -631,6 +641,10 @@ function SQRoutineState:restart()
 	self:start()
 end
 
+function SQRoutineState:getNodeEnvTable( node )
+	return self.nodeEnvMap[ node ]
+end
+
 function SQRoutineState:registerMsgCallbacks()
 	local msgListeners = table.weak_k()
 	-- for i, entryNode in ipairs( )
@@ -642,7 +656,6 @@ function SQRoutineState:registerMsgCallbacks()
 					return self:startSubRoutine( callbackNode )
 				end
 			end
-			print( target:getName() )
 			target:addMsgListener( listener )
 			msgListeners[ target ] = listener
 		end
@@ -690,6 +703,10 @@ function SQRoutineState:setEnv( key, value )
 	return self.globalState:setEnv( key, value )
 end
 
+function SQRoutineState:getEvalEnv()
+	return self.globalState.varTable
+end
+
 function SQRoutineState:update( dt )
 	for i, subState in ipairs( self.subRoutineStates ) do
 		subState:update( dt )
@@ -725,6 +742,7 @@ function SQRoutineState:nextNode()
 	self.currentNode = node1
 	local env = {}
 	self.currentNodeEnv = env
+	self.nodeEnvMap[ node1 ] = env
 	local res = node1:enter( self, env )
 	if res == 'jump' then
 		return self:doJump()
@@ -738,7 +756,6 @@ end
 function SQRoutineState:exitNode( fromGroup )
 	local node = self.currentNode
 	if node:isGroup() then --Enter group
-		self.nodeEnvMap[ node ] = self.currentNodeEnv
 		self.index = 0
 		self.currentQueue = node.executeQueue
 	else
@@ -753,7 +770,6 @@ end
 function SQRoutineState:exitGroup()
 	--exit group node
 	local groupNode = self.currentNode.parentNode
-
 	if not groupNode then
 		self:setLocalRunning( false )
 		return true
@@ -761,6 +777,7 @@ function SQRoutineState:exitGroup()
 
 	local env = self.nodeEnvMap[ groupNode ] or {}
 	local res = groupNode:exit( self, env )
+
 	if res == 'jump' then
 		return self:doJump()
 	elseif res == 'loop' then
@@ -771,10 +788,11 @@ function SQRoutineState:exitGroup()
 		return true
 	else
 		local parentNode = groupNode.parentNode
-		if (not parentNode) or parentNode == self.entryNode then
+		if (not parentNode) then
 			self:setLocalRunning( false )
 			return true
 		end
+		self.currentNode  = groupNode
 		self.currentQueue = parentNode.executeQueue
 		self.index = groupNode.index
 	end
@@ -815,6 +833,7 @@ function SQState:__init()
 	self.coroutines = {}
 	self.signalCounters = {}
 	self.env = {}
+	self.varTable = {}
 end
 
 function SQState:getEnv( key, default )
@@ -867,7 +886,7 @@ function SQState:loadScript( script )
 	script:build()
 	self.script = script
 	for i, routine in ipairs( script.routines ) do
-		local entryNode = routine:getRootNode()
+		local entryNode    = routine:getRootNode()
 		local routineState = SQRoutineState( entryNode )
 		routineState.routine = routine
 		routineState.globalState = self

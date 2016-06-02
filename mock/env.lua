@@ -107,7 +107,7 @@ function mock.injectGlobalSymbols( env )
 		'SingleEntity',
 		'Scene',
 		'game',
-
+		'_DebugDraw',
 		'packagePath',
 	}	
 	env = env or _G
