@@ -257,6 +257,9 @@ function ParseContextProto:parse_decorator_repeat ( content, pos )
 	return self:parseDecorator( content, pos, 'decorator_repeat', ':repeat' )
 end
 
+function ParseContextProto:parse_decorator_while ( content, pos )
+	return self:parseDecorator( content, pos, 'decorator_while', ':while' )
+end
 
 
 function ParseContextProto:parse_commented ( content, pos )
@@ -314,6 +317,7 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_decorator_ok( l, pos )
 		pos = self:parse_decorator_fail( l, pos )
 		pos = self:parse_decorator_ignore( l, pos )
+		pos = self:parse_decorator_while( l, pos )
 		pos = self:parse_decorator_repeat( l, pos )
 		pos = self:parse_commented( l, pos )
 		pos = self:parse_spaces( l, pos )
