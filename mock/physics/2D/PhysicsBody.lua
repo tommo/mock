@@ -293,6 +293,47 @@ function PhysicsBody:refresh()
 	self:setActive( act )
 end
 
+local ATTR_X_LOC = MOAITransform.ATTR_X_LOC
+local ATTR_Y_LOC = MOAITransform.ATTR_Y_LOC
+function PhysicsBody:seekPosition( x, y, duration, mode )
+	local body = self.body
+
+	--EaseDriver won't work since AttrOp::ADD is not working for MOAIBox2DBody
+
+	-- local action = MOAIEaseDriver.new()
+	-- action:reserveLinks( 2 )
+	-- action:setLink( 1, body, ATTR_X_LOC, x, mode )
+	-- action:setLink( 2, body, ATTR_Y_LOC, y, mode )
+	-- action:setSpan( duration )
+	-- action:start()
+
+	local action = MOAICoroutine.new()
+	action:run( function()
+		local t = 0
+		if duration <= 0 then
+			return self:setPosition( x, y )
+		end
+		local x0, y0 = self:getPosition()
+		while true do
+			t = t + coroutine.yield()
+			local k = math.min( t/duration, 1 )
+			local x1 = lerp( x0, x, k )
+			local y1 = lerp( y0, y, k )
+			self:setPosition( x1, y1 )
+			print( 'setting x,y', x1,y1, k )
+			if k == 1 then return end
+		end
+	end)
+
+	return action
+end
+
+function PhysicsBody:movePosition( dx, dy, duration, mode )
+	local x, y = self:getPosition()
+	return self:seekPosition( x + dx, y + dy, duration, mode )
+end
+
+
 _wrapMethods( PhysicsBody, 'body', {
 	'applyAngularImpulse',
 	'applyForce',

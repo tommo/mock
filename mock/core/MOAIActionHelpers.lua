@@ -254,3 +254,6 @@ function easeCall( func, v0, v1, t, easeType, step )
 	return action
 end
 
+
+-- function seekAttrs(  )
+-- end
