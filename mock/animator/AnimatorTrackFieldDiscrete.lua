@@ -19,12 +19,9 @@ function AnimatorTrackFieldDiscrete:apply( state, context, t )
 	local target, keyId = context[1], context[2]
 	local newId = self.idCurve:getValueAtTime( t )
 	if 
-		-- keyId ~= newId and 
 		newId > 0 then
 		local value = self.keys[ newId ].value
 		context[2] = newId
-		-- print( debug.traceback() )
-		-- print( 'newid', newId, value )
 		return self.targetField:setValue( target, value )
 	end
 end

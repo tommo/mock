@@ -254,7 +254,6 @@ function BTContext:removeRunningChildNodes( parentNode )
 			--stop this & exclude this in new queue
 			--TODO: stop the nodes in reversed order?
 			local action = _activeActions[ node ]
-			print( 'remving node', node.actionName )
 			if action then
 				local stop   = action.stop
 				if stop then stop( action, self ) end

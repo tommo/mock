@@ -242,7 +242,6 @@ function Scene:threadMain( dt )
 	while true do	
 		local nowTime = self:getTime()
 		if self.active then
-			print( 'update scene -------' )
 			-- local dt = nowTime - lastTime
 			lastTime = nowTime
 
@@ -322,7 +321,7 @@ function Scene:preUpdate()
 end
 
 function Scene:postUpdate( ... )
-	print( 'post scene!!', self, ... )
+	-- print( 'post scene!!', self, ... )
 end
 
 --obj with onUpdate( dt ) interface

@@ -801,6 +801,11 @@ function Entity:getScene()
 	return self.scene
 end
 
+function Entity:getActionRoot()
+	if self.scene then return self.scene:getActionRoot() end
+	return nil
+end
+
 function Entity:getFullName()
 	if not self.name then return false end
 	local output = self.name
