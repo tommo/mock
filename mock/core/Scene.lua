@@ -242,6 +242,7 @@ function Scene:threadMain( dt )
 	while true do	
 		local nowTime = self:getTime()
 		if self.active then
+			print( 'update scene -------' )
 			-- local dt = nowTime - lastTime
 			lastTime = nowTime
 
@@ -320,7 +321,8 @@ function Scene:preUpdate()
 	setCurrentDebugDrawQueue( debugDrawQueue )
 end
 
-function Scene:postUpdate()
+function Scene:postUpdate( ... )
+	print( 'post scene!!', self, ... )
 end
 
 --obj with onUpdate( dt ) interface
@@ -370,6 +372,12 @@ end
 --------------------------------------------------------------------
 function Scene:resetActionRoot()
 	_stat( 'scene action root reset' )
+	if self.actionRoot then
+		self.actionRoot:stop()
+		self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, nil )
+		self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, nil )
+		self.actionRoot = false
+	end
 
 	self.actionRoot = MOAICoroutine.new()
 	self.actionRoot:setDefaultParent( true )
@@ -380,8 +388,8 @@ function Scene:resetActionRoot()
 			end
 		end	
 	)
-	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, function() self:preUpdate() end )	
-	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, function() self:postUpdate() end )	
+	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, function( ... ) self:preUpdate( ... ) end )	
+	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, function( ... ) self:postUpdate( ... ) end )	
 
 	self.actionRoot:attach( self:getParentActionRoot() )
 
