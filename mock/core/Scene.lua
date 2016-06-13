@@ -606,13 +606,14 @@ function Scene:findEntity( name )
 end
 
 function Scene:changeEntityName( entity, oldName, newName )
+	local entitiesByName = self.entitiesByName
 	if oldName then
-		if entity == self.entitiesByName[ oldName ] then
-			self.entitiesByName[ oldName ]=nil
+		if entity == entitiesByName[ oldName ] then
+			entitiesByName[ oldName ]=nil
 		end
 	end
-	if not self.entitiesByName[ newName ] then
-		self.entitiesByName[ newName ] = entity
+	if not entitiesByName[ newName ] then
+		entitiesByName[ newName ] = entity
 	end
 end
 

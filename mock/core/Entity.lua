@@ -785,7 +785,8 @@ end
 
 function Entity:setName( name )
 	if self.scene then
-		self.scene:changeEntityName(self, entity, name)
+		local prevName = self.name
+		self.scene:changeEntityName( self, prevName, name )
 		self.name = name
 	else
 		self.name = name
@@ -1147,13 +1148,13 @@ end
 --------------------------------------------------------------------
 --Color
 --------------------------------------------------------------------
--- function Entity:getColor()
--- 	return extractColor( self._prop )
--- end
+function Entity:getColor()
+	return extractColor( self._prop )
+end
 
--- function Entity:setColor( r,g,b,a )
--- 	return self._prop:setColor( r,g,b,a )
--- end
+function Entity:setColor( r,g,b,a )
+	return self._prop:setColor( r,g,b,a )
+end
 
 --------------------------------------------------------------------
 ----------Transform Conversion
