@@ -5,7 +5,7 @@ CLASS: PhysicsShapePie ( PhysicsShape )
 	:MODEL
 {
 	Field 'dir'   :range( -180, 180 )   :getset( 'Dir' );
-	Field 'range' :range( 0.1, 360 )      :getset( 'Range');
+	Field 'range' :range( 1, 360 )      :getset( 'Range');
 	Field 'tessellation'		:int()			:range(3, 6) :getset( 'Tessellation');
 	Field 'radius'					:number()		:getset( 'Radius');
 }
@@ -74,12 +74,13 @@ function PhysicsShapePie:calcVerts()
 
 	local dir0 = self.dir - range/2
 
-	for i = 0, self.tessellation - 1 do
+	for i = 0, self.tessellation do
 
 		local angle = dir0 + i*step
 
 		local x = ox + math.cosd( angle ) * self.radius
 		local y = oy + math.sind( angle ) * self.radius
+
 		table.insert(verts, x)
 		table.insert(verts, y)
 
