@@ -51,7 +51,7 @@ CLASS: DebugDrawQueue ()
 
 function DebugDrawQueue:__init()
 	self.defaultGroup = DebugDrawQueueGroup()
-	self.namedGroups  = {}
+	self.namedGroups  = table.weak()
 	self.scriptDeck = MOAIScriptDeck.new()
 	self.scriptDeck:setDrawCallback( function( idx, xOff, yOff, xScale, yScale )
 		return self:draw()

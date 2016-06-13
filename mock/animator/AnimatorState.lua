@@ -232,8 +232,6 @@ function AnimatorState:apply( t )
 	local t0 = anim:getTime()
 	anim:apply( t0, t )
 	anim:setTime( t )
-	anim:forceUpdate()
-	-- anim:flushUpdate()
 end
 
 function AnimatorState:findMarker( id )
@@ -306,10 +304,12 @@ function AnimatorState:loadClip( animator, clip )
 	
 	--range init
 	anim:setSpan( self.clipLength )
-	anim:setListener( MOAIAnim.EVENT_ACTION_POST_UPDATE, _onAnimUpdate )
-	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
 	self.elapsedTimer:setTime( 0 )
 	self:updateDuration()
+
+	anim:flushUpdate()
+	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, _onAnimKeyFrame )
+	anim:setListener( MOAIAnim.EVENT_NODE_POST_UPDATE, _onAnimUpdate )
 
 	--sort update listeners
 	table.sort(
