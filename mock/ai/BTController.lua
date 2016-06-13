@@ -926,6 +926,7 @@ function BTConcurrentEitherSelector:checkResult( context )
 		env.okCount      = 0
 		env.failCount    = 0
 		env.firstRun     = true
+		context:removeRunningChildNodes( self )
 		return self:returnUpLevel( 'ok', context )
 
 	elseif failCount >= self.childrenCount then
