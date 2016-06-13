@@ -13,7 +13,7 @@ local ipairs, pairs = ipairs, pairs
 
 module 'mock'
 --------------------------------------------------------------------
-local function randi( k )
+local function _randInteger( k )
 	 return math.floor( math.random() * k ) + 1
 end
 
@@ -23,7 +23,7 @@ local function makeShuffleList( range )
 		t[i] = i
 	end
 	for i = range, 2, -1 do
-		local k = randi( i )
+		local k = _randInteger( i )
 		t[ k ], t[ i ] = t[ i ], t[ k ]
 	end
 	return t
@@ -337,6 +337,14 @@ local function loadNode( data )
 
 	elseif nodeType == 'log' then
 		node.logText = value
+
+	elseif nodeType == 'decorator_for' then
+		local args = data.arguments
+		if args then
+			node:setRange( args['min'], args['max'] )
+		else
+			node:setRange( 1 )
+		end
 		
 	end
 	if children then
@@ -693,7 +701,7 @@ function BTRandomSelector:getType()
 end
 
 function BTRandomSelector:execute( context )
-	local index = randi( self.childrenCount )
+	local index = _randInteger( self.childrenCount )
 	local child = self.children[ index ]
 	return child:execute( context )
 end
@@ -1026,12 +1034,12 @@ function BTDecoratorAlwaysFail:resumeFromChild( child, res, context )
 end
 
 --------------------------------------------------------------------
-CLASS: BTDecoratorIgnore ( BTDecorator )
-function BTDecoratorIgnore:getType()
-	return 'BTDecoratorIgnore'
+CLASS: BTDecoratorAlwaysIgnore ( BTDecorator )
+function BTDecoratorAlwaysIgnore:getType()
+	return 'BTDecoratorAlwaysIgnore'
 end
 
-function BTDecoratorIgnore:execute( context )
+function BTDecoratorAlwaysIgnore:execute( context )
 	if self.targetNode then
 		return self.targetNode:execute( context )
 	else
@@ -1039,9 +1047,10 @@ function BTDecoratorIgnore:execute( context )
 	end
 end
 
-function BTDecoratorIgnore:resumeFromChild( child, res, context )
+function BTDecoratorAlwaysIgnore:resumeFromChild( child, res, context )
 	return self:returnUpLevel( 'ignore', context )
 end
+
 --------------------------------------------------------------------
 CLASS: BTDecoratorRepeatUntil ( BTDecorator )
 function BTDecoratorRepeatUntil:getType()
@@ -1061,6 +1070,60 @@ function BTDecoratorRepeatUntil:update( context )
 	context:removeRunningNode( self ) 
 	return self:execute( context )
 end
+
+--------------------------------------------------------------------
+CLASS: BTDecoratorRepeatFor ( BTDecorator )
+function BTDecoratorRepeatFor:__init()
+	self.minCount = 1
+	self.maxCount = 1
+end
+
+function BTDecoratorRepeatFor:setRange( min, max )
+	self.minCount = min or 1
+	self.maxCount = math.max( self.minCount, max or 1 )
+end
+
+function BTDecoratorRepeatFor:getType()
+	return 'BTDecoratorRepeatFor'
+end
+
+function BTDecoratorRepeatFor:execute( context )
+	local nodeContext = context._nodeContext
+	local count = randi( self.minCount, self.maxCount )
+	print( 'RAND:', count, self.minCount, self.maxCount )
+	local env = nodeContext[ self ]
+	if not env then 
+		env = { count = count, executed = 0 }
+		nodeContext[ self ] = env
+	end
+
+	return self.targetNode:execute( context )
+end
+
+function BTDecoratorRepeatFor:resumeFromChild( child, res, context )
+	if res == 'fail' then
+		return self:returnUpLevel( 'fail', context )
+	else --fail
+		local nodeContext = context._nodeContext
+		local env = nodeContext[ self ]
+		local count    = env[ 'count' ]
+		local executed = env[ 'executed' ] + 1
+		if executed >= count then
+			nodeContext[ self ] = nil
+			return self:returnUpLevel( 'ok', context )
+		else
+			env[ 'executed' ] = executed
+			context:addRunningNode( self ) 
+			return 'running'
+		end
+	end
+end
+
+function BTDecoratorRepeatFor:update( context )
+	context:removeRunningNode( self ) 
+	return self:execute( context )
+end
+
 --------------------------------------------------------------------
 CLASS: BTDecoratorRepeatWhile ( BTDecorator )
 function BTDecoratorRepeatWhile:getType()
@@ -1117,6 +1180,7 @@ BehaviorTreeNodeTypes = {
 	['decorator_ok']      = BTDecoratorAlwaysOK ;
 	['decorator_fail']    = BTDecoratorAlwaysFail ;
 	['decorator_ignore']  = BTDecoratorAlwaysIgnore ;
+	['decorator_for']     = BTDecoratorRepeatFor ;
 	['decorator_repeat']  = BTDecoratorRepeatUntil ;
 	['decorator_while']   = BTDecoratorRepeatWhile ;
 	['decorator_forever'] = BTDecoratorRepeatForever ;

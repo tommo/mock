@@ -76,6 +76,7 @@ function Entity:__init()
 	self.started     = false
 	self._entityGroup = false
 	self._editLocked  = false
+	self._comCache    = false
 	
 end
 
@@ -271,6 +272,7 @@ function Entity:attach( com )
 		_log( self.name, tostring( self.__guid ), com:getClassName() )
 		error( 'component already attached!!!!' )
 	end
+	self._comCache = false
 	self.components[ com ] = com:getClass()
 	com._componentID = self._maxComponentID
 	self._maxComponentID = self._maxComponentID + 1
@@ -429,18 +431,29 @@ end
 -- @p nil|string|Class  component type to be looked for, return the first component if no target specified.
 -- @ret Component the found component
 function Entity:com( id )
-	if not self.components then return nil end
+	local components = self.components
+	if not components then return nil end
+	if not id then return next( components ) end
+	
+	local cache = self._comCache
+	if not cache then cache = {} self._comCache = cache end
+	
+	local com = cache[ id ]
+	if com ~= nil then
+		return com
+	end
+
 	local tt = type(id)
 	if tt == 'string' then
-		return self:getComponentByName( id )
+		com = self:getComponentByName( id ) or false
 	elseif tt == 'table' then
-		return self:getComponent( id )
-	elseif tt == 'nil' then
-		local com = next( self.components )
-		return com
+		com = self:getComponent( id ) or false
 	else
 		_error( 'invalid component id', tostring(id) )
 	end
+
+	cache[ id ] = com
+	return com
 end
 
 --- Check if the entity has given component type
