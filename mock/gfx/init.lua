@@ -75,7 +75,7 @@ require 'mock.gfx.CodeTileMapLayer'
 require 'mock.gfx.ParticleSystem'
 require 'mock.gfx.ParticleEmitter'
 
-require 'mock.gfx.MeshRenderer'
+
 
 --------------------------------------------------------------------
 ---- Extended
