@@ -172,7 +172,7 @@ local function makeCubeMesh ( size, texture )
 	return makeBoxMesh ( -size, -size, -size, size, size, size, texture )
 end
 
-MeshHelpler = {
+MeshHelper = {
 	makeSkewBox  = makeSkewBoxMesh;
 	makeBox  = makeBoxMesh;
 	makeCube = makeCubeMesh;

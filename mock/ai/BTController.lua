@@ -12,7 +12,7 @@ local remove, insert = table.remove, table.insert
 local ipairs, pairs = ipairs, pairs
 
 module 'mock'
---------------------------------------------------------------------
+------------------------------MOAISteerBehaviourWander--------------------------------------
 local function randi( k )
 	 return math.floor( math.random() * k ) + 1
 end

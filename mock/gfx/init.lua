@@ -33,6 +33,8 @@ require 'mock.gfx.asset.Spine'
 require 'mock.gfx.asset.MSprite'
 require 'mock.gfx.asset.AuroraSprite'
 
+--Mesh
+require 'mock.gfx.asset.Mesh'
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -72,6 +74,8 @@ require 'mock.gfx.CodeTileMapLayer'
 
 require 'mock.gfx.ParticleSystem'
 require 'mock.gfx.ParticleEmitter'
+
+require 'mock.gfx.MeshRenderer'
 
 --------------------------------------------------------------------
 ---- Extended
