@@ -36,7 +36,7 @@ function ProtoSpawner:__init()
 	self.copyLoc        = true
 	self.copyScl        = false
 	self.copyRot        = false
-	self.spawnMethod    = 'child'
+	self.spawnMethod    = 'sibling'
 	self.spawnName      = ''
 end
 

@@ -111,6 +111,20 @@ function ParseContextProto:setArguments( args )
 	self.currentNode.arguments = args or false
 end
 
+function ParseContextProto:parseArguments( raw )
+	local result = {}
+	for part in string.gsplit( raw, ',', true ) do
+		local k, v = string.match( part, '^%s*([%w_.]+)%s*=%s*([%w_.%+%-]+)%s*' )
+		if k then
+			result[ k ] = v
+		else
+			self:setErrorInfo( 'failed parsing arguments' )
+			return nil
+		end
+	end
+	return result
+end
+
 function ParseContextProto:parseCommon( content, pos, type, symbol )
 	-- local content = content:sub( pos )
 	local pattern = '^'..symbol..'%s*([%w_.]*)%s*'
@@ -162,20 +176,6 @@ function ParseContextProto:parseCommonWithArguments( content, pos, type, symbol 
 	end
 end
 
-function ParseContextProto:parseArguments( raw )
-	local result = {}
-	for part in string.gsplit( raw, ',', true ) do
-		local k, v = string.match( part, '^%s*([%w_.]+)%s*=%s*([%w_.%+%-]+)%s*' )
-		if k then
-			result[ k ] = v
-		else
-			self:setErrorInfo( 'failed parsing arguments' )
-			return nil
-		end
-	end
-	return result
-end
-
 function ParseContextProto:parseDecorator( content, pos, type, symbol )
 	-- local content = content:sub( pos )
 	local s, e, match = string.find( content, '^'..symbol..'%s*', pos )
@@ -188,6 +188,35 @@ function ParseContextProto:parseDecorator( content, pos, type, symbol )
 		return pos
 	end
 end
+
+function ParseContextProto:parseDecoratorFor( content, pos, type, symbol )
+	local s, e, match = string.find( content, '^'..symbol..'%s*', pos )
+	if not s then	return pos end
+	if self:set( type, type ) then
+		local pos1 = e + 1
+		local s, e, match = string.find( content, '%(%s*(.*)s*%)%s*', pos1 )
+		if s then
+			local argStrs = string.split( match, ',', true )
+			local args = {}
+			for i, v in ipairs( argStrs ) do
+				args[ i ] = tonumber( v )
+			end
+			local minCount = args[ 1 ] or 1
+			local maxCount = args[ 2 ] or 1
+			self:setArguments( { min = minCount, max = maxCount } )
+			return e + 1
+		else
+			self:setErrorInfo( '"for" decorator needs integer arguments' )
+		end
+		
+		self.decorateState = 'decorating'
+		self.currentDecorationNode = self.currentNode
+		return e + 1
+	else
+		return pos
+	end
+end
+
 
 function ParseContextProto:parse_condition ( content, pos )
 	return self:parseCommon( content, pos, 'condition', '?' )
@@ -253,10 +282,21 @@ function ParseContextProto:parse_decorator_fail ( content, pos )
 	return self:parseDecorator( content, pos, 'decorator_fail', ':fail' )
 end
 
+function ParseContextProto:parse_decorator_for ( content, pos )
+	return self:parseDecoratorFor( content, pos,  'decorator_for', ':for' )
+end
+
 function ParseContextProto:parse_decorator_repeat ( content, pos )
 	return self:parseDecorator( content, pos, 'decorator_repeat', ':repeat' )
 end
 
+function ParseContextProto:parse_decorator_while ( content, pos )
+	return self:parseDecorator( content, pos, 'decorator_while', ':while' )
+end
+
+function ParseContextProto:parse_decorator_forever ( content, pos )
+	return self:parseDecorator( content, pos, 'decorator_forever', ':forever' )
+end
 
 
 function ParseContextProto:parse_commented ( content, pos )
@@ -314,7 +354,10 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_decorator_ok( l, pos )
 		pos = self:parse_decorator_fail( l, pos )
 		pos = self:parse_decorator_ignore( l, pos )
+		pos = self:parse_decorator_for( l, pos )
+		pos = self:parse_decorator_while( l, pos )
 		pos = self:parse_decorator_repeat( l, pos )
+		pos = self:parse_decorator_forever( l, pos )
 		pos = self:parse_commented( l, pos )
 		pos = self:parse_spaces( l, pos )
 		if pos0 == pos then 

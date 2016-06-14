@@ -35,7 +35,7 @@ function PrefabSpawner:__init()
 	self.copyLoc        = true
 	self.copyScl        = false
 	self.copyRot        = false
-	self.spawnMethod    = 'child'
+	self.spawnMethod    = 'sibling'
 end
 
 function PrefabSpawner:onStart( ent )

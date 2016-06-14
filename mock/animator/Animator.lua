@@ -31,6 +31,8 @@ function Animator:__init()
 	self.states      = table.weak_k()
 end
 
+
+
 --------------------------------------------------------------------
 function Animator:onAttach( entity )
 end
@@ -57,7 +59,6 @@ function Animator:getClipNames()
 	if not data then return nil end
 	return data:getClipNames()
 end
-
 
 --------------------------------------------------------------------
 --Track access
@@ -145,6 +146,7 @@ end
 
 function Animator:resume()
 	return self:pause( false )
+	
 end
 
 function Animator:startDefaultClip()
