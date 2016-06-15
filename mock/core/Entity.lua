@@ -7,6 +7,8 @@ module 'mock'
 local insert, remove = table.insert, table.remove
 local pairs, ipairs  = pairs, ipairs
 local unpack = unpack
+local next   = next
+local type   = type
 
 --------------------------------------------------------------------
 ----- ENTITY CLASS

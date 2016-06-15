@@ -21,7 +21,7 @@ CLASS: EffectNodeParticleForce   ( EffectTransformNode )
 EffectNodeParticleSystem :MODEL{
 	Field 'material'     :asset( 'material' );
 	Field 'blend'        :enum( EnumBlendMode );
-	Field 'deck'         :asset( 'deck2d\\..*' ); -- :meta{ search_terms = 'particle' };
+	Field 'deck'         :asset( 'deck2d\\..*;mesh' ); -- :meta{ search_terms = 'particle' };
 	'----';
 	Field 'particleLimit'    :int()  :range(0);
 	Field 'spriteLimit'      :int()  :range(0);
