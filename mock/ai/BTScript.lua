@@ -251,7 +251,7 @@ function ParseContextProto:parse_random ( content, pos )
 end
 
 function ParseContextProto:parse_shuffled ( content, pos )
-	return self:parseCommon( content, pos, 'shuffle', '~>' )
+	return self:parseCommon( content, pos, 'shuffled', '~>' )
 end
 
 function ParseContextProto:parse_concurrent_and ( content, pos )
