@@ -69,6 +69,7 @@ function AnimatorClipTreeState:__init()
 	self.subStates = {}
 	self.weight    = 1
 	self.throttle  = 1
+	self.previewing = false
 end
 
 function AnimatorClipTreeState:loadTree( rootNode, animator )
@@ -96,7 +97,7 @@ function AnimatorClipTreeState:updateSubState( key, weight, throttle )
 end
 
 function AnimatorClipTreeState:addSubState( key, clip, mode )
-	local animState = clip and self.animator:loadClip( clip, false ) or false
+	local animState = clip and self.animator:loadClip( clip, false, self.previewing ) or false
 	self.subStates[ key ] = {
 		state = animState,
 		weight = 1,
@@ -284,6 +285,7 @@ function AnimatorClipTreeTrack:onStateLoad( state )
 	state.clipMode = 'tree'
 	local rootEntity, scene = state:getTargetRoot()
 	local treeState = AnimatorClipTreeState()
+	treeState.previewing = state.previewing
 	local animator  = state.animator
 	treeState:loadTree( self.parentClip.treeRoot, animator )
 	local playContext = { 

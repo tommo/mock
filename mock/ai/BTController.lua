@@ -228,11 +228,13 @@ function BTContext:updateRunningNodes( dt )
 	end
 
 	--shrink running queue?
+
 	if self._runningQueueNeedShrink then
 		local newQueue = {}
-		local j = 1
+		-- local j = 1
 		for i, node in ipairs( _runningQueue ) do
-			if node then newQueue[ j ] = node ; j = j + 1 end
+			if node then insert( newQueue, node ) end
+			-- if node then newQueue[ j ] = node ; j = j + 1 end
 		end
 		self._runningQueue = newQueue
 	end
