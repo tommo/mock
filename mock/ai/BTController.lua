@@ -278,7 +278,7 @@ function BTContext:removeRunningNode( nodeToRemove )
 			-- _activeActions[ nodeToRemove ] = nil
 		end
 	end
-
+	_warn( 'bt node not removed', nodeToRemove:getClassName(), nodeToRemove.name )
 end
 
 function BTContext:clearRunningNode()
@@ -455,12 +455,17 @@ function BTActionNode:update( context, dt, fromExecute )
 		return 'running'
 	else
 		--fail or ok
+		if fromExecute then
+			--not in queue yet, just stop
+			self:stop( context )
+		else
+			context:removeRunningNode( self )
+		end
 		return self:returnUpLevel( res, context )
 	end
 end
 
-function BTActionNode:returnUpLevel( res, context )	
-	context:removeRunningNode( self )
+function BTActionNode:returnUpLevel( res, context )		
 	return self.parentNode:resumeFromChild( self, res, context )
 end
 
