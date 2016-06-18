@@ -332,12 +332,12 @@ function ParseContextProto:parseLine( lineNo, l )
 	self.decorateState   = false
 	
 	local pos = i + 1
-	pos = self:parse_action( l, pos )
 	local trailComment = l:find( '//' )
 	if trailComment then
 		l = l:sub( 1, trailComment - 1 )
 	end
-	
+	pos = self:parse_action( l, pos )
+
 	local length = #l
 	while true do
 		if pos > length then break end

@@ -150,4 +150,4 @@ function reportHistogram()
 	f:close()
 end
 
-setLogLevel( 'warning' )
+setLogLevel( _G.MOCK_LOG_LEVEL or 'warning' )
