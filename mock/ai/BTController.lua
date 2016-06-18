@@ -89,7 +89,7 @@ end
 
 function BTAction:getArg( k, default )
 	local args = self._BTNode.arguments
-	local v = args and args[ k ]
+	local v = args and args[ k ] or nil
 	return v == nil and default or v
 end
 
