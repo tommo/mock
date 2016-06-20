@@ -76,17 +76,23 @@ function Waypoint:setLoc( x, y, z )
 end
 
 --------------------------------------------------------------------
+CLASS: WaypointPathGraph ( PathGraph )
+	:MODEL{}
+
+--------------------------------------------------------------------
 CLASS: WaypointGraph ( Component )
 	:MODEL{
+		Field 'pathGraphID' :string();
 		Field 'serializedData' :variable() :no_edit() :getset( 'SerializedData' );
 }
 
 registerComponent( 'WaypointGraph', WaypointGraph )
 
 function WaypointGraph:__init()
+	self.pathGraphID = 'main'
 	self.waypoints   = {}
 	self.tmpConnections = {}
-
+	self.pathGraph = WaypointPathGraph()
 	self.nodeCount = 0
 	self.pathGraph = MOAIVecPathGraph.new()
 	self.finderQueue = {}

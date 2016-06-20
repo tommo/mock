@@ -29,6 +29,7 @@ function Animator:__init()
 	self.vars        = {}
 	self.varSeq      = 0
 	self.states      = table.weak_k()
+	self.activeStateLocked = false
 end
 
 
@@ -109,6 +110,7 @@ function Animator:_loadClip( clip, makeActive, _previewing )
 end
 
 function Animator:loadClip( name, makeActive, _previewing )
+	makeActive = makeActive ~= false
 	if self.activeStateLocked and makeActive then
 		-- _warn( 'attempt to change clip of locked animator' )
 		return false
@@ -140,7 +142,7 @@ function Animator:playClip( clipName, mode )
 end
 
 function Animator:lockClip( locked )
-	self.activeStateLocked = locked
+	self.activeStateLocked = locked ~= false
 end
 
 function Animator:unlockClip()
