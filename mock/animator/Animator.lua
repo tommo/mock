@@ -109,6 +109,11 @@ function Animator:_loadClip( clip, makeActive, _previewing )
 end
 
 function Animator:loadClip( name, makeActive, _previewing )
+	if self.activeStateLocked and makeActive then
+		-- _warn( 'attempt to change clip of locked animator' )
+		return false
+	end
+
 	if not self.data then
 		_warn('Animator has no data')
 		return false
@@ -132,6 +137,14 @@ function Animator:playClip( clipName, mode )
 		state:start()
 	end
 	return state
+end
+
+function Animator:lockClip( locked )
+	self.activeStateLocked = locked
+end
+
+function Animator:unlockClip()
+	return self:lock( false )
 end
 
 function Animator:stop()
