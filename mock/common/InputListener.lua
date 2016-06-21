@@ -55,6 +55,7 @@ end
 
 --------------------------------------------------------------------
 function installInputListener( owner, option )
+	uninstallInputListener( owner )
 	option = option or {}
 	local inputDevice       = option['device'] or mock.getDefaultInputDevice()
 	local refuseMockUpInput = option['no_mockup'] == true
@@ -200,6 +201,10 @@ function uninstallInputListener( owner )
 	local data = owner.__inputListenerData
 	if not data then return end	
 	local inputDevice = data.inputDevice
+	print( 'removing input listener', owner:getClassName() )
+	for k, d in pairs( data ) do
+		print( k, d )
+	end
 	if data.mouseCallback then
 		inputDevice:removeMouseListener( data.mouseCallback )
 	end

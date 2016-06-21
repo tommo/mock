@@ -674,6 +674,16 @@ function Game:reopenMainScene()
 	end
 end
 
+function Game:scheduleReopenMainScene()
+	if not self.mainScene then return false end
+	local assetPath = self.mainScene.assetPath
+	if assetPath then
+		return self:scheduleOpenSceneByPath( assetPath )
+	else
+		return false
+	end
+end
+
 --------------------------------------------------------------------
 ------Layer Control
 --------------------------------------------------------------------
