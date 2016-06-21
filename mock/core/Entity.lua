@@ -229,7 +229,8 @@ function Entity:destroyNow()
 		end
 		if onDetach then
 			onDetach( com, self )
-		end		
+		end
+		com._entity = nil
 	end
 	-- for com in pairs( components ) do
 	-- 	components[ com ] = nil
