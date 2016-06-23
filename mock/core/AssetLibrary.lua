@@ -48,23 +48,40 @@ end
 
 --------------------------------------------------------------------
 function collectAssetGarbage()
-	local collectThread = MOAICoroutine.new()
-	collectThread:run( function()
-			coroutine.yield()
-			_stat( 'collect asset garbage' )
-			setAssetCacheWeak()
-			MOAISim.forceGC()
-			setAssetCacheStrong()
-			-- reportLoadedMoaiTextures()
-			-- reportAssetInCache()
-			-- reportHistogram()
-			-- reportTracingObject()
-			releaseRetainAssets()
-			_stat( 'collect asset garbage ... done' )
-		end
-	)
-	collectThread:attach( game:getActionRoot() )
-	return collectThread
+	do
+		setAssetCacheWeak()
+		_stat( 'collect asset garbage' )
+		-- MOAISim.forceGC()
+		game:collectgarbage( 'collect' )
+		setAssetCacheStrong()
+		-- reportLoadedMoaiTextures()
+		-- reportAssetInCache()
+		-- reportHistogram()
+		-- reportTracingObject()
+		releaseRetainAssets()
+	end
+	-- local collectThread = MOAICoroutine.new()
+	-- collectThread:run( function()
+	-- 		while true do
+	-- 			if not mock.isThreadTaskBusy() then break end
+	-- 			coroutine.yield()
+	-- 		end
+	-- 		coroutine.yield()
+	-- 		setAssetCacheWeak()
+	-- 		_stat( 'collect asset garbage' )
+	-- 		-- MOAISim.forceGC()
+	-- 		game:collectgarbage( 'collect' )
+	-- 		setAssetCacheStrong()
+	-- 		-- reportLoadedMoaiTextures()
+	-- 		-- reportAssetInCache()
+	-- 		-- reportHistogram()
+	-- 		-- reportTracingObject()
+	-- 		releaseRetainAssets()
+	-- 		_stat( 'collect asset garbage ... done' )
+	-- 	end
+	-- )
+	-- -- collectThread:attach( game:getActionRoot() )
+	-- return collectThread
 end
 
 

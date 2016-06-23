@@ -248,7 +248,7 @@ function Game:initSystem( config, fromEditor )
 		collectgarbage( 'setstepmul', 140 )	
 	end
 
-	-- MOAILuaRuntime.reportGC( true )
+	MOAILuaRuntime.reportGC( true )
 	MOAISim.setStep( 1/60 )
 	MOAISim.clearLoopFlags()
 	MOAISim.setLoopFlags( 

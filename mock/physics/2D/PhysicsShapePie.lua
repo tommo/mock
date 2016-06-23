@@ -5,7 +5,7 @@ CLASS: PhysicsShapePie ( PhysicsShape )
 	:MODEL
 {
 	Field 'dir'   :range( -180, 180 )   :getset( 'Dir' );
-	Field 'range' :range( 1, 360 )      :getset( 'Range');
+	Field 'range' :range( 5, 360 )      :getset( 'Range');
 	Field 'tessellation'		:int()			:range(3, 6) :getset( 'Tessellation');
 	Field 'radius'					:number()		:getset( 'Radius');
 }
