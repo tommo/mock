@@ -947,11 +947,16 @@ function Entity:start()
 	end
 	self.started = true
 
-	local copy = {} --there might be new components attached inside component starting
-	for com in pairs( self.components ) do
-		copy[ com ] = true
-	end
-	for com, clas in pairs( copy ) do
+	-- local copy = {} --there might be new components attached inside component starting
+	-- for com in pairs( self.components ) do
+	-- 	copy[ com ] = true
+	-- end
+	-- for com, clas in pairs( copy ) do
+	-- 	local onStart = com.onStart
+	-- 	if onStart then onStart( com, self ) end
+	-- end
+
+	for i, com in ipairs( self:getSortedComponentList() ) do
 		local onStart = com.onStart
 		if onStart then onStart( com, self ) end
 	end

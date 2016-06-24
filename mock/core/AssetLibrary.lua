@@ -47,20 +47,27 @@ function releaseRetainAssets()
 end
 
 --------------------------------------------------------------------
+local function _doAssetGarbageCollection()
+	_stat( 'collect asset garbage' )
+	setAssetCacheWeak()
+	MOAISim.forceGC()
+	setAssetCacheStrong()
+	-- reportLoadedMoaiTextures()
+	-- reportAssetInCache()
+	-- reportHistogram()
+	-- reportTracingObject()
+	releaseRetainAssets()
+			_stat( 'collect asset garbage ... done' )
+end
+
 function collectAssetGarbage()
+
 	local collectThread = MOAICoroutine.new()
 	collectThread:run( function()
-			coroutine.yield()
-			_stat( 'collect asset garbage' )
-			setAssetCacheWeak()
-			MOAISim.forceGC()
-			setAssetCacheStrong()
-			-- reportLoadedMoaiTextures()
-			-- reportAssetInCache()
-			-- reportHistogram()
-			-- reportTracingObject()
-			releaseRetainAssets()
-			_stat( 'collect asset garbage ... done' )
+			while isThreadTaskBusy() do
+				coroutine.yield()
+			end
+			_doAssetGarbageCollection()
 		end
 	)
 	collectThread:attach( game:getActionRoot() )
