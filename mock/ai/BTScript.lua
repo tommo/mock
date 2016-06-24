@@ -387,7 +387,9 @@ function ParseContextProto:parseSource( src )
 	for line in string.gsplit( src, '\n', true ) do
 		lineNo = lineNo + 1
 		self.currentLineNo = lineNo
-		self:parseLine( lineNo, line )
+		if line:trim() ~= '' then
+			self:parseLine( lineNo, line )
+		end
 	end
 	-- printBTScriptNode( self.rootNode )
 	return self.rootNode
