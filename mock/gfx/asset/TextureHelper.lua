@@ -29,6 +29,9 @@ end
 CLASS: ThreadTextureLoadTask ( ThreadImageLoadTask )
 	:MODEL{}
 
+function ThreadTextureLoadTask:__init()
+end
+
 function ThreadTextureLoadTask:setTargetTexture( tex )
 	self.texture = tex
 end
@@ -38,7 +41,7 @@ function ThreadTextureLoadTask:setDebugName( name )
 end
 
 function ThreadTextureLoadTask:onComplete( img )
-	self.texture:load ( img, self.imageTransform, self.debugName or self.filename )
+	self.texture:load ( img, self.imageTransform, self.debugName or self.imagePath )
 	self.texture:affirm()	
 end
 

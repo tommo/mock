@@ -152,7 +152,7 @@ end
 
 
 --------------------------------------------------------------------
-local tracingCoroutines = setmetatable( {}, { __mode = 'kv' } )
+local tracingCoroutines = setmetatable( {}, { __mode = 'k' } )
 function _reportTracingCoroutines()
 	local count = {}
 	local countActive = {}
@@ -175,15 +175,7 @@ MOAICoroutine.new = function( ... )
 	local coro = oldNew( ... )
 	-- print( 'CREATE COROUTINE', coro )
 	-- print( debug.traceback() )
-	
 	tracingCoroutines[ coro ] = debug.traceback( 3 )
-	
-	-- coro:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, function()
-	-- 	print( 'updating COROUTINE', coro )
-	-- end )
-	-- coro:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, function()
-	-- 	print( 'post updating COROUTINE', coro )
-	-- end )
 	return coro
 end
 

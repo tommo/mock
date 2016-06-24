@@ -74,8 +74,6 @@ function Scene:init()
 	self.active  = true
 	self.userObjects = {}
 
-	self:resetActionRoot()
-
 	self:initLayers()
 	self:initPhysics()
 	self:initManagers()
@@ -371,16 +369,17 @@ end
 --------------------------------------------------------------------
 function Scene:resetActionRoot()
 	_stat( 'scene action root reset' )
+	-- local prevActionRoot = self.actionRoot
 	if self.actionRoot then
-		self.actionRoot:stop()
 		self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, nil )
 		self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, nil )
+		self.actionRoot:stop()
 		self.actionRoot = false
 	end
 
 	self.actionRoot = MOAICoroutine.new()
 	self.actionRoot:setDefaultParent( true )
-	self.actionRoot:run(
+	self.actionRoot:run( 
 		function()
 			while true do
 				coroutine.yield()
@@ -389,7 +388,6 @@ function Scene:resetActionRoot()
 	)
 	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, function( ... ) self:preUpdate( ... ) end )	
 	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, function( ... ) self:postUpdate( ... ) end )	
-
 	self.actionRoot:attach( self:getParentActionRoot() )
 
 	_stat( 'scene timer reset ')
@@ -406,6 +404,7 @@ function Scene:resetActionRoot()
 
 	_stat( 'scene action priority group reset' )
 	for i, g in ipairs( self.actionPriorityGroups ) do
+		_stat( 'stop priorityGroup', g )
 		g:clear()
 		g:stop()
 	end

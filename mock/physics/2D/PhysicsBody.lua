@@ -35,6 +35,7 @@ function PhysicsBody:__init()
 	self.bodyType = 'dynamic'
 	self.useEntityTransform = false
 	self.transformSyncPolicy = 'use_body_transform'
+	self._bodyActive = true
 end
 
 
@@ -69,7 +70,7 @@ function PhysicsBody:onAttach( entity )
 
 	self.bodyReady = true
 	self:updateMass()
-
+	body:setActive( false )
 	self.body:forceUpdate()
 end
 
@@ -78,8 +79,10 @@ function PhysicsBody:getMoaiBody()
 end
 
 function PhysicsBody:onStart( entity )
+	--print( 'body start', self )
 	
 	-- update position sync based on body type and settings
+	self.body:setActive( self._bodyActive )
 	self:updateTransformSyncPolicy( entity )
 	self:updateMass()
 end
@@ -287,6 +290,13 @@ function PhysicsBody:getTag()
 	return nil
 end
 
+function PhysicsBody:setActive( active )
+	self._bodyActive = active
+	if self.body then
+		self.body:setActive( active )
+	end
+end
+
 function PhysicsBody:refresh()
 	local act = self:isActive()
 	self:setActive( not false )
@@ -354,7 +364,6 @@ _wrapMethods( PhysicsBody, 'body', {
 	'isBullet',
 	'isFixedRotation',
 	'resetMassData',
-	'setActive',
 	'setAngularDamping',
 	'setAngularVelocity',
 	'setAwake',
