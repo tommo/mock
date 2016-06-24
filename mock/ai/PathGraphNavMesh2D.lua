@@ -7,7 +7,9 @@ CLASS: PathGraphNavMesh2D ( PathGraph )
 
 function PathGraphNavMesh2D:buildFromPolyPaths( polyPaths )
 	local navmesh = MOCKNavMesh.new()
-	navmesh:buildFromPolyPaths( polyPaths )
+	if polyPaths then
+		navmesh:buildFromPolyPaths( polyPaths )
+	end
 	self.pathGraph = navmesh
 	self._dirty = false
 end

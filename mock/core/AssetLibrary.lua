@@ -19,7 +19,7 @@ function makeAssetCacheTable()
 end
 
 function _allowAssetCacheWeakMode( allowed )
-	__ASSET_CACHE_WEAK_MODE = allowed and 'kv' or false
+	__ASSET_CACHE_WEAK_MODE = allowed and 'v' or false
 end
 
 function setAssetCacheWeak()
@@ -46,42 +46,39 @@ function releaseRetainAssets()
 	_retainedAssetTable = {}
 end
 
+
+local pendingAssetGarbageCollection = false
+local _assetCollectionPreGC
+
+function _doAssetCollection()
+	setAssetCacheWeak()
+	MOAISim.forceGC()
+	setAssetCacheStrong()
+	releaseRetainAssets()
+end
+
+function _assetCollectionPreGC()
+	_doAssetCollection()
+	MOAISim.setListener( MOAISim.EVENT_PRE_GC, nil ) --stop
+			-- reportLoadedMoaiTextures()
+			-- reportAssetInCache()
+			-- reportHistogram()
+			-- reportTracingObject()
+end
+
 --------------------------------------------------------------------
 function collectAssetGarbage()
-	do
-		setAssetCacheWeak()
-		_stat( 'collect asset garbage' )
-		-- MOAISim.forceGC()
-		game:collectgarbage( 'collect' )
-		setAssetCacheStrong()
-		-- reportLoadedMoaiTextures()
-		-- reportAssetInCache()
-		-- reportHistogram()
-		-- reportTracingObject()
-		releaseRetainAssets()
-	end
-	-- local collectThread = MOAICoroutine.new()
-	-- collectThread:run( function()
-	-- 		while true do
-	-- 			if not mock.isThreadTaskBusy() then break end
-	-- 			coroutine.yield()
-	-- 		end
-	-- 		coroutine.yield()
-	-- 		setAssetCacheWeak()
-	-- 		_stat( 'collect asset garbage' )
-	-- 		-- MOAISim.forceGC()
-	-- 		game:collectgarbage( 'collect' )
-	-- 		setAssetCacheStrong()
-	-- 		-- reportLoadedMoaiTextures()
-	-- 		-- reportAssetInCache()
-	-- 		-- reportHistogram()
-	-- 		-- reportTracingObject()
-	-- 		releaseRetainAssets()
-	-- 		_stat( 'collect asset garbage ... done' )
-	-- 	end
-	-- )
-	-- -- collectThread:attach( game:getActionRoot() )
-	-- return collectThread
+	local collectThread = MOAICoroutine.new()
+	collectThread:run( function()
+			while true do
+				if not mock.isThreadTaskBusy() then break end
+				coroutine.yield()
+			end
+			MOAISim.setListener( MOAISim.EVENT_PRE_GC, _assetCollectionPreGC )
+		end
+	)
+	collectThread:attach( game:getActionRoot() )
+	return collectThread
 end
 
 
