@@ -217,6 +217,27 @@ function ParseContextProto:parseDecoratorFor( content, pos, type, symbol )
 	end
 end
 
+function ParseContextProto:parseDecoratorSingleFloat( content, pos, type, symbol )
+	local s, e, match = string.find( content, '^'..symbol..'%s*', pos )
+	if not s then	return pos end
+	if self:set( type, type ) then
+		local pos1 = e + 1
+		local s, e, match = string.find( content, '%(%s*(.*)s*%)%s*', pos1 )
+		local num = s and tonumber( match )
+		if num then
+			self:setArguments( { value = num } )
+			return e + 1
+		else
+			self:setErrorInfo( string.format( '"%s" decorator needs a number argument', type ) )
+		end
+		
+		self.decorateState = 'decorating'
+		self.currentDecorationNode = self.currentNode
+		return e + 1
+	else
+		return pos
+	end
+end
 
 function ParseContextProto:parse_condition ( content, pos )
 	return self:parseCommon( content, pos, 'condition', '?' )
@@ -298,6 +319,14 @@ function ParseContextProto:parse_decorator_forever ( content, pos )
 	return self:parseDecorator( content, pos, 'decorator_forever', ':forever' )
 end
 
+function ParseContextProto:parse_decorator_weight ( content, pos )
+	return self:parseDecoratorSingleFloat( content, pos,  'decorator_weight', ':weight' )
+end
+
+function ParseContextProto:parse_decorator_prob ( content, pos )
+	return self:parseDecoratorSingleFloat( content, pos,  'decorator_prob', ':prob' )
+end
+
 
 function ParseContextProto:parse_commented ( content, pos )
 	local s, e, match = string.find( content, '^//.*', pos )
@@ -359,6 +388,8 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_decorator_fail( l, pos )
 		pos = self:parse_decorator_ignore( l, pos )
 		pos = self:parse_decorator_for( l, pos )
+		pos = self:parse_decorator_weight( l, pos )
+		pos = self:parse_decorator_prob( l, pos )
 		pos = self:parse_decorator_while( l, pos )
 		pos = self:parse_decorator_repeat( l, pos )
 		pos = self:parse_decorator_forever( l, pos )

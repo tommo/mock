@@ -13,7 +13,7 @@ local ipairs, pairs = ipairs, pairs
 
 module 'mock'
 --------------------------------------------------------------------
-local function _randInteger( k )
+local function _randInteger( k ) 
 	 return math.floor( math.random() * k ) + 1
 end
 
@@ -347,6 +347,10 @@ local function loadNode( data )
 		else
 			node:setRange( 1 )
 		end
+
+	elseif nodeType == 'decorator_prob' or nodeType == 'decorator_weight' then
+		local args = data.arguments
+		node:setValue( args[ 'value' ] )
 		
 	end
 	if children then
@@ -362,8 +366,9 @@ local function loadNode( data )
 end
 
 function BehaviorTree:load( data )
-	self.root = loadNode( data )	
+	self.root = loadNode( data )
 	self.root:validate()
+	self.root:postLoad()
 	return self
 end
 
@@ -384,6 +389,10 @@ function BTNode:execute( context )
 end
 
 function BTNode:validate( context )
+	return true
+end
+
+function BTNode:postLoad()
 	return true
 end
 
@@ -414,6 +423,10 @@ end
 
 function BTNode:returnUpLevel( res, context )
 	return self.parentNode:resumeFromChild( self, res, context )
+end
+
+function BTNode:resumeFromChild( child, res, context )
+	return self:returnUpLevel( res, context )
 end
 
 
@@ -612,6 +625,13 @@ function BTCompositedNode:validate( context )
 	return true
 end
 
+function BTCompositedNode:postLoad( context )
+	for i, nn in ipairs( self.children ) do
+		if not nn:postLoad( context ) then return false end
+	end
+	return true
+end
+
 function BTCompositedNode:addNode( node )
 	node.parentNode = self
 	node.depth = self.depth + 1
@@ -703,14 +723,34 @@ end
 
 --------------------------------------------------------------------
 CLASS: BTRandomSelector ( BTCompositedNode )
+function BTRandomSelector:__init()
+	self.probList = {}
+end
+
 function BTRandomSelector:getType()
 	return 'BTRandomSelector'
 end
 
+function BTRandomSelector:postLoad()
+	local l = {}
+	for i, n in ipairs( self.children ) do
+		local weight = 1
+		if n:getType() == 'BTDecoratorWeight' then
+			weight = n.value
+		end
+		l[ i ] = { weight, n }
+	end
+	self.probList = l
+	return true
+end
+
 function BTRandomSelector:execute( context )
-	local index = _randInteger( self.childrenCount )
-	local child = self.children[ index ]
-	return child:execute( context )
+	local chosen = probselect( self.probList )
+	if chosen then
+		return chosen:execute( context )
+	else
+		return self:returnUpLevel( 'ignore', context )
+	end
 end
 
 function BTRandomSelector:resumeFromChild( child, res, context )
@@ -1098,7 +1138,7 @@ end
 function BTDecoratorRepeatFor:execute( context )
 	local nodeContext = context._nodeContext
 	local count = randi( self.minCount, self.maxCount )
-	print( 'RAND:', count, self.minCount, self.maxCount )
+	-- print( 'RAND:', count, self.minCount, self.maxCount )
 	local env = nodeContext[ self ]
 	if not env then 
 		env = { count = count, executed = 0 }
@@ -1168,6 +1208,44 @@ function BTDecoratorRepeatForever:update( context )
 	return self:execute( context )
 end
 
+
+--------------------------------------------------------------------
+CLASS: BTDecoratorWeight ( BTDecorator )
+function BTDecoratorWeight:getType()
+	return 'BTDecoratorWeight'
+end
+
+function BTDecoratorWeight:setValue( v )
+	self.value = v
+end
+
+function BTDecoratorWeight:execute( context )
+	if self.targetNode then
+		return self.targetNode:execute( context )
+	else
+		return self:returnUpLevel( 'ignore', context )
+	end
+end
+
+--------------------------------------------------------------------
+CLASS: BTDecoratorProb ( BTDecorator )
+function BTDecoratorProb:getType()
+	return 'BTDecoratorProb'
+end
+
+function BTDecoratorProb:setValue( v )
+	self.value = v or 0
+end
+
+function BTDecoratorProb:execute( context )
+	if prob( self.value * 100 ) then
+		return self.targetNode:execute( context )
+	else
+		return self:returnUpLevel( 'ignore', context )
+	end
+end
+
+
 --------------------------------------------------------------------
 
 BehaviorTreeNodeTypes = {
@@ -1192,6 +1270,9 @@ BehaviorTreeNodeTypes = {
 	['decorator_repeat']  = BTDecoratorRepeatUntil ;
 	['decorator_while']   = BTDecoratorRepeatWhile ;
 	['decorator_forever'] = BTDecoratorRepeatForever ;
+	['decorator_prob']    = BTDecoratorProb ;
+	['decorator_weight']  = BTDecoratorWeight ;
+
 }
 
 --------------------------------------------------------------------
