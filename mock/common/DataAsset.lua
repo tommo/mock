@@ -11,7 +11,8 @@ local function DataSheetLoader( node )
 	return data[ name ]
 end
 
-registerAssetLoader( 'data_json',  JSONDataLoader )
-registerAssetLoader( 'data_xls',   JSONDataLoader )
+registerAssetLoader( 'data_json',   JSONDataLoader )
+registerAssetLoader( 'data_xls',    JSONDataLoader )
 registerAssetLoader( 'data_yaml',   JSONDataLoader )
+registerAssetLoader( 'data_csv',    JSONDataLoader )
 registerAssetLoader( 'data_sheet',  DataSheetLoader )

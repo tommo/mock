@@ -361,6 +361,9 @@ function Proto:loadData( dataPath )
 	self.loading = true --cyclic ref avoiding
 	
 	local data     = loadAssetDataTable( dataPath )
+	if not data then
+		error( 'empty proto data:' .. tostring( dataPath )  )
+	end
 	--expand all data
 	local protoInstances = {}
 	for id, objData in pairs( data.map )  do
@@ -377,6 +380,7 @@ function Proto:loadData( dataPath )
 	local rootData = data.map[ self.rootId ]
 	self.rootName  = rootData['body']['name']
 	self.loading   = false
+	return true
 end
 
 function Proto:createInstance( overridedData, guid )
@@ -479,7 +483,11 @@ function ProtoManager:getProto( node )
 		self.protoMap[ nodePath ] = proto
 	end
 	if not proto.ready then
-		proto:loadData( node:getObjectFile( 'def' ) )
+		local dataPath = node:getObjectFile( 'def' )
+		if not dataPath then
+			error( 'empty proto data path:' .. node:getNodePath() )
+		end
+		proto:loadData( dataPath )
 	end
 	return proto
 end

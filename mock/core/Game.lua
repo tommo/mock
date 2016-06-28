@@ -777,7 +777,6 @@ function Game:stop()
 	self:resetClock()
 	emitSignal( 'game.stop', self )
 	_stat( 'game stopped' )
-	os.exit()
 end
 
 function Game:start()

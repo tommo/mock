@@ -13,7 +13,7 @@ local ipairs, pairs = ipairs, pairs
 
 module 'mock'
 --------------------------------------------------------------------
-local function _randInteger( k )
+local function _randInteger( k ) 
 	 return math.floor( math.random() * k ) + 1
 end
 
@@ -267,7 +267,7 @@ function BTContext:removeRunningChildNodes( parentNode )
 end
 
 function BTContext:removeRunningNode( nodeToRemove )
-	-- print( 'remove running node', nodeToRemove:getClassName(), nodeToRemove.actionName  )
+	-- _log( 'remove running node', nodeToRemove:getClassName(), nodeToRemove.actionName  )
 	self._runningQueueNeedShrink = true
 	local _activeActions = self._activeActions
 	local _runningQueue = self._runningQueue
@@ -320,6 +320,7 @@ local function loadNode( data )
 	end
 	local class = assert( BehaviorTreeNodeTypes[ nodeType ], 'unknown node type:'..tostring(nodeType) )
 	local node = class()
+	node.rawValue = value
 	if nodeType == 'condition' or nodeType == 'condition_not' then
 		if value:sub( -2, -1 ) == '()' then
 			node.conditionName = value:sub( 1, -3 )
@@ -347,6 +348,10 @@ local function loadNode( data )
 		else
 			node:setRange( 1 )
 		end
+
+	elseif nodeType == 'decorator_prob' or nodeType == 'decorator_weight' then
+		local args = data.arguments
+		node:setValue( args[ 'value' ] )
 		
 	end
 	if children then
@@ -362,8 +367,9 @@ local function loadNode( data )
 end
 
 function BehaviorTree:load( data )
-	self.root = loadNode( data )	
+	self.root = loadNode( data )
 	self.root:validate()
+	self.root:postLoad()
 	return self
 end
 
@@ -384,6 +390,10 @@ function BTNode:execute( context )
 end
 
 function BTNode:validate( context )
+	return true
+end
+
+function BTNode:postLoad()
 	return true
 end
 
@@ -414,6 +424,10 @@ end
 
 function BTNode:returnUpLevel( res, context )
 	return self.parentNode:resumeFromChild( self, res, context )
+end
+
+function BTNode:resumeFromChild( child, res, context )
+	return self:returnUpLevel( res, context )
 end
 
 
@@ -495,7 +509,7 @@ function BTLoggingNode:getType()
 end
 
 function BTLoggingNode:execute( context )
-	print( self.logText )
+	_log( self.logText )
 	return self:returnUpLevel( 'ignore', context )
 end
 
@@ -564,6 +578,11 @@ function BTCondition:validate( context )
 	return true
 end
 
+function BTCondition:postLoad()
+	if self.targetNode then return self.targetNode:postLoad() end
+	return true
+end
+
 --------------------------------------------------------------------
 CLASS: BTConditionNot ( BTCondition )
 function BTConditionNot:getType()
@@ -608,6 +627,13 @@ end
 function BTCompositedNode:validate( context )
 	for i, nn in ipairs( self.children ) do
 		if not nn:validate( context ) then return false end
+	end
+	return true
+end
+
+function BTCompositedNode:postLoad( context )
+	for i, nn in ipairs( self.children ) do
+		if not nn:postLoad( context ) then return false end
 	end
 	return true
 end
@@ -703,14 +729,44 @@ end
 
 --------------------------------------------------------------------
 CLASS: BTRandomSelector ( BTCompositedNode )
+function BTRandomSelector:__init()
+	self.probList = false
+end
+
 function BTRandomSelector:getType()
 	return 'BTRandomSelector'
 end
 
+function BTRandomSelector:postLoad()
+	if #self.children == 0 then
+		self.probList = false
+		_warn( 'empty random selector', self.name )
+	else
+		local l = {}
+		for i, n in ipairs( self.children ) do
+			local weight = 1
+			if n:getType() == 'BTDecoratorWeight' then
+				weight = n.weight
+			end
+			l[ i ] = { weight, n }
+		end
+		self.probList = l
+	end
+	return BTRandomSelector.__super.postLoad( self )
+end
+
 function BTRandomSelector:execute( context )
-	local index = _randInteger( self.childrenCount )
-	local child = self.children[ index ]
-	return child:execute( context )
+	if not self.probList then
+		_warn( 'emtpy random node' )
+		return self:returnUpLevel( 'ignore', context )
+	else		
+		local chosen = probselect( self.probList )
+		if chosen then
+			return chosen:execute( context )
+		end
+		_warn( 'no random node selected' )
+		return self:returnUpLevel( 'ignore', context )
+	end
 end
 
 function BTRandomSelector:resumeFromChild( child, res, context )
@@ -992,6 +1048,10 @@ function BTDecorator:validate( context )
 	return self.targetNode:validate( context )
 end
 
+function BTDecorator:postLoad()
+	return self.targetNode:postLoad()
+end
+
 --------------------------------------------------------------------
 CLASS: BTDecoratorNot ( BTDecorator )
 function BTDecoratorNot:getType()
@@ -1098,7 +1158,6 @@ end
 function BTDecoratorRepeatFor:execute( context )
 	local nodeContext = context._nodeContext
 	local count = randi( self.minCount, self.maxCount )
-	print( 'RAND:', count, self.minCount, self.maxCount )
 	local env = nodeContext[ self ]
 	if not env then 
 		env = { count = count, executed = 0 }
@@ -1168,6 +1227,44 @@ function BTDecoratorRepeatForever:update( context )
 	return self:execute( context )
 end
 
+
+--------------------------------------------------------------------
+CLASS: BTDecoratorWeight ( BTDecorator )
+function BTDecoratorWeight:getType()
+	return 'BTDecoratorWeight'
+end
+
+function BTDecoratorWeight:setValue( v )
+	self.weight = v
+end
+
+function BTDecoratorWeight:execute( context )
+	if self.targetNode then
+		return self.targetNode:execute( context )
+	else
+		return self:returnUpLevel( 'ignore', context )
+	end
+end
+
+--------------------------------------------------------------------
+CLASS: BTDecoratorProb ( BTDecorator )
+function BTDecoratorProb:getType()
+	return 'BTDecoratorProb'
+end
+
+function BTDecoratorProb:setValue( v )
+	self.probWeight = v or 0
+end
+
+function BTDecoratorProb:execute( context )
+	if prob( self.probWeight * 100 ) then
+		return self.targetNode:execute( context )
+	else
+		return self:returnUpLevel( 'ignore', context )
+	end
+end
+
+
 --------------------------------------------------------------------
 
 BehaviorTreeNodeTypes = {
@@ -1192,6 +1289,9 @@ BehaviorTreeNodeTypes = {
 	['decorator_repeat']  = BTDecoratorRepeatUntil ;
 	['decorator_while']   = BTDecoratorRepeatWhile ;
 	['decorator_forever'] = BTDecoratorRepeatForever ;
+	['decorator_prob']    = BTDecoratorProb ;
+	['decorator_weight']  = BTDecoratorWeight ;
+
 }
 
 --------------------------------------------------------------------
@@ -1252,12 +1352,6 @@ function BTController:onUpdate( dt )
 
 end
 
-function BTController:onDetach( ent )
-	--clear running actions
-	self.context:clearRunningNode()
-	BTController.__super.onDetach( self, ent )
-end
-
 function BTController:buildDebugInfo()
 	return self.context:buildDebugInfo()
 end
@@ -1275,11 +1369,6 @@ end
 function BTController:resetEvaluate()
 	self.resetting = true
 	self:scheduleUpdate()
-end
-
-function BTController:resetContext( context )
-	self.context:clearRunningNode()
-	self.context = context or BTContext()
 end
 
 function BTController:getContext()
@@ -1305,4 +1394,13 @@ function BTController:getCondition( k )
 	return self.context:getCondition( k )
 end
 
+function BTController:stop()
+	self.context:resetRunningState()
+	self.resetting = false
+	BTController.__super.stop( self )
+end
 
+function BTController:start()
+	self:scheduleUpdate()
+	BTController.__super.start( self )
+end

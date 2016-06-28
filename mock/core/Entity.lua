@@ -19,12 +19,9 @@ CLASS: Entity ( Actor )
 	:MODEL{
 		Field '__prefabId':string() :no_edit();
 		Field '_priority' :int() :no_edit()  :set('setPriority');
+		Field 'tags'      :string()  :getset('Tags') :no_edit();
 		-- Field '_editLocked' :boolean() :no_edit();
-		
-		----
 		Field 'name'      :string()  :getset('Name');
-		'----';
-		Field 'tags'      :string()  :getset('Tags');
 		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
 		-- Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
