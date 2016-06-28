@@ -267,7 +267,7 @@ function BTContext:removeRunningChildNodes( parentNode )
 end
 
 function BTContext:removeRunningNode( nodeToRemove )
-	-- print( 'remove running node', nodeToRemove:getClassName(), nodeToRemove.actionName  )
+	-- _log( 'remove running node', nodeToRemove:getClassName(), nodeToRemove.actionName  )
 	self._runningQueueNeedShrink = true
 	local _activeActions = self._activeActions
 	local _runningQueue = self._runningQueue
@@ -320,6 +320,7 @@ local function loadNode( data )
 	end
 	local class = assert( BehaviorTreeNodeTypes[ nodeType ], 'unknown node type:'..tostring(nodeType) )
 	local node = class()
+	node.rawValue = value
 	if nodeType == 'condition' or nodeType == 'condition_not' then
 		if value:sub( -2, -1 ) == '()' then
 			node.conditionName = value:sub( 1, -3 )
@@ -508,7 +509,7 @@ function BTLoggingNode:getType()
 end
 
 function BTLoggingNode:execute( context )
-	print( self.logText )
+	_log( self.logText )
 	return self:returnUpLevel( 'ignore', context )
 end
 
@@ -574,6 +575,11 @@ end
 
 function BTCondition:validate( context )
 	if self.targetNode then return self.targetNode:validate( context ) end
+	return true
+end
+
+function BTCondition:postLoad()
+	if self.targetNode then return self.targetNode:postLoad() end
 	return true
 end
 
@@ -724,7 +730,7 @@ end
 --------------------------------------------------------------------
 CLASS: BTRandomSelector ( BTCompositedNode )
 function BTRandomSelector:__init()
-	self.probList = {}
+	self.probList = false
 end
 
 function BTRandomSelector:getType()
@@ -732,23 +738,33 @@ function BTRandomSelector:getType()
 end
 
 function BTRandomSelector:postLoad()
-	local l = {}
-	for i, n in ipairs( self.children ) do
-		local weight = 1
-		if n:getType() == 'BTDecoratorWeight' then
-			weight = n.value
+	if #self.children == 0 then
+		self.probList = false
+		_warn( 'empty random selector', self.name )
+	else
+		local l = {}
+		for i, n in ipairs( self.children ) do
+			local weight = 1
+			if n:getType() == 'BTDecoratorWeight' then
+				weight = n.weight
+			end
+			l[ i ] = { weight, n }
 		end
-		l[ i ] = { weight, n }
+		self.probList = l
 	end
-	self.probList = l
-	return true
+	return BTRandomSelector.__super.postLoad( self )
 end
 
 function BTRandomSelector:execute( context )
-	local chosen = probselect( self.probList )
-	if chosen then
-		return chosen:execute( context )
-	else
+	if not self.probList then
+		_warn( 'emtpy random node' )
+		return self:returnUpLevel( 'ignore', context )
+	else		
+		local chosen = probselect( self.probList )
+		if chosen then
+			return chosen:execute( context )
+		end
+		_warn( 'no random node selected' )
 		return self:returnUpLevel( 'ignore', context )
 	end
 end
@@ -1032,6 +1048,10 @@ function BTDecorator:validate( context )
 	return self.targetNode:validate( context )
 end
 
+function BTDecorator:postLoad()
+	return self.targetNode:postLoad()
+end
+
 --------------------------------------------------------------------
 CLASS: BTDecoratorNot ( BTDecorator )
 function BTDecoratorNot:getType()
@@ -1138,7 +1158,6 @@ end
 function BTDecoratorRepeatFor:execute( context )
 	local nodeContext = context._nodeContext
 	local count = randi( self.minCount, self.maxCount )
-	-- print( 'RAND:', count, self.minCount, self.maxCount )
 	local env = nodeContext[ self ]
 	if not env then 
 		env = { count = count, executed = 0 }
@@ -1216,7 +1235,7 @@ function BTDecoratorWeight:getType()
 end
 
 function BTDecoratorWeight:setValue( v )
-	self.value = v
+	self.weight = v
 end
 
 function BTDecoratorWeight:execute( context )
@@ -1234,11 +1253,11 @@ function BTDecoratorProb:getType()
 end
 
 function BTDecoratorProb:setValue( v )
-	self.value = v or 0
+	self.probWeight = v or 0
 end
 
 function BTDecoratorProb:execute( context )
-	if prob( self.value * 100 ) then
+	if prob( self.probWeight * 100 ) then
 		return self.targetNode:execute( context )
 	else
 		return self:returnUpLevel( 'ignore', context )
