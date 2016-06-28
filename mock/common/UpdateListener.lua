@@ -18,16 +18,20 @@ function UpdateListener:setActive( a )
 end
 
 function UpdateListener:onStart()
-	self._entity.scene:addUpdateListener( self )
+	self:start()
 end
 
 function UpdateListener:onDetach( entity )
-	entity.scene:removeUpdateListener( self )
+	self:stop()
 end
 
 function UpdateListener:onUpdate( dt )
 end
 
+function UpdateListener:start()
+	self._entity.scene:addUpdateListener( self )
+end
+
 function UpdateListener:stop()
-	self._entity:detach( self )
+	self._entity.scene:removeUpdateListener( self )
 end

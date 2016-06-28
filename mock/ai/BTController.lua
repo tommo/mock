@@ -1352,12 +1352,6 @@ function BTController:onUpdate( dt )
 
 end
 
-function BTController:onDetach( ent )
-	--clear running actions
-	self.context:clearRunningNode()
-	BTController.__super.onDetach( self, ent )
-end
-
 function BTController:buildDebugInfo()
 	return self.context:buildDebugInfo()
 end
@@ -1375,11 +1369,6 @@ end
 function BTController:resetEvaluate()
 	self.resetting = true
 	self:scheduleUpdate()
-end
-
-function BTController:resetContext( context )
-	self.context:clearRunningNode()
-	self.context = context or BTContext()
 end
 
 function BTController:getContext()
@@ -1405,4 +1394,13 @@ function BTController:getCondition( k )
 	return self.context:getCondition( k )
 end
 
+function BTController:stop()
+	self.context:resetRunningState()
+	self.resetting = false
+	BTController.__super.stop( self )
+end
 
+function BTController:start()
+	self:scheduleUpdate()
+	BTController.__super.start( self )
+end
