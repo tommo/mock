@@ -380,7 +380,7 @@ function Game:initCommonData( config, fromEditor )
 	end
 
 	self.entryScene = config['entry_scene']
-	self.previewingScene = config['previewing_scene']
+	-- self.previewingScene = config['previewing_scene']
 
 	self.mainScene:init()
 	_stat( '...init game done!' )
@@ -425,7 +425,7 @@ function Game:saveConfigToTable()
 		global_objects = self.globalObjectLibrary:save(),
 		scenes         = self.scenes,
 		entry_scene    = self.entryScene,
-		previewing_scene  = self.previewingScene,
+		-- previewing_scene  = self.previewingScene,
 		palettes       = self.paletteLibrary:save()
 	}
 	emitSignal( 'game_config.save', data )

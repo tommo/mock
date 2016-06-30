@@ -1,5 +1,12 @@
 module 'mock'
 
+local function isEditorEntity( e )
+	while e do
+		if e.FLAG_EDITOR_OBJECT or e.FLAG_INTERNAL then return true end
+		e = e.parent
+	end
+	return false
+end
 
 --------------------------------------------------------------------
 --SCENE
@@ -610,6 +617,66 @@ end
 function Scene:findEntity( name )
 	return self.entitiesByName[ name ]
 end
+
+
+local function collectEntity( e, typeId, collection )
+	if isEditorEntity( e ) then return end
+	if isInstance( e, typeId ) then
+		collection[ e ] = true
+	end
+	for child in pairs( e.children ) do
+		collectEntity( child, typeId, collection )
+	end
+end
+
+local function collectComponent( entity, typeId, collection )
+	if isEditorEntity( entity ) then return end
+	for com in pairs( entity.components ) do
+		if not com.FLAG_INTERNAL and isInstance( com, typeId ) then
+			collection[ com ] = true
+		end
+	end
+	for child in pairs( entity.children ) do
+		collectComponent( child, typeId, collection )
+	end
+end
+
+local function collectEntityGroup( group, collection )
+	if isEditorEntity( group ) then return end
+	collection[ group ] = true 
+	for child in pairs( group.childGroups ) do
+		collectEntityGroup( child, collection )
+	end
+end
+
+
+function Scene:collectEntities( typeId )
+	local collection = {}	
+	typeId = typeId or Entity
+	for e in pairs( self.entities ) do
+		collectEntity( e, typeId, collection )
+	end
+	return table.keys( collection )
+end
+
+
+function Scene:collectEntityGroups()
+	local collection = {}	
+	for g in pairs( self:getRootGroup().childGroups ) do
+		collectEntityGroup( g, collection )
+	end
+	return table.keys( collection )
+end
+
+
+function Scene:collectComponents( typeId )
+	local collection = {}	
+	for e in pairs( self.entities ) do
+		collectComponent( e, typeId, collection )
+	end
+	return table.keys( collection )
+end
+
 
 function Scene:changeEntityName( entity, oldName, newName )
 	local entitiesByName = self.entitiesByName

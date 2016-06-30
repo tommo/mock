@@ -32,6 +32,12 @@ function loadJSONFile( path, clearNulls )
 	local text=f:read('*a')
 	f:close()
 
-	return loadJSONText( text )
+	return loadJSONText( text, clearNulls )
 end
 
+
+function tryLoadJSONFile( path, clearNulls )
+	local succ, data = pcall( loadJSONFile, path, clearNulls )
+	if succ then return data end
+	return nil
+end
