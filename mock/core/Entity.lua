@@ -968,14 +968,15 @@ function Entity:start()
 	
 end
 
-function Entity:setActive( active )	
+function Entity:setActive( active , onlySelf )	
 	active = active or false
 	if active == self.localActive then return end
 	self.localActive = active
-	self:_updateGlobalActive()
+	self:_updateGlobalActive( onlySelf )
 end
 
-function Entity:_updateGlobalActive()
+function Entity:_updateGlobalActive( onlySelf )
+	
 	local active = self.localActive
 	local p = self.parent
 	if p then
@@ -994,8 +995,11 @@ function Entity:_updateGlobalActive()
 	end
 
 	--inform children
-	for o in pairs(self.children) do
-		o:_updateGlobalActive()
+	onlySelf = onlySelf or false
+	if not onlySelf then
+		for o in pairs(self.children) do
+			o:_updateGlobalActive()
+		end
 	end
 
 	local onSetActive = self.onSetActive
