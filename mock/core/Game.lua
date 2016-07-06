@@ -328,8 +328,13 @@ function Game:initLayers( config, fromEditor )
 end
 
 function Game:initAsset( config, fromEditor )
+	
 	self.assetLibraryIndex   = config['asset_library']
 	self.textureLibraryIndex = config['texture_library']
+
+	--misc
+	setTextureThreadTaskGroupSize( 3 )
+
 	--assetlibrary
 	_stat( '...loading asset library' )
 	loadAssetLibrary( self.assetLibraryIndex )

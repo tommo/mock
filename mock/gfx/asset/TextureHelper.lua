@@ -2,6 +2,8 @@ module 'mock'
 
 TEXTURE_ASYNC_LOAD = false
 
+TextureThreadTaskGroupID = 'texture_loading'
+
 --------------------------------------------------------------------
 local texturePlaceHolder      = false
 local texturePlaceHolderImage = false
@@ -32,6 +34,10 @@ CLASS: ThreadTextureLoadTask ( ThreadImageLoadTask )
 function ThreadTextureLoadTask:__init()
 end
 
+function ThreadTextureLoadTask:getDefaultGroupId()
+	return TextureThreadTaskGroupID
+end
+
 function ThreadTextureLoadTask:setTargetTexture( tex )
 	self.texture = tex
 end
@@ -50,7 +56,14 @@ function ThreadTextureLoadTask:onFail()
 	self.texture:load( getTexturePlaceHolderImage(), self.imageTransform, self.debugName or self.filename )
 end
 
-
 function ThreadTextureLoadTask:toString()
 	return '<textureLoadTask>' .. self.imagePath .. '\t' .. ( self.debugName or '')
+end
+
+function isTextureThreadTaskBusy()
+	return isThreadTaskBusy( TextureThreadTaskGroupID )
+end
+
+function setTextureThreadTaskGroupSize( size )
+	getThreadTaskManager():setGroupSize( TextureThreadTaskGroupID, size )
 end

@@ -11,60 +11,150 @@ function getThreadTaskManager()
 	return _mgr
 end
 
-function isThreadTaskBusy( queueName )
-	return getThreadTaskManager():isBusy( queueName )
+function isThreadTaskBusy( groupId )
+	return getThreadTaskManager():isBusy( groupId )
 end
 
-function getThreadTaskQueue( queueName )
-	queueName = queueName or getThreadTaskManager().defaultQueue
-	return getThreadTaskManager():getQueue( queueName )
+function getThreadTaskGroup( groupId )
+	groupId = groupId or getThreadTaskManager().defaultGroupId
+	return getThreadTaskManager():getGroup( groupId )
 end
 
-function getThreadTaskProgress( queueName )
-	queueName = queueName or getThreadTaskManager().defaultQueue
-	local q = getThreadTaskManager():getQueue( queueName, false )
-	if not q then return 1 end
-	return q:getProgress()
+function getThreadTaskProgress( groupId )
+	groupId = groupId or getThreadTaskManager().defaultGroupId
+	local group = getThreadTaskManager():getGroup( groupId, false )
+	if not group then return 1 end
+	return group:getProgress()
 end
 
 function ThreadTaskManager:__init()
-	self.queues = {}
-	self.defaultQueue = 'main'
+	self.groups = {}
+	self.defaultGroupId = 'main'
 end
 
-function ThreadTaskManager:getQueue( name, createIfNotExist )
-	local q = self.queues[ name ]
-	if not q and ( createIfNotExist ~= false ) then
-		q = ThreadTaskQueue()
-		self.queues[ name ] = q
-		q.manager = self
+function ThreadTaskManager:getGroup( name, createIfNotExist )
+	local group = self.groups[ name ]
+	if not group and ( createIfNotExist ~= false ) then
+		group = ThreadTaskGroup()
+		self.groups[ name ] = group
+		group.manager = self
 	end
-	return q
+	return group
 end
 
-function ThreadTaskManager:getDefaultQueue( createIfNotExist )
-	return self:getQueue( self.defaultQueue, createIfNotExist )
+function ThreadTaskManager:setGroupSize( name, size )
+	local group = self:getGroup( name, true )
+	group:setSize( size )
 end
 
-function ThreadTaskManager:setDefaultQueue( name )
-	self.defaultQueue = name or 'main'
+function ThreadTaskManager:getDefaultGroupId()
+	return self.defaultGroupId
 end
 
-function ThreadTaskManager:pushTask( queue, t )
-	queue = queue or self.defaultQueue
-	local q = self:getQueue( queue )
-	q:pushTask( t )
+function ThreadTaskManager:getDefaultGroup()
+	return self:affirmGroup( self.defaultGroupId )
+end
+	
+function ThreadTaskManager:setDefaultGroup( name )
+	self.defaultGroupId = name or 'main'
+end
+
+function ThreadTaskManager:pushTask( groupId, t )
+	groupId = groupId or self.defaultGroupId
+	local group = self:getGroup( groupId )
+	group:pushTask( t )
 	return t
 end
 
-function ThreadTaskManager:isBusy( queueName )
-	local q = self:getQueue( queueName or self.defaultQueue, false )
-	if not q then return false end
-	return q:isBusy()
+function ThreadTaskManager:isBusy( groupId )
+	local group = self:getGroup( groupId or self.defaultGroupId, false )
+	if not group then return false end
+	return group:isBusy()
 end
 
 function ThreadTaskManager:isAnyBusy()
 	return self.busy
+end
+
+
+---------------------------------------------------------------------
+CLASS: ThreadTaskGroup ()
+	:MODEL{}
+
+function ThreadTaskGroup:__init()
+	self.size = 0
+	self.queues = {}
+	self:setSize( 1 )
+end
+
+function ThreadTaskGroup:setSize( size )
+	size = math.max( size, 1 )
+	self.size = size or 1
+	for i = 1, size do
+		local q = self.queues[ i ]
+		if not q then
+			q = ThreadTaskQueue()
+			self.queues[ i ] = q
+		end
+	end
+end
+
+function ThreadTaskGroup:getSize()
+	return self.size
+end
+
+function ThreadTaskGroup:isIdle()
+	return not self:isBusy()
+end
+
+function ThreadTaskGroup:isBusy()
+	for i, queue in ipairs( self.queues ) do
+		if queue:isBusy() then return true end
+	end
+	return false
+end
+
+function ThreadTaskGroup:getTotalTaskSize()
+	local size = 0
+	for i, queue in ipairs( self.queues ) do
+		size = size + queue.totalTaskSize
+	end
+	return size
+end
+
+function ThreadTaskGroup:getTaskSize()
+	local size = 0
+	for i, queue in ipairs( self.queues ) do
+		size = size + queue.taskSize
+	end
+	return size
+end
+
+function ThreadTaskGroup:getProgress()
+	local totalSize = self:getTotalTaskSize()
+	if totalSize <= 0 then return 1 end
+	local taskSize = self:getTaskSize()
+	return 1 - ( taskSize/totalSize )
+end
+
+function ThreadTaskGroup:pushTask( task )
+	--find empty queue
+	local minQSize = 1000000
+	local selectedQueue = false
+	for i, queue in ipairs( self.queues ) do
+		if not queue:isBusy() then
+			selectedQueue = queue
+			break
+		end
+		local qsize = queue.taskCount
+		if ( not minQSize ) or qsize < minQSize then
+			minQSize = qsize
+			selectedQueue = queue
+		end
+	end
+	assert( selectedQueue )
+	return selectedQueue:pushTask( task )
+
 end
 
 --------------------------------------------------------------------
@@ -157,12 +247,12 @@ end
 CLASS: ThreadTask ()
 	:MODEL{}
 
-function ThreadTask:getDefaultQueue()
+function ThreadTask:getDefaultGroupId()
 	return nil
 end
 
-function ThreadTask:start( queueName )
-	getThreadTaskManager():pushTask( queueName or self:getDefaultQueue(), self )
+function ThreadTask:start( groupId )
+	getThreadTaskManager():pushTask( groupId or self:getDefaultGroupId(), self )
 end
 
 function ThreadTask:toString()
@@ -201,6 +291,5 @@ function ThreadTask:getTimeElapsed()
 	local t1 = self.execTime1 or os.clock()
 	return t1 - t0
 end
-
 
 
