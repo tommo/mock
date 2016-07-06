@@ -20,13 +20,15 @@ CLASS: EffectNodeParticleForce   ( EffectTransformNode )
 --------------------------------------------------------------------
 EffectNodeParticleSystem :MODEL{
 	Field 'material'     :asset( 'material' );
-	Field 'blend'        :enum( EnumBlendMode );
+	-- Field 'blend'        :enum( EnumBlendMode );
 	Field 'deck'         :asset( 'deck2d\\..*;mesh' ); -- :meta{ search_terms = 'particle' };
 	'----';
 	Field 'particleLimit'    :int()  :range(0);
 	Field 'spriteLimit'      :int()  :range(0);
 	'----';
 	Field 'syncTransform' :boolean();
+	'----';
+	Field 'scl' :type( 'vec3') :getset( 'Scl' );
 }
 
 function EffectNodeParticleSystem:__init()
@@ -35,6 +37,15 @@ function EffectNodeParticleSystem:__init()
 	self.blend = 'add'
 	self.deck  = false
 	self.syncTransform = false
+	self.scl = { 1,1,1 }
+end
+
+function EffectNodeParticleSystem:getScl()
+	return unpack( self.scl )
+end
+
+function EffectNodeParticleSystem:setScl( sx, sy, sz )
+	self.scl = { sx, sy, sz }
 end
 
 function EffectNodeParticleSystem:getDefaultName()
@@ -93,8 +104,11 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	local deck = mock.loadAsset( self.deck )
 	deck = deck and deck:getMoaiDeck()
 	system:setDeck( deck )
-	system:setDepthMask( false )
-	system:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )
+	system:setScl( unpack( self.scl) )
+	-- system:setDepthMask( false )
+	-- system:setDepthTest( MOAIProp.DEPTH_TEST_LESS_EQUAL )
+	local material = loadAsset( self.material ) or getDefaultRenderMaterial()
+	material:applyToMoaiProp( system )
 	--build child nodes	
 	local emitters = {}
 	local forces   = {}
