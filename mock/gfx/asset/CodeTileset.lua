@@ -6,6 +6,11 @@ local DefaultCodeTileData = {
 	subdivision = 1
 }
 
+
+local function _tileDataSortFuc( a, b )
+	return ( a._id or -1 ) < ( b._id or -1 )
+end
+
 --------------------------------------------------------------------
 CLASS: CodeTileset ( Tileset )
 	:MODEL{}
@@ -27,8 +32,19 @@ function CodeTileset:loadData( data )
 	local idToTile   = self.idToTile
 	local nameToId   = self.nameToId
 	local idToName   = self.idToName
+	
+	local tileList = {}
 	for key, tileData in pairs( tiles ) do
+		tileData._id = tileData._id or -1
+		tileData._key = key
+		table.insert( tileList, tileData )
+	end
+
+	table.sort( tileList, _tileDataSortFuc )
+
+	for i, tileData in ipairs( tileList ) do
 		id = id + 1
+		local key = tileData._key
 		local tile = { name = key, id = id, data = tileData}
 		if nameToTile[ key ] then
 			_warn( 'duplicated code tile', key )
@@ -126,10 +142,6 @@ function CodeTileset:buildDebugDrawDeck()
 		end
 		)
 	return debugDeck
-end
-
-function CodeTileset:getDebugDrawDeck()
-	return self:buildDebugDrawDeck()
 end
 
 --------------------------------------------------------------------

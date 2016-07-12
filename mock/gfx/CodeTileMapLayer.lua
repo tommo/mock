@@ -140,7 +140,6 @@ function CodeTileMapLayer:onInit( initFromEditor )
 	
 	self.debugDrawProp = MOAIProp.new()
 	setPropBlend( self.debugDrawProp, 'alpha' )
-	-- local deck = tileset:getDebugDrawDeck()
 	local deck = tileset:buildDebugDrawDeck()
 	deck:setRect( 0,0, tw, th )
 	self.debugDrawProp:setDeck( deck )
