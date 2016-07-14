@@ -116,7 +116,6 @@ CLASS: Game ()
 	
 --------------------------------------------------------------------
 function Game:__init() --INITIALIZATION
-
 	self.initialized          = false
 	self.graphicsInitialized  = false
 	self.currentRenderContext = 'game'    -- for editor integration
@@ -135,6 +134,9 @@ function Game:__init() --INITIALIZATION
 	local l = self:addLayer( 'main' )
 	l.default = true
 	self.defaultLayer = l
+
+	self.showCursorReasons = {}
+
 end
 
 local defaultGameConfig={
@@ -186,8 +188,12 @@ function Game:init( config, fromEditor )
 
 	--Systems
 	self:initGraphics   ( config, fromEditor )
+	self:initDebugUI    ()
+	self:applyPlaceHolderRenderTable()
+
 	self:initSystem     ( config, fromEditor )
 	
+
 	--init asset
 	self:initAsset      ( config, fromEditor )
 	self:initSubSystems ( config, fromEditor )
@@ -196,6 +202,8 @@ function Game:init( config, fromEditor )
 	if not fromEditor then --initCommonData will get called after scanning asset modifications
 		self:initCommonData( config, fromEditor )
 	end
+	
+
 end
 
 
@@ -242,10 +250,10 @@ function Game:initSystem( config, fromEditor )
 
 	if fromEditor then
 		collectgarbage( 'setpause',   70  )
-		collectgarbage( 'setstepmul', 140 )	
+		collectgarbage( 'setstepmul', 150 )	
 	else
 		collectgarbage( 'setpause',   70  )
-		collectgarbage( 'setstepmul', 140 )	
+		collectgarbage( 'setstepmul', 150 )	
 	end
 
 	MOAISim.setStep( 1/60 )
@@ -530,17 +538,32 @@ function Game:initGraphics( option, fromEditor )
 		--FIXME: crash here if no canvas shown up yet
 		MOAISim.openWindow( self.title, w, h  )
 	end
+
 	self.graphicsInitialized = true
 	if self.pendingResize then
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
 
-	self:applyPlaceHolderRenderTable()
+	self:showCursor()
 
 	-- MOAIGfxResourceMgr.setResourceLoadingPolicy( 
 	-- 	MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
 	-- )
+end
+
+function Game:initDebugUI()
+	local debugUIManager = getDebugUIManager()
+	debugUIManager:init()
+	debugUIManager:setEnabled( false )
+end
+
+function Game:setDebugUIEnabled( enabled )
+	getDebugUIManager():setEnabled( enabled )
+end
+
+function Game:isDebugUIEnabled()
+	return getDebugUIManager():isEnabled()
 end
 
 --- Get the scale( conent size ) of the main viewport
@@ -970,11 +993,16 @@ function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTab
 		if bufferTable then
 			if #bufferTable > 0 then 
 				emptyRenderStack = false
-				MOAIRenderMgr.setBufferTable( bufferTable )
+				local finalTable = table.simplecopy( bufferTable )
+				if context == 'game' then
+					table.insert( finalTable, getDebugUIManager():getRenderCommand() )
+				end
+				MOAIRenderMgr.setBufferTable( finalTable )
 			end
 		end
 	end
 end
+
 
 function Game:applyPlaceHolderRenderTable()
 	local t = self.placeHolderRenderTable
@@ -992,8 +1020,7 @@ function Game:applyPlaceHolderRenderTable()
 		local frameRenderCommand = MOAIFrameBufferRenderCommand.new()
 		frameRenderCommand:setClearColor( .1,1,.1,1 )
 		frameRenderCommand:setFrameBuffer( MOAIGfxDevice.getFrameBuffer() )
-		frameRenderCommand:setRenderTable( { renderLayer } )
-		self.placeHolderRenderTable = { frameRenderCommand }
+		frameRenderCommand:setRenderTable( { renderLayer } )--, getDebugUIManager():getRenderCommand() } )
 		t = self.placeHolderRenderTable
 	end
 	MOAIRenderMgr.setBufferTable( t )
@@ -1031,11 +1058,17 @@ function Game:exitFullscreenMode()
 	self.fullscreen = false
 end
 
-function Game:hideCursor()
-	MOAISim.hideCursor()
+function Game:hideCursor( reason )
+	reason = reason or 'default'
+	self.showCursorReasons[ reason ] = nil
+	if not next( self.showCursorReasons ) then
+		MOAISim.hideCursor()
+	end
 end
 
-function Game:showCursor()
+function Game:showCursor( reason )
+	reason = reason or 'default'
+	self.showCursorReasons[ reason ] = true
 	MOAISim.showCursor()
 end
 

@@ -222,6 +222,7 @@ end
 
 affirmInputListenerCategory( 'main' )
 affirmInputListenerCategory( 'ui' )
+affirmInputListenerCategory( 'imgui' )
 
 --[[
 	input event format:

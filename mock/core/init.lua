@@ -11,7 +11,6 @@ require 'mock.core.ClassHelpers'
 require 'mock.core.Serializer'
 
 require 'mock.core.ScriptHelper'
-require 'mock.core.DebugDrawQueue'
 
 require 'mock.core.JSONHelper'
 
@@ -25,6 +24,7 @@ require 'mock.core.DebugHelper'
 require 'mock.core.LogHelper'
 
 require 'mock.core.Palette'
+
 
 ----------------Core Modules
 require 'mock.core.defaults'
@@ -50,8 +50,14 @@ require 'mock.core.JoystickManager'
 require 'mock.core.InputDevice'
 require 'mock.core.InputSignal'
 
+----debug
+require 'mock.core.ImGuiLayer'
+require 'mock.core.DebugUI'
+require 'mock.core.DebugDrawQueue'
+
 ----audio
 require 'mock.core.Audio'
+
 
 ----game
 require 'mock.core.EntityGroup'

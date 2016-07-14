@@ -56,6 +56,8 @@ function CodeTileset:loadData( data )
 			self:buildDebugDraw( tile )
 		end
 	end
+	self.tileCount = #tileList
+
 	return true
 end
 
@@ -134,14 +136,44 @@ function CodeTileset:onDebugDraw( idx, xOff, yOff, xScl, yScl )
 end
 
 function CodeTileset:buildDebugDrawDeck()
-	local debugDeck  = MOAIScriptDeck.new()
-	debugDeck:setRect( 0,0,1,1 )
-	debugDeck:setDrawCallback( 
-		function( idx, xOff, yOff, xScl, yScl )
-			return self:onDebugDraw( idx, xOff, yOff, xScl, yScl )
+	if MOAIGeometry2DDeck then
+		local debugDeck  = MOAIGeometry2DDeck.new()
+		debugDeck:setRect( 0,0,1,1 )
+		debugDeck:reserve( self.tileCount )
+		for idx, tile in pairs( self.idToTile ) do
+			local shape = tile.data.shape or self.defaultTileData.shape or 'rect_filled'
+			local color = tile.data.color or self.defaultTileData.color or '#8cff00'
+			local opacity = tile.data.opacity or self.defaultTileData.opacity or .5
+			local r,g,b = hexcolor( color )
+			-- print( idx, shape, r,g,b,opacity, debugDeck  )
+			local size = 0.45
+			if shape == 'rect' then
+				debugDeck:setRectItem( idx, -size, -size, size, size, r, g, b, opacity )
+
+			elseif shape == 'rect_filled' then
+				debugDeck:setFilledRectItem( idx, -size, -size, size, size, r, g, b, opacity )
+
+			elseif shape == 'circle' then
+				debugDeck:setCircleItem( idx, 0, 0, size, r, g, b, opacity )
+
+			elseif shape == 'circle_filled' then
+				debugDeck:setFilledCircleItem( idx, 0, 0, size, r, g, b, opacity )
+
+			end
 		end
-		)
-	return debugDeck
+		return debugDeck
+
+	else
+		local debugDeck  = MOAIScriptDeck.new()
+		debugDeck:setRect( 0,0,1,1 )
+		debugDeck:setDrawCallback( 
+			function( idx, xOff, yOff, xScl, yScl )
+				return self:onDebugDraw( idx, xOff, yOff, xScl, yScl )
+			end
+			)
+		return debugDeck
+
+	end
 end
 
 --------------------------------------------------------------------
