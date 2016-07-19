@@ -43,7 +43,7 @@ function findTopProtoInstance( obj )
 	return nil
 end
 
-function markProtoInstanceOverrided( obj, fid )
+function markProtoInstanceOverrided( obj, fid, overrided )	
 	if not obj.__proto_history then return false end
 	local overridedFields = obj.__overrided_fields
 	if not overridedFields then
@@ -52,12 +52,18 @@ function markProtoInstanceOverrided( obj, fid )
 	end
 
 	if not overridedFields[ fid ] then
-		overridedFields[ fid ] = true
+		if overrided == false then
+			overridedFields[ fid ] = nil
+		else
+			overridedFields[ fid ] = true
+		end
 		return true
 	end
 
 	return false
 end
+
+
 
 function markProtoInstanceFieldsOverrided( obj, fid, ... )
 	for i, f in ipairs{ fid, ... } do

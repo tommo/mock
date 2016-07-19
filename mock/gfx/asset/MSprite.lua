@@ -107,6 +107,8 @@ local function MSpriteLoader( node )
 	local EaseFlat   = MOAIEaseType.FLAT
 	local EaseLinear = MOAIEaseType.LINEAR
 	local animations = {}
+	local indexToMetaData = {}
+
 	for id, animation in pairs( data.anims ) do
 		local name = animation.name
 		local sequence = animation.seq
@@ -124,15 +126,21 @@ local function MSpriteLoader( node )
 		--TODO: support flags? or just forbid it!!!!
 		local offsetEaseType = EaseLinear
 		local ftime = 0
-		local frames = {}
-		for fid, f in ipairs( sequence ) do
+		-- local timePoints = {}
+		local metaDatas  = {}
+		local indexToFrameId = {}
 
+		for fid, f in ipairs( sequence ) do
 			local frameId, delay, ox, oy = unpack( f )
 			local frame = data.frames[ frameId ]
-			frames[ fid ] = ftime
+			local index = frame.index
+
+			indexToMetaData [ index ]  = frame[ 'meta' ] or false
+
+			-- timePoints[ fid ] = ftime
 			offsetXCurve:setKey( fid, ftime, ox, offsetEaseType )
 			offsetYCurve:setKey( fid, ftime, -oy, offsetEaseType )
-			indexCurve  :setKey( fid, ftime, frame.index, EaseFlat )
+			indexCurve  :setKey( fid, ftime, index, EaseFlat )
 
 			ftime = ftime + delay  --will use anim:setSpeed to fit real playback FPS
 
@@ -144,22 +152,22 @@ local function MSpriteLoader( node )
 
 		end
 		local clipData = {
-			offsetXCurve = offsetXCurve,
-			offsetYCurve = offsetYCurve,
-			indexCurve   = indexCurve,
-			length       = ftime,
-			name         = name,
-			frames       = frames
+			offsetXCurve    = offsetXCurve,
+			offsetYCurve    = offsetYCurve,
+			indexCurve      = indexCurve,
+			length          = ftime,
+			name            = name,
 		} 
 		animations[ name ] = clipData
 	end
 
 	local sprite = {
-		frameDeck  = deck,
-		animations = animations,
-		texture    = tex,
-		features   = features,
-		featureNames   = featureNames,
+		frameDeck       = deck,
+		animations      = animations,
+		texture         = tex,
+		features        = features,
+		featureNames    = featureNames,
+		indexToMetaData = indexToMetaData
 	}
 
 	return sprite
