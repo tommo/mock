@@ -20,6 +20,7 @@ require 'mock.gfx.asset.Shader'
 require 'mock.gfx.asset.CodeTileset'
 require 'mock.gfx.asset.NamedTileset'
 require 'mock.gfx.asset.DeckPack'
+require 'mock.gfx.asset.QuadsDeck'
 require 'mock.gfx.asset.MQuadDeck'
 require 'mock.gfx.asset.MTileset'
 
