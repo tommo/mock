@@ -143,7 +143,6 @@ local function MeshLoader( node )
 			
 			local texCoordValues = meshNode["TextureCoords"][1]["value"]
 
-
 			for word in texCoordValues:gmatch("%S+") do
 				table.insert( texCoordWord, tonumber( word ) )
 			end
