@@ -758,6 +758,12 @@ function Field:array( t )
 	return self
 end
 
+function Field:asset_array(t)
+	self:array( '@asset' )
+	self.__assettype = t
+	return self
+end
+
 function Field:collection( t ) 
 	self.__type     = '@array'
 	self.__itemtype = t or 'number'
