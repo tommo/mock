@@ -263,6 +263,7 @@ end
 --- Attach a component
 -- @p Component com the component instance to be attached
 -- @ret Component the component attached ( same as the input )
+
 function Entity:attach( com )
 	if not self.components then 
 		_error('attempt to attach component to a dead entity')
