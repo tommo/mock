@@ -468,7 +468,7 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 		local task = ThreadTextureLoadTask( filePath, transform )
 		task:setTargetTexture( tex )
 		task:setDebugName( debugName or filePath )
-		task:start()	
+		task:start()
 	else
 		tex:load( filePath, transform, debugName )
 		if tex:getSize() <= 0 then

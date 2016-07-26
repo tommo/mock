@@ -71,7 +71,7 @@ end
 local function collectOverrideEntityData( objMap, entity, collected )
 	collectOverrideObjectData( objMap, entity, collected )
 	if entity.components then
-		for com in pairs( entity.components ) do
+		for _, com in ipairs( entity:getSortedComponentList() ) do
 			collectOverrideObjectData( objMap, com, collected )
 		end
 	end

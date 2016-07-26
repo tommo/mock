@@ -169,6 +169,7 @@ function MSpriteAnimatorTrack:onStateLoad( state )
 		if animState then
 			animState.timeConverter = timeMapFuncs[ key.playMode ]
 			animState.length = clip.length
+			animState.clip   = clip
 			playContext[ i ] = animState
 		else
 			_warn( 'no msprite clip named', key.clip, 'in', sprite.spritePath )

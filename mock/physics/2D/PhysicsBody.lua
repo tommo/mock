@@ -79,8 +79,6 @@ function PhysicsBody:getMoaiBody()
 end
 
 function PhysicsBody:onStart( entity )
-	--print( 'body start', self )
-	
 	-- update position sync based on body type and settings
 	self.body:setActive( self._bodyActive )
 	self:updateTransformSyncPolicy( entity )
@@ -298,9 +296,11 @@ function PhysicsBody:setActive( active )
 end
 
 function PhysicsBody:refresh()
-	local act = self:isActive()
-	self:setActive( not false )
-	self:setActive( act )
+	local body = self.body
+	if not body then return end
+	local act = body:isActive()
+	body:setActive( not act )
+	body:setActive( act )
 end
 
 local ATTR_X_LOC = MOAITransform.ATTR_X_LOC
@@ -330,7 +330,6 @@ function PhysicsBody:seekPosition( x, y, duration, mode )
 			local x1 = lerp( x0, x, k )
 			local y1 = lerp( y0, y, k )
 			self:setPosition( x1, y1 )
-			print( 'setting x,y', x1,y1, k )
 			if k == 1 then return end
 		end
 	end)

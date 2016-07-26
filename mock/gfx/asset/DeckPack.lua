@@ -39,6 +39,10 @@ function DeckPack:load( path )
 			deck = MTileset()
 			deck.pack = self
 			deck:load( deckData )
+		elseif deckType == 'deck2d.quads' then
+			deck = QuadsDeck()
+			deck.pack = self
+			deck:load( deckData )
 		end
 		self.items[ name ] = deck
 	end
@@ -75,3 +79,4 @@ end
 registerAssetLoader ( 'deck_pack',        DeckPackloader )
 registerAssetLoader ( 'deck2d.mquad',     DeckPackItemLoader )
 registerAssetLoader ( 'deck2d.mtileset',  DeckPackItemLoader )
+registerAssetLoader ( 'deck2d.quads',     DeckPackItemLoader )

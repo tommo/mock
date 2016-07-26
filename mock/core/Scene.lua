@@ -59,8 +59,20 @@ function Scene:__init( option )
 	self.globalActionGroups = {} 
 
 	self.debugDrawQueue = DebugDrawQueue()
-
+	self.debugPropPartition = MOAIPartition.new()
 	return self
+end
+
+function Scene:getDebugPropPartition()
+	return self.debugPropPartition
+end
+
+function Scene:addDebugProp( prop )
+	self.debugPropPartition:insertProp( prop )
+end
+
+function Scene:removeDebugProp( prop )
+	self.debugPropPartition:removeProp( prop )
 end
 
 function Scene:getConfig( key )
@@ -794,6 +806,8 @@ function Scene:initPhysics()
 	local ground = world:addBody( MOAIBox2DBody.STATIC )
 	self.b2ground = ground
 
+	world:setDebugDrawEnabled( true )
+	
 	return world
 end
 

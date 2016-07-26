@@ -290,11 +290,13 @@ end
 function Camera:setShowDebugLines( show )
 	self.showDebugLines = show ~= false
 	if self.scene then
-		self:updateRenderLayers()
+		for i, pass in ipairs( self.passes ) do
+			pass:setShowDebugLayers( show )
+		end
 	end
 end
 
-function Camera:isShowDeubgLines()
+function Camera:isShowDebugLines()
 	return self.showDebugLines
 end
 

@@ -6,6 +6,11 @@ local DefaultCodeTileData = {
 	subdivision = 1
 }
 
+
+local function _tileDataSortFuc( a, b )
+	return ( a._id or -1 ) < ( b._id or -1 )
+end
+
 --------------------------------------------------------------------
 CLASS: CodeTileset ( Tileset )
 	:MODEL{}
@@ -27,8 +32,19 @@ function CodeTileset:loadData( data )
 	local idToTile   = self.idToTile
 	local nameToId   = self.nameToId
 	local idToName   = self.idToName
+	
+	local tileList = {}
 	for key, tileData in pairs( tiles ) do
+		tileData._id = tileData._id or -1
+		tileData._key = key
+		table.insert( tileList, tileData )
+	end
+
+	table.sort( tileList, _tileDataSortFuc )
+
+	for i, tileData in ipairs( tileList ) do
 		id = id + 1
+		local key = tileData._key
 		local tile = { name = key, id = id, data = tileData}
 		if nameToTile[ key ] then
 			_warn( 'duplicated code tile', key )
@@ -40,6 +56,8 @@ function CodeTileset:loadData( data )
 			self:buildDebugDraw( tile )
 		end
 	end
+	self.tileCount = #tileList
+
 	return true
 end
 
@@ -118,18 +136,44 @@ function CodeTileset:onDebugDraw( idx, xOff, yOff, xScl, yScl )
 end
 
 function CodeTileset:buildDebugDrawDeck()
-	local debugDeck  = MOAIScriptDeck.new()
-	debugDeck:setRect( 0,0,1,1 )
-	debugDeck:setDrawCallback( 
-		function( idx, xOff, yOff, xScl, yScl )
-			return self:onDebugDraw( idx, xOff, yOff, xScl, yScl )
-		end
-		)
-	return debugDeck
-end
+	if MOAIGeometry2DDeck then
+		local debugDeck  = MOAIGeometry2DDeck.new()
+		debugDeck:setRect( 0,0,1,1 )
+		debugDeck:reserve( self.tileCount )
+		for idx, tile in pairs( self.idToTile ) do
+			local shape = tile.data.shape or self.defaultTileData.shape or 'rect_filled'
+			local color = tile.data.color or self.defaultTileData.color or '#8cff00'
+			local opacity = tile.data.opacity or self.defaultTileData.opacity or .5
+			local r,g,b = hexcolor( color )
+			-- print( idx, shape, r,g,b,opacity, debugDeck  )
+			local size = 0.45
+			if shape == 'rect' then
+				debugDeck:setRectItem( idx, -size, -size, size, size, r, g, b, opacity )
 
-function CodeTileset:getDebugDrawDeck()
-	return self:buildDebugDrawDeck()
+			elseif shape == 'rect_filled' then
+				debugDeck:setFilledRectItem( idx, -size, -size, size, size, r, g, b, opacity )
+
+			elseif shape == 'circle' then
+				debugDeck:setCircleItem( idx, 0, 0, size, r, g, b, opacity )
+
+			elseif shape == 'circle_filled' then
+				debugDeck:setFilledCircleItem( idx, 0, 0, size, r, g, b, opacity )
+
+			end
+		end
+		return debugDeck
+
+	else
+		local debugDeck  = MOAIScriptDeck.new()
+		debugDeck:setRect( 0,0,1,1 )
+		debugDeck:setDrawCallback( 
+			function( idx, xOff, yOff, xScl, yScl )
+				return self:onDebugDraw( idx, xOff, yOff, xScl, yScl )
+			end
+			)
+		return debugDeck
+
+	end
 end
 
 --------------------------------------------------------------------

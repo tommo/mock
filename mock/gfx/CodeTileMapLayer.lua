@@ -138,15 +138,20 @@ function CodeTileMapLayer:onInit( initFromEditor )
 	local tw, th = self:getTileSize()
 	self.mapGrid:setSize( w, h, tw, th, 0, 0, tw, th )
 	
-	self.debugDrawProp = MOAIProp.new()
-	setPropBlend( self.debugDrawProp, 'alpha' )
-	-- local deck = tileset:getDebugDrawDeck()
-	local deck = tileset:buildDebugDrawDeck()
+	self.debugDrawProp = self:createRenderProp()
+	self.prop = self:createRenderProp()
+end
+
+function CodeTileMapLayer:createRenderProp()
+	local w, h   = self:getSize()
+	local tw, th = self:getTileSize()
+	local prop = MOAIProp.new()
+	setPropBlend( prop, 'alpha' )
+	local deck = self.tileset:buildDebugDrawDeck()
 	deck:setRect( 0,0, tw, th )
-	self.debugDrawProp:setDeck( deck )
-	self.debugDrawProp:setGrid( self.mapGrid:getMoaiGrid() )
-
-
+	prop:setDeck( deck )
+	prop:setGrid( self.mapGrid:getMoaiGrid() )
+	return prop
 end
 
 function CodeTileMapLayer:onResize( w, h )
@@ -198,9 +203,15 @@ function CodeTileMapLayer:fill( name )
 end
 
 function CodeTileMapLayer:onParentAttach( ent )
+	-- ent:_attachProp( self.prop, 'render' )
+	ent:_attachTransform( self.prop, 'render' )
+	ent:getScene():addDebugProp( self.prop )
 end
 
 function CodeTileMapLayer:onParentDetach( ent )
+	-- ent:_detachTransform( self.prop, 'render' )
+	ent:getScene():removeDebugProp( self.prop )
+	-- ent:_detachProp( self.prop )
 end
 
 function CodeTileMapLayer:getDebugDrawProp()

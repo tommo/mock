@@ -13,6 +13,7 @@ function CameraPass:__init()
 	self.currentRenderTarget = false
 	self.defaultRenderTarget = false
 	self.outputRenderTarget  = false
+	self.debugLayers = {}
 end
 
 function CameraPass:init( camera )
@@ -42,6 +43,7 @@ function CameraPass:build()
 	self.passes = {}
 	self:onBuild()
 	self:buildImageEffects()
+	self:postBuild()
 	return self.passes
 end
 
@@ -50,6 +52,10 @@ end
 
 function CameraPass:onBuild()
 end
+
+function CameraPass:postBuild()
+end
+
 
 function CameraPass:getCamera()
 	return self.camera
@@ -183,10 +189,9 @@ function CameraPass:buildRenderTarget( option, srcRenderTarget )
 	return renderTarget
 end
 
-
 function CameraPass:buildDebugDrawLayer()
 	local camera   = self.camera
-	if not camera.showDebugLines then return nil end
+
 	local layer    = MOAILayer.new()
 	layer.priority = 100000
 
@@ -197,19 +202,27 @@ function CameraPass:buildDebugDrawLayer()
 
 	layer:showDebugLines( true )
 	
-	local renderTable = {}
-
+	local overlayTable = {}
+	local underlayTable = {}
+	layer:setOverlayTable( overlayTable )
+	layer:setUnderlayTable( underlayTable )
+	layer:setPartition( self.camera.scene:getDebugPropPartition() )
+	--physics
 	local world = self.camera.scene:getBox2DWorld()
-	world:setDebugDrawEnabled( true )
-	table.insert( renderTable, world )
+	table.insert( underlayTable, world )
+	--debugdraw queue
 	local debugDrawQueue = self.camera.scene:getDebugDrawQueue()
-	table.insert( renderTable, debugDrawQueue:getMoaiProp() )
-	layer:setOverlayTable( renderTable )
-	-- if world then layer:setBox2DWorld( world ) end
-
+	table.insert( overlayTable, debugDrawQueue:getMoaiProp() )
+	table.insert( self.debugLayers, layer )
+	layer:setVisible( false )
 	return layer
 end
 
+function CameraPass:setShowDebugLayers( visible )
+	for i, layer in ipairs( self.debugLayers ) do
+		layer:setVisible( visible )
+	end
+end
 
 function CameraPass:applyCameraToMoaiLayer( layer, option )	
 	local camera   = self.camera

@@ -206,6 +206,31 @@ function MSprite:getClip( name )
 	return data.animations[ name ]
 end
 
+function MSprite:getCurrentClip() --TODO
+	return self.currentClip
+end
+
+function MSprite:getCurrentFrameIndex()
+	return self.prop:getIndex()	
+end
+
+function MSprite:getCurrentFrameMetaData( key, default )
+	local data = self.spriteData 
+	if not data then return nil end
+	local index = self:getCurrentFrameIndex()
+	local clip = self.currentClip
+	if not clip then return nil end
+	if index > 0 then
+		local t = data.indexToMetaData[ index ]
+		if not key then return t end
+		if not t then return default end
+		local v = t[ key ]
+		if v == nil then return default end
+		return v
+	end
+	return nil
+end
+
 function MSprite:hasClip( name )
 	local data = self.spriteData
 	return data and data.animations[ name ]~=nil
