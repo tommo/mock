@@ -29,12 +29,14 @@ function RenderTargetTexture:__init()
 	self.colorFormat = false
 end
 
-function RenderTargetTexture:init( w, h, filter, colorFormat )
+function RenderTargetTexture:init( w, h, filter, colorFormat, depth, stencil )
 	if self.updated then return false end
 	self.width = w
 	self.height = h
 	self.filter = filter
 	self.colorFormat = colorFormat
+	self.depth = depth or false
+	self.stencil = stencil or false
 	self:update()
 	return true
 end

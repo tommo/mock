@@ -65,6 +65,7 @@ function SerializeObjectMap:isInternal( obj )
 end
 
 function SerializeObjectMap:map( obj, noNewRef )
+	if not obj then return nil end
 	local id = self.objects[ obj ]
 	if id then
 		self.objectCount[ obj ] = self.objectCount[ obj ] + 1
@@ -168,7 +169,7 @@ function _serializeField( obj, f, data, objMap, noNewRef )
 			end
 		else --ref
 			for i, item in pairs( fieldValue ) do
-				array[ i ] = objMap:map( item, noNewRef )
+				array[ i ] = item and objMap:map( item, noNewRef ) or false
 			end
 		end
 		data[ id ] = array
@@ -306,9 +307,12 @@ function _deserializeField( obj, f, data, objMap, namespace )
 			end
 		else
 			for i, itemData in pairs( fieldData ) do
-				if type( itemData ) == 'table' then --need conversion?
+				local tt = type( itemData )
+				if tt == 'table' then --need conversion?
 					local item = _deserializeObject( nil, itemData, objMap, namespace )
 					array[ i ] = item
+				elseif itemData == false then --'NULL'?
+					array[ i ] = false
 				else
 					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
 					array[ i ] = itemTarget[1]

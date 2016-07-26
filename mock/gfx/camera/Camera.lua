@@ -107,9 +107,7 @@ function Camera:_initDefault()
 end
 
 function Camera:onAttach( entity )
-	if not self.outputRenderTarget then
-		self:setOutputRenderTarget( false )
-	end
+	self:updateRenderTarget()
 	self.scene = entity.scene
 	entity:_attachTransform( self._camera, 'render' )
 	self:updateViewport()
@@ -131,6 +129,12 @@ function Camera:buildRenderCommandTable()
 	local renderCommandTable = buildCameraRenderCommandTable( self )
 	self._renderCommandTable = renderCommandTable
 	return renderCommandTable
+end
+
+function Camera:updateRenderTarget()
+	if not self.outputRenderTarget then
+		self:setOutputRenderTarget( false )
+	end
 end
 
 -- function Camera:setActive( active )
