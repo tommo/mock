@@ -22,3 +22,4 @@ require 'mock.gfx.camera.CameraImageEffectYUVOffset'
 --------------------------------------------------------------------
 --ETC
 require 'mock.gfx.camera.StereoCamera'
+require 'mock.gfx.camera.OffLineCamera'

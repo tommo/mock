@@ -110,18 +110,24 @@ local function MeshLoader( node )
 	end
 
 	local texMulti = MOAIMultiTexture.new()
-	texMulti:reserve( #texPaths )
+	texMulti:reserve( #texPaths + 1 )
 	
-	
+	local lastTex, lastTexID
 	for k, v in pairs(texPaths) do 
 		local texture = MOAITexture.new()
 		texture:load( v )
-		print( "texture name", k, v )
+		-- print( "texture name", k, v )
 		if texture then
-			texture:setFilter( MOAITexture.GL_LINEAR )
+			texture:setFilter( MOAITexture.GL_NEAREST )
+			-- texture:setFilter( MOAITexture.GL_LINEAR )
 		end
+		lastTexID = k 
+		lastTex = texture
 
 		texMulti:setTexture( k, texture )
+	end
+	if lastTexID and lastTexID < 2 then
+		texMulti:setTexture( 2, lastTex )
 	end
 
 	for i = 1, meshCount do
