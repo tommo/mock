@@ -331,6 +331,7 @@ function Component:_weakHoldCoroutine( newCoro )
 			[newCoro] = true
 		}
 		self.coroutines = coroutines
+		-- print('create new coroutine')
 		return newCoro
 	end
 	--remove dead ones
