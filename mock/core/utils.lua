@@ -1315,3 +1315,13 @@ local function _table_append( t, a, b, ... )
 	return _table_append( t, b, ... )
 end
 table.append = _table_append
+
+-------others------
+
+function wrapDir( angle )
+	angle = angle % 360
+	if angle > 180 then angle = angle - 360 end
+	return angle
+end
+
+

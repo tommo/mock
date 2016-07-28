@@ -112,7 +112,7 @@ end
 
 function _error( ... )
 	if _logLevel >= MOAILogMgr.LOG_ERROR then
-		print( debug.traceback( 2 ) )
+		--print( debug.traceback( 2 ) )
 		MOAILog('[ERROR:Lua]\t')
 		return _log( ... )
 	end
