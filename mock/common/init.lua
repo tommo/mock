@@ -3,6 +3,8 @@
 --COMMON
 require 'mock.common.BasicAsset'
 require 'mock.common.DataAsset'
+require 'mock.common.AssetMap'
+-- require 'mock.common.AssetList'
 
 --SCENE
 require 'mock.common.SceneAsset'

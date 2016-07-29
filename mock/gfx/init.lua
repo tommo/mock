@@ -52,6 +52,8 @@ require 'mock.gfx.camera'
 ---- Base
 require 'mock.gfx.DeckComponent'
 require 'mock.gfx.DeckComponentArray'
+require 'mock.gfx.DeckComponentGrid'
+require 'mock.gfx.DeckComponentSequence'
 
 --------------------------------------------------------------------
 ---- Graphics
