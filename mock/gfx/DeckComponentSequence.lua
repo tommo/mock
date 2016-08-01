@@ -100,6 +100,7 @@ function DeckComponentSequence:updateProps()
 	return self:updateLayout()
 end
 
+local max = math.max
 function DeckComponentSequence:updateLayout()
 	local x, y, z = 0, 0, 0
 	local nx, ny, nz = self:getDirection()
