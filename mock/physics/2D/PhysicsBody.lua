@@ -289,6 +289,11 @@ function PhysicsBody:getTag()
 end
 
 function PhysicsBody:setActive( active )
+	-- if self:getEntity():getName():startwith( '_DamageCaster_' ) then
+	-- 	print( debug.traceback() )
+	-- 	print( self:getEntity():getName(), active )
+	-- end
+
 	self._bodyActive = active
 	if self.body then
 		self.body:setActive( active )
