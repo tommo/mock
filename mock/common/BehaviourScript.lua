@@ -4,6 +4,7 @@ CLASS: BehaviourScript ( mock.Behaviour )
 	:MODEL{
 		Field 'comment' :string();
 		Field 'script'  :string() :widget('codebox') :meta{ code_ext = 'lua' };
+		Field 'OpenExternalEdit' :action('openExternalEdit')
 }
 
 registerComponent( 'BehaviourScript', BehaviourScript )
@@ -91,6 +92,11 @@ function BehaviourScript:onDetach( ent )
 		ent:removeMsgListener( self.msgListener )
 	end
 	ent.scene:removeUpdateListener( self )
+end
+
+function BehaviourScript:openExternalEdit()
+	local options = gii.tableToDict( { ext = '.lua' } )
+	gii.app:getModule( 'external_edit_manager' ):requestSession( self, 'behaviour_script', options )
 end
 
 --------------------------------------------------------------------
