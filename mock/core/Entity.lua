@@ -1378,6 +1378,12 @@ end
 -- 	return nil
 -- end
 
+--增加这个，是为了防止爆炸的时候碰到这个Entity而调用不存在的函数
+function Entity:getDistanceToObj( o )
+	local x0,y0 = self:getWorldLoc()
+	local x1,y1 = o:getWorldLoc()
+	return distance( x0,y0, x1,y1 )
+end
 
 --------------------------------------------------------------------
 --- Registry
@@ -1449,4 +1455,5 @@ end
 function cloneEntity( src, ensureComponentOrder )
 	return _cloneEntity( src, true, true, nil, ensureComponentOrder )
 end
+
 
