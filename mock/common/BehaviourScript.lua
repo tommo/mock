@@ -35,7 +35,6 @@ local scriptTail = [[
 function BehaviourScript:__init()
 	self.comment = ''
 	self.script = defaultScript
-	local options = gii.tableToDict( { ext = '.lua' } )
 end
 
 function BehaviourScript:onStart( ent )
