@@ -701,7 +701,9 @@ function Entity:reparentGroup( group )
 	if self._entityGroup then
 		self._entityGroup:removeEntity( self )
 	end
-	group:addEntity( self )
+	if group then
+		group:addEntity( self )
+	end
 end
 
 function Entity:reparent( entity )
@@ -714,6 +716,7 @@ function Entity:reparent( entity )
 	end
 	self.parent = entity
 	if entity then
+		self:reparentGroup( nil )
 		entity.children[ self ] = true
 		entity:_attachChildEntity( self )
 	end
