@@ -70,6 +70,10 @@ function PhysicsShape:getBody()
 	return self.parentBody
 end
 
+function PhysicsShape:getBodyTag()
+	return self.parentBody:getTag()
+end
+
 function PhysicsShape:isSensor()
 	if self.material then
 		return self.material.isSensor

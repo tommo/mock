@@ -727,6 +727,10 @@ function copyAndPasteEntity( ent, idGenerator )
 	return created
 end
 
+function makeEntityGroupPasteData( copyData, idGenerator )
+	
+end
+
 function makeComponentCopyData( com )
 	--TODO
 end
