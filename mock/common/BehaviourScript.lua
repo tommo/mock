@@ -35,6 +35,7 @@ local scriptTail = [[
 function BehaviourScript:__init()
 	self.comment = ''
 	self.script = defaultScript
+	local options = gii.tableToDict( { ext = '.lua' } )
 end
 
 function BehaviourScript:onStart( ent )
@@ -96,7 +97,8 @@ end
 
 function BehaviourScript:openExternalEdit()
 	local options = gii.tableToDict( { ext = '.lua' } )
-	gii.app:getModule( 'external_edit_manager' ):requestSession( self, 'behaviour_script', options )
+	self.session = gii.app:getModule( 'external_edit_manager' ):requestSession( self.__guid, 'behaviour_script', options )
+	self.session.openExternalEdit()
 end
 
 --------------------------------------------------------------------

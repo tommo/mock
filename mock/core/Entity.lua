@@ -427,6 +427,13 @@ function Entity:getComponentByName( name )
 	return nil
 end
 
+function Entity:getComponentByGUID( guid )
+	if not self.components then return nil end
+	for com, comType in pairs( self.components ) do
+			if com.__guid == guid then return com end		
+	end
+	return nil
+end
 
 --- Get component either by class name or by class
 -- @p nil|string|Class  component type to be looked for, return the first component if no target specified.
