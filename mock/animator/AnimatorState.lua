@@ -57,6 +57,12 @@ function AnimatorState:__init()
 	)
 
 	self.onVarChanged = false
+	self.roughness = false
+
+end
+
+function AnimatorState:setRoughness( r )
+	self.roughness = r
 end
 
 function AnimatorState:getClipName()
@@ -251,6 +257,10 @@ end
 
 --
 function AnimatorState:onUpdate( t, t0 )
+	local roughness = self.roughness
+	if roughness then
+		t = t + noise( roughness )
+	end
 	for i, entry in ipairs( self.updateListenerTracks ) do
 		if self.stopping then return end --edge case: new clip started in apply
 		local track = entry[1]

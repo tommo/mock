@@ -88,11 +88,22 @@ end
 function PhysicsShape:setMaterial( path )
 	self.materialPath = path
 	if path then
-		self.material = loadAsset( path )
+		local material = loadAsset( path ) 
+		self.sourceMaterial = material
+		self.material = material:clone()
 	else
 		self.material = false
 	end
 	self:updateMaterial()
+end
+
+function PhysicsShape:resetMaterial()
+	if not self.sourceMaterial then
+		self.material = false
+	else
+		self.material = self.sourceMaterial:clone()
+	end
+	return self:updateMaterial()
 end
 
 function PhysicsShape:getMaterialTag()
@@ -107,7 +118,7 @@ function PhysicsShape:updateMaterial()
 	local material, shape = self.material, self.shape
 	if not shape then return end
 	if not material then 
-		material = self:getDefaultMaterial()
+		material = self:getDefaultMaterial():clone()
 		self.material = material
 	end
 	
