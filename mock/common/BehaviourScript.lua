@@ -70,6 +70,10 @@ function BehaviourScript:loadScript( ent )
 	self.onThread = delegate.onThread
 
 	if delegate.onMsg then
+		-- self.msgListener = function( msg, ... )
+		-- 	print( 'inside onMsg of', ent:getName(), msg )
+		-- 	return delegate.onMsg( msg, ... )
+		-- end
 		self.msgListener = delegate.onMsg
 		ent:addMsgListener( self.msgListener )
 	end
