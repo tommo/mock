@@ -328,9 +328,9 @@ end
 function InputDevice:sendMouseEvent( evtype, x, y, btn, mockup )
 	local mouseState = self.mouseState
 	if evtype == 'down' then
-		mouseState[ btn ] = true
+		if btn then mouseState[ btn ] = true end
 	elseif evtype == 'up' then
-		mouseState[ btn ] = false
+		if btn then mouseState[ btn ] = false end
 	elseif evtype == 'move' then
 		mouseState.dx = x - mouseState.x
 		mouseState.dy = y - mouseState.y

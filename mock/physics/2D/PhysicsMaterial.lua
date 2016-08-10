@@ -45,7 +45,7 @@ end
 local DefaultMaterial = PhysicsMaterial()
 
 function getDefaultPhysicsMaterial()
-	return table.simplecopy(DefaultMaterial)
+	return DefaultMaterial
 end
 
 --------------------------------------------------------------------

@@ -758,6 +758,22 @@ function Entity:findChild( name, deep )
 	return nil
 end
 
+function Entity:findAndDestroyChild( name, deep )
+	local child = self:findChild( name, deep )
+	if child then
+		child:destroy()
+		return child
+	end
+end
+
+function Entity:findAndDestroyChildNow( name, deep )
+	local child = self:findChild( name, deep )
+	if child then
+		child:destroyNow()
+		return child
+	end
+end
+
 function Entity:findChildByClass( clas, deep )
 	for child in pairs( self.children ) do
 		if child:isInstance( clas ) then return child end
