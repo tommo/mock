@@ -67,6 +67,7 @@ function AnimatorClipTreeState:__init()
 	self.animator  = false
 	self.treeRoot  = false
 	self.subStates = {}
+	self.nodeVarTables = {}
 	self.weight    = 1
 	self.throttle  = 1
 	self.previewing = false
@@ -77,6 +78,15 @@ function AnimatorClipTreeState:loadTree( rootNode, animator )
 	self.animator = animator
 	self.treeRoot:onStateLoad( self )
 	self:evaluateTree()
+end
+
+function AnimatorClipTreeState:getNodeVars( node )
+	local vars = self.nodeVarTables[ node ]
+	if not vars then
+		vars = {}
+		self.nodeVarTables[ node ] = vars
+	end
+	return vars
 end
 
 function AnimatorClipTreeState:evaluateTree()

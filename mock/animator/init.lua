@@ -70,6 +70,7 @@ require 'mock.animator.AnimatorTrackField'
 require 'mock.animator.AnimatorClipTreeNodePlay'
 require 'mock.animator.AnimatorClipTreeNodeThrottle'
 require 'mock.animator.AnimatorClipTreeNodeSelect'
+require 'mock.animator.AnimatorClipTreeNodeQueueSelect'
 
 --------------------------------------------------------------------
 --builtin custom track
