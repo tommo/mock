@@ -1,3 +1,5 @@
+module 'mock'
+
 CLASS: MsgParentRedirector ()
 	:MODEL{		
 	}
@@ -5,9 +7,6 @@ CLASS: MsgParentRedirector ()
 mock.registerComponent( 'MsgParentRedirector', MsgParentRedirector )
 
 function MsgParentRedirector:__init()
-	self.syncLoc = true
-	self.syncRot = false
-	self.syncScl = false
 end
 
 function MsgParentRedirector:onAttach( ent )	

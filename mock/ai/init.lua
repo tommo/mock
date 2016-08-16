@@ -2,6 +2,7 @@
 ---FSM
 require 'mock.ai.FSMScheme'
 require 'mock.ai.FSMController'
+require 'mock.ai.ScriptedFSMController'
 
 --------------------------------------------------------------------
 ---- Behaviour Tree

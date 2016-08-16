@@ -220,7 +220,7 @@ function _serializeObject( obj, objMap, noNewRef, partialFields )
 
 	local __serialize = obj.__serialize
 	if __serialize then 
-		extra = __serialize( obj )
+		extra = __serialize( obj, objMap )
 	end
 
 	return {
@@ -383,7 +383,7 @@ function _deserializeObject( obj, data, objMap, namespace, partialFields )
 
 	local __deserialize = obj.__deserialize
 	if __deserialize then
-		__deserialize( obj, data['extra'] )
+		__deserialize( obj, data['extra'], objMap )
 	end
 
 	return obj, objMap
@@ -566,7 +566,7 @@ function _cloneObject( obj, dst, objMap )
 	if not model then return nil end
 	if dst then
 		local dstModel = getModel( dst )
-		assert( dstModel == model )
+		-- assert( dstModel == model )
 	else
 		dst = model:newInstance()
 	end
@@ -582,7 +582,7 @@ function _cloneObject( obj, dst, objMap )
 	----	
 	local __clone = dst.__clone
 	if __clone then
-		__clone( dst, obj )
+		__clone( dst, obj, objMap )
 	end
 	return dst
 end
@@ -622,6 +622,7 @@ _M.clone       = _cloneObject
 
 --internal API
 _M._serializeObject      = _serializeObject
+_M._cloneObject          = _cloneObject
 _M._deserializeObject    = _deserializeObject
 _M._deserializeObjectMap = _deserializeObjectMap
 

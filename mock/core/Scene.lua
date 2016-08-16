@@ -164,6 +164,12 @@ function Scene:reset()
 	end
 end
 
+function Scene:notifyLoad( scnPath )
+	for key, manager in pairs( self.managers ) do
+		manager:onLoad( scnPath )
+	end
+end
+
 function Scene:getTime()
 	return game:getTime()
 end

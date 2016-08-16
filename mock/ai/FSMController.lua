@@ -59,6 +59,10 @@ CLASS:  FSMController ( Behaviour )
 -----fsm state method collector
 FSMController.fsm = newStateMethodCollector( FSMController ) 
 
+function FSMController.__createStateMethodCollector( targetClass )
+	return newStateMethodCollector( targetClass )
+end
+
 function FSMController:__initclass( subclass )
 	subclass.fsm = newStateMethodCollector( subclass )
 end

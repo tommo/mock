@@ -665,6 +665,8 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	mainScene.running = runningState
 	emitSignal( 'mainscene.open', scn, arguments )
 	
+	mainScene:notifyLoad( scnPath )
+
 	if autostart then
 		scn:start()
 	end

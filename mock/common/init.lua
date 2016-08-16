@@ -14,6 +14,7 @@ require 'mock.common.ProtoAsset'
 --------------------------------------------------------------------
 require 'mock.common.StrippedSceneSerializer'
 require 'mock.common.SceneLegacyAsset'
+require 'mock.common.ComponentScript'
 
 
 --------------------------------------------------------------------
@@ -42,6 +43,7 @@ require 'mock.common.InputScript'
 ---- Actor ?
 require 'mock.common.MsgEmitter'
 require 'mock.common.MsgRedirector'
+require 'mock.common.MsgBroadcast'
 
 
 --------------------------------------------------------------------
@@ -53,7 +55,9 @@ require 'mock.common.ScreenAnchor'
 --------------------------------------------------------------------
 --ETC
 require 'mock.common.ControlVariable'
-
 require 'mock.common.Path'
-
 require 'mock.common.ShakeController'
+
+--------------------------------------------------------------------
+--Script
+require 'mock.common.ScriptedBehaviour'

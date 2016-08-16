@@ -607,11 +607,7 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 		end
 
 	end
-
-	for i, edata in ipairs( data.entities ) do
-		self:insertEntity( scene, nil, edata, objMap )
-	end
-
+	
 	if data['guid'] then
 		for id, guid in pairs( data['guid'] ) do
 			local entry = objMap[ id ]
@@ -620,6 +616,10 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 				obj.__guid = guid
 			end
 		end
+	end
+
+	for i, edata in ipairs( data.entities ) do
+		self:insertEntity( scene, nil, edata, objMap )
 	end
 
 	return objMap
