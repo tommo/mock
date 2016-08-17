@@ -1,7 +1,8 @@
 module 'mock'
 
-local simplecopy = table.simplecopy
-local makeId     = makeNameSpacedId
+local simplecopy    = table.simplecopy
+local makeId        = makeNameSpacedId
+local makeNamespace = makeNameSpace
 --------------------------------------------------------------------
 --Instance helper
 --------------------------------------------------------------------
@@ -107,10 +108,9 @@ CLASS: Proto ()
 	:MODEL{}
 
 function Proto:__init( id )
-	self.id   = id
-	self.source = false
-	self.ready  = false
-	self.loading = false
+	self.id       = id
+	self.ready    = false
+	self.loading  = false
 	self.rootName = false
 end
 
@@ -185,10 +185,11 @@ local function mergeObjectMap( map, map0, namespace, protoPath )
 	for id, data in pairs( map0 ) do
 		local newid = makeId( id, namespace )
 		local newData = simplecopy( data )
-		if data.namespace then
-			newData.namespace = makeId( data.namespace, namespace )
+		local ns1 = data['namespace']
+		if ns1 then
+			newData['namespace'] = makeNamespace( ns1, namespace )
 		else
-			newData.namespace = namespace
+			newData['namespace'] = namespace
 		end
 		map[ newid ]   = newData
 		if data.model then
@@ -395,13 +396,9 @@ function Proto:createInstance( overridedData, guid )
 	instance.PROTO_INSTANCE_STATE ={
 		proto = self.id
 	}
+	-- clearNamespaceCache() --CLEAR or not ?
 	return instance
 end
-
-function Proto:setSource( src )
-	self.source = src
-end
-
 
 local function _collectEntity( ent, objMap )
 	local guid = ent.__guid

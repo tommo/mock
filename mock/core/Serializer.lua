@@ -37,6 +37,38 @@ local function makeId( refId, namespace )
 	return namespace and refId..':'..namespace or refId
 end
 
+local namespaceParentCache = {}
+local find = string.find
+local sub  = string.sub
+
+local function findNamespaceParent( ns )
+	while true do
+		local idx = find( ns, ':' )
+		local parent
+		if idx then
+			parent = sub( ns, idx+1 )
+		end
+		namespaceParentCache[ ns ] = parent or false
+		if not parent then return end
+		ns = parent
+	end
+end
+
+local function makeNamespace( ns, ns0 )
+	if ns0 then
+		local newNS = ns..':'..ns0
+		if namespaceParentCache[ newNS ] == nil then
+			findNamespaceParent( newNS )
+		end
+		return newNS
+	else
+		return ns
+	end
+end
+
+local function clearNamespaceCache()
+	namespaceParentCache = {}
+end
 
 --------------------------------------------------------------------
 CLASS: SerializeObjectMap ()
@@ -256,10 +288,32 @@ local function serialize( obj, objMap )
 	}
 end
 
+local find = string.find
+local sub  = string.sub
 local function getObjectWithNamespace( objMap, id, namespace )
-	if not namespace then return objMap[ id ] end
-	local newId = makeId( id, namespace )
-	return objMap[ newId ] or objMap[ id ]
+	while true do
+		if not namespace then return objMap[ id ] end
+		local newId = makeId( id, namespace )
+		local obj = objMap[ newId ]
+		if obj then return obj end
+		namespace = namespaceParentCache[ namespace ]
+	end
+	-- while true do
+
+	-- 	local newId = makeId( id, namespace )
+	-- 	local obj = objMap[ newId ]
+	-- 	if obj then return obj end
+		
+	-- 	if not namespace then return nil end
+
+	-- 	local idx = find( namespace, ':' )
+	-- 	if idx then
+	-- 		namespace = sub( namespace, idx+1 )
+	-- 	else
+	-- 		namespace = nil
+	-- 	end
+	-- 	-- return objMap[ newId ] or objMap[ id ]
+	-- end
 end
 
 --------------------------------------------------------------------
@@ -358,9 +412,9 @@ function _deserializeObject( obj, data, objMap, namespace, partialFields )
 		--TODO: assert obj class match
 	end
 
-	local ns0 = data['namespace']
-	if ns0 then
-		namespace = makeId( ns0, namespace )
+	local ns = data['namespace']
+	if ns then
+		namespace = makeNamespace( ns, namespace )
 	end
 
 	local fields 
@@ -633,5 +687,7 @@ _M.isTupleValue          = isTupleValue
 _M.isAtomicValue         = isAtomicValue
 
 _M.makeNameSpacedId      = makeId
+_M.makeNameSpace         = makeNamespace
+_M.clearNamespaceCache   = clearNamespaceCache
 
 _M._NULL = NULL
