@@ -203,12 +203,16 @@ end
 function Actor:removeMsgListener( listener )
 	if not listener then return end
 	local msgListeners = self.msgListeners
-	for i, v in ipairs( msgListeners ) do
-		if v == listener then 
-			table.remove( msgListeners, i )
-			return
-		end
+	local idx = table.index( msgListeners, listener )
+	if idx then
+		msgListeners[ idx ] = false --avoid removing msglistener while msg dispatching
 	end
+	-- for i, v in ipairs( msgListeners ) do
+	-- 	if v == listener then 
+	-- 		table.remove( msgListeners, i )
+	-- 		return
+	-- 	end
+	-- end
 end
 
 function Actor:clearMsgListeners()
