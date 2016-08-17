@@ -221,8 +221,10 @@ end
 
 function Actor:tell( msg, data, source )
 	for i, listener in pairs( self.msgListeners ) do
-		local r = listener( msg, data, source )
-		if r == 'cancel' then break	end
+		if listener then
+			local r = listener( msg, data, source )
+			if r == 'cancel' then break	end
+		end
 	end
 end
 
