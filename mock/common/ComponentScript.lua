@@ -102,7 +102,10 @@ function ComponentScript:buildInstance( obj, env )
 		_warn( 'failed build component script instance' )
 		return false
 	end
-	
+	local __init = delegate.__init
+	if __init then
+		__init()
+	end
 	return delegate, dataInstance
 end
 
