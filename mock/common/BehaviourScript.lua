@@ -25,9 +25,7 @@ end
 
 ]]
 
-local scriptHeader = [[
-local self, entity = ...
-]]
+local scriptHeader = [[local self, entity = ...;]]
 
 local scriptTail = [[
 ]]
