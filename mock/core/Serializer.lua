@@ -248,7 +248,7 @@ function _serializeObject( obj, objMap, noNewRef, partialFields )
 	end
 	----	
 
-	local extra = false
+	local extra = nil
 
 	local __serialize = obj.__serialize
 	if __serialize then 
@@ -437,7 +437,7 @@ function _deserializeObject( obj, data, objMap, namespace, partialFields )
 
 	local __deserialize = obj.__deserialize
 	if __deserialize then
-		__deserialize( obj, data['extra'], objMap )
+		__deserialize( obj, data['extra'], objMap, namespace )
 	end
 
 	return obj, objMap

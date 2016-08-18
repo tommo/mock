@@ -244,6 +244,7 @@ local function mergeProtoData( data, id )
 	local overrideMap  = objData['overrided']
 	local deleteList   = objData['deleted']
 	local addSet       = objData['added']
+	local extraMap     = objData['extra']
 	
 	local deleteSet = false
 	if deleteList then
@@ -297,6 +298,11 @@ local function mergeProtoData( data, id )
 					end
 					map[id].body = newBody				
 				end
+			end
+		end
+		if extraMap then
+			for id, extraData in pairs( extraMap ) do
+				map[id].extra = extraData
 			end
 		end
 	end

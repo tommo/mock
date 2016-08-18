@@ -49,37 +49,42 @@ local makeId     = makeNameSpacedId
 CLASS: SceneSerializer ()
 
 
-local function collectOverrideObjectData( objMap, obj, collected )
+local function collectOverrideObjectData( objMap, obj, collected, collectedExtra )
 	local fields = obj.__overrided_fields
-	if not ( fields and next( fields ) )  then return end
+	-- if not ( fields and next( fields ) )  then return end
 	local body = {}
 	local id = obj.__guid
 	local fieldList = {}
-	for k in pairs( fields ) do
-		table.insert( fieldList, k )
+	if fields and next( fields ) then
+		for k in pairs( fields ) do
+			table.insert( fieldList, k )
+		end
 	end
 
 	local partialData = _serializeObject( obj, objMap, true, fieldList )
 	local body = partialData.body
-	for i, k in ipairs( fieldList ) do
-		if body[k] == nil then body[k] = false end --null reference
+	if fields and next( fields ) then
+		for i, k in ipairs( fieldList ) do
+			if body[k] == nil then body[k] = false end --null reference
+		end
+		collected[ id ] = partialData.body
 	end
+	collectedExtra[ id ] = partialData.extra
 
-	collected[ id ] = partialData.body
 end
 
-local function collectOverrideEntityData( objMap, entity, collected )
-	collectOverrideObjectData( objMap, entity, collected )
+local function collectOverrideEntityData( objMap, entity, collected, collectedExtra )
+	collectOverrideObjectData( objMap, entity, collected, collectedExtra )
 	if entity.components then
 		for _, com in ipairs( entity:getSortedComponentList() ) do
-			collectOverrideObjectData( objMap, com, collected )
+			collectOverrideObjectData( objMap, com, collected, collectedExtra )
 		end
 	end
 	if entity.children then
 		for child in pairs( entity.children ) do
 			--proto instance data will get collected in another process
 			if not child.PROTO_INSTANCE_STATE then 
-				collectOverrideEntityData( objMap, child, collected )
+				collectOverrideEntityData( objMap, child, collected, collectedExtra )
 			end
 		end
 	end
@@ -425,10 +430,14 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 		for id, info in pairs( protoInfo ) do
 			local obj = info.obj
 			local overridedData = {}
-			collectOverrideEntityData( objMap, obj, overridedData )
+			local extraData = {}
+			collectOverrideEntityData( objMap, obj, overridedData, extraData )
+			local objData = map[id]
 			if next(overridedData) then
-				local objData = map[id]
 				objData[ 'overrided' ] = overridedData
+			end
+			if next( extraData ) then
+				objData[ 'extra' ] = extraData
 			end
 		end
 

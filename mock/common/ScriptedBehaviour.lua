@@ -94,11 +94,11 @@ function ScriptedBehaviour:__serialize( objMap )
 	return _serializeObject( dataInstance, objMap )
 end
 
-function ScriptedBehaviour:__deserialize( data, objMap )
+function ScriptedBehaviour:__deserialize( data, objMap, namespace )
 	if not data then return end
 	local dataInstance = self.dataInstance
 	if not dataInstance then return end
-	return _deserializeObject( dataInstance, data, objMap )
+	return _deserializeObject( dataInstance, data, objMap, namespace )
 end
 
 function ScriptedBehaviour:__clone( src, objMap )
