@@ -36,6 +36,21 @@ function NamedTileGrid:setTile( x, y, name )
 	return self.grid:setTile( x, y, id )
 end
 
+function NamedTileGrid:findTile( id, x0,y0, x1,y1 )
+	local id = name and self.nameToId[ name ] or 0
+	local w, h = self.width, self.height
+	local grid = self.grid
+	for y = y0 or 1, y1 or h do
+	for x = x0 or 1, x1 or w do
+		local v = grid:getTile( x, y )
+		if v == id then
+			return x, y
+		end
+	end
+	end
+	return nil
+end
+
 function NamedTileGrid:fill( name )
 	local id = self.nameToId[ name ] or 0
 	self.grid:fill( id )
@@ -49,6 +64,10 @@ end
 
 function NamedTileGrid:tileIdToGridId( tileId )
 	return self.nameToId[ tileId ] or false
+end
+
+function NamedTileGrid:gridIdToTileId( gridId )
+	return self.idToName[ gridId ] or false
 end
 
 function NamedTileGrid:getMoaiGrid()

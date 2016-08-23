@@ -35,6 +35,10 @@ function Shape2D:toPolyLines( steps )
 	return {}
 end
 
+--------------------------------------------------------------------
+CLASS: ShapeGroup ()
+	:MODEL{}
+
 
 --------------------------------------------------------------------
 CLASS: ShapeRect ( Shape2D )

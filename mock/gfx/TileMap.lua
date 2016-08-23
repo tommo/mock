@@ -15,7 +15,6 @@ function TileMapGrid:getMoaiGrid()
 	return self.grid
 end
 
-
 function TileMapGrid:locToCoord( x, y )
 	return self.grid:locToCoord( x, y )
 end
@@ -43,8 +42,41 @@ function TileMapGrid:getTile( x, y ) -- name
 	return self.grid:getTile( x, y )
 end
 
+function TileMapGrid:getTileRaw( x, y )
+	return self.grid:getTile( x, y )
+end
+
 function TileMapGrid:setTile( x, y, id )
 	return self.grid:setTile( x, y, id or 0 )
+end
+
+function TileMapGrid:setTileRaw( x, y, raw )
+	return self.grid:setTile( x, y, raw or 0 )
+end
+
+function TileMapGrid:setTileFlags( x, y, flags )
+	return self.grid:setTileFlags( x, y, flags )
+end
+
+function TileMapGrid:clearTileFlags( x, y, flags )
+	return self.grid:clearTileFlags( x, y, flags )
+end
+
+function TileMapGrid:getTileFlags( x, y )
+	return self.grid:getTileFlags( x, y )
+end
+
+function TileMapGrid:findTile( id, x0, y0, x1, y1 )
+	local w, h = self.width, self.height
+	for y = y0 or 1, y1 or h do
+	for x = x0 or 1, x1 or w do
+		local v = grid:getTile( x, y )
+		if v == id then
+			return x, y
+		end
+	end
+	end
+	return nil
 end
 
 function TileMapGrid:fill( id )
@@ -70,6 +102,9 @@ function TileMapGrid:tileIdToGridId( tileId )
 	return tileId
 end
 
+function TileMapGrid:gridIdToTileId( gridId )
+	return tileId
+end
 
 --------------------------------------------------------------------
 CLASS: TileMapLayer ()
@@ -147,6 +182,10 @@ function TileMapLayer:setSubDivision( div )
 	local div0 = self.subdivision
 	self.subdivision = div
 	self:onSubDivisionChange( div, div0 )
+end
+
+function TileMapLayer:getSubDivision()
+	return self.subdivision
 end
 
 function TileMapLayer:onSubDivisionChange( div, div0 )
@@ -266,6 +305,18 @@ function TileMapLayer:getTile( x,y )
 	return self.mapGrid:getTile( x, y )
 end
 
+function TileMapLayer:getTileRaw( x,y )
+	return self.mapGrid:getTileRaw( x, y )
+end
+
+function TileMapLayer:getTileFlags( x,y )
+	return self.mapGrid:getTileFlags( x, y )
+end
+
+function TileMapLayer:findTile( id, x0,y0, x1,y1 )
+	return self.mapGrid:findTile( id, x0,y0, x1,y1 )
+end
+
 function TileMapLayer:getTerrain( x, y )
 	return nil
 end
@@ -279,6 +330,18 @@ end
 
 function TileMapLayer:setTile( x, y, id )
 	return self.mapGrid:setTile( x, y, id )
+end
+
+function TileMapLayer:setTileRaw( x, y, raw )
+	return self.mapGrid:setTileRaw( x, y, raw )
+end
+
+function TileMapLayer:setTileFlags( x, y, flags )
+	return self.mapGrid:setTileFlags( x, y, flags )
+end
+
+function TileMapLayer:clearTileFlags( x, y, flags )
+	return self.mapGrid:clearTileFlags( x, y, flags )
 end
 
 function TileMapLayer:removeTile( x, y )
