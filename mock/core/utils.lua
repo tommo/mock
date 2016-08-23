@@ -631,6 +631,17 @@ function table.match( t, func )
 	return nil
 end
 
+function table.get( t, k, default )
+	local v = t[ k ]
+	if v == nil then return default end
+	return v
+end
+
+function table.haskey( t, k )
+	return t[ k ] ~= nil
+end
+
+
 --------------------------------------------------------------------
 --String Helpers
 --------------------------------------------------------------------

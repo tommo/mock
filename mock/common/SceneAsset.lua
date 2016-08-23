@@ -51,7 +51,6 @@ CLASS: SceneSerializer ()
 
 local function collectOverrideObjectData( objMap, obj, collected, collectedExtra )
 	local fields = obj.__overrided_fields
-	-- if not ( fields and next( fields ) )  then return end
 	local body = {}
 	local id = obj.__guid
 	local fieldList = {}
@@ -69,7 +68,10 @@ local function collectOverrideObjectData( objMap, obj, collected, collectedExtra
 		end
 		collected[ id ] = partialData.body
 	end
-	collectedExtra[ id ] = partialData.extra
+	local extraData = partialData.extra
+	if extraData ~= nil then
+		collectedExtra[ id ] = extraData
+	end
 
 end
 
