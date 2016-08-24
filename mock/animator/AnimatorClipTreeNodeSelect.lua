@@ -8,6 +8,8 @@ CLASS: AnimatorClipTreeNodeSelect ( AnimatorClipTreeNode )
 
 function AnimatorClipTreeNodeSelect:__init()
 	self.var = 'state'
+	self.cases = {}
+	self.default = false
 end
 
 function AnimatorClipTreeNodeSelect:toString()
@@ -27,9 +29,24 @@ function AnimatorClipTreeNodeSelect:getIcon()
 end
 
 function AnimatorClipTreeNodeSelect:evaluate( treeState )
-	for i, child in ipairs( self.children ) do
+	for i, child in ipairs( self.cases ) do
 		if child:checkCondition( treeState ) then
 			return child:evaluateChildren( treeState )
+		end
+	end
+	if self.default then
+		return self.default:evaluateChildren( treeState )
+	end
+end
+
+function AnimatorClipTreeNodeSelect:onBuild( context )
+	for i, child in ipairs( self.children ) do
+		if child:isDefault() then
+			if not self.default then
+				self.default = child
+			end
+		else
+			table.insert( self.cases, child )
 		end
 	end
 end
@@ -50,7 +67,11 @@ function AnimatorClipTreeNodeSelectCase:toString()
 end
 
 function AnimatorClipTreeNodeSelectCase:getTypeName()
-	return 'select'
+	return 'case'
+end
+
+function AnimatorClipTreeNodeSelectCase:isDefault()
+	return false
 end
 
 function AnimatorClipTreeNodeSelectCase:acceptChildType( typeName )
@@ -127,6 +148,22 @@ function AnimatorClipTreeNodeSelectCase:onBuild( context )
 	if value:trim() == '' then self.checkFunc = false end
 	self.checkFunc = makeConditionChecker( var, value ) or false
 end
+
+--------------------------------------------------------------------
+CLASS: AnimatorClipTreeNodeSelectCaseDefault ( AnimatorClipTreeNodeSelectCase )
+	:MODEL{
+		Field 'value' :string() :no_edit();
+	}
+
+function AnimatorClipTreeNodeSelectCaseDefault:onBuild( context )
+	--do nothing
+end
+
+function AnimatorClipTreeNodeSelectCaseDefault:isDefault()
+	return true
+end
+
+
 
 registerAnimatorClipTreeNodeType( 'select',   AnimatorClipTreeNodeSelect )
 registerAnimatorClipTreeNodeType( 'case',     AnimatorClipTreeNodeSelectCase )

@@ -139,6 +139,9 @@ function AnimatorClipTreeState:getVar( id )
 	return self.animator:getVar( id )
 end
 
+-- function AnimatorClipTreeState:isPlaying()
+-- end
+
 ---------------------------------------------------------------------
 CLASS: AnimatorClipTreeNode ()
 	:MODEL{
