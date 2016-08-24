@@ -167,3 +167,4 @@ end
 
 registerAnimatorClipTreeNodeType( 'select',   AnimatorClipTreeNodeSelect )
 registerAnimatorClipTreeNodeType( 'case',     AnimatorClipTreeNodeSelectCase )
+registerAnimatorClipTreeNodeType( 'default',     AnimatorClipTreeNodeSelectCaseDefault )
