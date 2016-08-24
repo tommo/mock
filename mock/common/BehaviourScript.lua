@@ -43,7 +43,7 @@ end
 function BehaviourScript:loadScript( ent )
 	self.delegate = false
 	local finalScript = scriptHeader .. self.script .. scriptTail
-	local loader, err = loadstring( finalScript, 'behaviour-script' )
+	local loader, err = loadstring( finalScript, 'Script@'..ent:getName() )
 	if not loader then return _error( err ) end
 	local delegate = setmetatable( {}, { __index = _G } )
 	setfenv( loader, delegate )

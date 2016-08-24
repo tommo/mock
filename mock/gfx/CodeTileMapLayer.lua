@@ -51,6 +51,10 @@ function CodeTileGrid:tileIdToGridId( tileId )
 	return self.nameToId[ tileId ] or false
 end
 
+function CodeTileGrid:gridIdToTileId( gridId )
+	return self.idToName[ gridId ] or false
+end
+
 function CodeTileGrid:getMoaiGrid()
 	return self.grid
 end
