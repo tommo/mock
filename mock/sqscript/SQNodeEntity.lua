@@ -3,7 +3,7 @@
 module 'mock'
 
 --------------------------------------------------------------------
-CLASS: SQNodeEntity ( SQNodeGroup )
+CLASS: SQNodeEntity ( SQNode )
 	:MODEL{
 		
 }
