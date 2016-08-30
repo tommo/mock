@@ -564,7 +564,7 @@ function table.extract( t, ... )
 	for i, key in ipairs( keys ) do
 		res[ i ] = t[ key ]
 	end
-	return unapck( res )
+	return unpack( res )
 end
 
 function table.extend(t,t1)

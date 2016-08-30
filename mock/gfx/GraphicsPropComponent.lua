@@ -119,6 +119,10 @@ function GraphicsPropComponent:setBounds( x0,y0,z0, x1,y1,z1 )
 	return self.prop:setBounds( x0,y0,z0, x1,y1,z1 )
 end
 
+function GraphicsPropComponent:getWorldBounds()
+	return self.prop:getWorldBounds()
+end
+
 function GraphicsPropComponent:applyMaterial( material )
 	material:applyToMoaiProp( self.prop )
 end

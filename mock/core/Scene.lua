@@ -75,10 +75,6 @@ function Scene:removeDebugProp( prop )
 	self.debugPropPartition:removeProp( prop )
 end
 
-function Scene:getConfig( key )
-	return self.config[ key ]
-end
-
 function Scene:isEditorScene()
 	return self.FLAG_EDITOR_SCENE
 end
@@ -114,7 +110,7 @@ function Scene:initLayers()
 	local layersByName = {}
 	local defaultLayer
 
-	for i, l in ipairs( game.layers ) do
+	for i, l in ipairs( self:getLayerSources() ) do
 		local layer = l:makeMoaiLayer()
 		layers[i] = layer
 		layersByName[ layer.name ] = layer
@@ -133,12 +129,15 @@ function Scene:initLayers()
 	self.layersByName = layersByName
 end
 
+function Scene:getLayerSources()
+	return table.simplecopy( game.layers )
+end
+
 function Scene:initManagers()
 	self.managers = {}
 	local registry = getSceneManagerFactoryRegistry()
-	local isEditorScene = self:isEditorScene()
 	for i, fac in ipairs( registry ) do
-		if not isEditorScene or fac:acceptEditorScene() then
+		if fac:accept( self ) then
 			local manager = fac:create( self )
 			if manager then
 				manager._factory = fac
@@ -835,4 +834,8 @@ end
 
 function Scene:getEntityCount()
 	return table.len( self.entities )
+end
+
+function Scene:getEditorInputDevice()
+	return getDefaultInputDevice()
 end

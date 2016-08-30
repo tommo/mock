@@ -36,8 +36,8 @@ function SceneManagerFactory:getKey()
 	return self._key
 end
 
-function SceneManagerFactory:acceptEditorScene()
-	return false
+function SceneManagerFactory:accept( scn )
+	if scn.FLAG_EDITOR_SCENE then return false end
 end
 
 --------------------------------------------------------------------
