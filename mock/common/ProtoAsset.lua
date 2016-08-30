@@ -302,7 +302,10 @@ local function mergeProtoData( data, id )
 		end
 		if extraMap then
 			for id, extraData in pairs( extraMap ) do
-				map[id].extra = extraData
+				local obj = map[id]
+				if obj then
+					obj.extra = extraData
+				end
 			end
 		end
 	end

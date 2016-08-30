@@ -14,11 +14,12 @@ local defaultScript = [[
 -- usable variable: self( mock.Behaviour ),  entity( mock.Entity )
 --
 
-function onThread()
-end
-
---function onMsg( msg, data )
+--function onThread()
 --end
+
+function onMsg( msg, data )
+	print(entity:getName(),msg,data)
+end
 
 --function onUpdate( dt )
 --end
