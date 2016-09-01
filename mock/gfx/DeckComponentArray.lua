@@ -136,10 +136,37 @@ function DeckComponentArray:updateLayout()
 	if self.propBound then
 		local x0,y0,z0,x1,y1,z1 = unpack( self.propBound )
 		local w, h, d = x1-x0,y1-y0,z1-z0
+		
+		local bx0,by0,bz0, bx1,by1,bz1
+		if cx >= 0 then
+			bx0 = x0
+			bx1 = (gx-1)*cx + x1
+		else
+			bx0 = (gx-1)*cx + x0
+			bx1 = x1
+		end
+
+		if cy >= 0 then
+			by0 = y0
+			by1 = (gy-1)*cy + y1
+		else
+			by0 = (gy-1)*cy + y0
+			by1 = y1
+		end
+
+		if cz >= 0 then
+			bz0 = z0
+			bz1 = (gz-1)*cz + z1
+		else
+			bz0 = (gz-1)*cz + z0
+			bz1 = z1
+		end
+		
 		self:getMoaiProp():setBounds(
-			x0,y0,z0,
-			(gx-1)*cx+w,(gy-1)*cy+h,(gz-1)*cz+d
+			bx0, by0, bz0,
+			bx1, by1, bz1
 		)
+
 	else
 		self:getMoaiProp():setBounds( 0,0,0,0,0,0 )
 	end
