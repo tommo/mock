@@ -104,6 +104,12 @@ function DeckComponentArray:updateDeck()
 	for i, prop in ipairs( self.props ) do
 		prop:setDeck( deck )
 	end
+	local prop0 = self.props[1]
+	if prop0 then
+		self.propBound = { prop0:getBounds() }
+	else
+		self.propBound = false
+	end
 	self:updateLayout()
 end
 
@@ -127,7 +133,16 @@ function DeckComponentArray:updateLayout()
 	end
 	end
 	end
-
+	if self.propBound then
+		local x0,y0,z0,x1,y1,z1 = unpack( self.propBound )
+		local w, h, d = x1-x0,y1-y0,z1-z0
+		self:getMoaiProp():setBounds(
+			x0,y0,z0,
+			(gx-1)*cx+w,(gy-1)*cy+h,(gz-1)*cz+d
+		)
+	else
+		self:getMoaiProp():setBounds( 0,0,0,0,0,0 )
+	end
 end
 
 function DeckComponentArray:clearProps()
@@ -151,3 +166,14 @@ function DeckComponentArray:applyMaterial( mat )
 	end
 end	
 
+
+--------------------------------------------------------------------
+function DeckComponentArray:drawBounds()
+	GIIHelper.setVertexTransform( self.prop )
+	local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
+	MOAIDraw.drawRect( x1,y1,x2,y2 )
+end
+
+function DeckComponentArray:onBuildSelectedGizmo()
+	return mock_edit.SimpleBoundGizmo()
+end
