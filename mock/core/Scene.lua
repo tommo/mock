@@ -27,6 +27,7 @@ function Scene:__init( option )
 	self.layersByName    = {}
 	self.entities        = {}
 	self.entitiesByName  = {}
+	self.entityCount     = 0
 
 	self.pendingStart    = {}
 	self.pendingDestroy  = {}

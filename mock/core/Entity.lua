@@ -17,10 +17,18 @@ local type   = type
 ---------------------------------------------------------------------
 CLASS: Entity ( Actor )
 	:MODEL{
+		--editor related
+		Field '__gizmoIcon'  :string() :no_edit();
+		Field '__gizmoColor' :type( 'color') :no_edit();
+
+		--prefab
 		Field '__prefabId':string() :no_edit();
+		
+		--internal
 		Field '_priority' :int() :no_edit()  :set('setPriority');
+
+		--name
 		Field 'tags'      :string()  :getset('Tags') :no_edit();
-		-- Field '_editLocked' :boolean() :no_edit();
 		Field 'name'      :string()  :getset('Name');
 		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
@@ -54,6 +62,9 @@ end
 
 local _PRIORITY = 1
 function Entity:__init()
+	self.__gizmoIcon  = false
+	self.__gizmoColor = {1,1,1,1}
+	
 	local _prop = self:_createEntityProp()
 	self._prop       = _prop
 
@@ -89,6 +100,7 @@ function Entity:_insertIntoScene( scene, layer )
 
 	self.layer = layer
 	scene.entities[ self ] = true
+	scene.entityCount = scene.entityCount + 1
 
 	local copy = {} --there might be new components attached inside component starting
 	for com in pairs( self.components ) do
@@ -248,6 +260,7 @@ function Entity:destroyNow()
 	
 	scene:removeUpdateListener( self )
 	scene.entities[ self ] = nil
+	scene.entityCount = scene.entityCount - 1
 	
 	--callback
 	if entityListener then entityListener( 'remove', self, scene, layer ) end

@@ -135,6 +135,8 @@ function DeckComponentArray:updateLayout()
 	end
 	if self.propBound then
 		local x0,y0,z0,x1,y1,z1 = unpack( self.propBound )
+		x0,y0,z0, x1,y1,z1 = x0 or 0, y0 or 0, z0 or 0, x1 or 0, y1 or 0, z1 or 0
+		
 		local w, h, d = x1-x0,y1-y0,z1-z0
 		
 		local bx0,by0,bz0, bx1,by1,bz1
