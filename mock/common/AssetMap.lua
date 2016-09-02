@@ -26,6 +26,10 @@ function AssetMap:getPaths()
 	return self.pathMap
 end
 
+function AssetMap:getEntries()
+	return self.entryMap
+end
+
 function AssetMap:loadData( data )
 	self.entryMap = data
 	local paths = {}

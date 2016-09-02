@@ -70,15 +70,16 @@ function DeckComponentSequence:updateProps()
 	local deckMap = deckMapPath and loadAsset( deckMapPath ) or false
 	if not deckMap then return end
 
-	local paths = deckMap:getPaths()
-	if not paths then return end
+	local entries = deckMap:getEntries()
+	if not entries then return end
 
 	local material = self:getMaterialObject()
 
 	local prop0 = self:getMoaiProp()
 	local props = {}
 	for s in self.sequence:gmatch( '%w' ) do
-		local assetPath = paths[ s ]
+		local entry = entries[ s ]
+		local assetPath = entry and entry[ 'path' ]
 		local asset = assetPath and loadAsset( assetPath ) 
 		if asset and asset:isInstance( Deck2D ) then
 			local prop = MOAIGraphicsProp.new()
@@ -92,6 +93,23 @@ function DeckComponentSequence:updateProps()
 			material:applyToMoaiProp( prop )
 			prop:forceUpdate()
 			table.insert( props, prop )
+			local size = entry[ 'size' ]
+			prop._overridedSize = false
+			if type( size ) == 'table' then
+				local w, h, d = unpack( size )
+				if ( type( w ) == 'number' and type( h ) == 'number' ) then
+					d = tonumber( d ) or 0
+					prop._overridedSize = { w, h, d }
+				end
+			end
+
+			local offset = entry[ 'offset' ]
+			if type( offset ) == 'table' then
+				local x, y, z = unpack( offset )
+				prop._overridedOffset = { x,y,z }
+				prop:setPiv( -(x or 0 ), -( y or 0 ), -( z or 0 ) )
+			end
+
 		end
 	end
 
