@@ -4,7 +4,7 @@
 require 'mock.common.BasicAsset'
 require 'mock.common.DataAsset'
 require 'mock.common.AssetMap'
--- require 'mock.common.AssetList'
+require 'mock.common.AssetList'
 
 --SCENE
 require 'mock.common.SceneAsset'
@@ -44,6 +44,7 @@ require 'mock.common.InputScript'
 require 'mock.common.MsgEmitter'
 require 'mock.common.MsgRedirector'
 require 'mock.common.MsgBroadcast'
+require 'mock.common.MsgTarget'
 
 
 --------------------------------------------------------------------

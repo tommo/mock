@@ -47,13 +47,6 @@ function DeckComponent:drawBounds()
 end
 
 --------------------------------------------------------------------
-function DeckComponent:inside( x, y, z, pad )
-	local _,_,z1 = self.prop:getWorldLoc()
-	return self.prop:inside( x,y,z1, pad )
-end
-
-
---------------------------------------------------------------------
 local defaultDeck2DShader = MOAIShaderMgr.getShader( MOAIShaderMgr.DECK2D_SHADER )
 
 function DeckComponent:getDefaultShader()

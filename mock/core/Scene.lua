@@ -274,9 +274,9 @@ function Scene:threadMain( dt )
 			for i, t in ipairs( pendingCall ) do
 				local func = t.func
 				if type( func ) == 'string' then --method call
-					local entity = t.object
-					func = entity[ func ]
-					func( entity, unpack(t) )
+					local object = t.object
+					func = object[ func ]
+					func( object, unpack(t) )
 				else
 					func( unpack(t) )
 				end
@@ -634,6 +634,12 @@ end
 
 function Scene:findEntity( name )
 	return self.entitiesByName[ name ]
+end
+
+function Scene:findEntityCom( entName, comId )
+	local ent = self:findEntity( entName )
+	if ent then return ent:com( comId ) end
+	return nil
 end
 
 

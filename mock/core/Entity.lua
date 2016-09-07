@@ -286,6 +286,7 @@ function Entity:attach( com )
 		_log( self.name, tostring( self.__guid ), com:getClassName() )
 		error( 'component already attached!!!!' )
 	end
+	self._componentInfo = nil
 	self._comCache = false
 	self.components[ com ] = com:getClass()
 	com._componentID = self._maxComponentID
@@ -329,6 +330,7 @@ function Entity:detach( com, reason, _skipDisconnection )
 	local components = self.components
 	if not components[ com ] then return end
 	components[ com ] = nil
+	self._componentInfo = nil
 	if self.scene then
 		local entityListener = self.scene.entityListener
 		if entityListener then
@@ -899,6 +901,10 @@ function Entity:setLayer( layerName )
 	end
 end
 
+function Entity:getPartition()
+	return self.layer:getPartition()
+end
+
 --------------------------------------------------------------------
 function Entity:setTags( t )
 	self._tags = t
@@ -911,6 +917,24 @@ end
 function Entity:hasTag( t )
 	if not self._tags then return false end
 	return self._tags:find( t )
+end
+
+function Entity:getComponentInfo()
+	if self._componentInfo then
+		return self._componentInfo
+	else
+		local info = false
+		for i, com in ipairs( self:getSortedComponentList() ) do
+			local name = com:getClassName()
+			if info then
+				info = info .. ',' .. name
+			else
+				info = name
+			end
+		end
+		self._componentInfo = info
+		return info
+	end
 end
 
 --------------------------------------------------------------------
@@ -1154,14 +1178,18 @@ end
 --------------------------------------------------------------------
 --Function caller
 --------------------------------------------------------------------
-function Entity:callNextFrame(f, ... )
-	if not self.scene then return end
-	local t = { func = f, object = self, ... }
-	insert( self.scene.pendingCall, t )
+function Entity:callNextFrame( f, ... )
+	local scene = self.scene
+	if not scene then return end
+	local t = {
+		func = f,
+		object = self,
+		...
+	}
+	insert( scene.pendingCall, t )
 end
 
 function Entity:callInterval( interval, func, ... )
-
 	local timer = self:createTimer()
 	local args
 
