@@ -2,41 +2,32 @@ module 'mock'
 
 CLASS: AssetList ()
 	:MODEL{
-		Field 'assets' :asset_array( '.' )
 	}
 
 function AssetList:__init()
+	self.assetPaths = {}
 	self.assets = {}
 end
 
-function AssetList:getAssetPath( idx )
-	return self.assets[ idx ]
+function AssetList:loadAll()
+	for i, path in ipairs( self.assetPaths ) do
+		local asset = loadAsset( path )
+		self.assets[ i ] = asset
+	end
 end
 
-function AssetList:getAsset( idx )
-	local path = self.assets[ idx ]
-	if not path then return nil end
-	return loadAsset( path )
-end
-
-function AssetList:getCount()
-	return #self.assets
-end
-
-function AssetList:ipairs()
-	return ipairs( self.assets )
-end
-
-function AssetList:getPaths()
-	return self.assets
+function AssetList:release()
+	self.assets = {}
 end
 
 function AssetList:loadData( data )
-	self.data = data
 	local paths = {}
-	for i, entry in ipairs( data[ 'assets' ] ) do
-		local 
+	for i, entry in ipairs( data ) do
+		local path = entry[ 'path' ]
+		paths[ i ] = path
 	end
+	self.assetPaths = paths
+	self.assets = {}
 end
 
 --------------------------------------------------------------------

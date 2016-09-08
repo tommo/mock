@@ -54,6 +54,7 @@ require 'mock.gfx.DeckComponent'
 require 'mock.gfx.DeckComponentArray'
 require 'mock.gfx.DeckComponentGrid'
 require 'mock.gfx.DeckComponentSequence'
+require 'mock.gfx.DeckCanvas'
 
 --------------------------------------------------------------------
 ---- Graphics

@@ -43,7 +43,7 @@ local BILLBOARD_NONE       = MOAIProp. BILLBOARD_NONE
 
 function RenderMaterial:__init()
 	self.tag       = ''
-	self.blend     = 'normal'
+	self.blend     = 'alpha'
 	self.shader    = false
 	
 	--

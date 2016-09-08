@@ -167,6 +167,17 @@ function Component:setCurrentCoroutinePriority( priority )
 	return self._entity:setCurrentCoroutinePriority( priority )
 end
 
+function Component:callNextFrame( f, ... )
+	local scene = self:getScene()
+	if not scene then return end
+	local t = {
+		func = f,
+		object = self,
+		...
+	}
+	insert( scene.pendingCall, t )
+end
+
 
 --------------------------------------------------------------------
 --message & state

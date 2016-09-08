@@ -18,7 +18,6 @@ CLASS: SQNodeAnimator ( SQNode )
 
 function SQNodeAnimator:__init()
 	self.cmd = 'play'
-	self.animState = false
 	self.blocking  = false
 end
 
