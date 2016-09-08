@@ -173,6 +173,10 @@ function DeckCanvas:_addProp( prop )
 	return prop
 end
 
+function DeckCanvas:_addBoundsProps()
+end
+
+
 
 local clearLinkPartition    = clearLinkPartition
 local clearLinkIndex        = clearLinkIndex
@@ -211,17 +215,39 @@ function DeckCanvas:inside( x, y, z, pads )
 	return x > -w/2 and h > -h/2 and x < w/2 and y < h/2
 end
 
+
+--------------------------------------------------------------------
+--Editor support
+
 function DeckCanvas:onBuildSelectedGizmo()
 	local giz = mock_edit.SimpleBoundGizmo()
 	giz:setTarget( self )
 	return giz
 end
 
+local deckCanvasItemBoundsVisible = true
+function setDeckCanvasItemBoundsVisible( vis )
+	deckCanvasItemBoundsVisible = vis
+end
+
+function isDeckCanvasItemBoundsVisible()
+	return deckCanvasItemBoundsVisible
+end
+
+local drawRect = MOAIDraw.drawRect
 function DeckCanvas:drawBounds()
+	if deckCanvasItemBoundsVisible then
+		mock_edit.applyColor( 'deckcanvas-item' )
+		for i, prop in ipairs( self.props ) do
+			local x,y,z,x1,y1,z1 = prop:getWorldBounds()
+			drawRect( x,y,x1,y1 )
+		end
+	end
+
 	GIIHelper.setVertexTransform( self._entity:getProp() )
 	local w, h = self:getSize()
 	mock_edit.applyColor( 'deckcanvas-bound' )
-	MOAIDraw.drawRect( -w/2, -h/2, w/2, h/2 )
+	drawRect( -w/2, -h/2, w/2, h/2 )
 end
 
 function DeckCanvas:editPen()
@@ -233,3 +259,4 @@ function DeckCanvas:editClear()
 	mock_edit.getCurrentSceneView():updateCanvas()
 	markProtoInstanceOverrided( self, 'serializedData' )
 end
+
