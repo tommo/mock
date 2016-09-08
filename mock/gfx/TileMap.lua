@@ -623,8 +623,8 @@ function TileMap:getDefaultParam()
 	local param = TileMapParam()
 	param.width      = 20
 	param.height     = 20
-	param.tileWidth  = 40
-	param.tileHeight = 30
+	param.tileWidth  = 34
+	param.tileHeight = 24
 	param.defaultTileset = self.defaultTileset
 	return param
 end
