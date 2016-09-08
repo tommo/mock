@@ -20,6 +20,7 @@ CLASS: PhysicsMaterial ()
 	}
 
 function PhysicsMaterial:__init()
+	self.tag          = false
 	self.density      = 1
 	self.restitution  = 0
 	self.friction     = 0
@@ -38,6 +39,7 @@ function PhysicsMaterial:clone()
 	m.group        = self.group
 	m.categoryBits = self.categoryBits
 	m.maskBits     = self.maskBits
+	m.tag          = self.tag
 	return m
 end
 
