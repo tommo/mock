@@ -100,7 +100,7 @@ end
 function BehaviourScript:openExternalEdit()
 	local options = gii.tableToDict( { ext = '.lua' } )
 	self.session = gii.app:getModule( 'external_edit_manager' ):requestSession( self.__guid, 'behaviour_script', options )
-	self.session.openExternalEdit()
+	self.session:openExternalEdit()
 end
 
 --------------------------------------------------------------------
