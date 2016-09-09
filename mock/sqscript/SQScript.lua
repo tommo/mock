@@ -171,6 +171,10 @@ function SQNode:exit( state, env )
 	return true
 end
 
+function SQNode:getContext()
+	return self.context
+end
+
 function SQNode:getContextEntity( state )
 	local actor = state:getActor()
 	return actor:getContextEntity( self.context[1] )

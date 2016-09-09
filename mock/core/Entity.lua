@@ -925,11 +925,15 @@ function Entity:getComponentInfo()
 	else
 		local info = false
 		for i, com in ipairs( self:getSortedComponentList() ) do
-			local name = com:getClassName()
-			if info then
-				info = info .. ',' .. name
+			if com.FLAG_INTERNAL or com.FLAG_EDITOR_OBJECT then
+				--do nothing
 			else
-				info = name
+				local name = com:getClassName()
+				if info then
+					info = info .. ',' .. name
+				else
+					info = name
+				end
 			end
 		end
 		self._componentInfo = info
