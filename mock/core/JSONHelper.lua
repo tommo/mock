@@ -41,3 +41,15 @@ function tryLoadJSONFile( path, clearNulls )
 	if succ then return data end
 	return nil
 end
+
+function saveJSONFile( data, path )
+	local output = encodeJSON( data )
+	local file = io.open( path, 'w' )
+	if file then
+		file:write(output)
+		file:close()
+		_stat( dataInfo, 'saved to', path )
+	else
+		_error( 'can not save ', dataInfo , 'to' , path )
+	end
+end
