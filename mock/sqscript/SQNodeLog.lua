@@ -24,7 +24,7 @@ function SQNodeLog:load( data )
 end
 
 function SQNodeLog:enter( state, env )
-	print( self.text )
+	self:_log( self.text )
 end
 
 function SQNodeLog:getRichText()

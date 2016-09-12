@@ -38,8 +38,12 @@ function SQNode:__init()
 
 	self.context    = false
 	self.tags       = false
+	
+	self.lineNumber = 0
 
 end
+
+
 
 function SQNode:getFirstContext()
 	if self.context then
@@ -159,6 +163,15 @@ function SQNode:setComment( c )
 	self.comment = c
 end
 
+function SQNode:getSourcePath()
+	local script = self:getScript()
+	return script:getSourcePath()
+end
+
+function SQNode:getPosText()
+	return string.format( '%s:%d', self:getSourcePath(), self.lineNumber )
+end
+
 function SQNode:enter( state, env )
 	return true
 end
@@ -187,6 +200,7 @@ end
 
 function SQNode:_load( data )
 	self.srcData = data
+	self.lineNumber = data[ 'line' ]
 	self:load( data )
 end
 
@@ -234,6 +248,12 @@ end
 function SQNode:acceptSubNode( name )
 	return true
 end
+
+function SQNode:_log( txt )
+	local prefix = self:getPosText()
+	print( string.format( '%s > %s', prefix, txt ) )
+end
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeGroup ( SQNode )
@@ -508,7 +528,12 @@ SQScript :MODEL{
 function SQScript:__init()
 	self.routines = {}
 	self.comment = ''
+	self.sourcePath = '<unknown>'
 	self.built = false
+end
+
+function SQScript:getSourcePath()
+	return self.sourcePath
 end
 
 function SQScript:addRoutine( routine )
@@ -824,6 +849,8 @@ function SQRoutineState:doJump()
 	
 end
 
+
+
 --------------------------------------------------------------------
 SQState :MODEL{
 	
@@ -1040,6 +1067,7 @@ end
 function loadSQScript( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('data') )
 	local script = SQScript()
+	script.sourcePath = node:getNodePath()
 	local routine = script:addRoutine()
 	routine.name = 'main'
 	routine.autoStart = true
