@@ -104,13 +104,15 @@ end
 
 --x,y = local coords
 local defaultSortMode = MOAILayer.SORT_Z_ASCENDING
-function DeckCanvas:findProps( x, y )
+function DeckCanvas:findProps( x, y, radius )
+	local radius = radius or 1
 	local ent = self:getEntity()
-	local x ,y  = ent:modelToWorld( x, y )
+	local x, y, z  = ent:getProp( 'render' ):modelToWorld( x, y )
 	--TODO: use some spatial graph
 	local partition = ent:getPartition()
 	local propsInPartition = { 
-		partition:propListForRay( x, y, -1000000, 0, 0, 1, defaultSortMode )
+		-- partition:propListForRay( x, y, -1000000, 0, 0, 1, defaultSortMode )
+		partition:propListForBox( x-radius, y-radius, -100000, x+radius, y+radius, 100000, defaultSortMode )
 	}
 	local result = {}
 	for i, prop in ipairs( propsInPartition ) do
