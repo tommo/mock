@@ -26,7 +26,8 @@ end
 
 --instance methods
 function GlobalManager:getKey()
-	_error('global manager key required, override this function!', self:getClassName() )
+	return self:getClassName()
+	-- _error('global manager key required, override this function!', self:getClassName() )
 end
 
 function GlobalManager:onInit( game )
@@ -36,7 +37,6 @@ function GlobalManager:onUpdate( game, dt )
 end
 
 function GlobalManager:saveConfig()
-	return {}
 end
 
 function GlobalManager:loadConfig( configData )
@@ -49,4 +49,10 @@ function GlobalManager:onSceneReset( scene )
 end
 
 function GlobalManager:onSceneClear( scene )
+end
+
+function GlobalManager:onSceneStart( scene )
+end
+
+function GlobalManager:postSceneStart( scene )
 end

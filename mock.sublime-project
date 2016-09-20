@@ -1,0 +1,58 @@
+{
+	"folders":
+	[
+		{
+			"file_exclude_patterns":
+			[
+				"*.otf",
+				"*.tff",
+				"*.fnt",
+				"*.jpg",
+				"*.png",
+				"*.l2",
+				"*.wav",
+				"*.aifc",
+				"*.caf",
+				"*.ogg",
+				"*.tmx",
+				"*.sxc",
+				"*.graphml",
+
+				"*.xls",
+				"*.ods",
+				
+				"*.pyo",
+				"*.pyc",
+				"*.so",
+				"*.o",
+
+				"*.pyxel",
+
+				".git*",
+				"host/ios/*.xcodeproj",
+				"BUILD_RESULT"
+			],
+			"folder_exclude_patterns":
+			[
+				"host/ios/build",
+				"host/ios/content",
+				"host/ios-release/build",
+				"host/ios-release/content",
+				"output",
+				"asset/audio",
+				"cache",
+				"gii/build",
+				"gii/dist",
+				"gii/test",
+				"gii/template",
+				"gii/support/deploy",
+				"gii/support/webp",
+				"gii/support/ImageMagick",
+				"gii/support/waf",
+				"bin",
+				"env/config/cache"
+			],
+			"path": "./"
+		}
+	]
+}

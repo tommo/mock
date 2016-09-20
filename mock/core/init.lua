@@ -27,6 +27,7 @@ require 'mock.core.Palette'
 
 
 ----------------Core Modules
+require 'mock.core.env'
 require 'mock.core.defaults'
 require 'mock.core.Actor'
 
@@ -71,8 +72,6 @@ require 'mock.core.ScreenProfile'
 require 'mock.core.Game'
 
 ----Helpers
-require 'mock.core.SceneReference'
-
 require 'mock.core.EntityHelper'
 require 'mock.core.AnimCurve'
 

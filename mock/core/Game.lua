@@ -129,7 +129,7 @@ function Game:__init() --INITIALIZATION
 	self.time          = 0
 	self.frame 				 = 0
 	self.mainScene     = Scene()
-	self.mainScene._MAIN_SCENE = true
+	self.mainScene.main = true
 
 	local l = self:addLayer( 'main' )
 	l.default = true
@@ -155,16 +155,6 @@ local defaultGameConfig={
 function Game:loadConfig( path, fromEditor )
 	_stat( 'loading game config from :', path )
 	local data = self:loadJSONData( path )
-	-- assert ( path, 'no config path!' )
-	-- local file = io.open( path, 'r' )
-	-- if not file then 
-	-- 	_error( 'game configuration not found:', path )
-	-- 	return 
-	-- end
-
-	-- local text = file:read('*a')
-	-- file:close()
-	-- local data = MOAIJsonParser.decode( text )
 	if not data then
 		_error( 'game configuration not parsed:', path )
 		return
@@ -392,7 +382,6 @@ function Game:initCommonData( config, fromEditor )
 	end
 
 	self.entryScene = config['entry_scene']
-	-- self.previewingScene = config['previewing_scene']
 
 	self.mainScene:init()
 	_stat( '...init game done!' )
@@ -402,6 +391,7 @@ end
 
 --------------------------------------------------------------------
 function Game:saveConfigToTable()
+	--save layer configs
 	local layerConfigs = {}
 	for i,l in pairs( self.layers ) do
 		if l.name ~= '_GII_EDITOR_LAYER'  then
@@ -413,32 +403,38 @@ function Game:saveConfigToTable()
 				locked   = l.locked,
 				parallax = l.parallax,
 				editor_visible  = l.editorVisible,
-				-- priority = l.priority
 			}
 		end
 	end
+
+	--save global manager configs
 	local globalManagerConfigs = {}
 	for i, manager in ipairs( getGlobalManagerRegistry() ) do
 		local key = manager:getKey()
 		local data = manager:saveConfig()
-		globalManagerConfigs[ key ] = data or {}
+		if data then
+			globalManagerConfigs[ key ] = data
+		end
 	end
 
 	local data = {
 		name           = self.name,
 		version        = self.version,
 		title          = self.title,
+		
 		asset_library  = self.assetLibraryIndex,
 		texture_library = self.textureLibraryIndex,
+
 		graphics       = self.graphicsOption,
 		physics        = self.physicsOption,
 		layers         = layerConfigs,
-		global_managers = globalManagerConfigs,
-		global_objects = self.globalObjectLibrary:save(),
+		
 		scenes         = self.scenes,
 		entry_scene    = self.entryScene,
-		-- previewing_scene  = self.previewingScene,
-		palettes       = self.paletteLibrary:save()
+
+		palettes        = self.paletteLibrary:save(),
+		global_managers = globalManagerConfigs,
+		global_objects  = self.globalObjectLibrary:save(),
 	}
 	emitSignal( 'game_config.save', data )
 	return data
@@ -452,24 +448,6 @@ end
 function Game:saveConfigToFile( path )
 	local data = self:saveConfigToTable()
 	return self:saveJSONData( data, path, 'game config' )
-end
-
-function Game:saveGlobalObjectsToTable()
-	return getGlobalObjectLibrary():save()
-end
-
-function Game:saveGlobalObjectsToString()
-	return encodeJSON( self:saveGlobalObjectsToTable() )
-end
-
-function Game:saveGlobalObjectsToFile( path )
-	local data = self:saveGlobalObjectsToTable()
-	return self:saveJSONData( data, path, 'game objects' )
-end
-
-function Game:loadGlobalObjects( path )
-	local data = self:loadJSONData( path, 'game objects' )
-	return getGlobalObjectLibrary():load( data )
 end
 
 function Game:saveJSONData( data, path, dataInfo )
@@ -649,6 +627,7 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 		end
 	end
 	mainScene.assetPath = scnPath
+	
 	--todo: previous scene
 	mainScene.arguments = args and table.simplecopy( args ) or {}
 

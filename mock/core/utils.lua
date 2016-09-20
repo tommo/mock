@@ -1283,7 +1283,7 @@ function splitpath( path )
 end
 
 function stripext(p)
-	return string.gsub( p, '%..*$', '' )
+	return string.gsub( p, '%.[^.]*$', '' )
 end
 
 function stripdir(p)

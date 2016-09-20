@@ -13,6 +13,7 @@ function registerSceneManagerFactory( key, factory )
 	end
 	factory._key = key
 	table.insert( _SceneManagerFactoryRegistry, factory )
+	_stat( 'register scene manager', key )
 end
 
 function getSceneManagerFactoryRegistry()
@@ -38,6 +39,7 @@ end
 
 function SceneManagerFactory:accept( scn )
 	if scn.FLAG_EDITOR_SCENE then return false end
+	return true
 end
 
 --------------------------------------------------------------------

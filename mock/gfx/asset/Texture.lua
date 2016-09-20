@@ -451,7 +451,7 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 	tex:setFilter( filter )
 	tex:setWrap( self.wrap )
 
-	local filePath = absProjectPath( pixmapPath )	
+	local filePath = getProjectPath( pixmapPath )	
 	if not filePath then
 		_warn( 'nil imagepath specified', self.debugName )
 		tex:load( getTexturePlaceHolderImage() )

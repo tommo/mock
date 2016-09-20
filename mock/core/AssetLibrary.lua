@@ -104,6 +104,7 @@ local function stripDir(p)
 	return string.match(p, "[^\\/]+$")
 end
 
+--------------------------------------------------------------------
 --asset index library
 local AssetLibrary = {}
 local AssetSearchCache = {}
@@ -112,30 +113,7 @@ local AssetSearchCache = {}
 local AssetLoaderConfigs = {}
 
 ---env
-local AssetBasePath   = false
-local ProjectBasePath = false
 local AssetLibraryIndex = false
-
-function absAssetPath( path )
-	if AssetBasePath then
-		return AssetBasePath .. '/' .. ( path or '' )
-	else
-		return path
-	end
-end
-
-function absProjectPath( path )
-	if ProjectBasePath then
-		return ProjectBasePath .. '/' .. ( path or '' )
-	else
-		return path
-	end
-end
-
-function setBasePaths( prjBase, assetBase )
-	ProjectBasePath = prjBase
-	AssetBasePath   = assetBase
-end
 
 function getAssetLibraryIndex()
 	return AssetLibraryIndex
@@ -145,6 +123,7 @@ function getAssetLibrary()
 	return AssetLibrary
 end
 
+--------------------------------------------------------------------
 function loadAssetLibrary( indexPath )
 	if not indexPath then
 		_stat( 'asset library not specified, skip.' )
@@ -208,6 +187,10 @@ function AssetNode:getObjectFile( name )
 	return objectFiles[ name ]
 end
 
+function AssetNode:getPath()
+	return self.path
+end
+
 function AssetNode:getNodePath()
 	return self.path
 end
@@ -221,7 +204,7 @@ function AssetNode:getAbsObjectFile( name )
 	if not objectFiles then return false end
 	local path = objectFiles[ name ]
 	if path then
-		return absProjectPath( path )
+		return getProjectPath( path )
 	else
 		return false
 	end
@@ -234,7 +217,7 @@ function AssetNode:getDependency( name )
 end
 
 function AssetNode:getAbsFilePath()
-	return absProjectPath( self.filePath )
+	return getProjectPath( self.filePath )
 end
 
 function AssetNode:getParentNode()

@@ -20,6 +20,8 @@ CLASS:
 
 function Scene:__init( option )
 	self.active = false
+	self.main   = false
+
 	self.FLAG_EDITOR_SCENE = false
 	self.running = false
 	self.arguments       = {}
@@ -62,6 +64,10 @@ function Scene:__init( option )
 	self.debugDrawQueue = DebugDrawQueue()
 	self.debugPropPartition = MOAIPartition.new()
 	return self
+end
+
+function Scene:isMainScene()
+	return self.main
 end
 
 function Scene:getDebugPropPartition()
@@ -243,6 +249,10 @@ function Scene:threadMain( dt )
 		mgr:onStart()
 	end
 
+	for i, globalManager in ipairs( getGlobalManagerRegistry() ) do
+		globalManager:onSceneStart( self )
+	end
+
 	-- first run
 	for ent in pairs( self.entities ) do
 		if not ent.parent then
@@ -255,6 +265,11 @@ function Scene:threadMain( dt )
 	for key, mgr in pairs( self:getManagers() ) do
 		mgr:postStart()
 	end
+
+	for i, globalManager in ipairs( getGlobalManagerRegistry() ) do
+		globalManager:postSceneStart( self )
+	end
+
 
 	-- main loop
 	_stat( 'entering scene main loop', self )
@@ -722,7 +737,7 @@ function Scene:clear( keepEditorEntity )
 		entityListener( 'clear', keepEditorEntity )
 	end
 	local toRemove = {}
-	_stat( 'pre clear', table.len( self.entities) )
+	_stat( 'pre clear', table.len( self.entities ) )
 	for e in pairs( self.entities ) do
 		if not e.parent then
 			if not ( keepEditorEntity and e.FLAG_EDITOR_OBJECT ) then
@@ -758,6 +773,11 @@ function Scene:clear( keepEditorEntity )
 	if not self.FLAG_EDITOR_SCENE then
 		emitSignal( 'scene.clear', self )
 	end
+end
+
+function Scene:destroy()
+	self:stop()
+	self:clear()
 end
 
 function Scene:getRootGroup()
