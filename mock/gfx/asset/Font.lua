@@ -32,6 +32,10 @@ local function loadFont( node )
 		local textures = {}
 		for i, path in ipairs( texPaths ) do
 			local tex, node = loadAsset( path )
+			if not tex then 
+				_error( 'failed load font texture' ) 
+				return getFontPlaceHolder()
+			end
 			table.insert( textures, tex:getMoaiTexture() )
 		end
 		if #textures > 0 then
