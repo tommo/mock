@@ -44,6 +44,12 @@ function Component:getEntityName()
 	return self._entity:getName()
 end
 
+--- Get the name of the owner entity
+-- @ret string owner entity's name
+function Component:getEntityFullName()
+	return self._entity:getFullName()
+end
+
 --- Get the tags of the owner entity
 -- @ret string owner entity's tags
 function Component:getEntityTags()

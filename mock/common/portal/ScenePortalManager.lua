@@ -108,8 +108,12 @@ function ScenePortalManager:startPorting( portalId0, portalId1, options )
 		options = options
 	}
 	
+	local portal0 = self:findPortalInCurrentScene( portalId0 )
+	if portal0 then
+		portal0:_exit( portingSession )
+	end
+	
 	local toScenePath = portalInfo1.scene
-	print( toScenePath )
 	if scenePath == toScenePath then
 		--same scene
 		self.portingSession = portingSession
@@ -124,12 +128,12 @@ function ScenePortalManager:startPorting( portalId0, portalId1, options )
 
 end
 
-function ScenePortalManager:onStart()
+function ScenePortalManager:onLoad()
 	local scene = self:getScene()
 	if not scene:isMainScene() then return end
 	local portingSession = scene:getArgument( 'portingSession', false )
 	if portingSession then
-		_log( 'porting session found', 
+		_stat( 'porting session found', 
 			portingSession.from.id, portingSession.from.scene,
 			portingSession.to.id, portingSession.to.scene
 		)
@@ -139,10 +143,10 @@ function ScenePortalManager:onStart()
 end
 
 function ScenePortalManager:finishPorting()
-	local session = self.portingSession
-	if not session then return end
+	local portingSession = self.portingSession
+	if not portingSession then return end
 	self.portingSession = false
-	local targetPortalId = session.to.id
+	local targetPortalId = portingSession.to.id
 	local targetPortal = self:findPortalInCurrentScene( targetPortalId )
 	if not targetPortal then
 		return _error( 'failed to find target portal', targetPortalId )

@@ -59,9 +59,18 @@ function ScenePortalRegistry:hasGraph( path )
 end
 
 function ScenePortalRegistry:findConnectedPortal( id )
-	local info = self:getScenePortalInfo( id )
-	if not info then return false end
-	--TODO
+	local info = self:getPortalInfo( id )
+	if not info then
+		_warn( 'no portal info found:', id )
+		return false
+	end
+	
+	for path, graph in pairs( self.graphs ) do
+		local targetId = graph:findConnection( id )
+		if targetId then
+			return targetId
+		end
+	end
 	return false
 end
 

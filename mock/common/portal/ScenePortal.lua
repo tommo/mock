@@ -5,6 +5,8 @@ CLASS: ScenePortal ( Component )
 	:MODEL{
 		Field 'name' :string();
 		Field 'comment' :string();
+		-- '----';
+		-- Field 'locateConnectedPortal' :action() :label( 'goto connected portal');
 	}
 
 mock.registerComponent( 'ScenePortal', ScenePortal )
@@ -78,9 +80,7 @@ end
 function ScenePortal:findConnectedPortal()
 	local registry = getScenePortalRegistry()
 	local fullname = self:getFullname()
-	local info = registry:getPortalInfo( fullname )
-	if not info then return false end
-	
+	return registry:findConnectedPortal( self:getFullname() )
 end
 
 function ScenePortal:getFullname()
@@ -92,3 +92,16 @@ function ScenePortal:getFullname()
 	end
 	return fullId
 end
+
+function ScenePortal:getPortalInfo()
+	local registry = getScenePortalRegistry()
+	return registry:getPortalInfo( self:getFullname() )
+end
+
+-- function ScenePortal:locateConnectedPortal()
+-- 	local targetId = self:findConnectedPortal()
+-- 	local manager = gii.getModule( 'scene_portal_manager' )
+-- 	if manager then
+-- 		manager:locatePortal( targetId, true )
+-- 	end
+-- end

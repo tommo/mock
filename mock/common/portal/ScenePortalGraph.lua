@@ -36,6 +36,17 @@ function ScenePortalGraph:getPath()
 	return self.path
 end
 
+function ScenePortalGraph:findConnection( id )
+	for i, conn in ipairs( self.connections ) do
+		if conn.nodeA.id == id then
+			return conn.nodeB.id
+		elseif conn.nodeB.id == id then
+			return conn.nodeA.id
+		end
+	end
+	return false
+end
+
 function ScenePortalGraph:loadData( data )
 	local nodes = {}
 	local connections = {}
