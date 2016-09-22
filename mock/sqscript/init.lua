@@ -3,7 +3,6 @@ module 'mock'
 --------------------------------------------------------------------
 require 'mock.sqscript.SQScript'
 
-
 --core node types
 require 'mock.sqscript.SQNodeMsgCallback'
 require 'mock.sqscript.SQNodeLog'

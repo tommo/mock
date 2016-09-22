@@ -35,10 +35,6 @@ function Shape2D:toPolyLines( steps )
 	return {}
 end
 
---------------------------------------------------------------------
-CLASS: ShapeGroup ()
-	:MODEL{}
-
 
 --------------------------------------------------------------------
 CLASS: ShapeRect ( Shape2D )
@@ -91,10 +87,7 @@ end
 function ShapeCircle:getTypeName()
 	return 'circle'
 end
---------------------------------------------------------------------
-CLASS: ShapeEllipse ( ShapeRect )
-	:MODEL{
-	}
+
 
 --------------------------------------------------------------------
 CLASS: ShapePolygon ( Shape2D )

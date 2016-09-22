@@ -6,13 +6,53 @@ local ccreate, cresume, cyield, cstatus
 local insert, remove = table.insert, table.remove
 --------------------------------------------------------------------
 
+--FastForward
+--------------------------------------------------------------------
+registerGlobalSignals{
+	'sq_fastforward.start',
+	'sq_fastforward.stop',
+}
+
+local _SQFastForwarding = false
+local _SQFastForwardingStates = {}
+
+function isSQFastForwarding()
+	return _SQFastForwarding
+end
+
+function toggleSQFastForward( key )
+	if _SQFastForwardingStates[ key ] then
+		stopSQFastForward( key )
+	else
+		startSQFastForward( key )
+	end
+end
+
+function startSQFastForward( key )
+	_SQFastForwardingStates[ key ] = true
+	if _SQFastForwarding then return end
+	_SQFastForwarding = true
+	_log( 'start sq fast forward')
+	emitSignal( 'sq_fastforward.start' )
+end
+
+function stopSQFastForward( key )
+	_SQFastForwardingStates[ key ] = nil
+	if not _SQFastForwarding then return end
+	if not next( _SQFastForwardingStates ) then
+		_SQFastForwarding = false
+		_log( 'stop sq fast forward')
+		emitSignal( 'sq_fastforward.stop' )
+	end
+end
+
+
+--------------------------------------------------------------------
 CLASS: SQNode ()
 CLASS: SQRoutine ()
 CLASS: SQScript ()
 
 CLASS: SQState ()
-
-
 
 --------------------------------------------------------------------
 SQNode :MODEL{
@@ -312,6 +352,10 @@ function SQNodeLabel:build()
 	routine:addLabel( self )
 end
 
+function SQNodeLabel:enter( state, env )
+	state:onEnterLabel( self )
+end
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeGoto( SQNode )
@@ -350,6 +394,50 @@ function SQNodeGoto:getIcon()
 	return 'sq_node_goto'
 end
 
+
+---------------------------------------------------------------------
+CLASS: SQNodeFastForward ( SQNode )
+	:MODEL{
+		Field 'label' :string();
+	}
+
+function SQNodeFastForward:__init()
+	self.label = 'label'
+end
+
+function SQNodeFastForward:load( data )
+	self.label = data.args[1] or false
+end
+
+function SQNodeFastForward:enter( state, env )
+	local routine = self:getRoutine()
+
+	local targetNode 
+	if self.label then
+		targetNode = routine:findLabelNode( self.label )
+	else
+		targetNode = 'next'
+	end
+
+	if targetNode then
+		state:startFastForward( targetNode )
+	else
+		_warn( 'target label not found', self.label )
+		state:startFastForward( false )
+	end
+
+end
+
+function SQNodeFastForward:getRichText()
+	return string.format(
+		'<cmd>GOTO</cmd> <label>%s</label>',
+		self.label
+		)
+end
+
+function SQNodeFastForward:getIcon()
+	return 'sq_node_goto'
+end
 
 
 ---------------------------------------------------------------------
@@ -593,6 +681,7 @@ function SQRoutineState:__init( entryNode, routine )
 	self.msgListeners = {}
 
 	self.subRoutineStates = {}
+	self.FFTargets = {}
 	return self:reset()
 end
 
@@ -800,6 +889,8 @@ function SQRoutineState:exitGroup()
 	--exit group node
 	local groupNode = self.currentNode.parentNode
 	if not groupNode then
+		self.FFTargets = {}
+		stopSQFastForward( self )
 		self:setLocalRunning( false )
 		return true
 	end
@@ -846,9 +937,31 @@ function SQRoutineState:doJump()
 	self.index = target.index - 1
 	
 	return self:nextNode()
-	
 end
 
+function SQRoutineState:startFastForward( node )
+	if not node then return end
+	if not next( self.FFTargets ) then
+		startSQFastForward( self )
+	end
+	self.FFTargets[ node ] = true
+end
+
+function SQRoutineState:stopFastForward()
+	if next( self.FFTargets ) then
+		self.FFTargets = {}
+		stopSQFastForward( self )
+	end
+end
+
+function SQRoutineState:onEnterLabel( labelNode )
+	local FFTargets = self.FFTargets
+	FFTargets[ labelNode ] = nil
+	FFTargets[ 'next' ] = nil
+	if not next( self.FFTargets ) then
+		stopSQFastForward( self )
+	end
+end
 
 
 --------------------------------------------------------------------
@@ -1082,5 +1195,8 @@ registerSQNode( 'do',    SQNodeGroup )
 registerSQNode( 'end',   SQNodeEnd   )
 registerSQNode( 'goto',  SQNodeGoto  )
 registerSQNode( 'skip',  SQNodeSkip  )
+
+registerSQNode( 'FF',  SQNodeFastForward  )
+
 
 mock.registerAssetLoader( 'sq_script', loadSQScript )

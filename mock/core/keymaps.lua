@@ -1,6 +1,9 @@
 module 'mock'
 
-local keymap_GII={
+KeyMaps = {}
+
+--------------------------------------------------------------------
+KeyMaps.GII={
 	["alt"]        = 205 ;
 	["pause"]      = 178 ;
 	["menu"]       = 255 ;
@@ -91,7 +94,8 @@ local keymap_GII={
 }
 
 
-local keymap_GLUT={
+--------------------------------------------------------------------
+KeyMaps.GLUT={
 	-- ['f1']=	1 ;
 	-- ['f2']=	2 ;
 	-- ['f3']=	3 ;
@@ -127,22 +131,42 @@ local keymap_GLUT={
 
 --TODO: fix this
 for i=39, 64 do
-	keymap_GLUT[ string.char(i) ]=i
+	KeyMaps.GLUT[ string.char(i) ]=i
 end
 
 for i=91, 122 do
-	keymap_GLUT[ string.char(i) ]=i
+	KeyMaps.GLUT[ string.char(i) ]=i
 end
 
+
+--------------------------------------------------------------------
+KeyMaps.SDL = KeyMaps.GLUT
+
+--------------------------------------------------------------------
+KeyMaps.SDL_OSX = table.simplecopy( KeyMaps.SDL )
+KeyMaps.SDL_OSX[ 'lctrl' ] = KeyMaps.SDL[ 'lcmd' ]
+KeyMaps.SDL_OSX[ 'lmeta' ] = KeyMaps.SDL[ 'lctrl' ]
+KeyMaps.SDL_OSX[ 'lcmd' ] = nil
+
+--------------------------------------------------------------------
 function getKeyMap()
-	local configuration=MOAIInputMgr.configuration or 'AKUGlut'
-	_stat( 'using input configuration:', configuration )
-	if configuration=='AKUGlut' then
-		return keymap_GLUT
-	elseif configuration=='GII' then
-		return keymap_GII
+	local osBrand = MOAIEnvironment.osBrand
+	local configuration = MOAISim.getInputMgr().configuration or 'SDL'
+	_log( 'using input configuration:', configuration )
+
+	if configuration=='GII' then
+		return KeyMaps.GII
+
+	elseif configuration=='SDL' then
+		if osBrand == 'OSX' then
+			return KeyMaps.SDL_OSX
+		else
+			return KeyMaps.SDL
+		end
+
 	else
-		return keymap_GLUT
+		return KeyMaps.GLUT
+
 	end
 end
 
