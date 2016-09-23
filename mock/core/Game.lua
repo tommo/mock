@@ -182,11 +182,7 @@ function Game:init( config, fromEditor )
 	self:applyPlaceHolderRenderTable()
 
 	self:initSystem     ( config, fromEditor )
-	
-
-	--init asset
 	self:initAsset      ( config, fromEditor )
-	self:initSubSystems ( config, fromEditor )
 
 	--postInit
 	if not fromEditor then --initCommonData will get called after scanning asset modifications
@@ -284,12 +280,14 @@ function Game:initSubSystems( config, fromEditor )
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:onInit( self )
 	end
+
 	local managerConfigs = config[ 'global_managers' ] or {}
 	for i, manager in ipairs( self.globalManagers ) do
 		local key = manager:getKey()
 		local managerConfig = managerConfigs[ key ] or {}
 		manager:loadConfig( managerConfig )
 	end
+
 end
 
 function Game:initLayers( config, fromEditor )
@@ -351,6 +349,9 @@ function Game:initCommonDataFromEditor()
 end
 
 function Game:initCommonData( config, fromEditor )
+	--init asset
+	self:initSubSystems ( config, fromEditor )
+	
 	--init layers
 	self:initLayers     ( config, fromEditor )
 
