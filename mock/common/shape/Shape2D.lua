@@ -115,34 +115,7 @@ function ShapePolygon:getTypeName()
 	return 'poly'
 end
 
---------------------------------------------------------------------
-CLASS: ShapePolygonTree ( Shape2D )
-	:MODEL{}
-
-
---------------------------------------------------------------------
-CLASS: ShapeComposition ()
-	:MODEL{
-		Field 'shapes' :array( 'Shape2D' ) :sub()
-	}
-
-function ShapeComposition:__init()
-	self.shapes = {}
-end
-
-function ShapeComposition:addShape( s )
-	table.insert( self.shapes, s )
-end
-
-function ShapeComposition:removeShape( s )
-	local idx = table.index( self.shapes, s )
-	if idx then table.remove( self.shapes, idx ) end
-end
-
-function ShapeComposition:findShape( name )
-	for i, s in ipairs( self.shapes ) do
-		if s.name == name then return s end
-	end
-	return nil
-end
+-- --------------------------------------------------------------------
+-- CLASS: ShapePolygonTree ( Shape2D )
+-- 	:MODEL{}
 

@@ -48,14 +48,16 @@ require 'mock.core'
 --------------------------------------------------------------------
 
 ----------------Asset Loaders
+--FIXME: removed this when finished porting
+require 'mock.gfx.asset.resloader'
 
 --------------------------------------------------------------------
 ----tools
 require 'mock.tools'
 require 'mock.common'
-require 'mock.common.portal'
 
-require 'mock.gfx.asset.resloader'  --FIXME: removed this when finished porting
+require 'mock.common.portal'
+require 'mock.common.shape'
 
 --------------------------------------------------------------------
 --PACKAGES

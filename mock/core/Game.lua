@@ -498,7 +498,9 @@ function Game:initGraphics( option, fromEditor )
 	if w * h == 0 then
 		w, h  = gfxOption['device_width'] or 800, gfxOption['device_height'] or 600
 	end
-
+	self.targetDeviceWidth  = w
+	self.targetDeviceHeight = h
+	
 	self.deviceRenderTarget:setPixelSize( w, h )
 
 	self.width   = gfxOption['width']  or w
@@ -544,12 +546,6 @@ function Game:isDebugUIEnabled()
 	return getDebugUIManager():isEnabled()
 end
 
---- Get the scale( conent size ) of the main viewport
--- @ret float,float width, height
-function Game:getViewportScale()
-	return self.width, self.height
-end
-
 function Game:setDeviceSize( w, h )
 	_stat( 'device.resize', w, h )
 	self.deviceRenderTarget:setPixelSize( w, h )
@@ -560,16 +556,18 @@ function Game:getDeviceResolution( )
 	return self.deviceRenderTarget:getPixelSize()
 end
 
-function Game:getViewportRect()
-	return self.mainRenderTarget:getAbsPixelRect()
+function Game:getTargetDeviceResolution()
+	return self.targetDeviceWidth, self.targetDeviceHeight
 end
 
-function Game:onResize( w, h )
-	if not self.graphicsInitialized then
-		self.pendingResize = { w, h }
-		return
-	end	
-	self:setDeviceSize( w, h )
+--- Get the scale( conent size ) of the main viewport
+-- @ret float,float width, height
+function Game:getViewportScale()
+	return self.width, self.height
+end
+
+function Game:getViewportRect()
+	return self.mainRenderTarget:getAbsPixelRect()
 end
 
 function Game:getDeviceRenderTarget()
@@ -578,6 +576,14 @@ end
 
 function Game:getMainRenderTarget()
 	return self.mainRenderTarget
+end
+
+function Game:onResize( w, h )
+	if not self.graphicsInitialized then
+		self.pendingResize = { w, h }
+		return
+	end	
+	self:setDeviceSize( w, h )
 end
 
 --------------------------------------------------------------------
