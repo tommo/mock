@@ -24,11 +24,13 @@ end
 
 function ScenePortal:onAttach( ent )
 	local manager = self:getScenePortalManager()
+	if not manager then return end
 	manager:registerPortal( self )
 end
 
 function ScenePortal:onDetach( ent )
 	local manager = self:getScenePortalManager()
+	if not manager then return end
 	manager:unregisterPortal( self )
 end
 
