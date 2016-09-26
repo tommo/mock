@@ -1,2 +1,3 @@
 require 'mock.common.shape.ShapeCanvas'
-require 'mock.common.shape.Shape2D'
+require 'mock.common.shape.ShapeItem2D'
+

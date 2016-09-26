@@ -7,7 +7,6 @@ local remove = table.remove
 CLASS: DeckCanvas ( GraphicsPropComponent )
 	:MODEL{
 		Field 'index' :no_edit();
-		Field 'decks' :asset( 'asset_list' );
 		'----';
 		Field 'size'    :type('vec2') :getset('Size');
 		Field 'serializedData' :getset( 'SerializedData' ) :no_edit();

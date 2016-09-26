@@ -2,42 +2,41 @@ module 'mock'
 
 --------------------------------------------------------------------
 --- Shape
--- @type Shape2D
+-- @type ShapeItem2D
 -- @string name name of the shape
 
-CLASS: Shape2D ()
+CLASS: ShapeItem2D ( ShapeItem )
 	:MODEL{
-		Field 'name' :string();  
 		Field 'loc' :type( 'vec2' ) :getset( 'Loc' )
 }
 
-function Shape2D:__init()
+function ShapeItem2D:__init()
 	self.name = 'shape'
 	self.trans = MOAITransform.new()
 end
 
-function Shape2D:getLoc()
+function ShapeItem2D:getLoc()
 	return self.trans:getLoc()
 end
 
-function Shape2D:getTypeName()
+function ShapeItem2D:getTypeName()
 	return 'shape'
 end
 
-function Shape2D:getIcon()
+function ShapeItem2D:getIcon()
 	return 'shape'
 end
 
 --- get converted PolyLines
 -- @int  steps for PolyLines generation
 -- @return list of PolyLines
-function Shape2D:toPolyLines( steps )
+function ShapeItem2D:toPolyLines( steps )
 	return {}
 end
 
 
 --------------------------------------------------------------------
-CLASS: ShapeRect ( Shape2D )
+CLASS: ShapeRect ( ShapeItem2D )
 	:MODEL{
 		Field 'size' :type( 'vec2' ) :getset( 'Size' )
 	}
@@ -64,7 +63,7 @@ function ShapeRect:getTypeName()
 end
 
 --------------------------------------------------------------------
-CLASS: ShapeCircle ( Shape2D )
+CLASS: ShapeCircle ( ShapeItem2D )
 	:MODEL{
 		Field 'radius' :getset( 'Radius' )
 	}
@@ -90,7 +89,7 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: ShapePolygon ( Shape2D )
+CLASS: ShapePolygon ( ShapeItem2D )
 	:MODEL{
 		Field 'verts' :array();
 	}
@@ -116,6 +115,6 @@ function ShapePolygon:getTypeName()
 end
 
 -- --------------------------------------------------------------------
--- CLASS: ShapePolygonTree ( Shape2D )
+-- CLASS: ShapePolygonTree ( ShapeItem2D )
 -- 	:MODEL{}
 
