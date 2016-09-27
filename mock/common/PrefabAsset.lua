@@ -59,7 +59,8 @@ end
 function PrefabLoader( node )
 	local path = node:getObjectFile( 'def' )
 	local data = loadAssetDataTable( path )
-
+	if not data then return false end
+	if not data.entities then return false end
 	return Prefab( data, node:getNodePath() )
 end
 
