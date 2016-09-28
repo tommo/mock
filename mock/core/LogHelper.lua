@@ -110,6 +110,10 @@ function _statf( patt, ... )
 	end
 end
 
+function _info( ... )
+	return _stat( ... )
+end
+
 function _error( ... )
 	if _logLevel >= MOAILogMgr.LOG_ERROR then
 		--print( debug.traceback( 2 ) )

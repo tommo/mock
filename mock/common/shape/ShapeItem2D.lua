@@ -11,7 +11,7 @@ CLASS: ShapeItem2D ( ShapeItem )
 }
 
 function ShapeItem2D:__init()
-	self.name = 'shape'
+	self.name = self:getTypeName()
 	self.trans = MOAITransform.new()
 end
 
@@ -23,15 +23,22 @@ function ShapeItem2D:getTypeName()
 	return 'shape'
 end
 
-function ShapeItem2D:getIcon()
-	return 'shape'
-end
-
 --- get converted PolyLines
 -- @int  steps for PolyLines generation
 -- @return list of PolyLines
 function ShapeItem2D:toPolyLines( steps )
-	return {}
+	return false
+end
+
+
+--------------------------------------------------------------------
+CLASS: ShapePoint ( ShapeItem2D )
+function ShapeItem2D:getTypeName()
+	return 'point'
+end
+
+function ShapeItem2D:toPolyLines( steps )
+	return false
 end
 
 
@@ -52,10 +59,6 @@ end
 function ShapeRect:setSize( w, h )
 	self.w = w
 	self.h = h
-end
-
-function ShapeRect:getIcon()
-	return 'shape_rect'
 end
 
 function ShapeRect:getTypeName()
@@ -79,10 +82,6 @@ function ShapeCircle:setRadius( r )
 	self.radius = r
 end
 
-function ShapeCircle:getIcon()
-	return 'shape_circle'
-end
-
 function ShapeCircle:getTypeName()
 	return 'circle'
 end
@@ -104,10 +103,6 @@ end
 
 function ShapePolygon:getVertCount()
 	return #self.verts/2
-end
-
-function ShapePolygon:getIcon()
-	return 'shape_poly'
 end
 
 function ShapePolygon:getTypeName()

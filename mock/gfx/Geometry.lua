@@ -154,3 +154,42 @@ function GeometryBoxOutline:onGetRect()
 	return -x, -y, x, y
 end
 
+
+--------------------------------------------------------------------
+CLASS: GeometryPolygon ( GeometryComponent )
+	:MODEL{
+		Field 'verts' :array( 'number' ) :no_edit();
+	}
+registerComponent( 'GeometryPolygon', GeometryPolygon )
+
+function GeometryPolygon:__init()
+	self.verts = {}
+	self.loopVerts = {}
+end
+
+function GeometryPolygon:onAttach( ent )
+	GeometryPolygon.__super.onAttach( self, ent )
+	self:setVerts{
+		0,0,
+		0,100,
+		100,100,
+		150, 50
+	}
+end
+
+function GeometryPolygon:setVerts( verts )
+	self.verts = verts 
+	local loopVerts = { unpack(verts) }
+	local count = #verts
+	if count < 6 then return end
+	table.insert( loopVerts, loopVerts[ 1 ] )
+	table.insert( loopVerts, loopVerts[ 2 ] )
+	self.loopVerts = loopVerts
+end
+
+
+function GeometryPolygon:onDraw()
+	self:applyColor()
+	draw.drawLine( unpack( self.loopVerts ) )
+end
+

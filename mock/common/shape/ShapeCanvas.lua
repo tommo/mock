@@ -6,9 +6,14 @@ CLASS: ShapeCanvas ( mock.Component )
 	:MODEL{
 	
 	}
+registerComponent( 'ShapeCanvas', ShapeCanvas )
 
 
 function ShapeCanvas:__init()
+	self.items = {}
+end
+
+function ShapeCanvas:clear()
 	self.items = {}
 end
 

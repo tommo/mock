@@ -164,6 +164,10 @@ function BaseClass:getClassName()
 	return self.__class.__name
 end
 
+function BaseClass:getClassSourceFile()
+	return self.__class.__source
+end
+
 function BaseClass:getClassFullName()
 	return self.__class.__fullname
 end
@@ -357,8 +361,8 @@ function newClass( b, superclass, name  )
 			s = s.__super
 		end
 	end
-	b.__name  = name or '??'
 
+	b.__name  = name or '??'
 
 	local newindex=function( t, k, v )
 		rawset( b, k, v )
@@ -446,7 +450,9 @@ local function affirmClass( t, id )
 			end
 			local clas = newClass( {}, superclass, id )
 			local env = getfenv( 2 )
-			env[id] = clas
+			env[ id ] = clas
+			local info = debug.getinfo( 2, 'S' )
+			clas.__source = info.source
 			if env ~= _G then
 				local prefix = env._NAME or tostring( env )
 				clas.__fullname = prefix .. '.' .. clas.__name

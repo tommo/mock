@@ -4,10 +4,11 @@ KeyMaps = {}
 
 --------------------------------------------------------------------
 KeyMaps.GII={
-	["alt"]        = 205 ;
+	["lalt"]        = 205 ;
 	["pause"]      = 178 ;
 	["menu"]       = 255 ;
 	[","]          = 44 ;
+	["'"]          = 39 ;
 	["0"]          = 48 ;
 	["4"]          = 52 ;
 	["8"]          = 56 ;
@@ -24,22 +25,22 @@ KeyMaps.GII={
 	["t"]          = 84 ;
 	["x"]          = 88 ;
 	["right"]      = 190 ;
-	["meta"]       = 204 ;
+	["lmeta"]       = 204 ;
 	["escape"]     = 170 ;
 	["home"]       = 186 ;
-	["'"]          = 96 ;
+	["`"]          = 96 ;
 	["space"]      = 32 ;
 	["3"]          = 51 ;
 	["backspace"]  = 173 ;
 	["pagedown"]   = 193 ;
-	["slash"]      = 47 ;
+	["/"]          = 47 ;
 	[";"]          = 59 ;
 	["scrolllock"] = 208 ;
 	["["]          = 91 ;
 	["c"]          = 67 ;
 	["z"]          = 90 ;
 	["g"]          = 71 ;
-	["shift"]      = 202 ;
+	["lshift"]      = 202 ;
 	["k"]          = 75 ;
 	["o"]          = 79 ;
 	["s"]          = 83 ;
@@ -64,7 +65,7 @@ KeyMaps.GII={
 	["f11"]        = 228 ;
 	["f14"]        = 231 ;
 	["f15"]        = 232 ;
-	["ctrl"]       = 203 ;
+	["lctrl"]       = 203 ;
 	["f1"]         = 218 ;
 	["f2"]         = 219 ;
 	["f3"]         = 220 ;
@@ -152,7 +153,7 @@ KeyMaps.SDL_OSX[ 'lcmd' ] = nil
 function getKeyMap()
 	local osBrand = MOAIEnvironment.osBrand
 	local configuration = MOAISim.getInputMgr().configuration or 'SDL'
-	_log( 'using input configuration:', configuration )
+	_info( 'using input configuration:', configuration )
 
 	if configuration=='GII' then
 		return KeyMaps.GII
