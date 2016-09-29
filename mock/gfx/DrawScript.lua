@@ -36,10 +36,6 @@ function DrawScript:setScissorRect( rect )
 	return self.prop:setScissorRect( rect )
 end
 
-function DrawScript:inside( x,y,z,pad )
-	return self.prop:inside( x,y,z,pad )
-end
-
 function DrawScript:onAttach( entity )	
 	local drawOwner, onDraw
 	if self.onDraw then 

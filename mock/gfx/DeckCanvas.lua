@@ -21,6 +21,16 @@ registerComponent( 'DeckCanvas', DeckCanvas )
 function DeckCanvas:__init()
 	self.props = {}
 	self.size  = { 500, 500 }
+	self:getMoaiProp().inside = function()
+		return self:inside( x,y,z, pad )
+	end
+end
+
+function DeckCanvas:inside( x,y,z, pad )
+	for i, prop in ipairs( self.props ) do
+		if prop:inside( x,y,z, pad ) then return true end
+	end
+	return false
 end
 
 function DeckCanvas:setSize( w, h )
@@ -210,7 +220,7 @@ function DeckCanvas:applyMaterial( mat )
 	end
 end	
 
-function DeckCanvas:inside( x, y, z, pads )
+function DeckCanvas:insideCanvas( x, y, z, pads )
 	x, y = self.prop:worldToModel( x, y, z )
 	local w, h = self:getSize()
 	return x > -w/2 and h > -h/2 and x < w/2 and y < h/2

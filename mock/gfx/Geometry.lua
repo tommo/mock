@@ -50,6 +50,15 @@ function GeometryRect:__init()
 	self.fill = false
 end
 
+function GeometryRect:getSize()
+	return self.w, self.h
+end
+
+function GeometryRect:setSize( w, h )
+	self.w = w
+	self.h = h
+end
+
 function GeometryRect:onDraw()
 	self:applyColor()
 	local w,h = self.w, self.h
@@ -77,6 +86,14 @@ registerComponent( 'GeometryCircle', GeometryCircle )
 function GeometryCircle:__init()
 	self.radius = 100
 	self.fill = false
+end
+
+function GeometryCircle:getRadius()
+	return self.radius
+end
+
+function GeometryCircle:setRadius( r )
+	self.radius = r
 end
 
 function GeometryCircle:onDraw()
@@ -158,17 +175,12 @@ end
 --------------------------------------------------------------------
 CLASS: GeometryPolygon ( GeometryComponent )
 	:MODEL{
-		Field 'verts' :array( 'number' ) :no_edit();
+		Field 'verts' :array( 'number' ) :getset( 'Verts' ) :no_edit();
 	}
 registerComponent( 'GeometryPolygon', GeometryPolygon )
 
 function GeometryPolygon:__init()
-	self.verts = {}
-	self.loopVerts = {}
-end
-
-function GeometryPolygon:onAttach( ent )
-	GeometryPolygon.__super.onAttach( self, ent )
+	self.boundRect = {0,0,0,0}
 	self:setVerts{
 		0,0,
 		0,100,
@@ -177,8 +189,21 @@ function GeometryPolygon:onAttach( ent )
 	}
 end
 
+function GeometryPolygon:getVerts()
+	return self.verts
+end
+
 function GeometryPolygon:setVerts( verts )
 	self.verts = verts 
+	local x0,y0,x1,y1
+	for i = 1, #verts, 2 do
+		local x, y = verts[ i ], verts[ i + 1 ]
+		x0 = x0 and ( x < x0 and x or x0 ) or x
+		y0 = y0 and ( y < y0 and y or y0 ) or y
+		x1 = x1 and ( x > x1 and x or x1 ) or x
+		y1 = y1 and ( y > y1 and y or y1 ) or y
+	end
+	self.boundRect = { x0 or 0, y0 or 0, x1 or 0, y1 or 0 }
 	local loopVerts = { unpack(verts) }
 	local count = #verts
 	if count < 6 then return end
@@ -193,3 +218,6 @@ function GeometryPolygon:onDraw()
 	draw.drawLine( unpack( self.loopVerts ) )
 end
 
+function GeometryPolygon:onGetRect()
+	return unpack( self.boundRect )
+end

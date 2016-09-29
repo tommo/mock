@@ -31,7 +31,7 @@ require 'mock.gfx.asset.PexParticle'
 
 --ANIMATIONS
 require 'mock.gfx.asset.Spine'
-require 'mock.gfx.asset.MSprite'
+require 'mock.gfx.asset.MSpriteAsset'
 require 'mock.gfx.asset.AuroraSprite'
 
 --Mesh
