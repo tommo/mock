@@ -234,12 +234,16 @@ function AnimatorState:getElapsed()
 	return self.elapsedTimer:getTime()
 end
 
-function AnimatorState:apply( t )
+function AnimatorState:apply( t, flush )
 	local anim = self.anim
 	local t0 = anim:getTime()
 	anim:apply( t0, t )
 	anim:setTime( t )
+	if flush ~= false then
+		anim:flushUpdate()
+	end
 end
+
 
 function AnimatorState:findMarker( id )
 	return self.clip:findMarker( id )
