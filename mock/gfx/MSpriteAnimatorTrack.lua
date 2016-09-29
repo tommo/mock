@@ -87,8 +87,8 @@ function MSpriteAnimatorTrack:build( context )
 		spanCurve:setKey( i + 1, key.pos, i,  MOAIEaseType.FLAT )
 	end
 	local l = self:calcLength()
-	spanCurve:setKey( count + 2, l+0.00001, -1, MOAIEaseType.FLAT )
-	-- spanCurve:setKey( count + 2, l, count, MOAIEaseType.FLAT )
+	-- spanCurve:setKey( count + 2, l+0.0001, -1, MOAIEaseType.FLAT )
+	spanCurve:setKey( count + 2, l, count, MOAIEaseType.FLAT )
 	self.spanCurve    = spanCurve
 	context:updateLength( l )
 end
