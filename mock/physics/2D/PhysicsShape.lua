@@ -3,7 +3,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: PhysicsShape ( mock.Component )
 	:MODEL{
-		Field 'edit'     :action('editShape') :meta{ icon='edit', style='tool'};
+		-- Field 'edit'     :action('editShape') :meta{ icon='edit', style='tool'};
 		Field 'active'   :boolean();
 		Field 'tag'       :string();
 		Field 'loc'       :type('vec2') :getset('Loc') :label('Loc'); 
@@ -25,7 +25,6 @@ end
 
 function PhysicsShape:clone(original)
 	original = original or self
-
 	-- make copy from derived class
 	local copy = self.__class()
 	copy:setMaterial(original:getMaterial())
@@ -33,9 +32,6 @@ function PhysicsShape:clone(original)
 	return copy
 end
 
-function PhysicsShape:editShape()
-	mock_edit.startAdhocSceneTool( 'physics_shape_editor', { target = self } )
-end
 
 function PhysicsShape:getTag()
 	return self.tag
@@ -265,3 +261,5 @@ _wrapMethods( PhysicsShape, 'shape', {
 	'setRestitution',
 	'setSensor',
 	})
+
+
