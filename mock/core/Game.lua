@@ -383,6 +383,7 @@ function Game:initCommonData( config, fromEditor )
 	end
 
 	self.entryScene = config['entry_scene']
+	self.firstOpenedScene = false
 
 	self.mainScene:init()
 	_stat( '...init game done!' )
@@ -615,6 +616,9 @@ end
 
 function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	_stat( 'openning scene:', scnPath )
+	if not self.firstOpenedScene then
+		self.firstOpenedScene = scnPath
+	end
 	local mainScene = self.mainScene
 	autostart = autostart ~= false
 	

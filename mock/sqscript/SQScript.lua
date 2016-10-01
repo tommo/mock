@@ -209,7 +209,7 @@ function SQNode:getSourcePath()
 end
 
 function SQNode:getPosText()
-	return string.format( '%s:%d', self:getSourcePath(), self.lineNumber )
+	return string.format( '%s:%3d', self:getSourcePath(), self.lineNumber )
 end
 
 function SQNode:enter( state, env )
@@ -291,7 +291,7 @@ end
 
 function SQNode:_log( txt )
 	local prefix = self:getPosText()
-	print( string.format( '%s > %s', prefix, txt ) )
+	print( string.format( '%s\t> %s', prefix, txt ) )
 end
 
 
@@ -858,6 +858,10 @@ function SQRoutineState:nextNode()
 	end
 	self.index = index1
 	self.currentNode = node1
+	if node1:isInstance( SQNodeCoroutine ) then
+		self:startSubRoutine( node1 )
+		return self:nextNode()
+	end
 	local env = {}
 	self.currentNodeEnv = env
 	self.nodeEnvMap[ node1 ] = env
