@@ -110,6 +110,7 @@ function PhysicsShapePolygon:__init()
 		-50, -50,
 		 0 ,  50
 	}
+	self.aabb = {0,0,0,0}
 end
 
 function PhysicsShapePolygon:setVerts( verts )
@@ -195,6 +196,7 @@ end
 
 function PhysicsShapePolygon:createShape( body )
 	--triangulate
+	self.aabb  = { calcAABB( self.verts ) }
 	local triangulated = triangulate( self.verts )
 	local proxy = Box2DShapeGroupProxy()
 	for i, tri in ipairs( triangulated ) do

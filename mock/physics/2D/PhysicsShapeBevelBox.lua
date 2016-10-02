@@ -17,10 +17,8 @@ function PhysicsShapeBevelBox:setBevel( b )
 	self:updateShape()
 end
 
-function PhysicsShapeBevelBox:createShape( body )
+function PhysicsShapeBevelBox:getLocalVerts()
 	local b = self.bevel
-	if b == 0 then return PhysicsShapeBevelBox.__super.createShape( self, body ) end
-
 	local trans = MOAITransform.new()
 	trans:setRot( 0,0, self.rotation )
 	trans:setLoc( self:getLoc() )
@@ -51,8 +49,12 @@ function PhysicsShapeBevelBox:createShape( body )
 		table.insert( verts, x )
 		table.insert( verts, y )
 	end
-	
-	local x, y = self:getLoc()
+	return verts
+end
 
+function PhysicsShapeBevelBox:createShape( body )
+	local b = self.bevel
+	if b <= 0 then return PhysicsShapeBevelBox.__super.createShape( self, body ) end
+	local verts = self:getLocalVerts()
 	return body:addPolygon(verts)
 end

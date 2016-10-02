@@ -466,6 +466,20 @@ function reflection(ix, iy, nx, ny)
 	return rx, ry
 end
 
+--------------------------------------------------------------------
+function calcAABB( verts )
+	local x0,y0,x1,y1
+	for i = 1, #verts, 2 do
+		local x, y = verts[ i ], verts[ i + 1 ]
+		x0 = x0 and ( x < x0 and x or x0 ) or x
+		y0 = y0 and ( y < y0 and y or y0 ) or y
+		x1 = x1 and ( x > x1 and x or x1 ) or x
+		y1 = y1 and ( y > y1 and y or y1 ) or y
+	end
+	return x0 or 0, y0 or 0, x1 or 0, y1 or 0 
+end
+
+
 --gemometry related
 
 -- Returns the distance from p to the closest point on line segment a-b.

@@ -59,6 +59,10 @@ function PhysicsShapePie:getRadius()
 	return self.radius
 end
 
+function PhysicsShapePie:getLocalVerts()
+	return self:calcVerts()
+end
+
 function PhysicsShapePie:calcVerts()
 	local verts = {}
 
@@ -91,5 +95,6 @@ end
 
 function PhysicsShapePie:createShape(body)
 	local verts = self:calcVerts()
+	self.aabb  = { calcAABB( verts ) }
 	return body:addPolygon(verts)
 end
