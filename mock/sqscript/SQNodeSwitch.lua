@@ -12,7 +12,7 @@ function SQNodeSwitch:load( data )
 	self.expr = data.args[ 1 ]
 	local valueFunc, err = loadEvalScriptWithEnv( self.expr )
 	if not valueFunc then
-		_warn( 'failed compiling variable expr:', err )
+		self:_warn( 'failed compiling variable expr:', err )
 		self.valueFunc = false
 	else
 		self.valueFunc = valueFunc
@@ -45,7 +45,7 @@ function SQNodeSwitchCase:load( data )
 	self.expr = data.args[ 1 ]
 	local valueFunc, err = loadEvalScriptWithEnv( self.expr )
 	if not valueFunc then
-		_warn( 'failed compiling variable expr:', err )
+		self:_warn( 'failed compiling variable expr:', err )
 		self.valueFunc = false
 	else
 		self.valueFunc = valueFunc

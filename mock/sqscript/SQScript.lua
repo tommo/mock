@@ -289,11 +289,14 @@ function SQNode:acceptSubNode( name )
 	return true
 end
 
-function SQNode:_log( txt )
+function SQNode:_log( ... )
 	local prefix = self:getPosText()
-	print( string.format( '%s\t> %s', prefix, txt ) )
+	print( string.format( '%s\t> %s', prefix, ... ) )
 end
 
+function SQNode:_warn( ... )
+	return print( '[WARN:sq]%s\t>', self:getPosText(), ... )
+end
 
 --------------------------------------------------------------------
 CLASS: SQNodeGroup ( SQNode )
@@ -375,7 +378,7 @@ function SQNodeGoto:enter( state, env )
 	local routine = self:getRoutine()
 	local targetNode = routine:findLabelNode( self.label )
 	if not targetNode then
-		_warn( 'target label not found', self.label )
+		self:_warn( 'target label not found', self.label )
 		state:setJumpTarget( false )
 	else
 		state:setJumpTarget( targetNode )
@@ -422,7 +425,7 @@ function SQNodeFastForward:enter( state, env )
 	if targetNode then
 		state:startFastForward( targetNode )
 	else
-		_warn( 'target label not found', self.label )
+		self:_warn( 'target label not found', self.label )
 		state:startFastForward( false )
 	end
 

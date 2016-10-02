@@ -30,7 +30,7 @@ function SQNodeAnimator:enter( state, env )
 		local animState = animator:playClip( self.argClipName, self.argMode )
 		-- print( 'play animation', animator:getEntityName(), self.argClipName, self.argMode )
 		if not animState then 
-			_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
+			self:_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
 			return false
 		end
 		local duration = self.argDuration
@@ -44,7 +44,7 @@ function SQNodeAnimator:enter( state, env )
 		if not self.argClipName then return false end
 		local animState = animator:playClip( self.argClipName, self.argMode )
 		if not animState then 
-			_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
+			self:_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
 			return false
 		end
 		animState:pause()
@@ -112,7 +112,7 @@ function SQNodeAnimator:checkAndGetAnimator( state )
 	local target = self:getContextEntity( state )
 	local animator = target:getComponent( Animator )
 	if not animator then
-		_warn( 'no animator for target:', target:getName() )
+		self:_warn( 'no animator for target:', target:getName() )
 	end
 	return animator
 end
@@ -163,7 +163,7 @@ function SQNodeAnimator:load( data )
 		self.argPosTo = tonumber( args[3] ) or args[3]
 		self.blocking = true
 	else
-		_warn( 'unkown animator command', tostring(cmd) )
+		self:_warn( 'unkown animator command', tostring(cmd) )
 		return false
 	end
 end

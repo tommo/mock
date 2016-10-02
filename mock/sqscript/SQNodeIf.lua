@@ -11,7 +11,7 @@ function SQNodeIf:load( data )
 	self.expr = data.args[ 1 ]
 	local valueFunc, err   = loadEvalScriptWithEnv( self.expr )
 	if not valueFunc then
-		_warn( 'failed compiling condition expr:', err )
+		self:_warn( 'failed compiling condition expr:', err )
 		self.valueFunc = false
 	else
 		self.valueFunc = valueFunc

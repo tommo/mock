@@ -24,7 +24,7 @@ function SQNodeEval:load( data )
 	self.script = script
 	local func, err = loadstring( script )
 	if not func then
-		_warn( 'failed compiling eval function', err )
+		self:_warn( 'failed compiling eval function:', err )
 		self.scriptFunc = false
 	else
 		self.scriptFunc = func
@@ -36,7 +36,10 @@ function SQNodeEval:enter( state, env )
 	local func = self.scriptFunc
 	if not func then return false end
 	setfenv( func, state:getEvalEnv() )
-	pcall( func )
+	local ok, result = pcall( func )
+	if not ok then
+		self:_warn( 'error in eval:', result )
+	end
 end
 
 function SQNodeEval:getRichText()
