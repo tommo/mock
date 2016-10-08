@@ -36,4 +36,21 @@ end
 
 
 --------------------------------------------------------------------
+CLASS: SQNodeWaitCoroutines ( SQNode )
+	:MODEL{}
+
+
+function SQNodeWaitCoroutines:step( state, env, dt )
+	if state:isSubRoutineRunning() then return false end
+	return true
+end
+
+function SQNodeWaitCoroutines:getRichText()
+	return string.format( '<cmd>WAIT_COROUTINES</cmd>' )
+end
+
+
+--------------------------------------------------------------------
 registerSQNode( 'coroutine',    SQNodeCoroutine )
+registerSQNode( 'wait_coroutines',    SQNodeWaitCoroutines )
+

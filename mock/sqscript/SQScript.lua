@@ -732,7 +732,12 @@ end
 
 function SQRoutineState:isRunning()
 	if self.localRunning then return true end
-	for i, substate in ipairs( self.subRoutineStates ) do
+	if self:isSubRoutineRunning() then return true end
+	return false
+end
+
+function SQRoutineState:isSubRoutineRunning()
+	for i, subState in ipairs( self.subRoutineStates ) do
 		if subState:isRunning() then return true end
 	end
 	return false
