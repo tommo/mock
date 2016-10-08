@@ -201,6 +201,7 @@ function PhysicsShapePolygon:createShape( body )
 	local proxy = Box2DShapeGroupProxy()
 	for i, tri in ipairs( triangulated ) do
 		local poly = body:addPolygon( tri )
+		poly.component = self
 		proxy:addShape( poly )
 	end
 	return proxy	
