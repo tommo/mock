@@ -152,7 +152,7 @@ local function triangulate( verts )
 		path:setVert( idx, x, y )
 	end
 
-	path:clean( 10 )
+	path:clean( 5 )
 	local partition = MOCKPolyPartition.new()
 	local triangulated = partition:doConvexPartition{ path }
 	if not triangulated then

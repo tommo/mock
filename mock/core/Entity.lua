@@ -35,12 +35,12 @@ CLASS: Entity ( Actor )
 		-- Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
 		Field 'layer'     :type('layer')  :getset( 'Layer' ) :no_nil();
 		'----';
+		Field 'color'    :type('color')  :getset('Color') ;
+		'----';
 		Field 'loc'       :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'       :type('vec3') :getset('Rot') :label('Rot');
 		Field 'scl'       :type('vec3') :getset('Scl') :label('Scl') :meta{ step = 0.1 };
 		Field 'piv'       :type('vec3') :getset('Piv') :label('Piv');
-		'----';
-		Field 'color'    :type('color')  :getset('Color') ;
 	}
 
 wrapWithMoaiPropMethods( Entity, '_prop' )
