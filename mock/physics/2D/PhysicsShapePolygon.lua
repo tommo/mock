@@ -100,15 +100,20 @@ end
 CLASS: PhysicsShapePolygon ( PhysicsShape )
 	:MODEL{
 		Field 'verts'  :array() :no_edit();
-	}
+		Field 'resetShape' :action();
+}
 
 mock.registerComponent( 'PhysicsShapePolygon', PhysicsShapePolygon )
 
+function PhysicsShapePolygon:resetShape()
+	self:__init()
+end
+
 function PhysicsShapePolygon:__init()
 	self.verts     = {
-		 50, -50,
-		-50, -50,
-		 0 ,  50
+		 20, -20,
+		-20, -20,
+		 0 ,  20
 	}
 	self.aabb = {0,0,0,0}
 end
