@@ -36,6 +36,14 @@ function SQNodeEntity:enter( state, env )
 		for i, target in ipairs( targets ) do
 			target:destroy()
 		end
+	elseif cmd == 'deactivate' then
+		for i, target in ipairs( targets ) do
+			target:setActive( false )
+		end
+	elseif cmd == 'activate' then
+		for i, target in ipairs( targets ) do
+			target:setActive( true )
+		end
 	end
 end
 
