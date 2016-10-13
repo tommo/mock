@@ -58,16 +58,19 @@ function DeckCanvas:getSerializedData()
 	end
 	local propDatas = {}
 	for i, prop in ipairs( self.props ) do
-		local deckId = affirmDeckId( prop.deckPath )
-		local x, y, z = prop:getLoc()
-		local rx, ry, rz = prop:getRot()
-		local sx, sy, sz = prop:getScl()
-		local r,g,b,a    = prop:getColor()
-		propDatas[ i ] = {
-			deck = deckId,
-			transform = { x,y,z, rx,ry,rz, sx,sy,sz },
-			color = { r,g,b,a },
-		}
+		local deckPath = prop.deckPath
+		if deckPath then
+			local deckId = affirmDeckId( deckPath )
+			local x, y, z = prop:getLoc()
+			local rx, ry, rz = prop:getRot()
+			local sx, sy, sz = prop:getScl()
+			local r,g,b,a    = prop:getColor()
+			propDatas[ i ] = {
+				deck = deckId,
+				transform = { x,y,z, rx,ry,rz, sx,sy,sz },
+				color = { r,g,b,a },
+			}
+		end
 	end
 
 	local output  = {
