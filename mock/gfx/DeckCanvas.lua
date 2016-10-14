@@ -58,16 +58,21 @@ function DeckCanvas:getSerializedData()
 	end
 	local propDatas = {}
 	for i, prop in ipairs( self.props ) do
-		local deckId = affirmDeckId( prop.deckPath )
-		local x, y, z = prop:getLoc()
-		local rx, ry, rz = prop:getRot()
-		local sx, sy, sz = prop:getScl()
-		local r,g,b,a    = prop:getColor()
-		propDatas[ i ] = {
-			deck = deckId,
-			transform = { x,y,z, rx,ry,rz, sx,sy,sz },
-			color = { r,g,b,a },
-		}
+		local deckPath = prop.deckPath
+		if deckPath then
+		-- assert( deckPath, tostring(prop) )
+		-- if deckPath then
+			local deckId = affirmDeckId( deckPath )
+			local x, y, z = prop:getLoc()
+			local rx, ry, rz = prop:getRot()
+			local sx, sy, sz = prop:getScl()
+			local r,g,b,a    = prop:getColor()
+			table.insert( propDatas, {
+				deck = deckId,
+				transform = { x,y,z, rx,ry,rz, sx,sy,sz },
+				color = { r,g,b,a },
+			})
+		end
 	end
 
 	local output  = {
@@ -84,7 +89,8 @@ function DeckCanvas:setSerializedData( data )
 		local deckId = propData.deck
 		local x,y,z, rx,ry,rz, sx,sy,sz = unpack( propData.transform )
 		local r,g,b,a = unpack( propData.color )
-		local prop = self:createProp( decks[ deckId ] )
+		local deckPath = decks[ deckId ]
+		local prop = self:createProp( deckPath )
 		prop:setLoc( x,y,z )
 		prop:setRot( rx,ry,rz )
 		prop:setScl( sx,sy,sz )
