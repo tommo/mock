@@ -228,9 +228,7 @@ function Entity:destroyNow()
 	if onDestroy then onDestroy( self )	end
 
 	local components = self.components
-	while true do
-		local com = next( components )
-		if not com then break end
+	for i, com in ipairs( self:getSortedComponentList( 'reversed' ) ) do
 		components[ com ] = nil
 		local onDetach = com.onDetach
 		if entityListener then
@@ -241,6 +239,19 @@ function Entity:destroyNow()
 		end
 		com._entity = nil
 	end
+	-- while true do
+	-- 	local com = next( components )
+	-- 	if not com then break end
+	-- 	components[ com ] = nil
+	-- 	local onDetach = com.onDetach
+	-- 	if entityListener then
+	-- 		entityListener( 'detach', self, com )
+	-- 	end
+	-- 	if onDetach then
+	-- 		onDetach( com, self )
+	-- 	end
+	-- 	com._entity = nil
+	-- end
 	-- for com in pairs( components ) do
 	-- 	components[ com ] = nil
 	-- 	local onDetach = com.onDetach
@@ -393,15 +404,22 @@ end
 local function componentSortFunc( a, b )
 	return ( a._componentID or 0 ) < ( b._componentID or 0 )
 end
+local function componentSortFuncReversed( b, a )
+	return ( a._componentID or 0 ) < ( b._componentID or 0 )
+end
 --- Get the sorted component list
 -- @ret {Component} the sorted component array
-function Entity:getSortedComponentList()
+function Entity:getSortedComponentList( reversed )
 	local list = {}
 	local i = 0
 	for com in pairs( self.components ) do
 		insert( list , com )
 	end
-	table.sort( list, componentSortFunc )
+	if reversed then
+		table.sort( list, componentSortFuncReversed )
+	else
+		table.sort( list, componentSortFunc )
+	end
 	return list
 end
 
