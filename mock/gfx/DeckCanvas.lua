@@ -247,6 +247,7 @@ end
 
 local drawRect = MOAIDraw.drawRect
 function DeckCanvas:drawBounds()
+	if not self._entity then return end
 	if deckCanvasItemBoundsVisible then
 		mock_edit.applyColor( 'deckcanvas-item' )
 		for i, prop in ipairs( self.props ) do

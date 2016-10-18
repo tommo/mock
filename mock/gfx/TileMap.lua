@@ -115,6 +115,8 @@ CLASS: TileMapLayer ()
 		-- Field 'visible' :boolean();
 		Field 'subdivision' :int() :range( 1, 4 ) :readonly();
 		Field 'material'    :asset_pre( 'material' ) :getset( 'Material' );
+		'----';
+		Field 'offset' :type( 'vec3' ) :getset( 'Offset' );
 	}
 
 function TileMapLayer:__init()
@@ -137,12 +139,15 @@ function TileMapLayer:__init()
 	self.subdivision = 1
 
 	self.material = false
+
+	self.offset   = { 0,0,0 }
 end
 
 function TileMapLayer:init( parentMap, tilesetPath, initFromEditor )
 	self.tilesetPath  = tilesetPath
 	self.tileset      = loadAsset( tilesetPath )
 	self:onInit( initFromEditor )
+	self:onSetOffset( unpack( self.offset ) )
 end
 
 function TileMapLayer:getMaterial()
@@ -242,6 +247,15 @@ function TileMapLayer:getDebugDrawProp()
 	return false
 end
 
+function TileMapLayer:getOffset()
+	return unpack( self.offset )
+end
+
+function TileMapLayer:setOffset( x, y, z )
+	self.offset = { x, y, z }
+	self:onSetOffset( x,y,z )
+end
+
 function TileMapLayer:tileIdToGridId( tileId )
 	return self.mapGrid:tileIdToGridId( tileId )
 end
@@ -251,6 +265,7 @@ function TileMapLayer:loadData( data, parentMap )
 	self.subdivision = data[ 'subdivision' ] or 1
 	self.name = data[ 'name' ]
 	self.tag  = data[ 'tag'  ]
+	self.offset = data[ 'offset' ] or { 0,0,0 }
 	self.materialPath = data[ 'material' ] or false
 	
 	self:init( parentMap, tilesetPath )
@@ -283,6 +298,7 @@ function TileMapLayer:saveData()
 	data[ 'order'    ] = self.order
 	data[ 'subdivision' ] = self.subdivision
 	data[ 'material' ] = self.materialPath
+	data[ 'offset' ] = self.offset
 	self:onSaveData( data )
 	return data
 end
@@ -290,6 +306,9 @@ end
 function TileMapLayer:setOrder( order )
 	self.order = order
 	self:onSetOrder( order )
+end
+
+function TileMapLayer:onSetOffset( x, y, z )
 end
 
 function TileMapLayer:onSetOrder( order )

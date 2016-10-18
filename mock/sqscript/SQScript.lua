@@ -238,6 +238,23 @@ function SQNode:getContextEntities( state )
 	return actor:getContextEntities( self.context )
 end
 
+function SQNode:affirmContextEntity( state )
+	local entity = self:getContextEntity( state )
+	if not entity then
+		local ctx = unpack( self.context )
+		self:_warn( 'no context entity:', ctx )
+	end
+	return entity
+end
+
+function SQNode:affirmContextEntities( state )
+	local entities = self:getContextEntities( state )
+	if not next( entities ) then
+		self:_warn( 'no context entity:', unpack( self.context ) )
+	end
+	return entity
+end
+
 function SQNode:_load( data )
 	self.srcData = data
 	self.lineNumber = data[ 'line' ]

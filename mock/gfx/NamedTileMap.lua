@@ -246,3 +246,9 @@ end
 function NamedTileMapLayer:onSetVisible( vis )
 	self.prop:setVisible( vis )
 end
+
+function NamedTileMapLayer:onSetOffset( x, y, z )
+	if self.prop then
+		self.prop:setLoc( x, y, z )
+	end
+end

@@ -31,11 +31,11 @@ function getDeviceScreenSpec()
 	local deviceName=""
 
 	if os=='ios' then
-		if     checkDimension( sw, sh, 320,    480   ) then deviceName='iphone' 
-		elseif checkDimension( sw, sh, 640,    960   ) then deviceName='iphone4' 
-		elseif checkDimension( sw, sh, 640,    1136  ) then deviceName='iphone5'
-		elseif checkDimension( sw, sh, 1024,   768   ) then deviceName='ipad'
-		elseif checkDimension( sw, sh, 1024*2, 768*2 ) then deviceName='ipad3'
+		if     checkDimension( sw, sh, 320,    480   ) then deviceName = 'iphone' 
+		elseif checkDimension( sw, sh, 640,    960   ) then deviceName = 'iphone4' 
+		elseif checkDimension( sw, sh, 640,    1136  ) then deviceName = 'iphone5'
+		elseif checkDimension( sw, sh, 1024,   768   ) then deviceName = 'ipad'
+		elseif checkDimension( sw, sh, 1024*2, 768*2 ) then deviceName = 'ipad3'
 		end
 
 	elseif os=='android' then

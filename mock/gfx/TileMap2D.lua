@@ -24,6 +24,12 @@ end
 function TileMap2DLayer:onSetOrder( orde )
 end
 
+function TileMap2DLayer:onSetOffset( x, y, z )
+	if self.prop then
+		self.prop:setLoc( x, y, z )
+	end
+end
+
 function TileMap2DLayer:applyMaterial( material )
 	material:applyToMoaiProp( self.prop )
 end
