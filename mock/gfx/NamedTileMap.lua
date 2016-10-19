@@ -249,6 +249,6 @@ end
 
 function NamedTileMapLayer:onSetOffset( x, y, z )
 	if self.prop then
-		self.prop:setLoc( x, y, z )
+		self.prop:setPiv( -x, -y, -z )
 	end
 end
