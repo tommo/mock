@@ -3,6 +3,11 @@ module 'mock'
 local simplecopy    = table.simplecopy
 local makeId        = makeNameSpacedId
 local makeNamespace = makeNameSpace
+
+local modelFromName = Model.fromName
+local isTupleValue  = isTupleValue
+local isAtomicValue = isAtomicValue
+
 --------------------------------------------------------------------
 --Instance helper
 --------------------------------------------------------------------
@@ -183,26 +188,32 @@ end
 
 local function mergeObjectMap( map, map0, namespace, protoPath )
 	for id, data in pairs( map0 ) do
-		local newid = makeId( id, namespace )
-		local newData = simplecopy( data )
-		local ns1 = data['namespace']
-		if ns1 then
-			newData['namespace'] = makeNamespace( ns1, namespace )
+		if id:find( '!', 1, true ) == 1 then --non anonymous reference
+			local newid = id
+			local newData = simplecopy( data )
+			map[ id ] = newData
 		else
-			newData['namespace'] = namespace
-		end
-		map[ newid ]   = newData
-		if data.model then
-			if not newData['proto_history'] then
-				newData['proto_history'] = {}
+			local newid = makeId( id, namespace )
+			local newData = simplecopy( data )
+			local ns1 = data['namespace']
+			if ns1 then
+				newData['namespace'] = makeNamespace( ns1, namespace )
+			else
+				newData['namespace'] = namespace
 			end
-			table.insert( newData['proto_history'], protoPath )
-			if newData['__PROTO'] then --remove previous proto data
-				newData['__PROTO']   = nil
-				newData['overrided'] = nil
-				newData['deleted']   = nil
-				newData['added']     = nil
-				table.insert( newData['proto_history'], newData[ '__PROTO' ]	)
+			map[ newid ]   = newData
+			if data.model then
+				if not newData['proto_history'] then
+					newData['proto_history'] = {}
+				end
+				table.insert( newData['proto_history'], protoPath )
+				if newData['__PROTO'] then --remove previous proto data
+					newData['__PROTO']   = nil
+					newData['overrided'] = nil
+					newData['deleted']   = nil
+					newData['added']     = nil
+					table.insert( newData['proto_history'], newData[ '__PROTO' ]	)
+				end
 			end
 		end
 	end
@@ -254,7 +265,7 @@ local function mergeProtoData( data, id )
 		end
 	end
 
-	entityEntry0 = data0.entities[1]
+	local entityEntry0 = data0.entities[1]
 	local rootId = makeId( entityEntry0.id, id )
 
 	mergeEntityEntry( entityEntry, entityEntry0, id, deleteSet, addSet )
@@ -370,6 +381,35 @@ function Proto:getData()
 	return self.data
 end
 
+local function attachObjectNamespace( objData, model, namespace )
+	local body = objData[ 'body' ]
+	for k,v in pairs( body ) do
+		local field = model:getField( k )
+		local ft = field:getType()
+		if not ( isTupleValue( ft ) or isAtomicValue( ft ) ) then
+			if ft == '@array' then
+				if isAtomicValue( field.__itemtype ) then
+					--do nothing
+				elseif field.__objtype == 'sub' then
+					--todo
+				else
+					for i, item in pairs( v ) do
+						if type( item ) == 'string' and item:find( '!', 1, true ) == 1 then
+							v[ i ] = item .. ':' .. namespace
+						end
+					end				
+				end
+
+			elseif field.__objtype == 'sub' then
+				--todo
+			elseif type( v ) == 'string' and v:find( '!', 1, true ) == 1 then
+				body[ k ] = v .. ':' .. namespace
+			end
+		end
+	end
+
+end
+
 function Proto:loadData( dataPath )
 	if self.loading then
 		error( 'cyclic proto reference' )
@@ -388,11 +428,31 @@ function Proto:loadData( dataPath )
 		end
 	end
 
+	local rootId = data.entities[1]['id']
 	mergeProtoDataList( data, protoInstances )
+
+	--attach namespace
+	local namespace = rootId
+	local map1 = {}
+	for id, objData in pairs( data.map ) do
+		local modelName = objData[ 'model' ]
+		if modelName then
+			model = modelFromName( modelName )
+			if model then
+				attachObjectNamespace( objData, model, namespace )
+			end
+		end
+		if type( id ) == 'string' and ( not id:find( ':' ) ) and id:find( '!', 1, true ) == 1 then
+			map1[ id..':'..namespace ] = objData
+		else
+			map1[ id ] = objData
+		end
+	end
+	data.map = map1
 
 	self.data      = data
 	self.ready     = true
-	self.rootId    = data.entities[1]['id']
+	self.rootId    = rootId
 	local rootData = data.map[ self.rootId ]
 	self.rootName  = rootData['body']['name']
 	self.loading   = false

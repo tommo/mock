@@ -369,6 +369,9 @@ function _deserializeField( obj, f, data, objMap, namespace )
 					array[ i ] = false
 				else
 					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
+					if not itemTarget then
+						print( itemData, namespace )
+					end
 					array[ i ] = itemTarget[1]
 				end
 			end
@@ -382,7 +385,7 @@ function _deserializeField( obj, f, data, objMap, namespace )
 	else --'ref'
 		local target = getObjectWithNamespace( objMap, fieldData, namespace )
 		if not target then
-			_error( 'target not found', newid )
+			_error( 'target not found', fieldData, namespace )
 			f:setValue( obj, nil )
 		else
 			f:setValue( obj, target[1] )

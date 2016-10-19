@@ -576,7 +576,7 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 	end
 
 	mergeProtoDataList( data, protoInstances )
-
+	
 	local _, aliases = _deserializeObjectMap( map, objMap ) --ignore protoInstances
 	
 	--groups
