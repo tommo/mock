@@ -8,6 +8,8 @@ local modelFromName = Model.fromName
 local isTupleValue  = isTupleValue
 local isAtomicValue = isAtomicValue
 
+local tinsert = table.insert
+
 --------------------------------------------------------------------
 --Instance helper
 --------------------------------------------------------------------
@@ -153,13 +155,13 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted, added )
 	for i, cid in ipairs( entry0.components ) do
 		local newId = makeId( cid, namespace )
 		if not( deleted and deleted[ newId ] ) then
-			table.insert( components, newId )
+			tinsert( components, newId )
 		end
 	end
 
 	if localAdded and localAdded.components then
 		for i, cid in ipairs( localAdded.components ) do
-			table.insert( components, cid )
+			tinsert( components, cid )
 		end
 	end
 
@@ -173,14 +175,14 @@ local function mergeEntityEntry( entry, entry0, namespace, deleted, added )
 				children = {},
 				components = {}
 			}
-			table.insert( children, newChildEntry )
+			tinsert( children, newChildEntry )
 			mergeEntityEntry( newChildEntry, childEntry, namespace, deleted, added )
 		end
 	end
 
 	if localAdded and localAdded.children then
 		for i, data in ipairs( localAdded.children ) do
-			table.insert( children, data )
+			tinsert( children, data )
 		end
 	end
 
@@ -203,16 +205,23 @@ local function mergeObjectMap( map, map0, namespace, protoPath )
 			end
 			map[ newid ]   = newData
 			if data.model then
-				if not newData['proto_history'] then
-					newData['proto_history'] = {}
+				local history = newData['proto_history']
+				if not history then
+					history = {}
+					newData['proto_history'] = history
 				end
-				table.insert( newData['proto_history'], protoPath )
-				if newData['__PROTO'] then --remove previous proto data
+				-- if not table.index( history, protoPath ) then
+				tinsert( history, protoPath )
+				-- end
+				local protoPath0 = newData['__PROTO']
+				if protoPath0 then --remove previous proto data
 					newData['__PROTO']   = nil
 					newData['overrided'] = nil
 					newData['deleted']   = nil
 					newData['added']     = nil
-					table.insert( newData['proto_history'], newData[ '__PROTO' ]	)
+					-- if not table.index( history, protoPath0 ) then
+					-- 	tinsert( history, protoPath0 )
+					-- end
 				end
 			end
 		end
@@ -395,7 +404,7 @@ local function attachObjectNamespace( objData, model, namespace )
 						--todo
 					else
 						for i, item in pairs( v ) do
-							if type( item ) == 'string' and item:find( '!', 1, true ) == 1 then
+							if type( item ) == 'string' and item:find( '!', 1, true ) == 1 and not ( item:find(':') ) then
 								v[ i ] = item .. ':' .. namespace
 							end
 						end				
@@ -403,12 +412,12 @@ local function attachObjectNamespace( objData, model, namespace )
 
 				elseif field.__objtype == 'sub' then
 					--todo
-				elseif type( v ) == 'string' and v:find( '!', 1, true ) == 1 then
+				elseif type( v ) == 'string' and v:find( '!', 1, true ) == 1 and not ( v:find(':') ) then
 					body[ k ] = v .. ':' .. namespace
 				end
 			end
 		else
-			_warn( 'missing field', k, model:getName() )
+			_info( 'missing field in proto', k, model:getName() )
 		end
 	end
 
@@ -429,7 +438,7 @@ function Proto:loadData( dataPath )
 	local protoInstances = {}
 	for id, objData in pairs( data.map )  do
 		if objData[ '__PROTO' ] then
-			table.insert( protoInstances, id )
+			tinsert( protoInstances, id )
 		end
 	end
 

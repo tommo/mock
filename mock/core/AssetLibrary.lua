@@ -71,7 +71,7 @@ function collectAssetGarbage()
 	local collectThread = MOAICoroutine.new()
 	collectThread:run( function()
 			while true do
-				if not mock.isThreadTaskBusy() then break end
+				if not isAssetThreadTaskBusy() then break end
 				coroutine.yield()
 			end
 			MOAISim.setListener( MOAISim.EVENT_PRE_GC, _assetCollectionPreGC )
@@ -514,4 +514,8 @@ function loadAssetFolder( path )
 		return _warn( 'folder path expected:', path )
 	end
 	
+end
+
+function isAssetThreadTaskBusy()
+	return isTextureThreadTaskBusy() --TODO: other thread?
 end
