@@ -385,26 +385,30 @@ local function attachObjectNamespace( objData, model, namespace )
 	local body = objData[ 'body' ]
 	for k,v in pairs( body ) do
 		local field = model:getField( k )
-		local ft = field:getType()
-		if not ( isTupleValue( ft ) or isAtomicValue( ft ) ) then
-			if ft == '@array' then
-				if isAtomicValue( field.__itemtype ) then
-					--do nothing
+		if field then
+			local ft = field:getType()
+			if not ( isTupleValue( ft ) or isAtomicValue( ft ) ) then
+				if ft == '@array' then
+					if isAtomicValue( field.__itemtype ) then
+						--do nothing
+					elseif field.__objtype == 'sub' then
+						--todo
+					else
+						for i, item in pairs( v ) do
+							if type( item ) == 'string' and item:find( '!', 1, true ) == 1 then
+								v[ i ] = item .. ':' .. namespace
+							end
+						end				
+					end
+
 				elseif field.__objtype == 'sub' then
 					--todo
-				else
-					for i, item in pairs( v ) do
-						if type( item ) == 'string' and item:find( '!', 1, true ) == 1 then
-							v[ i ] = item .. ':' .. namespace
-						end
-					end				
+				elseif type( v ) == 'string' and v:find( '!', 1, true ) == 1 then
+					body[ k ] = v .. ':' .. namespace
 				end
-
-			elseif field.__objtype == 'sub' then
-				--todo
-			elseif type( v ) == 'string' and v:find( '!', 1, true ) == 1 then
-				body[ k ] = v .. ':' .. namespace
 			end
+		else
+			_warn( 'missing field', k, model:getName() )
 		end
 	end
 
@@ -412,6 +416,7 @@ end
 
 function Proto:loadData( dataPath )
 	if self.loading then
+		print( dataPath )
 		error( 'cyclic proto reference' )
 	end
 	self.loading = true --cyclic ref avoiding
