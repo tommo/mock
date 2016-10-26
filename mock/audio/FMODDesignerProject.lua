@@ -177,3 +177,5 @@ end
 registerAssetLoader( 'fmod_project', FMODProjectLoader, FMODProjectUnloader )
 registerAssetLoader( 'fmod_event', FMODEventLoader )
 registerAssetLoader( 'fmod_group', FMODGroupLoader )
+
+addSupportedSoundAssetType( 'fmod_event' )

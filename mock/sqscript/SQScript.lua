@@ -315,6 +315,10 @@ function SQNode:_warn( ... )
 	return print( '[WARN:sq]%s\t>', self:getPosText(), ... )
 end
 
+function SQNode:_error( ... )
+	return print( '[ERROR:sq]%s\t>', self:getPosText(), ... )
+end
+
 --------------------------------------------------------------------
 CLASS: SQNodeGroup ( SQNode )
 	:MODEL{

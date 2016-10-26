@@ -8,7 +8,7 @@ local gfx  = MOAIGfxDevice
 
 CLASS: GeometryComponent( DrawScript )
 	:MODEL{
-		Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
+		-- Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
 	}
 
 function GeometryComponent:__init()
@@ -22,14 +22,14 @@ function GeometryComponent:applyColor()
 	end
 end
 
-function GeometryComponent:getBlend()
-	return self.blend
-end
+-- function GeometryComponent:getBlend()
+-- 	return self.blend
+-- end
 
-function GeometryComponent:setBlend( b )
-	self.blend = b	
-	setPropBlend( self.prop, b )
-end
+-- function GeometryComponent:setBlend( b )
+-- 	self.blend = b	
+-- 	setPropBlend( self.prop, b )
+-- end
 
 function GeometryComponent:getPickingProp()
 	return self.prop

@@ -27,9 +27,10 @@ local function clearFmodEventIDCache()
 end
 
 
+---------------------------------------------------------------------
 CLASS: SoundSource ( Component )
 	:MODEL{
-		Field 'defaultClip' :asset('fmod_event')  :getset('DefaultClip');
+		Field 'defaultClip' :asset( getSupportedSoundAssetTypes() )  :getset('DefaultClip');
 		Field 'autoPlay'    :boolean();
 		Field 'is3D' :boolean();
 	}

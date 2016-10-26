@@ -54,7 +54,7 @@ function ScenePortalGraph:loadData( data )
 		local id = nodeData[ 'fullname' ]
 		local node = nodes[ id ]
 		if node then
-			_warn( 'duplicated node in portal graph', id )
+			_info( 'duplicated node in portal graph', id )
 		else
 			node = ScenePortalGraphNode()
 			node.id = id

@@ -5,7 +5,7 @@ require 'mock.gfx.asset.ParticleProcs'
 
 
 --GRAPHICS
-require 'mock.gfx.asset.TextureHelper'
+require 'mock.gfx.asset.ThreadTextureLoadTask'
 require 'mock.gfx.asset.PrebuiltAtlas'
 require 'mock.gfx.asset.Texture'
 require 'mock.gfx.asset.Deck2D'

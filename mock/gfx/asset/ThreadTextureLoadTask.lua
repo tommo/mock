@@ -5,29 +5,6 @@ TEXTURE_ASYNC_LOAD = false
 TextureThreadTaskGroupID = 'texture_loading'
 
 --------------------------------------------------------------------
-local texturePlaceHolder      = false
-local texturePlaceHolderImage = false
-
-function getTexturePlaceHolderImage( w, h )
-	if not texturePlaceHolderImage then
-		w, h = w or 32, h or 32
-		texturePlaceHolderImage = MOAIImage.new()
-		texturePlaceHolderImage:init( w, h )
-		texturePlaceHolderImage:fillRect( 0,0, w, h, 0, 1, 0, 1 )
-	end
-	return texturePlaceHolderImage
-end
-
-function getTexturePlaceHolder()
-	if not texturePlaceHolder then
-		texturePlaceHolder = MOAITexture.new()
-		texturePlaceHolder:load( getTexturePlaceHolderImage( 32, 32 ) )		
-	end
-	return texturePlaceHolder
-end
-
-
---------------------------------------------------------------------
 CLASS: ThreadTextureLoadTask ( ThreadImageLoadTask )
 	:MODEL{}
 

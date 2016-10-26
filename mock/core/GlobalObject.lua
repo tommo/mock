@@ -147,6 +147,10 @@ function GlobalObjectLibrary:load( data )
 	return self.root:loadGroup( data )
 end
 
+function GlobalObjectLibrary:reload()
+	_warn( 'global object class reloading not implemented, restart ide' )
+end
+
 function GlobalObjectLibrary:save()
 	return self.root:save()
 end
