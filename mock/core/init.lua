@@ -61,6 +61,7 @@ require 'mock.core.Audio'
 
 
 ----game
+require 'mock.core.EntityIcon'
 require 'mock.core.EntityGroup'
 require 'mock.core.Entity'
 require 'mock.core.Component'

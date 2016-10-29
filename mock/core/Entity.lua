@@ -18,7 +18,6 @@ local type   = type
 CLASS: Entity ( Actor )
 	:MODEL{
 		--editor related
-		Field '__gizmoIcon'  :string() :no_edit();
 		Field '__gizmoColor' :type( 'color') :no_edit();
 
 		--prefab
@@ -30,6 +29,9 @@ CLASS: Entity ( Actor )
 		--name
 		Field 'tags'      :string()  :getset('Tags') :no_edit();
 		Field 'name'      :string()  :getset('Name');
+		'----';
+		Field '__gizmoIcon'  :string() :getset('Icon') :selection( 'getIconSelection' ) :label( 'Icon');
+
 		'----';
 		Field 'visible'   :boolean() :get('isLocalVisible') :set('setVisible');
 		-- Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
@@ -924,6 +926,37 @@ function Entity:getPartition()
 end
 
 --------------------------------------------------------------------
+function Entity:setIcon( iconName )
+	self.__gizmoIcon = iconName
+end
+
+function Entity:getIcon()
+	return self.__gizmoIcon
+end
+
+function Entity:getIconSelection()
+	local result = {
+		{ '_NONE_', false }
+	}
+	for key, path in pairs( getEntityIconSet() ) do
+		if key ~= 'none' then
+			table.insert( result, { key, key, 'icon', path } )
+		end
+	end
+	return result
+end
+
+function Entity:onBuildGizmo()
+	local iconGiz = nil
+	local iconName = self.__gizmoIcon
+	if iconName and iconName ~= 'none' then
+		local iconSet = getEntityIconSet()
+		local iconGiz = mock_edit.IconGizmo( iconSet[ iconName ] )
+		-- self.__iconGiz = iconGiz
+		return iconGiz
+	end
+end
+
 function Entity:setTags( t )
 	self._tags = t
 end
@@ -1580,5 +1613,4 @@ end
 function cloneEntity( src, ensureComponentOrder )
 	return _cloneEntity( src, true, true, nil, ensureComponentOrder )
 end
-
 
