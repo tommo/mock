@@ -100,10 +100,7 @@ function ScenePortalRegistry:reload()
 		info.scene    = itemData[ 'scene' ]
 		info.data     = itemData[ 'data' ]
 		info.priority = itemData[ 'priority' ] or 0
-		local info0 = portals[ key ]
-		if info.priority > info.priority then
-			portals[ key ] = info
-		end
+		portals[ key ] = info
 	end
 	self.portals = portals
 end
