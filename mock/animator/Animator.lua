@@ -132,6 +132,10 @@ function Animator:getActiveState()
 	return self.activeState
 end
 
+function Animator:loopClip( clipName )
+	return self:playClip( clipName, MOAITimer.LOOP )
+end
+
 function Animator:playClip( clipName, mode )
 	local state = self:loadClip( clipName )
 	if state then	

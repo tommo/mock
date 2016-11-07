@@ -301,6 +301,7 @@ function SceneSerializer:collectGroup( group, objMap )
 	for e in pairs( group.entities ) do
 		table.insert( entityIds, objMap:map( e ) )
 	end
+	table.sort( entityIds )
 
 	return {
 		id = objMap:map( group ),
@@ -365,7 +366,7 @@ function SceneSerializer:postSerialize( scene, data, objMap, keepProto )
 			end
 		end
 		table.sort( protos, idSortFunc )
-		data.protos = protos
+		data['protos'] = protos
 	end
 	
 	--dependency
@@ -649,7 +650,7 @@ function SceneDeserializer:postDeserializeScene( scene, data, objMap )
 
 	if data['protos'] then
 		for i, info in ipairs( data['protos'] ) do
-			id = info.id
+			local id = info.id
 			local obj = objMap[ id ][ 1 ]
 			obj.FLAG_PROTO_SOURCE = true
 			obj.PROTO_TIMESTAMP = info.timestamp
