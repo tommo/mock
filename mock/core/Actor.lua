@@ -291,7 +291,7 @@ function Actor:_createCoroutine( defaultParent, func, obj, ... )
 	--TODO: use pool
 	local coro = newCoroutine()
 
-	if defaultParent then coro:setDefaultParent() end
+	if defaultParent then coro:setDefaultParent( true ) end
 	local tt = type( func )
 	if tt == 'string' then --method name
 		local _func = obj[ func ]
