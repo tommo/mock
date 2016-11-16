@@ -54,6 +54,10 @@ function SQNodeAnimator:enter( state, env )
 		animator:stop()
 		return false
 
+	elseif cmd == 'pause' then
+		animator:pause( paused )
+		return false
+
 	elseif cmd == 'resume' then
 		local state = animator:getActiveState()
 		if not state then
@@ -143,11 +147,12 @@ function SQNodeAnimator:load( data )
 		self.argClipName = args[2] or false
 		self.argDuration = tonumber( args[3] ) or 0
 		self.argMode = NameToAnimMode[ 'loop' ]
-		self.blocking = false 
+		self.blocking = false
 
 	elseif cmd == 'stop' then
 		--no args
 	elseif cmd == 'pause' then
+		--self.argPause = paused
 		--no args
 	elseif cmd == 'resume' then
 		--no args

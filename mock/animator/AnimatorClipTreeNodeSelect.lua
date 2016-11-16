@@ -95,7 +95,7 @@ end
 local function parseConditionPart( part )
 	local part = part:trim()
 	if tonumber( part ) then
-		return string.format( 'v==%s', part )
+		return string.format( '( v==%s or v==%q )', part, part )
 	elseif part == 'true' then
 		return string.format( 'v==true' )
 	elseif part == 'false' then
