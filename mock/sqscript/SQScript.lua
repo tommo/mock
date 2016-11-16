@@ -308,15 +308,15 @@ end
 
 function SQNode:_log( ... )
 	local prefix = self:getPosText()
-	print( string.format( '%s\t> %s', prefix, ... ) )
+	print( string.format( '%s\t> %s', prefix ), ... )
 end
 
 function SQNode:_warn( ... )
-	return print( '[WARN:sq]%s\t>', self:getPosText(), ... )
+	return print( string.format( '[WARN:sq]%s\t>', self:getPosText() ), ... )
 end
 
 function SQNode:_error( ... )
-	return print( '[ERROR:sq]%s\t>', self:getPosText(), ... )
+	return print( string.format( '[ERROR:sq]%s\t>', self:getPosText() ), ... )
 end
 
 --------------------------------------------------------------------

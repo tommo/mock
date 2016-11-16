@@ -29,15 +29,13 @@ local function _collectAssetFromEntity( ent, collected, collector )
 	for com in pairs( ent.components ) do
 		_collectAssetFromObject( com, collected, collector )
 	end
+	for child in pairs( ent.children ) do
+		_collectAssetFromEntity( child, collected, collector )
+	end
 end
 
 
 --------------------------------------------------------------------
-local function _dependencyCollector( obj, field, value, collected )
-	local meta = field.__meta
-	collected[ value ] = meta and meta[ 'preload' ] and 'preload' or 'dep'
-end
-
 function collectAssetFromObject( obj, collected, collector )
 	collected = collected or {}
 	_collectAssetFromObject( obj, collected, collector or _defaultCollector )
@@ -50,10 +48,45 @@ function collectAssetFromEntity( ent, collected, collector )
 	return collected
 end
 
-function collectSceneAssetDependency( scn )
-	local collected = {}
-	for ent in pairs( scn.entities ) do
-		_collectAssetFromEntity( ent, collected, _dependencyCollector )
+function collectAssetFromGroup( group, collected, collector )
+	collected = collected or {}
+	collector = collector or _defaultCollector
+	for ent in pairs( group.entities ) do
+		_collectAssetFromEntity( ent, collected, collector )
+	end
+	for childGroup in pairs( group.childGroups ) do
+		collectAssetFromGroup( childGroup, collected, collector )
 	end
 	return collected
+end
+
+function collectAssetFromScene( scn, collected, collector )
+	collected = collected or {}
+	collector = collector or _defaultCollector
+	for ent in pairs( scn.entities ) do
+		if not ent.parent then
+			_collectAssetFromEntity( ent, collected, collector )
+		end
+	end
+	return collected
+end
+
+
+--------------------------------------------------------------------
+local function _dependencyCollector( obj, field, value, collected )
+	local meta = field.__meta
+	local preloadMeta = meta and meta[ 'preload' ]
+	local v0 = collected[ value ]
+	local v1 = preloadMeta and 'preload' or 'dep'
+	if v1 == v0 then return end
+	if v0 == 'preload' then
+		--do nothing
+	else
+		collected[ value ] = v1
+	end
+end
+
+
+function collectGroupAssetDependency( group, collected )
+	return collectAssetFromGroup( group, collected, _dependencyCollector )
 end

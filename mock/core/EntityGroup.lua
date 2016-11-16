@@ -3,26 +3,35 @@ module 'mock'
 local ATTR_LOCAL_VISIBLE= MOAIProp. ATTR_LOCAL_VISIBLE
 local ATTR_VISIBLE      = MOAIProp. ATTR_VISIBLE
 local INHERIT_VISIBLE   = MOAIProp. INHERIT_VISIBLE
+local INHERIT_COLOR     = MOAIProp. INHERIT_COLOR
+local COLOR_TRAIT       = MOAIProp. COLOR_TRAIT 
 
 CLASS: EntityGroup ()
 	:MODEL{
 		-- Field '__guid': string() :no_edit();
 		-- Field '_editLocked' :boolean() :no_edit();
 		Field 'name': string() :getset( 'Name' ) ;
-		Field 'visible' :boolean() :get( 'isLocalVisible' ) :set( 'setVisible');
+		Field 'visible' :boolean() :get( 'isLocalVisible' ) :set( 'setVisible' );
 	}
 
 function EntityGroup:__init()
 	-- self.__guid = false
-	self._prop = MOAIProp.new() --only control visiblity
-	self._priority = 0
+	self._prop       = MOAIProp.new() --only control visiblity
+	self._priority   = 0
 	self._editLocked = false
 	self.scene  = false
 	self.parent = false
 	self.childGroups = {}
-	self.entities     = {}
+	self.entities    = {}
 	self.name = 'EntityGroup'
 	self.icon = false
+	
+	self._isRoot    = false
+	self._isDefault = false
+end
+
+function EntityGroup:isRootGroup()
+	return self._isRoot
 end
 
 function EntityGroup:forceUpdate()
@@ -35,7 +44,6 @@ end
 function EntityGroup:setName( name )
 	self.name = name
 end
-
 
 function EntityGroup:isVisible()
 	return self._prop:getAttr( MOAIProp.ATTR_VISIBLE ) == 1
@@ -64,6 +72,14 @@ function EntityGroup:setVisible( visible )
 	self._prop:setVisible( visible )
 end
 
+function EntityGroup:setEditOpacity( opa )
+	if opa then
+		self._prop:setColor( 1,1,1,1 )
+	else
+		self._prop:setColor( .3,.3,.3, 1 )
+	end
+end
+
 function EntityGroup:getName()
 	return self.name
 end
@@ -72,7 +88,7 @@ function EntityGroup:getFullName()
 	if not self.name then return false end
 	local output = self.name
 	local n = self.parent
-	while n and not n.isRoot do
+	while n and not n:isRootGroup() do
 		output = (n.name or '<noname>')..'/'..output
 		n = n.parent
 	end
@@ -84,7 +100,10 @@ function EntityGroup:getIcon()
 end
 
 function EntityGroup:addEntity( e )
-	e:getProp( 'physics' ):setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
+	if not e.FLAG_EDITOR_OBJECT then
+		e:getProp( 'physics' ):setAttrLink( INHERIT_COLOR, self._prop, COLOR_TRAIT )
+		e:getProp( 'physics' ):setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
+	end
 	e._entityGroup = self
 	self.entities[ e ] = true
 	assert( not e.parent )
@@ -92,6 +111,7 @@ function EntityGroup:addEntity( e )
 end
 
 function EntityGroup:removeEntity( e )
+	e:getProp( 'physics' ):clearAttrLink( INHERIT_COLOR )
 	e:getProp( 'physics' ):clearAttrLink( INHERIT_VISIBLE )
 	e._entityGroup = false
 	self.entities[ e ] = nil
@@ -100,6 +120,7 @@ end
 function EntityGroup:addChildGroup( g )
 	g.parent = self
 	g.scene  = self.scene
+	g._prop:setAttrLink( INHERIT_COLOR, self._prop, COLOR_TRAIT )
 	g._prop:setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
 	self.childGroups[ g ] = true
 	local entityListener = self.scene.entityListener
@@ -109,7 +130,8 @@ end
 
 function EntityGroup:removeChildGroup( g )
 	if g.parent == self then
-		g._prop:setAttrLink( INHERIT_VISIBLE, self._prop, ATTR_VISIBLE )
+		g._prop:clearAttrLink( INHERIT_COLOR )
+		g._prop:clearAttrLink( INHERIT_VISIBLE )
 		self.childGroups[ g ] = nil
 		local entityListener = self.scene.entityListener
 		if entityListener then entityListener( 'remove_group', g, self.scene ) end
@@ -163,11 +185,15 @@ function EntityGroup:destroyWithChildrenNow()
 	for childGroup in pairs( self.childGroups ) do
 		childGroup:destroyWithChildrenNow()
 	end
-	self.parent:removeChildGroup( self )
+	if self.parent then
+		self.parent:removeChildGroup( self )
+	end
 	for e in pairs( self.entities ) do
 		e:destroyWithChildrenNow()
 	end
 	self.entities = {}
 end
 
-
+function EntityGroup:getScene()
+	return self.scene
+end

@@ -38,7 +38,6 @@ function Scene:__init( option )
 	self.pendingDetach   = {}
 
 	self.updateListeners = {}
-	self.metaData        = {} 
 
 	self.defaultCamera   = false
 	self.option          = option
@@ -51,9 +50,9 @@ function Scene:__init( option )
 
 	self.config          = {}
 
-	self.rootGroup       = EntityGroup()
-	self.rootGroup.isRoot = true
-	self.rootGroup.scene = self
+	self.rootGroups      = {}
+	self.defaultRootGroup = self:addRootGroup( 'default' )
+	self.defaultRootGroup._isDefault = true
 
 	self.managers  = {}
 	self.comment   = ""
@@ -65,6 +64,65 @@ function Scene:__init( option )
 	self.debugPropPartition = MOAIPartition.new()
 	return self
 end
+
+function Scene:addRootGroup( name )
+	local group = EntityGroup()
+	group._isRoot = true
+	group.scene = self
+	group.name  = name
+	table.insert( self.rootGroups, group )
+	return group
+end
+
+function Scene:setDefaultRootGroup( group )
+	if not group then
+		for i, g in ipairs( self.rootGroups ) do
+			if g._isDefault then
+				group = g
+				break
+			end
+		end
+	end
+	if self.defaultRootGroup == group then return false end
+	if group.scene == self then
+		self.defaultRootGroup = group
+		return true
+	end
+	return false
+end
+
+function Scene:updateSolo( soloVis, soloOpacity, soloEdit )
+	local group = self:getDefaultRootGroup()
+	for i, g in ipairs( self.rootGroups ) do
+		local isDefault = g == group
+		local lock = false
+		if soloEdit then
+			lock = not isDefault
+		end
+		g:setEditLocked( lock )
+		local vis = true
+		if soloVis then
+			vis = isDefault
+		end
+		g:setVisible( vis )
+		local opa = true
+		if soloOpacity then
+			opa = isDefault
+		end
+		g:setEditOpacity( opa )
+	end
+end
+
+function Scene:removeRootGroup( group )
+	local idx = table.index( self.rootGroups, group )
+	if idx then
+		group:destroyWithChildrenNow()
+		table.remove( self.rootGroups, idx )
+		return true
+	end
+	return false
+end
+
 
 function Scene:isMainScene()
 	return self.main
@@ -394,15 +452,6 @@ function Scene:getArgument( id, default )
 	return v
 end
 
-function Scene:setMetaData( key, data )
-	self.metaData[ key ] = data
-end
-
-function Scene:getMetaData( key, default )
-	local v = self.metaData[ key ]
-	if v == nil then return default end
-	return v
-end
 
 --------------------------------------------------------------------
 --Action control
@@ -620,8 +669,8 @@ end
 
 function Scene:addEntity( entity, layer, group )
 	assert( entity )
-	layer = layer or entity.layer or self.defaultLayer
 	
+	layer = layer or entity.layer or self.defaultLayer
 	if type(layer) == 'string' then 
 		local layerName = layer
 		layer = self:getLayer( layerName )
@@ -630,8 +679,9 @@ function Scene:addEntity( entity, layer, group )
 			layer = self.defaultLayer
 		end 
 	end
+
 	assert( layer )
-	group = group or entity._entityGroup or self.rootGroup
+	group = group or entity._entityGroup or self:getRootGroup()
 	group:addEntity( entity )
 	entity:_insertIntoScene( self, layer )
 
@@ -689,22 +739,12 @@ local function collectEntityGroup( group, collection )
 end
 
 
-function Scene:collectEntities( typeId )
-	local collection = {}	
-	typeId = typeId or Entity
-	for e in pairs( self.entities ) do
-		collectEntity( e, typeId, collection )
-	end
-	return table.keys( collection )
-end
-
-
 function Scene:collectEntityGroups()
 	local collection = {}	
-	for g in pairs( self:getRootGroup().childGroups ) do
-		collectEntityGroup( g, collection )
+	for i, group in ipairs( self.rootGroups ) do
+		collectEntityGroup( group, collection )
 	end
-	return table.keys( collection )
+	return collection
 end
 
 
@@ -713,7 +753,7 @@ function Scene:collectComponents( typeId )
 	for e in pairs( self.entities ) do
 		collectComponent( e, typeId, collection )
 	end
-	return table.keys( collection )
+	return collection
 end
 
 
@@ -757,9 +797,10 @@ function Scene:clear( keepEditorEntity )
 	self.entitiesByName  = {}
 	self.pendingStart    = {}
 
-	self.rootGroup       = EntityGroup()
-	self.rootGroup.scene = self
-	self.rootGroup.isRoot = true
+	self.rootGroups      = {}
+	
+	self.defaultRootGroup = self:addRootGroup( 'default' )
+	self.defaultRootGroup._isDefault = true
 
 	self.defaultCamera   = false
 	self.entityListener = entityListener
@@ -780,22 +821,36 @@ function Scene:destroy()
 	self:clear()
 end
 
-function Scene:getRootGroup()
-	return self.rootGroup
-end
-
-local function _collectEntityGroups( parentGroup, collected )
-	for group in pairs( parentGroup.childGroups ) do
-		collected[ group ] = true
-		_collectEntityGroups( group, collected )
+function Scene:getRootGroup( name )
+	if name then
+		for i, group in ipairs( self.rootGroups ) do
+			if group.name == name then return group end
+		end
+		return nil
+	else
+		return self.defaultRootGroup
 	end
-	return collected
 end
 
-function Scene:collectEntityGroups()
-	local groups = _collectEntityGroups( self.rootGroup, {} )
-	return groups
+function Scene:getDefaultRootGroup()
+	return self.defaultRootGroup
 end
+
+function Scene:getRootGroups()
+	return self.rootGroups
+end
+
+function Scene:renameGroup( group, name )
+	local name0 = group.name
+	local group0 = self.rootGroups[ name0 ]
+	if group0 == group then
+		self.rootGroups[ name0 ] = nil
+		self.rootgroups[ name ] = group
+		return true
+	end
+	return false
+end
+
 
 
 Scene.add = Scene.addEntity

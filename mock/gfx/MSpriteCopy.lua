@@ -15,6 +15,7 @@ CLASS: MSpriteCopy ( mock.GraphicsPropComponent )
 registerComponent( 'MSpriteCopy', MSpriteCopy )
 
 function MSpriteCopy:__init()
+	self.hiddenFeatures = {}
 	self.sourceSprite = false
 	self.linked = false
 	self.flipX = false

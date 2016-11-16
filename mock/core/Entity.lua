@@ -37,7 +37,7 @@ CLASS: Entity ( Actor )
 		-- Field 'active'    :boolean() :get('isLocalActive')  :set('setActive');		
 		Field 'layer'     :type('layer')  :getset( 'Layer' ) :no_nil();
 		'----';
-		Field 'color'    :type('color')  :getset('Color') ;
+		Field 'color'     :type('color')  :getset('Color') ;
 		'----';
 		Field 'loc'       :type('vec3') :getset('Loc') :label('Loc'); 
 		Field 'rot'       :type('vec3') :getset('Rot') :label('Rot');
@@ -892,7 +892,7 @@ function Entity:getFullName()
 		n0 = n
 		n = n0.parent
 	end
-	if n0._entityGroup and not n0._entityGroup.isRoot then
+	if n0._entityGroup and not n0._entityGroup:isRootGroup() then
 		local groupName = n0._entityGroup:getFullName()
 		return groupName..'::'..output
 	end

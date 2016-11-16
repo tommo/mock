@@ -1,6 +1,16 @@
 module 'mock'
 
+
+
+local tinsert  = table.insert
+local tremove  = table.remove
+local tsort    = table.sort
+
+local isInstance = isInstance
+
 _SERIALIZER_VERSION = '2'
+_SCENE_INDEX_NAME = 'scene_index.json'
+_SCENE_GROUP_EXTENSION = '.scene_group'
 
 registerGlobalSignals{
 	'scene.pre_serialize',
@@ -8,6 +18,7 @@ registerGlobalSignals{
 	'scene.post_serialize',
 	'scene.post_deserialize',
 }
+
 --------------------------------------------------------------------
 local function _printEntityId( ent, i )
 	i = i or 0
@@ -31,7 +42,12 @@ printEntityId = _printEntityId
 
 --------------------------------------------------------------------
 local function entitySortFunc( a, b )
-	return  a._priority < b._priority
+	local p0 = a._priority
+	local p1 = b._priority
+	if p0 == p1 then
+		return a.__guid < b.__guid
+	end
+	return p0 < p1
 end
 
 local function componentSortFunc( a, b )
@@ -42,12 +58,16 @@ local function idSortFunc( a, b )
 	return ( a.id or '') < ( b.id or '' )
 end
 
-local makeId     = makeNameSpacedId
+
+local function guidSortFunc( a, b )
+	return ( a.__guid or '') < ( b.__guid or '' )
+end
+
+local makeId   = makeNameSpacedId
 
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 CLASS: SceneSerializer ()
-
 
 local function collectOverrideObjectData( objMap, obj, collected, collectedExtra )
 	local fields = obj.__overrided_fields
@@ -56,23 +76,22 @@ local function collectOverrideObjectData( objMap, obj, collected, collectedExtra
 	local fieldList = {}
 	if fields and next( fields ) then
 		for k in pairs( fields ) do
-			table.insert( fieldList, k )
+			tinsert( fieldList, k )
 		end
 	end
 
 	local partialData = _serializeObject( obj, objMap, true, fieldList )
-	local body = partialData.body
+	local body = partialData['body']
 	if fields and next( fields ) then
 		for i, k in ipairs( fieldList ) do
 			if body[k] == nil then body[k] = false end --null reference
 		end
-		collected[ id ] = partialData.body
+		collected[ id ] = partialData['body']
 	end
-	local extraData = partialData.extra
+	local extraData = partialData['extra']
 	if extraData ~= nil then
 		collectedExtra[ id ] = extraData
 	end
-
 end
 
 local function collectOverrideEntityData( objMap, entity, collected, collectedExtra )
@@ -92,7 +111,6 @@ local function collectOverrideEntityData( objMap, entity, collected, collectedEx
 	end
 end
 
-
 function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, namespace, modification, protoInfo )
 	
 	local deleted   = modification.deleted
@@ -111,7 +129,7 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 			local guid = objMap:map( com )
 			local c = comIds[ guid ]
 			if c == nil then --new component
-				table.insert( newComponents, guid )
+				tinsert( newComponents, guid )
 			else
 				c[ 1 ] = true
 				objMap:makeInternal( com )
@@ -129,10 +147,10 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 
 	local childrenList = {}
 	for e in pairs( entity.children ) do
-		table.insert( childrenList, e )
+		tinsert( childrenList, e )
 	end
 	
-	table.sort( childrenList, entitySortFunc )
+	tsort( childrenList, entitySortFunc )
 	
 	for i, child in ipairs( childrenList ) do
 		if not ( child.FLAG_INTERNAL or child.FLAG_EDITOR_OBJECT ) then
@@ -141,7 +159,7 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 			if c == nil then
 				--new object
 				local data = self:collectEntityWithProto( child, objMap, protoInfo )
-				if data then table.insert( newChildren, data ) end
+				if data then tinsert( newChildren, data ) end
 			else
 				--sub object
 				c[1] = true
@@ -155,13 +173,13 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 	--deleted
 	for id, result in pairs( comIds ) do
 		if not result[1] then
-			table.insert( deleted, id )
+			tinsert( deleted, id )
 		end
 	end
 
 	for id, result in pairs( childrenIds ) do
 		if not result[1] then			
-			table.insert( deleted, id )
+			tinsert( deleted, id )
 		end
 	end
 
@@ -176,9 +194,7 @@ function SceneSerializer:_collecteProtoEntity( entity, objMap, protoEntry, names
 	if next( localAdded ) then
 		added[ entity.__guid ] = localAdded
 	end
-
 end
-
 
 function SceneSerializer:collectEntityWithProto( entity, objMap, protoInfo )
 	if entity.FLAG_INTERNAL or entity.FLAG_EDITOR_OBJECT then return end
@@ -202,7 +218,7 @@ function SceneSerializer:collectEntityWithProto( entity, objMap, protoInfo )
 			proto = protoPath,
 			modification = localModification
 		}
-		local protoEntry = protoData.entities[1]
+		local protoEntry = protoData[ 'entities' ][1]
 		local namespace = entity.__guid
 		self:_collecteProtoEntity( entity, objMap, protoEntry, namespace, localModification, protoInfo )
 
@@ -219,7 +235,7 @@ function SceneSerializer:collectEntityWithProto( entity, objMap, protoInfo )
 
 	for i, com in ipairs( entity:getSortedComponentList() ) do
 		if not com.FLAG_INTERNAL then
-			table.insert( components, objMap:map( com ) )
+			tinsert( components, objMap:map( com ) )
 		end
 	end
 
@@ -230,12 +246,12 @@ function SceneSerializer:collectEntityWithProto( entity, objMap, protoInfo )
 		i = i + 1
 	end
 	
-	table.sort( childrenList, entitySortFunc )
+	tsort( childrenList, entitySortFunc )
 	
 	for i, child in ipairs( childrenList ) do
 		local childData = self:collectEntityWithProto( child, objMap, protoInfo )
 		if childData then
-			table.insert( children, childData )
+			tinsert( children, childData )
 		end
 	end
 
@@ -254,7 +270,7 @@ function SceneSerializer:collectEntity( entity, objMap )
 
 	for i, com in ipairs( entity:getSortedComponentList() ) do
 		if not com.FLAG_INTERNAL then
-			table.insert( components, objMap:map( com ) )
+			tinsert( components, objMap:map( com ) )
 		end
 	end
 
@@ -265,12 +281,12 @@ function SceneSerializer:collectEntity( entity, objMap )
 		i = i + 1
 	end
 	
-	table.sort( childrenList, entitySortFunc )
+	tsort( childrenList, entitySortFunc )
 	
 	for i, child in ipairs( childrenList ) do
 		local childData = self:collectEntity( child, objMap, keepProto )
 		if childData then
-			table.insert( children, childData )
+			tinsert( children, childData )
 		end
 	end
 
@@ -282,95 +298,37 @@ function SceneSerializer:collectEntity( entity, objMap )
 	}
 end
 
-function SceneSerializer:serializeGroups( scene, objMap )
-	local output = {}
-	for childGroup in pairs( scene:getRootGroup().childGroups ) do
-		local data = self:collectGroup( childGroup, objMap )
-		table.insert( output, data )
-	end
-	return output
-end
 
-function SceneSerializer:collectGroup( group, objMap )
+local function collectGroup( group, entityList, objMap )
 	local childGroupDatas = {}
 	local entityIds = {}
-	for childGroup in pairs( group.childGroups ) do
-		table.insert( childGroupDatas, self:collectGroup( childGroup, objMap ) )
+	
+	for childGroup in pairs( group.childGroups) do
+		local childGroupData = collectGroup( childGroup, entityList, objMap )
+		tinsert( childGroupDatas, childGroupData )
 	end
 
 	for e in pairs( group.entities ) do
-		table.insert( entityIds, objMap:map( e ) )
-	end
-	table.sort( entityIds )
-
-	return {
-		id = objMap:map( group ),
-		children = childGroupDatas,
-		entities = entityIds
-	}
-
-end
-
-function SceneSerializer:serializeScene( scene, keepProto )
-	emitSignal( 'scene.pre_serialize', scene )
-	--make proto data
-	local output = { _assetType  = 'scene' }
-	local objMap = SerializeObjectMap()
-	self:preSerializeScene( scene, output, keepProto )
-
-	--groups
-	output.groups = self:serializeGroups( scene, objMap )
-	
-	local entityList = {}
-	--scan top level entity
-	for e in pairs( scene.entities ) do
-		if not e.parent then 
-			table.insert( entityList, e )
+		if not ( e.FLAG_INTERNAL or e.FLAG_EDITOR_OBJECT ) then
+			tinsert( entityIds, objMap:map( e ) )
+			tinsert( entityList, e )
 		end
 	end
-	table.sort( entityList, entitySortFunc )
 
-	self:serializeEntities( entityList, output, objMap, scene, keepProto )
-
-	output.meta   = scene.metaData or {}
-
-	self:postSerialize( scene, output, objMap, keepProto )
-	emitSignal( 'scene.post_serialize', scene, output, objMap, keepProto )
-	output.config = scene:serializeConfig()
-
-	output.__VERSION = _SERIALIZER_VERSION
-	return output
+	tsort( childGroupDatas, idSortFunc )
+	tsort( entityIds )
+	return {
+		id       = objMap:map( group ),
+		children = childGroupDatas,
+		entities = entityIds,
+		root     = group._isRoot
+	}
 end
 
 function SceneSerializer:preSerializeScene( scene, data, keepProto )
 end
 
-function SceneSerializer:postSerialize( scene, data, objMap, keepProto )
-	--prefab
-	local prefabIdMap = {}
-	for obj, id in pairs( objMap.objects ) do
-		local prefabId = obj.__prefabId
-		if prefabId then
-			prefabIdMap[ id ] = prefabId
-		end
-	end
-	data.prefabId    = prefabIdMap
-	
-	--proto
-	if keepProto then
-		local protos = {}
-		for obj, id in pairs( objMap.objects ) do
-			if obj.FLAG_PROTO_SOURCE then
-				local info = self:_serializeProto( obj, id )
-				table.insert( protos, info )
-			end
-		end
-		table.sort( protos, idSortFunc )
-		data['protos'] = protos
-	end
-	
-	--dependency
-	data.asset_dependency = collectSceneAssetDependency( scene )
+function SceneSerializer:postSerializeScene( scene, data, objMap, keepProto )	
 end
 
 function SceneSerializer:_serializeProto( ent, id )
@@ -387,7 +345,27 @@ function SceneSerializer:_serializeProto( ent, id )
 	return info
 end
 
-function SceneSerializer:serializeEntities( entityList, output, objMap, scene, keepProto )
+function SceneSerializer:_flushObjectMap( objMap )
+	local map = {}
+	--first pass
+	local newObjects = objMap:flush()
+	for obj, id in pairs( newObjects ) do
+		map[ id ] = _serializeObject( obj, objMap )			
+	end
+	--dep member pass
+	while true do
+		local newObjects = objMap:flush()
+		if not next( newObjects ) then break end
+		for obj, id in pairs( newObjects ) do
+			if id:startwith( '!' ) then --guid
+				map[ id ] = _serializeObject( obj, objMap )
+			end
+		end
+	end
+	return map
+end
+
+function SceneSerializer:serializeEntities( entityList, output, objMap, keepProto )
 	output = output or {}
 	objMap = objMap or SerializeObjectMap()
 
@@ -402,17 +380,11 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 		local protoInfo = {}
 		for i, e in ipairs( entityList ) do
 			local data = self:collectEntityWithProto( e, objMap, protoInfo )
-			if data then table.insert( entityDatas, data ) end
+			if data then tinsert( entityDatas, data ) end
 		end
 
 		--data
-		while true do
-			local newObjects = objMap:flush()
-			if not next( newObjects ) then break end
-			for obj, id in pairs( newObjects )  do
-				map[ id ] = _serializeObject( obj, objMap )			
-			end
-		end
+		map = self:_flushObjectMap( objMap )
 
 		--proto structure altering
 		for id, info in pairs( protoInfo ) do
@@ -449,17 +421,11 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 		--collect entity	
 		for i, e in ipairs( entityList ) do
 			local data = self:collectEntity( e, objMap )
-			if data then table.insert( entityDatas, data ) end
+			if data then tinsert( entityDatas, data ) end
 		end
 
 		--build data
-		while true do
-			local newObjects = objMap:flush()
-			if not next( newObjects ) then break end
-			for obj, id in pairs( newObjects )  do
-				map[ id ] = _serializeObject( obj, objMap )
-			end
-		end
+		map = self:_flushObjectMap( objMap )
 
 	end
 	
@@ -483,10 +449,149 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, scene, k
 end
 
 function SceneSerializer:serializeSingleEntity( entity, keepProto )
-	local output, objMap = self:serializeEntities( {entity}, nil, nil, nil, keepProto )	
-
-	output.__VERSION = _SERIALIZER_VERSION
+	local output, objMap = self:serializeEntities( {entity}, nil, nil, keepProto )	
+	output['__VERSION'] = _SERIALIZER_VERSION
 	return output, objMap
+end
+
+function SceneSerializer:serializeScene( scene, keepProto )
+	local output = {}
+	local indexData = { _assetType = 'scene' }
+	--pre
+	emitSignal( 'scene.pre_serialize', scene )
+	self:preSerializeScene( scene, indexData, keepProto )
+
+	--groups
+	local rootGroupDataList = {}
+	for i, group in ipairs( scene:getRootGroups() ) do
+		local groupData, objMap = self:serializeRootGroup( group, keepProto )
+		local name = group.name
+		rootGroupDataList[ name ] = groupData
+	end
+	
+	--post
+	emitSignal( 'scene.post_serialize', scene )
+	self:postSerializeScene( scene, indexData, keepProto )
+
+	indexData['config'] = scene:serializeConfig()
+	indexData['__VERSION'] = _SERIALIZER_VERSION
+
+	output['index'] = indexData
+	output['roots'] = rootGroupDataList
+	return output
+end
+
+function SceneSerializer:serializeRootGroup( rootGroup, keepProto )
+	local output = {}
+	local objMap = SerializeObjectMap()
+	local layers = game:getLayers()
+	for i, layer in ipairs( layers ) do
+		objMap:map( layer.name )
+	end
+	output['name']   = rootGroup.name
+	output['default'] = rootGroup._isDefault or false
+
+	local entityList = {}
+	output[ 'groups' ] = {
+		collectGroup( rootGroup, entityList, objMap )
+	}
+	tsort( entityList, entitySortFunc )
+	self:serializeEntities( entityList, output, objMap, keepProto )
+
+	--prefab
+	local prefabIdMap = {}
+	for obj, id in pairs( objMap.objects ) do
+		local prefabId = obj.__prefabId
+		if prefabId then
+			prefabIdMap[ id ] = prefabId
+		end
+	end
+	output['prefabId'] = prefabIdMap
+	
+	--proto
+	if keepProto then
+		local protos = {}
+		for obj, id in pairs( objMap.objects ) do
+			if obj.FLAG_PROTO_SOURCE then
+				local info = self:_serializeProto( obj, id )
+				tinsert( protos, info )
+			end
+		end
+		tsort( protos, idSortFunc )
+		output['protos'] = protos
+	end
+
+	output[ 'asset_dependency' ] = collectGroupAssetDependency( rootGroup )
+
+	return output, objMap
+end
+
+
+local function affirmPath( path )
+	MOAIFileSystem.affirmPath( path )
+	if MOAIFileSystem.checkPathExists( path ) then
+		return true
+	end
+	return false
+end
+
+local function writeJSON( data, path )
+	local str  = encodeJSON( data )
+	local file = io.open( path, 'wb' )
+	if file then
+		file:write( str )
+		file:close()
+	else
+		_error( 'can not write to scene file', path )
+		return false
+	end
+	return true
+end
+
+function SceneSerializer:serializeSceneToFile( scene, path, keepProto )
+	local data = self:serializeScene( scene, keepProto )
+	if not data then return false end
+
+	if MOAIFileSystem.checkFileExists( path ) then
+		--remove file
+		_stat( 'overwrite legacy scene file', path )
+		MOAIFileSystem.deleteFile( path )
+	end
+
+	if not affirmPath( path ) then
+		_error( 'can not create folder for saving scene', path )
+		return false
+	end
+
+	local indexData = data[ 'index' ]
+	local indexDataPath = path .. '/' .. _SCENE_INDEX_NAME
+	if not writeJSON( indexData, indexDataPath ) then
+		return false
+	end
+	--index
+	local groupListData = data[ 'roots' ]
+	for id, groupData in pairs( groupListData ) do
+		local fileName = id .. _SCENE_GROUP_EXTENSION
+		local groupDataPath = path .. '/' .. fileName
+		if not writeJSON( groupData, groupDataPath ) then
+			return false
+		end
+	end
+
+	return true
+
+	--####legacy
+	-- local data = self:serializeScene( scene, keepProto )
+	-- local str  = encodeJSON( data )
+	-- local file = io.open( path, 'wb' )
+	-- if file then
+	-- 	file:write( str )
+	-- 	file:close()
+	-- else
+	-- 	_error( 'can not write to scene file', path )
+	-- 	return false
+	-- end
+	-- return true
 end
 
 --------------------------------------------------------------------
@@ -494,6 +599,7 @@ end
 CLASS: SceneDeserializer ()
 
 function SceneDeserializer:__init()
+	self.currentRootGroup = false
 end
 
 function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
@@ -528,20 +634,33 @@ function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
 end
 
 function SceneDeserializer:deserializeGroup( scene, parentGroup, data, objMap )
-	local id = data[ 'id' ]
-	local group = objMap[ id ][ 1 ]
-	group.__guid = id
-	parentGroup:addChildGroup( group )
+	local root = data['root']
+	local id   = data[ 'id' ]
+	local group
+
+	if root then
+		group = self.currentRootGroup	
+	else
+		group = objMap[ id ][ 1 ]
+		parentGroup:addChildGroup( group )
+	end
+	
+	if not id:startwith( '!' ) then
+		group.__guid = id
+	end
+	
 	for _, entId in ipairs( data[ 'entities' ] ) do
 		ent = objMap[ entId ][ 1 ]
 		ent._entityGroup = group
 	end
+	
 	for _, childData in ipairs( data[ 'children' ] or {} ) do		
 		self:deserializeGroup( scene, group, childData, objMap )
 	end
+
 end
 
-function SceneDeserializer:deserializeScene( data, scene )
+function SceneDeserializer:deserializeLegacyScene( data, scene )
 	local objMap = {}
 	
 	if not scene then
@@ -554,8 +673,6 @@ function SceneDeserializer:deserializeScene( data, scene )
 
 	self:deserializeEntities( data, objMap, scene )
 	
-	scene.metaData = data['meta'] or {}
-
 	self:postDeserializeScene( scene, data, objMap )
 	emitSignal( 'scene.post_deserialize', scene, data, objMap )
 
@@ -564,28 +681,102 @@ function SceneDeserializer:deserializeScene( data, scene )
 	return scene
 end
 
-function SceneDeserializer:deserializeEntities( data, objMap, scene )
-	local map = data.map
+function SceneDeserializer:deserializeMultipleScene( data, scene )
+	if not scene then
+		scene = Scene()
+		scene:init()
+	end
+
+	local indexData = data[ 'index' ]
+	local refObjMap = {}
+
+	emitSignal( 'scene.pre_deserialize', scene, data, refObjMap )
+	self:preDeserializeScene( scene, data, refObjMap )
+
+	--roots
+	local rootGroupDataList = data[ 'roots' ]
+
+	--prepare objmap
+	local globalMap = {}
+	local indexMT = {
+			__index = globalMap
+		}
+	local groups = {}
+
+	for name, groupData in pairs( rootGroupDataList ) do
+		local default = groupData[ 'default' ]
+
+		local group = scene:getRootGroup( name )
+		if not group then
+			group = scene:addRootGroup( name )
+			if default then group._isDefault = default end
+		end
+
+		if default then
+			assert(
+				group._isDefault, 
+				'deserializing "default" group data into non default group: '.. group.name
+			)
+		end
+
+		local objMap = self:_prepareEntitiesObjMap( groupData, objMap )
+		for k, obj in pairs( objMap ) do
+			if not k:startwith( '!' ) then
+				globalMap[ k ] = obj
+			end
+		end
+		setmetatable( objMap, indexMT )
+		groups[ name ] = { groupData, group, objMap }
+	end
+
+	for name, entry in pairs( groups ) do
+		local groupData, group, objMap = unpack( entry )
+		self.currentRootGroup = group
+		self:_deserializeEntitiesData( groupData, objMap, scene )
+		self.currentRootGroup = false
+	end
+
+
+	self:postDeserializeScene( scene, data, globalMap )
+	emitSignal( 'scene.post_deserialize', scene, data, globalMap )
+
+	local configData = indexData['config'] or {}
+	scene:deserializeConfig( configData )
+
+	return scene
+end
+
+function SceneDeserializer:deserializeScene( data, scene )
+	local stype = data[ 'scene_type' ]
+	if stype == 'single' then --legacy
+		return self:deserializeLegacyScene( data, scene )
+	elseif stype == 'multiple' then
+		return self:deserializeMultipleScene( data, scene )
+	else
+		error( 'wtf?' )
+	end
+end
+
+function SceneDeserializer:_prepareEntitiesObjMap( data, objMap )
+	local map = data[ 'map' ]
 	objMap = objMap or {}
 	
 	-- pre-load proto instance
 	local protoInstances = {}
 	for id, objData in pairs( map ) do
 		if objData[ '__PROTO' ] then
-			table.insert( protoInstances, id )
+			tinsert( protoInstances, id )
 		end
 	end
 
 	mergeProtoDataList( data, protoInstances )
-	
-	local _, aliases = _deserializeObjectMap( map, objMap ) --ignore protoInstances
-	
-	--groups
-	local groupDatas = data[ 'groups' ] or {}
-	for i, gdata in ipairs( groupDatas ) do
-		self:deserializeGroup( scene, scene:getRootGroup(), gdata, objMap )
-	end
+	_prepareObjectMap( map, objMap )
+	return objMap
+end
 
+function SceneDeserializer:_deserializeEntitiesData( data, objMap, scene )
+	local map = data[ 'map' ]
+	_deserializeObjectMapData( objMap )
 	for id, objData in pairs( map ) do
 		local protoHistory = objData[ 'proto_history' ]
 		if protoHistory then
@@ -630,17 +821,21 @@ function SceneDeserializer:deserializeEntities( data, objMap, scene )
 		end
 	end
 
-	for i, edata in ipairs( data.entities ) do
+	--groups
+	if scene then
+		local groupDatas = data[ 'groups' ] or {}
+		local rootGroup = self.currentRootGroup or scene:getRootGroup()
+		for i, gdata in ipairs( groupDatas ) do
+			self:deserializeGroup( scene, rootGroup, gdata, objMap )
+		end
+	end
+
+	--insetEntity
+	for i, edata in ipairs( data[ 'entities' ] ) do
 		self:insertEntity( scene, nil, edata, objMap )
 	end
 
-	return objMap
-end
-
-function SceneDeserializer:preDeserializeScene( scene, data, objMap )
-end
-
-function SceneDeserializer:postDeserializeScene( scene, data, objMap )
+	--deserialize proto/prefab linkage
 	if data['prefabId'] then
 		for id, prefabId in pairs( data['prefabId'] ) do
 			local obj = objMap[ id ][ 1 ]
@@ -658,51 +853,46 @@ function SceneDeserializer:postDeserializeScene( scene, data, objMap )
 	end
 end
 
+function SceneDeserializer:deserializeEntities( data, objMap, scene )
+	local objMap = self:_prepareEntitiesObjMap( data, objMap )
+	self:_deserializeEntitiesData( data, objMap, scene )
+	return objMap
+end
+
+function SceneDeserializer:preDeserializeScene( scene, data, objMap )
+end
+
+function SceneDeserializer:postDeserializeScene( scene, data, objMap )
+end
+
 function SceneDeserializer:deserializeSingleEntity( data, option )
 	local objMap = self:deserializeEntities( data, nil, nil )
-	local rootId = data.entities[1]['id']
+	local rootId = data[ 'entities'] [1] ['id']
 	local rootEntry = objMap[ rootId ]
 	return rootEntry[ 1 ], objMap
 end
 
+
+
 --------------------------------------------------------------------
 --API
 --------------------------------------------------------------------
-local _sceneSerializer = SceneSerializer()
-local _sceneDeserializer = SceneDeserializer()
-
-function setSceneSerializer( serializer, deserializer )
-	_sceneSerializer = serializer or _sceneSerializer
-	_sceneDeserializer = deserializer or _sceneDeserializer
-end
---------------------------------------------------------------------
-
 function serializeScene( scene, keepProto )
-	return _sceneSerializer:serializeScene( scene, keepProto )
+	return SceneSerializer():serializeScene( scene, keepProto )
 end
 
 function deserializeScene( data, scene )
-	return _sceneDeserializer:deserializeScene( data, scene )	
+	return SceneDeserializer():deserializeScene( data, scene )	
 end
 
 function serializeSceneToFile( scene, path, keepProto )
-	local data = serializeScene( scene, keepProto )
-	local str  = encodeJSON( data )
-	local file = io.open( path, 'wb' )
-	if file then
-		file:write( str )
-		file:close()
-	else
-		_error( 'can not write to scene file', path )
-		return false
-	end
-	return true
+	return SceneSerializer():serializeSceneToFile( scene, path, keepProto )
 end
 
 --------------------------------------------------------------------
 function makeEntityCopyData( ent )
 	local data, objMap = serializeEntity( ent, 'keepProto' )
-	local rootId = data.entities[1]['id']
+	local rootId = data['entities'][1]['id']
 	local newGuids = {}
 	local objects = objMap.objects
 	for obj, id in pairs( objects ) do
@@ -710,7 +900,7 @@ function makeEntityCopyData( ent )
 			newGuids[ id ] = id
 		end
 	end
-	data.guid = newGuids
+	data['guid'] = newGuids
 	return {
 		guid = newGuids,
 		data = encodeJSON( data ),
@@ -754,38 +944,68 @@ end
 
 --------------------------------------------------------------------
 function serializeEntity( ent, keepProto )
-	local data, objMap = _sceneSerializer:serializeSingleEntity( ent, keepProto )
+	local data, objMap = SceneSerializer():serializeSingleEntity( ent, keepProto )
 	return data, objMap
 end
 
 function deserializeEntity( data )
-	return _sceneDeserializer:deserializeSingleEntity( data )
-end
-
---------------------------------------------------------------------
-function loadSceneData( path )
-	local node = getAssetNode( path )
-	local data = node.cached.data
-	if not data then
-		local path = node:getObjectFile( 'def' )
-		data = loadAssetDataTable( path )
-		if not game.editorMode then --cache scene data
-			node.cached.data = data
-		end
-	end
-	return data
+	return SceneDeserializer():deserializeSingleEntity( data )
 end
 
 
 -------------------------------------------------------------------
 --Loader
 ---------------------------------------------------------------------
+function loadSceneDataFromPath( path )
+	if path and MOAIFileSystem.checkPathExists( path ) then
+		local indexDataPath = path .. '/' .. _SCENE_INDEX_NAME
+		if not MOAIFileSystem.checkFileExists( indexDataPath ) then
+			return error( 'scene index data not found:' .. tostring( indexDataPath ) )
+		end
+		local data = {}
+		data[ 'scene_type' ] = 'multiple'
+
+		local indexData = loadAssetDataTable( indexDataPath )
+		local files = MOAIFileSystem.listFiles( path )
+		local rootGroupDataList = {}
+		for i, filename in ipairs( files ) do
+			if filename:endwith( _SCENE_GROUP_EXTENSION ) then
+				local subData = loadAssetDataTable( path .. '/' .. filename )
+				local subName = basename( filename )
+				rootGroupDataList[ subName ] = subData
+			end
+		end
+		data[ 'index' ] = indexData
+		data[ 'roots' ] = rootGroupDataList
+		return data
+
+	elseif path and MOAIFileSystem.checkFileExists( path ) then
+		local data = loadAssetDataTable( path )
+		data[ 'scene_type' ] = 'single'
+		return data
+
+	else
+		return error( 'no file found:' .. tostring( path ) )
+
+	end
+
+end
+
+
 local function sceneLoader( node, option )
-	local data = loadSceneData( node:getNodePath() )
+	local data = node.cached.data
+	if not data then --load data
+		data = loadSceneDataFromPath( node:getObjectFile( 'def' ) )
+		if not game.editorMode then --cache scene data
+			node.cached.data = data
+		end
+	end
+
 	local scene  = option.scene or Scene()
 	--configuration
 	scene:init()
 	scene.path = node:getNodePath()
+
 	--entities
 	deserializeScene( data, scene )
 

@@ -7,12 +7,12 @@ require 'mock.common.AssetMap'
 require 'mock.common.AssetList'
 
 --SCENE
+require 'mock.common.EntityGUID'
 require 'mock.common.SceneAsset'
 require 'mock.common.PrefabAsset'
 require 'mock.common.ProtoAsset'
 
 --------------------------------------------------------------------
-require 'mock.common.StrippedSceneSerializer'
 require 'mock.common.SceneLegacyAsset'
 require 'mock.common.ComponentScript'
 
