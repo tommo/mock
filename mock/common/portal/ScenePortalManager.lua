@@ -57,6 +57,10 @@ function ScenePortalManager:findPortalInCurrentScene( id )
 	return map[ id ] or false
 end
 
+
+local function nameSortFunc( a, b )
+	return ( a.name or '') < ( b.name or '' )
+end
 function ScenePortalManager:serialize()
 	local data = {}
 	local portalDatas = {}
@@ -71,6 +75,7 @@ function ScenePortalManager:serialize()
 			table.insert( portalDatas, portalData )
 		end
 	end
+	table.sort( portalDatas, nameSortFunc )
 	data[ 'portals' ] = portalDatas
 	data[ 'namespace' ] = self.portalNameSpace
 	return data
