@@ -22,7 +22,7 @@ function MsgBroadcast:onMsg( msg, data, source )
 end
 
 --------------------------------------------------------------------
-function MsgBroadcast:onBuildGizmo()
-	return mock_edit.IconGizmo( 'split.png' )
-end
+-- function MsgBroadcast:onBuildGizmo()
+-- 	return mock_edit.IconGizmo( 'split.png' )
+-- end
 
