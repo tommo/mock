@@ -478,6 +478,7 @@ function SceneSerializer:serializeScene( scene, keepProto )
 
 	output['index'] = indexData
 	output['roots'] = rootGroupDataList
+	output['scene_type'] = 'multiple'
 	return output
 end
 
@@ -563,11 +564,20 @@ function SceneSerializer:serializeSceneToFile( scene, path, keepProto )
 		return false
 	end
 
+	--clear files
+	local files = MOAIFileSystem.listFiles( path )
+	for i, filename in ipairs( files ) do
+		if filename:endwith( _SCENE_GROUP_EXTENSION ) then
+			MOAIFileSystem.deleteFile( path .. '/' .. filename )
+		end
+	end
+
 	local indexData = data[ 'index' ]
 	local indexDataPath = path .. '/' .. _SCENE_INDEX_NAME
 	if not writeJSON( indexData, indexDataPath ) then
 		return false
 	end
+
 	--index
 	local groupListData = data[ 'roots' ]
 	for id, groupData in pairs( groupListData ) do

@@ -864,7 +864,6 @@ function Scene:initPhysics()
 
 	local world
 	if option.world and _G[ option.world ] then
-		
 		local worldClass = rawget( _G, option.world )
 		world = worldClass.new()
 	else
