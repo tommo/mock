@@ -302,6 +302,7 @@ function Game:initLayers( config, fromEditor )
 		else
 			layer = self:addLayer( data['name'] )
 		end
+		
 		layer:setSortMode( data['sort'] )
 		layer:setVisible( data['visible'] ~= false )
 		layer:setEditorVisible( data['editor_visible'] ~= false )

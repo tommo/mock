@@ -10,6 +10,8 @@ CLASS: SQNodeEntity ( SQNode )
 
 function SQNodeEntity:__init()
 	self.cmd = false
+	self.proto = false
+	self.spawnName = ''
 end
 
 function SQNodeEntity:load( data )
@@ -18,6 +20,11 @@ function SQNodeEntity:load( data )
 	if cmd == 'show' then
 	elseif cmd == 'hide' then
 	elseif cmd == 'destroy' then
+	elseif cmd == 'deactivate' then
+	elseif cmd == 'activate' then
+	elseif cmd == 'add' then
+		self.proto = data.args[ 2 ]
+		self.spawnName = data.args[ 3 ]
 	end
 end
 
@@ -43,6 +50,17 @@ function SQNodeEntity:enter( state, env )
 	elseif cmd == 'activate' then
 		for i, target in ipairs( targets ) do
 			target:setActive( true )
+		end
+	elseif cmd == 'add' then
+		local instance
+		if self.proto then
+			instance = createProtoInstance( self.proto )
+			if instance then
+				instance:setName( self.spawnName )
+				state:getActor():getScene():addEntity(instance)
+			else
+				self:_error('on found the proto path', self.proto)
+			end
 		end
 	end
 end

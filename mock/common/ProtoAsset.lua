@@ -65,6 +65,7 @@ function markProtoInstanceOverrided( obj, fid, overrided )
 		else
 			overridedFields[ fid ] = true
 		end
+		obj.PROTO_TIMESTAMP = os.time()
 		return true
 	end
 

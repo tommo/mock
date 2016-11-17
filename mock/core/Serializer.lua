@@ -76,6 +76,7 @@ function SerializeObjectMap:__init()
 	self.newObjects = {}
 	self.objects    = {}
 	self.objectCount = {}
+	self.guidObjects = {}
 	self.internalObjects = {}
 	self.currentId  = 10000
 end
@@ -106,6 +107,7 @@ function SerializeObjectMap:map( obj, noNewRef )
 	if noNewRef then return nil end
 	if obj.__guid then
 		id = obj.__guid
+		self.guidObjects[ obj ] = id
 	else
 		id = self.currentId + 1
 		self.currentId = id
@@ -138,27 +140,6 @@ function SerializeObjectMap:hasObject( obj )
 	return self.objects[ obj ] or false
 end
 
-
---------------------------------------------------------------------
-CLASS: DeserializeObjectMap ()
-
-function DeserializeObjectMap:__init()
-	self.objects = {}
-end
-
-function DeserializeObjectMap:set( namespace, id, obj, data )
-	if namespace then
-		id = makeId( id, namespace )
-	end
-	self.objects[ id ] = { obj, data }
-end
-
-function DeserializeObjectMap:get( namespace, id )
-	if namespace then
-		id = makeId( id, namespace )
-	end
-	return self.objects[ id ]
-end
 
 ---------------------------------------------------------------------
 local _serializeObject, _serializeField
@@ -337,12 +318,10 @@ function _deserializeField( obj, f, data, objMap, namespace )
 		return
 	end
 
-	if not fieldData then
-		f:setValue( obj, nil )
-		return
-	end
+	
 
 	if ft == '@array' then --compound
+		if not fieldData then return end --use default value
 		local array = {}
 		local itemType = f.__itemtype
 		if isAtomicValue( itemType ) then
@@ -370,13 +349,19 @@ function _deserializeField( obj, f, data, objMap, namespace )
 				else
 					local itemTarget = getObjectWithNamespace( objMap, itemData, namespace )
 					if not itemTarget then
-						print( itemData, namespace )
+						_error( 'missing reference', itemData, namespace )
+					else
+						array[ i ] = itemTarget[1]
 					end
-					array[ i ] = itemTarget[1]
 				end
 			end
 		end
 		f:setValue( obj, array )
+		return
+	end
+
+	if not fieldData then
+		f:setValue( obj, nil )
 		return
 	end
 
@@ -385,7 +370,8 @@ function _deserializeField( obj, f, data, objMap, namespace )
 	else --'ref'
 		local target = getObjectWithNamespace( objMap, fieldData, namespace )
 		if not target then
-			_error( 'target not found', fieldData, namespace )
+			_error( 'missing reference', fieldData, namespace )
+			-- _error( 'target not found', fieldData, namespace )
 			f:setValue( obj, nil )
 		else
 			f:setValue( obj, target[1] )
@@ -446,11 +432,11 @@ function _deserializeObject( obj, data, objMap, namespace, partialFields )
 	return obj, objMap
 end
 
-local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
+
+local function _prepareObjectMap( map, objMap, objIgnored, rootId, rootObj )
 	objMap = objMap or {}
 	objIgnored = objIgnored or {}
-	objAliases = {}
-
+	local objAliases = {}
 	for id, objData in pairs( map ) do
 		if not objIgnored[ id ] then			
 			local modelName = objData.model
@@ -497,15 +483,30 @@ local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
 		end
 		objMap[ id ] = origin
 	end
+	return objMap
+end
 
+local function _deserializeObjectMapData( objMap, objIgnored )
+	objIgnored = objIgnored or {}
 	for id, item in pairs( objMap ) do
-		if not objIgnored[ id ] and not objAliases[id] then
-			local obj     = item[1]
-			local objData = item[2]
-			_deserializeObject( obj, objData, objMap )
+		if not objIgnored[ id ] then
+			local deserialized = item[3]
+			if not deserialized then
+				item[3] = true --deserialized
+				local obj     = item[1]
+				local objData = item[2]
+				_deserializeObject( obj, objData, objMap )
+			end
 		end
 	end
+	return objMap
+end
 
+local function _deserializeObjectMap( map, objMap, objIgnored, rootId, rootObj )
+	objMap     = objMap or {}
+	objIgnored = objIgnored or {}
+	_prepareObjectMap( map, objMap, objIgnored, rootId, rootObj )
+	_deserializeObjectMapData( objMap, objIgnored )
 	return objMap
 end
 
@@ -678,10 +679,12 @@ _M.deserialize = deserialize
 _M.clone       = _cloneObject
 
 --internal API
-_M._serializeObject      = _serializeObject
-_M._cloneObject          = _cloneObject
-_M._deserializeObject    = _deserializeObject
-_M._deserializeObjectMap = _deserializeObjectMap
+_M._serializeObject             = _serializeObject
+_M._cloneObject                 = _cloneObject
+_M._deserializeObject           = _deserializeObject
+_M._prepareObjectMap            = _prepareObjectMap
+_M._deserializeObjectMapData    = _deserializeObjectMapData
+_M._deserializeObjectMap        = _deserializeObjectMap
 
 _M._deserializeField     = _deserializeField
 _M._serializeField       = _serializeField
