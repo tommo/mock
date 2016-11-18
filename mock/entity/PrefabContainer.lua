@@ -10,6 +10,8 @@ CLASS: PrefabContainer ( mock.Entity )
 		Field 'resetRot' :boolean() :onset( 'refreshPrefab' );
 		'----';
 		Field 'autoSpawn' :boolean();
+		'----';
+		Field 'selectInstance' :action( 'selectInstance' );
 		-- Field 'resetLayer' :boolean();
 	}
 
@@ -58,4 +60,10 @@ end
 function PrefabContainer:onLoad()
 	self.loaded = true
 	self:refreshPrefab()
+end
+
+function PrefabContainer:selectInstance()
+	if gii then
+		gii.changeSelection( 'scene', self.instance )
+	end
 end

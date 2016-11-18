@@ -372,9 +372,6 @@ function SceneSerializer:serializeEntities( entityList, output, objMap, keepProt
 	local entityDatas = {}
 	local map = {}
 
-	local protoInstances = {}
-
-
 	if keepProto then --proto support
 		--collect entity	
 		local protoInfo = {}
@@ -768,18 +765,20 @@ function SceneDeserializer:deserializeScene( data, scene )
 end
 
 function SceneDeserializer:_prepareEntitiesObjMap( data, objMap )
-	local map = data[ 'map' ]
 	objMap = objMap or {}
-	
+	local map = data[ 'map' ]
 	-- pre-load proto instance
-	local protoInstances = {}
-	for id, objData in pairs( map ) do
-		if objData[ '__PROTO' ] then
-			tinsert( protoInstances, id )
+	local protoMerged = data[ '__PROTO_MERGED' ] or false
+	if not protoMerged then
+		local protoInstances = {}
+		for id, objData in pairs( map ) do
+			if objData[ '__PROTO' ] then
+				tinsert( protoInstances, id )
+			end
 		end
+		mergeProtoDataList( data, protoInstances )
+		data[ '__PROTO_MERGED' ] = true
 	end
-
-	mergeProtoDataList( data, protoInstances )
 	_prepareObjectMap( map, objMap )
 	return objMap
 end
