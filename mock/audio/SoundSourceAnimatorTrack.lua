@@ -73,7 +73,7 @@ function SoundSourceAnimatorTrack:apply( state, playContext, t )
 				if soundSource.is3D then
 					soundSource:playEvent3D( clip, soundSource.follow )
 				else
-					soundSource:playEvent3D( clip )
+					soundSource:playEvent2D( clip )
 				end
 			end
 		end

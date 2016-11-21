@@ -1165,13 +1165,13 @@ local function loadSQNode( data, parentNode )
 	local t = data.type
 	if t == 'context' then
 		node = SQNodeContext()
-		node:_load( data )
 		parentNode:addChild( node )
+		node:_load( data )
 
 	elseif t == 'tag'     then
 		node = SQNodeTag()
-		node:_load( data )
 		parentNode:addChild( node )
+		node:_load( data )
 
 	elseif t == 'label'   then
 		local labelNode = SQNodeLabel()
@@ -1189,8 +1189,8 @@ local function loadSQNode( data, parentNode )
 		end
 		local clas = entry.clas
 		node = clas()
-		node:_load( data )
 		parentNode:addChild( node )
+		node:_load( data )
 
 	elseif t == 'root' then
 		--pass
