@@ -5,9 +5,12 @@ module 'mock'
 --TODO: add multiple listener support (need host works) ?
 CLASS: SoundListener ( Component )
 :MODEL{
-	Field 'forward'    :type('vec3') :getset('VectorForward');
-	Field 'up'         :type('vec3') :getset('VectorUp') ;
-	Field 'syncRot'    :boolean();
+	Field 'idx'            :int();
+	'----';
+	Field 'forward'        :type('vec3') :getset('VectorForward');
+	Field 'up'             :type('vec3') :getset('VectorUp') ;
+	Field 'syncRot'        :boolean();
+	Field 'updateVelocity' :boolean();
 }
 :META{
 	category = 'audio'
@@ -15,20 +18,36 @@ CLASS: SoundListener ( Component )
 wrapWithMoaiTransformMethods( SoundListener, '_listener' )
 
 function SoundListener:__init()
-	local listener = MOAIFmodEventMgr.getMicrophone()
-	self._listener = listener
+	self.idx = 1
+	self._listener = false
 	self.syncRot = true
+	self.updateVelocity = false
 	self:setVectorForward( 0,0,-1 )
 	self:setVectorUp( 0,1,0 )
-	self.transformHookNode = MOAIScriptNode.new()
 end
 
 function SoundListener:onAttach( entity )
+	local audioManager = AudioManager.get()
+	self._listener = audioManager:getListener( self.idx )
+	if not self._listener then
+		_warn( 'failed to get system sound listener' )
+		return
+	end
 	if self.syncRot then
 		entity:_attachTransform( self._listener )
 	else
 		entity:_attachLoc( self._listener )
 	end
+	self:updateVectors()	
+end
+
+function SoundListener:updateVectors()
+	local _listener = self._listener
+	if not _listener then return end
+	local x, y, z = unpack( self.forward )
+	_listener:setVectorForward( x,y,z )
+	local x, y, z = unpack( self.up )
+	_listener:setVectorUp( x,y,z )
 end
 
 function SoundListener:onDetach( entity )
@@ -41,7 +60,7 @@ end
 
 function SoundListener:setVectorForward( x,y,z )
 	self.forward = { x,y,z }
-	self._listener:setVectorForward( x,y,z )
+	self:updateVectors()
 end
 
 function SoundListener:getVectorUp()
@@ -50,8 +69,9 @@ end
 
 function SoundListener:setVectorUp( x,y,z )
 	self.up = { x,y,z }
-	self._listener:setVectorUp( x,y,z )
+	self:updateVectors()
 end
+
 
 registerComponent( 'SoundListener', SoundListener )
 

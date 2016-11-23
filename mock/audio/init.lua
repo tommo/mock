@@ -1,4 +1,5 @@
 module 'mock'
+
 --------------------------------------------------------------------
 --Asset
 local SupportedSoundAssetTypes = ''
@@ -13,7 +14,13 @@ function addSupportedSoundAssetType( t )
 	SupportedSoundAssetTypes = SupportedSoundAssetTypes .. t
 end
 
+
+--------------------------------------------------------------------
+require 'mock.audio.FMODDesignerAudioManager'
 require 'mock.audio.FMODDesignerProject'
+
+require 'mock.audio.FMODStudioAudioManager'
+require 'mock.audio.FMODStudioProject'
 
 --------------------------------------------------------------------
 ---- Component

@@ -10,13 +10,13 @@ local function _affirmFmodEvent( event )
 	if id ~= nil then return id end
 	if type( event ) == 'string' then
 		event, node = loadAsset( event ) 
-		if node and node.type == 'fmod_event' then 
-			id = event:getFullName()
+		if event then
+			id = event:getSystemID()
 		else
 			return nil
 		end
 	else
-		id = event:getFullName()
+		id = event:getSystemID()
 	end
 	event2IDCache[ event ] = id or false
 	return id
@@ -99,7 +99,7 @@ function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )
 	if not eventId then return false end
 
 	local evt	
-	evt = MOAIFmodEventMgr.playEvent3D( eventId, x,y,z )
+	evt = AudioManager.get():playEvent3D( eventId, x,y,z )
 	if evt then
 		return self:_addInstance( evt, follow~=false )
 	else
@@ -111,7 +111,7 @@ function SoundSource:_playEvent2D( event, looped )
 	local eventId = _affirmFmodEvent( event )
 	if not eventId then return false end
 	
-	local evt = MOAIFmodEventMgr.playEvent2D( eventId, looped )
+	local evt = AudioManager.get():playEvent2D( eventId, looped )
 	if evt then
 		return self:_addInstance( evt, false )
 	else

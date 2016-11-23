@@ -266,7 +266,14 @@ function Game:initSubSystems( config, fromEditor )
 
 	--audio
 	_stat( 'init audio' )
-	AudioManager.get():init()
+	local audioManager = AudioManager.get()
+	if not audioManager then
+		error( 'no audio manager registered' )
+	end
+
+	if not audioManager:init() then
+		error( 'failed to initialize audio system' )
+	end
 
 	--physics
 	--config for default physics world

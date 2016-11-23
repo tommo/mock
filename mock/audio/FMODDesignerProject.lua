@@ -1,6 +1,7 @@
 module 'mock'
+if not MOAIFmodEventMgr then return end
 
-local loadedFMODProject = {}
+local loadedFMODDesignerProjects = {}
 --------------------------------------------------------------------
 CLASS: FMODDesignerProject ()
 
@@ -17,7 +18,7 @@ function FMODDesignerProject:load( path, id )
 	self.projectId = id
 
 	if self.loaded then
-		loadedFMODProject[ id ] = self
+		loadedFMODDesignerProjects[ id ] = self
 		_stat( 'loaded fmod project', self.projectId )
 	else
 		_error( 'failed loading fmod project:', path )
@@ -33,8 +34,8 @@ end
 function FMODDesignerProject:unload()
 	if not self.loaded then return end
 
-	if loadedFMODProject[ id ] == self then
-		loadedFMODProject[ id ] = nil
+	if loadedFMODDesignerProjects[ id ] == self then
+		loadedFMODDesignerProjects[ id ] = nil
 	end
 	
 	for id, group in pairs( self.groups ) do
@@ -132,13 +133,17 @@ function FMODEvent:getFullName()
 	return self.fullName
 end
 
+function FMODEvent:getSystemID()
+	return self.fullName
+end
+
 function FMODEvent:unload()	
 end
 
 --------------------------------------------------------------------
-function FMODProjectLoader( node )
+local function FMODDesignerProjectLoader( node )
 	local id = node:getBaseName()
-	local proj = loadedFMODProject[ id ]
+	local proj = loadedFMODDesignerProjects[ id ]
 	if proj then
 		proj:reload( node:getObjectFile('export'), id )
 		return proj
@@ -148,12 +153,12 @@ function FMODProjectLoader( node )
 	return proj
 end
 
-function FMODProjectUnloader( node )
+local function FMODDesignerProjectUnloader( node )
 	
 end
 
 
-function FMODGroupLoader( node )
+local function FMODGroupLoader( node )
 	local p = node.parent
 	local pAsset, pNode = loadAsset( p )
 	if pNode.type == 'fmod_project' then
@@ -167,14 +172,12 @@ function FMODGroupLoader( node )
 	end
 end
 
-function FMODEventLoader( node )
+local function FMODEventLoader( node )
 	local group = loadAsset( node.parent )
 	return group and group:getEvent( node:getName() )
 end
 
-
-
-registerAssetLoader( 'fmod_project', FMODProjectLoader, FMODProjectUnloader )
+registerAssetLoader( 'fmod_project', FMODDesignerProjectLoader, FMODDesignerProjectUnloader )
 registerAssetLoader( 'fmod_event', FMODEventLoader )
 registerAssetLoader( 'fmod_group', FMODGroupLoader )
 

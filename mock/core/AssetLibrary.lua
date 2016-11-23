@@ -187,6 +187,11 @@ function AssetNode:getObjectFile( name )
 	return objectFiles[ name ]
 end
 
+function AssetNode:getProperty( name )
+	local properties = self.properties
+	return properties and properties[ name ]
+end
+
 function AssetNode:getPath()
 	return self.path
 end
