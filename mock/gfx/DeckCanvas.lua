@@ -7,8 +7,8 @@ local remove = table.remove
 CLASS: DeckCanvas ( GraphicsPropComponent )
 	:MODEL{
 		Field 'index' :no_edit();
-		'----';
-		Field 'size'    :type('vec2') :getset('Size');
+		--'----';
+		--Field 'size'    :type('vec2') :getset('Size');
 		Field 'serializedData' :getset( 'SerializedData' ) :no_edit();
 		'----';
 		Field 'edit'    :action('editPen')  :meta{ icon='edit', style='tool'};
@@ -20,7 +20,7 @@ registerComponent( 'DeckCanvas', DeckCanvas )
 
 function DeckCanvas:__init()
 	self.props = {}
-	self.size  = { 500, 500 }
+	--self.size  = { 500, 500 }
 	self:getMoaiProp().inside = function()
 		return self:inside( x,y,z, pad )
 	end
@@ -33,14 +33,14 @@ function DeckCanvas:inside( x,y,z, pad )
 	return false
 end
 
-function DeckCanvas:setSize( w, h )
-	self.size = { w, h }
-	self:getMoaiProp():setBounds( -w/2, -h/2, 0, w/2, h/2, 0 )
-end
+-- function DeckCanvas:setSize( w, h )
+-- 	self.size = { w, h }
+-- 	self:getMoaiProp():setBounds( -w/2, -h/2, 0, w/2, h/2, 0 )
+-- end
 
-function DeckCanvas:getSize()
-	return unpack( self.size )
-end
+-- function DeckCanvas:getSize()
+-- 	return unpack( self.size )
+-- end
 
 function DeckCanvas:getSerializedData()
 	local deckset = {}
@@ -226,11 +226,11 @@ function DeckCanvas:applyMaterial( mat )
 	end
 end	
 
-function DeckCanvas:insideCanvas( x, y, z, pads )
-	x, y = self.prop:worldToModel( x, y, z )
-	local w, h = self:getSize()
-	return x > -w/2 and h > -h/2 and x < w/2 and y < h/2
-end
+-- function DeckCanvas:insideCanvas( x, y, z, pads )
+-- 	x, y = self.prop:worldToModel( x, y, z )
+-- 	local w, h = self:getSize()
+-- 	return x > -w/2 and h > -h/2 and x < w/2 and y < h/2
+-- end
 
 
 --------------------------------------------------------------------
@@ -262,10 +262,10 @@ function DeckCanvas:drawBounds()
 		end
 	end
 
-	GIIHelper.setVertexTransform( self._entity:getProp() )
-	local w, h = self:getSize()
-	mock_edit.applyColor( 'deckcanvas-bound' )
-	drawRect( -w/2, -h/2, w/2, h/2 )
+	-- GIIHelper.setVertexTransform( self._entity:getProp() )
+	-- local w, h = self:getSize()
+	-- mock_edit.applyColor( 'deckcanvas-bound' )
+	-- drawRect( -w/2, -h/2, w/2, h/2 )
 end
 
 function DeckCanvas:editPen()

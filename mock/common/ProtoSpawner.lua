@@ -100,6 +100,7 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 			end
 		end
 	end
+	instance:setFloor( ent:getFloor() )
 	return instance
 end
 
