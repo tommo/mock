@@ -99,9 +99,9 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 
 			end
 		end
-	end
-	if ent:isInstance( 'EWMapObject' ) then
-		instance:setFloor( ent:getFloor() )
+		if ent:isInstance( 'EWMapObject' ) then
+			instance:setFloor( ent:getFloor() )
+		end
 	end
 	return instance
 end
