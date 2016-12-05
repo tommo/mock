@@ -17,6 +17,8 @@ CLASS: PhysicsMaterial ()
 		'----';
 		Field 'isSensor'     :boolean();
 		'----';
+		Field 'comment'      :string();
+
 	}
 
 function PhysicsMaterial:__init()
@@ -28,6 +30,7 @@ function PhysicsMaterial:__init()
 	self.group        = 0
 	self.categoryBits = 1
 	self.maskBits     = 0xffffffff
+	self.comment      = ''
 end
 
 function PhysicsMaterial:clone()
