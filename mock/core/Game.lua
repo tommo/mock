@@ -343,6 +343,7 @@ function Game:initAsset( config, fromEditor )
 	_stat( '...loading asset library' )
 	loadAssetLibrary( self.assetLibraryIndex )
 	loadTextureLibrary( self.textureLibraryIndex )
+	getTextureLibrary():clearEmptyNodes()
 	
 	--scriptlibrary
 	_stat( '...loading game modules' )
@@ -379,6 +380,9 @@ function Game:initCommonData( config, fromEditor )
 	_stat( '...loading palette' )
 	self.paletteLibrary = getPaletteLibrary()
 	self.paletteLibrary:load( config['palettes'] )
+
+	--some post-processing for asset
+	-- getTextureLibrary():clearEmptyNodes()
 
 	--ask other systems to initialize
 	emitSignal( 'game.init', config )

@@ -40,6 +40,7 @@ function loadTextureLibrary( indexPath )
 	textureLibraryIndex = indexPath
 	textureLibrary = TextureLibrary()	
 	if MOAIFileSystem.checkFileExists( indexPath ) then
+		-- textureLibrary:loadCache( indexPath )
 		textureLibrary:load( indexPath )
 	else
 		textureLibrary:initDefault()
@@ -103,7 +104,56 @@ function Texture:__init( path )
 	self.atlasId       = false
 	self.scale         = -1
 	self.allowPacked   = true
-	
+end
+
+function Texture:saveCacheData()
+	local data = self:saveMetaData()
+	data['w']                 = self.w
+	data['h']                 = self.h
+	data['ow']                = self.ow
+	data['oh']                = self.oh
+	data['rotated']           = self.rotated
+	data['x']                 = self.x
+	data['y']                 = self.y
+	data['u0']                = self.u0
+	data['v0']                = self.v0
+	data['u1']                = self.u1
+	data['v1']                = self.v1
+	data['atlasId']           = self.atlasId
+	data['prebuiltAtlasPath'] = self.prebuiltAtlasPath
+	return data
+end
+
+function Texture:loadCacheData( data )
+	self.scale             = data[ 'scale' ]
+	self.w                 = data[ 'w' ]
+	self.h                 = data[ 'h' ]
+	self.ow                = data[ 'ow' ]
+	self.oh                = data[ 'oh' ]
+	self.rotated           = data[ 'rotated' ]
+	self.x                 = data[ 'x' ]
+	self.y                 = data[ 'y' ]
+	self.u0                = data[ 'u0' ]
+	self.v0                = data[ 'v0' ]
+	self.u1                = data[ 'u1' ]
+	self.v1                = data[ 'v1' ]
+	self.atlasId           = data[ 'atlasId' ]
+	self.prebuiltAtlasPath = data[ 'prebuiltAtlasPath' ]
+end
+
+function Texture:loadMetaData( data )
+	self.scale       = data[ 'scale' ]
+	self.processor   = data[ 'processor' ]
+	self.allowPacked = data[ 'allowPacked' ]
+end
+
+function Texture:saveMetaData()
+	local data = {}
+	data[ 'group' ]       = self.parent:getName()
+	data[ 'scale' ]       = self.scale
+	data[ 'processor' ]   = self.processor
+	data[ 'allowPacked' ] = self.allowPacked
+	return data
 end
 
 function Texture:getSize()
@@ -275,6 +325,59 @@ function TextureGroup:__init()
 	self.scale               = 1
 
 	self._atlasTexturesCache  = makeAssetCacheTable()
+end
+
+function TextureGroup:getName()
+	return self.name
+end
+
+function TextureGroup:saveCacheData()
+	local cacheData = {}
+	local data = self:saveMetaData()
+	data[ 'atlasCachePath' ] = self.atlasCachePath
+	return data
+end
+
+function TextureGroup:loadCacheData( data )
+	self.atlasCachePath = data[ 'atlasCachePath' ]
+end
+
+function TextureGroup:saveMetaData()
+	local data = {}
+	data['name']                = self.name
+	data['default']             = self.default
+	data['format']              = self.format
+	data['filter']              = self.filter
+	data['premultiplyAlpha']    = self.premultiplyAlpha
+	data['mipmap']              = self.mipmap
+	data['wrap']                = self.wrap
+	data['pow2']                = self.pow2
+	data['compression']         = self.compression
+	data['atlasMode']           = self.atlasMode
+	data['maxAtlasWidth']       = self.maxAtlasWidth
+	data['maxAtlasHeight']      = self.maxAtlasHeight
+	data['repackPrebuiltAtlas'] = self.repackPrebuiltAtlas
+	data['scale']               = self.scale
+	data['processor']           = self.processor
+	return data
+end
+
+function TextureGroup:loadMetaData( data )
+	self.name                = data['name']
+	self.default             = data['default']
+	self.format              = data['format']
+	self.filter              = data['filter']
+	self.premultiplyAlpha    = data['premultiplyAlpha']
+	self.mipmap              = data['mipmap']
+	self.wrap                = data['wrap']
+	self.pow2                = data['pow2']
+	self.compression         = data['compression']
+	self.atlasMode           = data['atlasMode']
+	self.maxAtlasWidth       = data['maxAtlasWidth']
+	self.maxAtlasHeight      = data['maxAtlasHeight']
+	self.repackPrebuiltAtlas = data['repackPrebuiltAtlas']
+	self.scale               = data['scale']
+	self.processor           = data['processor']
 end
 
 function TextureGroup:addTextureFromPath( path )
@@ -535,6 +638,76 @@ function TextureLibrary:save( path )
 	return serializeToFile( self, path )
 end
 
+function TextureLibrary:saveCacheData()
+	local cacheData = {}
+	local groupCacheData   = {}
+	local textureCacheData = {}
+	for i, group in ipairs( self.groups ) do
+		groupCacheData[ group.name ] = group:saveCacheData()
+		for j, texture in ipairs( group.textures ) do
+			textureCacheData[ texture.path ] = texture:saveCacheData()
+		end
+	end
+	cacheData[ 'groups' ]   = groupCacheData
+	cacheData[ 'textures' ] = textureCacheData
+	return cacheData
+end
+
+function TextureLibrary:loadCacheData( data )
+	local groups = {}
+	local defaultGroup = false
+	for name, groupCacheData in pairs( data[ 'groups' ] ) do
+		local group = TextureGroup()
+		group.parent = self
+		table.insert( groups, group )
+		group:loadCacheData( groupCacheData )
+		if group.default then
+			defaultGroup = group
+		end
+	end
+	self.groups = groups
+	self.defaultGroup = defaultGroup
+end
+
+function TextureLibrary:saveGroupData()
+	local output = {}
+	for i, group in ipairs( self.groups ) do
+		local data = group:saveMetaData()
+		local name = group.name
+		output[ name ] = data
+	end
+	return output
+end
+
+function TextureLibrary:loadGroupData( data )
+	local groups = {}
+	local defaultGroup = false
+	for i, entry in ipairs( data ) do
+		local group = TextureGroup()
+		group.parent = self
+		groups[ i ] = group
+		group:loadMetaData( entry )
+		if group.default then
+			if defaultGroup then
+				_warn( 'multiple default texture group', defaultGroup.name, group.name )
+			end
+			defaultGroup = group
+		end
+	end
+	self.groups = groups
+	self.defaultGroup = defaultGroup
+end
+
+function TextureLibrary:collectTextureMetaData()
+	local result = {}
+	for i, group in ipairs( self.groups ) do
+		for _, tex in ipairs( group.textures ) do
+			result[ tex.path ] = tex:saveMetaData()
+		end
+	end
+	return result
+end
+
 function TextureLibrary:initDefault()
 	_stat( 'initializing texture library' )
 	self.groups = {}
@@ -553,9 +726,29 @@ function TextureLibrary:load( path )
 		if group.default then
 			self.defaultGroup = group
 			break
-		end		
+		end
 	end
-	
+end
+
+function TextureLibrary:loadCache( path )
+	self.defaultGroup = nil
+	self.groups = {}
+	local cacheData = tryLoadJSONFile( path )
+	if not cacheData then error( 'invalid texture cache data' ) end
+	self:loadCacheData( cacheData )
+end
+
+function TextureLibrary:saveGroupDataToFile( path )
+	local data = self:saveGroupData()
+	saveJSONFile( data, path )
+end
+
+function TextureLibrary:saveCacheDataToFile( path )
+	local data = self:saveCacheData()
+	saveJSONFile( data, path )
+end
+
+function TextureLibrary:clearEmptyNodes()
 	local getAssetNode = getAssetNode
 	for i, group in ipairs( self.groups ) do
 		local newTextures = {}
@@ -564,14 +757,12 @@ function TextureLibrary:load( path )
 				table.insert( newTextures, tex )
 				self.lookupDict[ tex.path ] = tex
 			else
-				_stat( 'texture node removed', tex.path )
+				_warn( 'texture node removed', tex.path )
 			end
 		end
 		group.textures = newTextures
 	end
-
 end
-
 
 function TextureLibrary:getDefaultGroup()
 	return self.defaultGroup
@@ -608,9 +799,13 @@ function TextureLibrary:removeGroup( g, moveItemsToDefault )
 	end
 end
 
-function TextureLibrary:addTexture( path )
+function TextureLibrary:addTexture( path, groupName )
+	local group = groupName and self:getGroup( groupName )
+	if not group then
+		group = self:getDefaultGroup()
+	end
 	local t = Texture( path )
-	self.defaultGroup:addTexture( t )
+	group:addTexture( t )
 	self.lookupDict[ path ] = t
 	return t
 end

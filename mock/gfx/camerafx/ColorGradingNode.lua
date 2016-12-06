@@ -1,3 +1,5 @@
+module 'mock'
+
 --------------------------------------------------------------------
 CLASS: ColorGradingNodeInvert ( ColorGradingNode )
 	:MODEL{
