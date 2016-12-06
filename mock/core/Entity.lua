@@ -1286,6 +1286,18 @@ function Entity:callLater( time, func, ... )
 	return timer
 end
 
+function Entity:tellNextFrame( msg, data, source )
+	return self:callNextFrame( self.tell, self, msg, data, source )
+end
+
+function Entity:tellInterval( interval, msg, data, source )
+	return self:callInterval( interval, self.tell, self, msg, data, source )
+end
+
+function Entity:tellLater( time, msg, data, source )
+	return self:callLater( time, self.tell, self, msg, data, source )
+end
+
 local NewMOAIAction = MOAIAction.new
 local EVENT_START = MOAIAction.EVENT_START
 local EVENT_STOP  = MOAIAction.EVENT_STOP

@@ -677,7 +677,16 @@ end
 
 function Game:scheduleOpenSceneByPath( scnPath, additive, arguments, autostart )
 	autostart = true
-	self.pendingLoading = { scnPath, additive, arguments, autostart }
+	self.pendingLoading = { 
+		['path']      = scnPath,
+		['additive']  = additive,
+		['arguments'] = arguments,
+		['autostart'] = autostart
+	}
+end
+
+function Game:getPendingSceneData()
+	return self.pendingLoading
 end
 
 function Game:onSceneExit( scn )
@@ -780,7 +789,12 @@ function Game:onRootUpdate( delta )
 	if self.pendingLoading then
 		local loadingParams = self.pendingLoading
 		self.pendingLoading = false
-		self:openSceneByPath( unpack( loadingParams ) )
+		self:openSceneByPath( 
+			loadingParams['path'],
+			loadingParams['additive'],
+			loadingParams['arguments'],
+			loadingParams['autostart']
+		)
 	end
 end
 
