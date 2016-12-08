@@ -965,7 +965,34 @@ end
 -------------------------------------------------------------------
 --Loader
 ---------------------------------------------------------------------
-function loadSceneDataFromPath( path )
+local sceneGroupFilterEnabled = false
+local sceneGroupFilterInclude = false
+local sceneGroupFilterExclude = false
+
+function setSceneGroupFilter( includes, excludes )
+	sceneGroupFilterEnabled = true
+	sceneGroupFilterInclude = includes
+	sceneGroupFilterExclude = excludes
+end
+
+function matchSceneGroupFilter( name )
+	if not sceneGroupFilterEnabled then return true end
+	if sceneGroupFilterInclude then
+		local matched = false
+		for i, pattern in ipairs( sceneGroupFilterInclude ) do
+			if string.match( name, pattern ) then matched = true break end
+		end
+		if not matched then return false end
+	end
+	if sceneGroupFilterExclude then
+		for i, pattern in ipairs( sceneGroupFilterExclude ) do
+			if string.match( name, pattern ) then return false end
+		end
+	end
+	return true
+end
+
+function loadSceneDataFromPath( path, option )
 	if path and MOAIFileSystem.checkPathExists( path ) then
 		local indexDataPath = path .. '/' .. _SCENE_INDEX_NAME
 		if not MOAIFileSystem.checkFileExists( indexDataPath ) then
@@ -979,9 +1006,11 @@ function loadSceneDataFromPath( path )
 		local rootGroupDataList = {}
 		for i, filename in ipairs( files ) do
 			if filename:endwith( _SCENE_GROUP_EXTENSION ) then
-				local subData = loadAssetDataTable( path .. '/' .. filename )
 				local subName = basename( filename )
-				rootGroupDataList[ subName ] = subData
+				if matchSceneGroupFilter( subName ) then
+					local subData = loadAssetDataTable( path .. '/' .. filename )
+					rootGroupDataList[ subName ] = subData
+				end
 			end
 		end
 		data[ 'index' ] = indexData
@@ -1004,7 +1033,7 @@ end
 local function sceneLoader( node, option )
 	local data = node.cached.data
 	if not data then --load data
-		data = loadSceneDataFromPath( node:getObjectFile( 'def' ) )
+		data = loadSceneDataFromPath( node:getObjectFile( 'def' ), option )
 		if not game.editorMode then --cache scene data
 			node.cached.data = data
 		end
