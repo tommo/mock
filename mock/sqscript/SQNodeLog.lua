@@ -20,7 +20,7 @@ function SQNodeLog:load( data )
 			text = text .. '\n' .. arg
 		end
 	end
-	self.text = text
+	self.text = text or ''
 end
 
 function SQNodeLog:enter( state, env )

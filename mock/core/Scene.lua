@@ -442,6 +442,10 @@ function Scene:getPath()
 	return self.path or false
 end
 
+function Scene:getBaseName()
+	return self.path and basename( self.path ) or false
+end
+
 function Scene:getArguments()
 	return self.arguments
 end

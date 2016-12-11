@@ -308,7 +308,7 @@ end
 
 function SQNode:_log( ... )
 	local prefix = self:getPosText()
-	print( string.format( '%s\t> %s', prefix ), ... )
+	print( string.format( '[LOG:sq]\t> %s', prefix ), ... )
 end
 
 function SQNode:_warn( ... )
@@ -851,8 +851,9 @@ function SQRoutineState:setEnv( key, value )
 end
 
 function SQRoutineState:getEvalEnv()
-	return self.globalState.varTable
+	return self.globalState.evalEnv
 end
+
 
 function SQRoutineState:update( dt )
 	for i, subState in ipairs( self.subRoutineStates ) do
@@ -1010,7 +1011,7 @@ function SQState:__init()
 	self.coroutines = {}
 	self.signalCounters = {}
 	self.env = {}
-	self.varTable = {}
+	self.evalEnv = false
 end
 
 function SQState:getEnv( key, default )
@@ -1037,6 +1038,18 @@ function SQState:incSignalCounter( id )
 	return v
 end
 
+function SQState:initEvalEnv( actor )
+	local mt = {}
+	local env = setmetatable( {}, mt )
+	function mt.__index( t, k )
+		return actor:getEnvVar( k )
+	end
+	self.evalEnv = env
+end
+
+function SQState:getEvalEnv()
+	return self.evalEnv
+end
 
 function SQState:isPaused()
 	return self.paused

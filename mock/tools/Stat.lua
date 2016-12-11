@@ -11,6 +11,24 @@ function Stat:__init( data )
 	self.globalChangeListenerList = {}
 	self.changeListeners[ '*' ] = self.globalChangeListenerList
 	if data then self:update( data ) end
+
+	local accessorMT = {
+			__index = function( t, k )
+					return self:get( k )
+				end,
+
+			__newindex = function( t, k, v )
+					print('set', k, v)
+					return self:set( k, v )
+				end
+		}
+		
+	self.accessor = setmetatable( {}, accessorMT )
+
+end
+
+function Stat:getAccessor()
+	return self.accessor
 end
 
 function Stat:getValues()

@@ -4,7 +4,11 @@ module 'mock'
 CLASS: SQContextProvider ()
 	:MODEL{}
 
-function SQContextProvider:get( actor, contextId )
+function SQContextProvider:getContextEntity( actor, contextId )
+	return nil
+end
+
+function SQContextProvider:getEnvVar( actor, key )
 	return nil
 end
 
@@ -24,9 +28,10 @@ CLASS: SQActor ( Behaviour )
 }
 
 function SQActor:__init()
-	self.name = ''
-	self.activeState = false
-	self.autoStart = true
+	self.name         = ''
+	self.activeState  = false
+	self.autoStart    = true
+	self.envAccessors = {}
 end
 
 function SQActor:onStart( ent )
@@ -86,6 +91,7 @@ function SQActor:startScript()
 	self.activeState:setEnv( 'actor',  self )
 	self.activeState:setEnv( 'entity', self:getEntity() )
 	self.activeState:loadScript( self.script )
+	self.activeState:initEvalEnv( self )
 	self:findAndStopCoroutine( 'actionExecution' )
 	self:addCoroutine( 'actionExecution' )
 end
@@ -136,9 +142,21 @@ function SQActor:startAllRoutines()
 	return self.activeState:startAllRoutines()
 end
 
+function SQActor:getEnvVar( varKey )
+	for key, provider in pairs( SQContextProviders ) do
+		local value = provider:getEnvVar( self, varKey )
+		if value ~= nil then return value end
+	end
+	return self:getDefaultEnvVar( varKey )
+end
+
+function SQActor:getDefaultEnvVar( varKey )
+	return nil
+end
+
 function SQActor:_findContextEntity( id )
 	for key, provider in pairs( SQContextProviders ) do
-		local ent = provider:get( self, id )
+		local ent = provider:getContextEntity( self, id )
 		if ent then return ent end
 	end
 	return nil
