@@ -61,7 +61,7 @@ function MTileset:update()
 	if u[1] then
 		-- mesh:setBounds ( unpack(u) )
 		local tw, th = self.tileWidth, self.tileHeight
-		mesh:setBounds( 0,0,0, 1,2.8,1 )
+		mesh:setBounds( 0,0,0, 1,3,1 )
 	end
 end
 
