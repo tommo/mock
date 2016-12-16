@@ -106,7 +106,7 @@ end
 function SQNodeAnimator:step( state, env, dt )
 	if self.blocking then
 		local animState = env.animState
-		if animState:isActive() then return true end
+		if animState:isActive() then return fasle end
 	else
 		return true
 	end
