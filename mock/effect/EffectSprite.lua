@@ -162,9 +162,14 @@ function EffectMSprite:onLoad( fxState )
 	sprite:getMoaiProp():setVisible( true )
 	local state = sprite:play( self.clip, self.mode )
 	state:throttle( self.throttle )
-	state:setListener( MOAITimer.EVENT_TIMER_END_SPAN, function()
-		sprite:getMoaiProp():setVisible( false )
-	end )
+	local mode = self.mode
+	if mode == MOAITimer.LOOP or mode == MOAITimer.LOOP_REVERSE then
+		--do nothing
+	else
+		state:setListener( MOAITimer.EVENT_TIMER_END_SPAN, function()
+			sprite:getMoaiProp():setVisible( false )
+		end )
+	end
 	sprite:setMaterial( self.material )
 	-- sprite:setBlend( self.blend )
 	self:applyTransformToProp( sprite )

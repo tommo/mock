@@ -33,6 +33,8 @@ CLASS: MSprite ( GraphicsPropComponent )
 		Field 'autoPlay' :boolean();
 		Field 'autoPlayMode' :enum( EnumTimerMode );
 		'----';
+		Field 'speed' :getset( 'Speed' );
+		'----';
 		Field 'hiddenFeatures' :collection( 'string' ) :selection( 'getAvailFeatures' ) :getset( 'HiddenFeatures' );
 		'----';
 		Field 'flipX' :boolean() :set( 'setFlipX' );
@@ -278,6 +280,7 @@ function MSprite:setClip( name, mode )
 	if self.animState then self.animState:stop() end
 	self.currentClip=clip
 	self.animState = animState
+
 	self:apply( 0 )
 	self:setTime( 0 )
 	return true
@@ -298,12 +301,14 @@ function MSprite:setSpeed( speed )
 	speed = speed or 1
 	self.playSpeed = speed
 	if self.animState then
-		self.animState:setSpeed( speed )
+		self.animState:throttle( speed )
 	end
 end
 
 
 function MSprite:createAnimState( clipName, mode )
+	if not clipName then return false end
+	
 	local clip = self:getClip( clipName )
 	if not clip then 
 		_warn( 'msprite animation clip not found:'..clipName, self.spritePath )
@@ -362,6 +367,7 @@ end
 
 function MSprite:start()
 	self.animState:start()
+	self.animState:throttle( self.playSpeed )
 	return self.animState
 end
 

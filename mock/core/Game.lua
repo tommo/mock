@@ -137,6 +137,8 @@ function Game:__init() --INITIALIZATION
 
 	self.showCursorReasons = {}
 
+	self.properties     = {}
+
 end
 
 local defaultGameConfig={
@@ -634,6 +636,8 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 	local mainScene = self.mainScene
 	autostart = autostart ~= false
 	
+	local fromEditor = arguments and arguments[ 'fromEditor' ] or false
+	
 	if not additive then
 		mainScene:stop()
 		mainScene:clear( true )
@@ -649,15 +653,21 @@ function Game:openSceneByPath( scnPath, additive, arguments, autostart )
 			args[ k ] = v
 		end
 	end
+
 	mainScene.assetPath = scnPath
-	
 	--todo: previous scene
 	mainScene.arguments = args and table.simplecopy( args ) or {}
 
 	--load entities
 	local runningState = mainScene.running
 	mainScene.running = false --start entity in batch
-	local scn, node = loadAsset( scnPath, { scene = mainScene } )
+	local scn, node = loadAsset(
+		scnPath, 
+		{ 
+			scene = mainScene,
+			allowConditional = not fromEditor
+		}
+	)
 	if not node then 
 		return _error('scene not found', id, scnPath )
 	end
@@ -970,8 +980,20 @@ function Game:loadSafeSettingData( filename, key )
 		return nil
 	end
 end 
--------------------------
 
+
+--------------------------------------------------------------------
+function Game:getProperty( key, default )
+	local v = self.properties[ key ]
+	if v == nil then return default end
+	return v
+end
+
+function Game:setProperty( key , v )
+	self.properties[ key ] = v
+end
+
+-------------------------
 function Game:setDebugEnabled( enabled )
 	--todo
 end

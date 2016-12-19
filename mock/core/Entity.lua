@@ -48,6 +48,8 @@ CLASS: Entity ( Actor )
 wrapWithMoaiPropMethods( Entity, '_prop' )
 local setupMoaiTransform = setupMoaiTransform
 
+Entity.__accept = false
+
 --------------------------------------------------------------------
 -------init
 --------------------------------------------------------------------
@@ -344,6 +346,7 @@ function Entity:detach( com, reason, _skipDisconnection )
 	if not components[ com ] then return end
 	components[ com ] = nil
 	self._componentInfo = nil
+	if self._comCache then self._comCache = false end
 	if self.scene then
 		local entityListener = self.scene.entityListener
 		if entityListener then
@@ -1125,6 +1128,10 @@ function Entity:_updateGlobalActive( selfOnly )
 	if onSetActive then
 		return onSetActive( self, active )
 	end
+end
+
+function Entity:isStarted()
+	return self.started
 end
 
 function Entity:isActive()

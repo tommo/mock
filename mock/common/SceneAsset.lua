@@ -97,7 +97,7 @@ end
 local function collectOverrideEntityData( objMap, entity, collected, collectedExtra )
 	collectOverrideObjectData( objMap, entity, collected, collectedExtra )
 	if entity.components then
-		for _, com in ipairs( entity:getSortedComponentList() ) do
+		for MOAIFMODStudioMgr, com in ipairs( entity:getSortedComponentList() ) do
 			collectOverrideObjectData( objMap, com, collected, collectedExtra )
 		end
 	end
@@ -607,6 +607,11 @@ CLASS: SceneDeserializer ()
 
 function SceneDeserializer:__init()
 	self.currentRootGroup = false
+	self.allowConditional = false
+end
+
+function SceneDeserializer:setAllowConditional( allow )
+	self.allowConditional = allow ~= false
 end
 
 function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
@@ -616,6 +621,16 @@ function SceneDeserializer:insertEntity( scene, parent, edata, objMap )
 	local entity     = objMap[ id ][ 1 ]
 	
 	assert( entity, 'entity invalid:'..id )
+	
+	if self.allowConditional then
+		local accept = entity.__accept
+		if accept then
+			if accept( entity ) == false then
+				return false
+			end
+		end
+	end
+
 	if scene then
 		scene:addEntity( entity )
 	elseif parent then
@@ -890,8 +905,12 @@ function serializeScene( scene, keepProto )
 	return SceneSerializer():serializeScene( scene, keepProto )
 end
 
-function deserializeScene( data, scene )
-	return SceneDeserializer():deserializeScene( data, scene )	
+function deserializeScene( data, scene, allowConditional )
+	local deserializer = SceneDeserializer()
+	if allowConditional then
+		deserializer:setAllowConditional( true )
+	end
+	return deserializer:deserializeScene( data, scene )	
 end
 
 function serializeSceneToFile( scene, path, keepProto )
@@ -1039,13 +1058,14 @@ local function sceneLoader( node, option )
 		end
 	end
 
+	local allowConditional = option and option.allowConditional
 	local scene  = option.scene or Scene()
 	--configuration
 	scene:init()
 	scene.path = node:getNodePath()
 
 	--entities
-	deserializeScene( data, scene )
+	deserializeScene( data, scene, allowConditional )
 
 	local dep = data['asset_dependency']
 	if dep then
