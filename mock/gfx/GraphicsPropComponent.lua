@@ -9,8 +9,12 @@ function GraphicsPropComponent:__init()
 	self.billboard = false
 	self.depthMask = false
 	self.depthTest = false
-	self.prop = MOAIProp.new()
+	self.prop = self:_createMoaiProp()
 	self:setBlend('normal')
+end
+
+function GraphicsPropComponent:_createMoaiProp()
+	return MOAIProp.new()
 end
 
 function GraphicsPropComponent:setBlend( b )

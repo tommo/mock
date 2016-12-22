@@ -82,43 +82,43 @@ function inheritLoc( p1, p2 )
 	return p1:setAttrLink ( INHERIT_LOC, p2, TRANSFORM_TRAIT )
 end
 
-function linkRot( p1, p2 )
-	p1:setAttrLink( MOAIProp.ATTR_X_ROT, p2, MOAIProp.ATTR_X_ROT )
-	p1:setAttrLink( MOAIProp.ATTR_Y_ROT, p2, MOAIProp.ATTR_Y_ROT )
-	p1:setAttrLink( MOAIProp.ATTR_Z_ROT, p2, MOAIProp.ATTR_Z_ROT )
+function linkRot( p1, p2, x,y,z )
+	if x~=false then p1:setAttrLink( MOAIProp.ATTR_X_ROT, p2, MOAIProp.ATTR_X_ROT ) end
+	if y~=false then p1:setAttrLink( MOAIProp.ATTR_Y_ROT, p2, MOAIProp.ATTR_Y_ROT ) end
+	if z~=false then p1:setAttrLink( MOAIProp.ATTR_Z_ROT, p2, MOAIProp.ATTR_Z_ROT ) end
 end
 
-function linkScl( p1, p2 )
-	p1:setAttrLink( MOAIProp.ATTR_X_SCL, p2, MOAIProp.ATTR_X_SCL )
-	p1:setAttrLink( MOAIProp.ATTR_Y_SCL, p2, MOAIProp.ATTR_Y_SCL )
-	p1:setAttrLink( MOAIProp.ATTR_Z_SCL, p2, MOAIProp.ATTR_Z_SCL )
+function linkScl( p1, p2, x,y,z )
+	if x~=false then p1:setAttrLink( MOAIProp.ATTR_X_SCL, p2, MOAIProp.ATTR_X_SCL ) end
+	if y~=false then p1:setAttrLink( MOAIProp.ATTR_Y_SCL, p2, MOAIProp.ATTR_Y_SCL ) end
+	if z~=false then p1:setAttrLink( MOAIProp.ATTR_Z_SCL, p2, MOAIProp.ATTR_Z_SCL ) end
 end
 
-function linkLoc( p1, p2 )
-	p1:setAttrLink( MOAIProp.ATTR_X_LOC, p2, MOAIProp.ATTR_X_LOC )
-	p1:setAttrLink( MOAIProp.ATTR_Y_LOC, p2, MOAIProp.ATTR_Y_LOC )
-	p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_Z_LOC )
-end
-
-
-function linkWorldLoc( p1, p2 )
-	p1:setAttrLink( MOAIProp.ATTR_X_LOC, p2, MOAIProp.ATTR_WORLD_X_LOC )
-	p1:setAttrLink( MOAIProp.ATTR_Y_LOC, p2, MOAIProp.ATTR_WORLD_Y_LOC )
-	p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_WORLD_Z_LOC )
+function linkLoc( p1, p2, x,y,z )
+	if x~=false then p1:setAttrLink( MOAIProp.ATTR_X_LOC, p2, MOAIProp.ATTR_X_LOC ) end
+	if y~=false then p1:setAttrLink( MOAIProp.ATTR_Y_LOC, p2, MOAIProp.ATTR_Y_LOC ) end
+	if z~=false then p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_Z_LOC ) end
 end
 
 
-function linkWorldScl( p1, p2 )
-	p1:setAttrLink( MOAIProp.ATTR_X_SCL, p2, MOAIProp.ATTR_WORLD_X_SCL )
-	p1:setAttrLink( MOAIProp.ATTR_Y_SCL, p2, MOAIProp.ATTR_WORLD_Y_SCL )
-	p1:setAttrLink( MOAIProp.ATTR_Z_SCL, p2, MOAIProp.ATTR_WORLD_Z_SCL )
+function linkWorldLoc( p1, p2, x,y,z )
+	if x~=false then p1:setAttrLink( MOAIProp.ATTR_X_LOC, p2, MOAIProp.ATTR_WORLD_X_LOC ) end
+	if y~=false then p1:setAttrLink( MOAIProp.ATTR_Y_LOC, p2, MOAIProp.ATTR_WORLD_Y_LOC ) end
+	if z~=false then p1:setAttrLink( MOAIProp.ATTR_Z_LOC, p2, MOAIProp.ATTR_WORLD_Z_LOC ) end
 end
 
 
-function linkPiv( p1, p2 )
-	p1:setAttrLink( MOAIProp.ATTR_X_PIV, p2, MOAIProp.ATTR_X_PIV )
-	p1:setAttrLink( MOAIProp.ATTR_Y_PIV, p2, MOAIProp.ATTR_Y_PIV )
-	p1:setAttrLink( MOAIProp.ATTR_Z_PIV, p2, MOAIProp.ATTR_Z_PIV )
+function linkWorldScl( p1, p2, x,y,z )
+	if x~=false then p1:setAttrLink( MOAIProp.ATTR_X_SCL, p2, MOAIProp.ATTR_WORLD_X_SCL ) end
+	if y~=false then p1:setAttrLink( MOAIProp.ATTR_Y_SCL, p2, MOAIProp.ATTR_WORLD_Y_SCL ) end
+	if z~=false then p1:setAttrLink( MOAIProp.ATTR_Z_SCL, p2, MOAIProp.ATTR_WORLD_Z_SCL ) end
+end
+
+
+function linkPiv( p1, p2, x,y,z )
+	if x~=false then p1:setAttrLink( MOAIProp.ATTR_X_PIV, p2, MOAIProp.ATTR_X_PIV ) end
+	if y~=false then p1:setAttrLink( MOAIProp.ATTR_Y_PIV, p2, MOAIProp.ATTR_Y_PIV ) end
+	if z~=false then p1:setAttrLink( MOAIProp.ATTR_Z_PIV, p2, MOAIProp.ATTR_Z_PIV ) end
 end
 
 function linkTransform( p1, p2 )
@@ -155,7 +155,6 @@ end
 function inheritTransform( p1, p2 )
 	return p1:setAttrLink ( INHERIT_TRANSFORM, p2, TRANSFORM_TRAIT )
 end
-
 
 function inheritColor( p1, p2 )
 	return p1:setAttrLink ( INHERIT_COLOR, p2, COLOR_TRAIT )

@@ -287,6 +287,16 @@ function floors(...)
 	return unpack(t)
 end
 
+function stepped( v, step, center )
+	step = step or 1
+	local k = v/step
+	if center then
+		return floor( k + 0.5 ) * step
+	else
+		return floor( k ) * step
+	end
+end
+
 function math.magnitude( dx, dy )
 	return sqrt( dx*dx + dy*dy )
 end
