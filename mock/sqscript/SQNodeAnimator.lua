@@ -98,7 +98,7 @@ function SQNodeAnimator:enter( state, env )
 		env.animState = state
 		return true
 
-	elseif cmd == 'set_var'
+	elseif cmd == 'set_var' then
 		if self.argVarName then
 			animator:setVar( self.argVarName, self.argVarValue )
 		end
@@ -174,7 +174,7 @@ function SQNodeAnimator:load( data )
 		self.argPosFrom = tonumber( args[2] ) or args[2]
 		self.argPosTo = tonumber( args[3] ) or args[3]
 		self.blocking = true
-	elseif cmd == 'set_var'
+	elseif cmd == 'set_var' then
 		self.argVarName  = args[2] or false
 		self.argVarValue = tonumber( args[3] ) or args[3]
 		self.blocking = false
