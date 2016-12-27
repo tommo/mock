@@ -170,7 +170,6 @@ end
 
 function AnimatorState:seek( pos )
 	local t = self:affirmPos( pos )
-	self:setRange( t )
 	self:apply( t )
 end
 

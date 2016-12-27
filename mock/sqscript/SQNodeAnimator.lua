@@ -142,7 +142,7 @@ function SQNodeAnimator:load( data )
 		self.argClipName = args[2] or false
 		self.argDuration = tonumber( args[3] ) or 0
 		self.argMode = NameToAnimMode[ args[4] or 'normal' ] or 0
-		self.blocking = true
+		self.blocking = self:checkBlockTag( true )
 
 	elseif cmd == 'load' then
 		self.argClipName = args[2] or false
@@ -154,26 +154,33 @@ function SQNodeAnimator:load( data )
 		self.argClipName = args[2] or false
 		self.argDuration = tonumber( args[3] ) or 0
 		self.argMode = NameToAnimMode[ 'loop' ]
-		self.blocking = false
+		self.blocking = self:checkBlockTag( false )
 
 	elseif cmd == 'stop' then
 		--no args
+		
 	elseif cmd == 'pause' then
 		--self.argPause = paused
 		--no args
+
 	elseif cmd == 'resume' then
 		--no args
+
 	elseif cmd == 'throttle' then
 		self.argThrottle = tonumber( args[2] ) or 1
+
 	elseif cmd == 'seek' then
 		self.argPosFrom = tonumber( args[2] ) or args[2]
+
 	elseif cmd == 'to' then
 		self.argPosTo = tonumber( args[2] ) or args[2]
-		self.blocking = true
+		self.blocking = self:checkBlockTag( true )
+
 	elseif cmd == 'range' then
 		self.argPosFrom = tonumber( args[2] ) or args[2]
 		self.argPosTo = tonumber( args[3] ) or args[3]
-		self.blocking = true
+		self.blocking = self:checkBlockTag( true )
+
 	elseif cmd == 'set_var' then
 		self.argVarName  = args[2] or false
 		self.argVarValue = tonumber( args[3] ) or args[3]
@@ -182,6 +189,7 @@ function SQNodeAnimator:load( data )
 	else
 		self:_warn( 'unkown animator command', tostring(cmd) )
 		return false
+
 	end
 end
 

@@ -80,10 +80,7 @@ function SQNode:__init()
 	self.tags       = false
 	
 	self.lineNumber = 0
-
 end
-
-
 
 function SQNode:getFirstContext()
 	if self.context then
@@ -99,6 +96,22 @@ function SQNode:hasTag( t )
 		if tag == t then return true end
 	end
 	return false
+end
+
+function SQNode:checkBlockTag( defaultBlocking )
+	if defaultBlocking then
+		if self:hasTag( 'no_block' ) then
+			return false
+		else
+			return true
+		end
+	else
+		if self:hasTag( 'block' ) then
+			return true
+		else
+			return false
+		end
+	end
 end
 
 function SQNode:getRoot()
@@ -266,8 +279,8 @@ end
 
 function SQNode:applyNodeContext( buildContext )
 	self.context = buildContext.context
-	self.tags = buildContext.tags
-	buildContext.tags = {}
+	-- self.tags = buildContext.tags
+	-- buildContext.tags = {}
 end
 
 function SQNode:_build( buildContext )
@@ -534,7 +547,7 @@ function SQNodeTag:__init()
 end
 
 function SQNodeTag:applyNodeContext( buildContext )
-	buildContext.tags = table.merge( buildContext.tags or {}, self.tagNames )
+	-- buildContext.tags = table.merge( buildContext.tags or {}, self.tagNames )
 end
 
 function SQNodeTag:isExecutable()
@@ -1173,7 +1186,7 @@ end
 
 
 --------------------------------------------------------------------
-local function loadSQNode( data, parentNode )
+local function loadSQNode( data, parentNode, tags )
 	local node
 	local t = data.type
 	if t == 'context' then
@@ -1203,6 +1216,11 @@ local function loadSQNode( data, parentNode )
 		local clas = entry.clas
 		node = clas()
 		parentNode:addChild( node )
+		if tags then
+			node.tags = tags
+		else
+			node.tags = {}
+		end
 		node:_load( data )
 
 	elseif t == 'root' then
@@ -1214,8 +1232,17 @@ local function loadSQNode( data, parentNode )
 		error( 'wtf?', t )
 	end
 
+	local tags = false
 	for i, childData in ipairs( data.children ) do
-		loadSQNode( childData, node )
+		local childNode = loadSQNode( childData, node, tags )
+		
+		local t = childData.type
+		if t == 'tag' then
+			tags = table.merge( tags or {}, childNode.tagNames )
+		else
+			tags = false
+		end
+
 	end
 
 	return node
