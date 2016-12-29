@@ -39,6 +39,12 @@ require 'mock.tools.SpatialGrid'
 
 require 'mock.tools.EntityAlignment'
 
+
+--------------------------------------------------------------------
+--color
+require 'mock.tools.NamedColors'
+
+
 --------------------------------------------------------------------
 --TOOLS
 require 'mock.tools.SimpleAnimationPreset'
@@ -46,4 +52,5 @@ require 'mock.tools.PlaceHolder'
 -- require 'mock.tools.TouchButton'
 -- require 'mock.tools.FakeInput'
 require 'mock.tools.DialogScript'
+
 

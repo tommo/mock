@@ -47,29 +47,10 @@ function Actor:__init()
 	self.state  = 'normal'
 	self.msgListeners = {}
 	self.coroutines = false
-	self.stateVars = false
 end
 
 --------------------------------------------------------------------
--- State Vars
---------------------------------------------------------------------
-function Actor:getVar()
-end
-
---------------------------------------------------------------------
--- LOCAL Signal
---------------------------------------------------------------------
-function Actor:registerSignal( id, localMethod )
-end
-
-function Actor:signal( id )
-end
-
-function Actor:emit( id )
-end
-
---------------------------------------------------------------------
---------GLOBAL SIGNAL
+--------SIGNAL
 --------------------------------------------------------------------
 function Actor:connect( sig, slot )
 	return self:connectForObject( self, sig, slot )
@@ -536,5 +517,4 @@ function Actor:skip( duration )
 			elapsed = elapsed + yield()
 	end
 end
-----------MOAIAction control
 

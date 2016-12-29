@@ -263,10 +263,11 @@ function Entity:destroyNow()
 	-- 		onDetach( com, self )
 	-- 	end
 	-- end
-	
-	if self.parent then
-		self.parent.children[self] = nil
-		self.parent = nil
+	local parent = self.parent
+	if parent then
+		parent:_detachChildEntity( self )
+		parent.children[self] = nil
+		parent = nil
 	end
 
 	if self._entityGroup then
@@ -665,9 +666,7 @@ function Entity:addChild( entity, layerName )
 
 	--TODO: better solution on scissor?
 	if self.scissorRect then entity:_setScissorRect( self.scissorRect ) end
-	--attach transform/color
-	self:_attachChildEntity( entity )
-
+	
 	local scene = self.scene
 
 	if scene then
@@ -681,6 +680,9 @@ function Entity:addChild( entity, layerName )
 	else
 		entity.layer = layerName or entity.layer or self.layer
 	end
+
+	--attach transform/color
+	self:_attachChildEntity( entity )
 
 	return entity
 end
