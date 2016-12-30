@@ -163,7 +163,7 @@ function TileMapLayer:getMaterialName()
 	if not self.materialPath then 
 		return 'N/A'
 	else
-		return basename( self.materialPath )
+		return basename_noext( self.materialPath )
 	end
 end
 

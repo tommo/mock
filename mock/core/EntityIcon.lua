@@ -20,7 +20,7 @@ function getEntityIconSet()
 		if files then
 			for i, filename in ipairs( files ) do
 				if filename:endwith( '.png' ) then
-					local name = basename( filename )
+					local name = basename_noext( filename )
 					if not iconSet[ name ] then iconSet[ name ] = filename end
 				end
 			end

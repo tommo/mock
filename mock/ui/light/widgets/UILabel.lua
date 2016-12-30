@@ -1,9 +1,19 @@
 module 'mock'
 
 CLASS: UILabel ( UIWidget )
-	:MODEL{}
+	:MODEL{
+		Field 'text' :string() :getset( 'Text' );
+}
 
-function UILabel:onLoad()
+mock.registerEntity( 'UILabel', UILabel )
+
+function UILabel:__init()
+	self.textBox = self:attachInternal( TextLabel() )
+	
+end
+
+function UILabel:getText( t )
+	return self.textBox:getText()
 end
 
 function UILabel:setText( t )
@@ -11,8 +21,6 @@ function UILabel:setText( t )
 end
 
 function UILabel:initContent( style )
-	self:initCommonContent( style )
-	self.textBox = self:attachInternal( TextLabel() )
 end
 
 function UILabel:updateStyle( style )

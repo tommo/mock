@@ -443,7 +443,7 @@ function Scene:getPath()
 end
 
 function Scene:getBaseName()
-	return self.path and basename( self.path ) or false
+	return self.path and basename_noext( self.path ) or false
 end
 
 function Scene:getArguments()

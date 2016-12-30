@@ -12,6 +12,20 @@ local _BaseStyleSheetSrc = [[
 		border_style     = 'solid';
 		border_color     = '#ccc';
 	}
+
+	namespace 'UISimpleButton'
+		style '' {
+			background_color = 'white';
+		}
+
+		style '.red' {
+			background_color = 'red';
+		}
+
+		style ':press' {
+			background_color = 'green';
+		}
+
 ]] 
 
 local _BaseStyleSheet 

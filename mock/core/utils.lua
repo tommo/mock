@@ -830,11 +830,22 @@ local ssub=string.sub
 local format = string.format
 
 function hexcolor(s,alpha) --convert #ffffff to (1,1,1)
-	local r,g,b
-	r = tonumber('0x'..ssub(s,2,3))/255
-	g = tonumber('0x'..ssub(s,4,5))/255
-	b = tonumber('0x'..ssub(s,6,7))/255
-	return r,g,b,alpha or 1
+	local l = #s
+	if l >= 7 then
+		local r,g,b
+		r = tonumber('0x'..ssub(s,2,3))/255
+		g = tonumber('0x'..ssub(s,4,5))/255
+		b = tonumber('0x'..ssub(s,6,7))/255
+		return r,g,b,alpha or 1
+	elseif l == 4 then
+		local r,g,b
+		r = tonumber('0x'..ssub(s,2,2))/15
+		g = tonumber('0x'..ssub(s,3,3))/15
+		b = tonumber('0x'..ssub(s,4,4))/15
+		return r,g,b,alpha or 1
+	else
+		return nil
+	end
 end
 
 
@@ -1316,7 +1327,16 @@ function stripdir(p)
 end
 
 function basename(p)
+	return stripdir( p )
+end
+
+function basename_noext(p)
 	return stripext( stripdir(p) )
+end
+
+function dirname(p)
+	local dname, bname = splitpath( p )
+	return dname
 end
 
 function table.sub( t, a, b )

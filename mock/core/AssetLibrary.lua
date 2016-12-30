@@ -366,6 +366,10 @@ end
 --------------------------------------------------------------------
 local loadingAsset = table.weak_k() --TODO: a loading list avoid cyclic loading?
 
+function isAssetLoading( path )
+	return loadingAsset[ path ] and true or false
+end
+
 function hasAsset( path )
 	local node = getAssetNode( path )
 	return node and true or false 

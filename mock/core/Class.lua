@@ -193,6 +193,10 @@ function BaseClass:assertInstance( superclass )
 	end
 end
 
+function BaseClass:__repr()
+	return string.format( '%s<%s>', self.__class.__name, tostring( self ) )
+end
+
 --Signals
 
 -- function BaseClass:superCall( name, ... )

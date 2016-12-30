@@ -1,5 +1,29 @@
 module 'mock'
 
+
+-- local UIStyleSheetRegistry = {}
+-- local function findStyleSheet( query )
+-- 	local result = false
+-- 	--TODO
+-- 	return result
+-- end
+
+local insert, remove = table.insert, table.remove
+local match = string.match
+--------------------------------------------------------------------
+
+local function _compareStyleItemEntry( a, b )
+	local qa = a[2]
+	local qb = b[2]
+	local na = qa.name
+	local nb = qb.name
+	if na ~= nb then
+		if nb:match( qa.finalPattern ) then return true end
+		if na:match( qb.finalPattern ) then return false end
+	end
+	return a[1] < b[1]
+end
+
 --------------------------------------------------------------------
 local _UIStyleLoaderEnv = {}
 
@@ -22,7 +46,12 @@ end
 
 local function _loadUIStyleSheetSource( src )
 	local items = {}
+	local imports = {}
 	local currentNamespace = ''
+	local function importFunc( n )
+		insert( imports, n )
+	end
+
 	local function namespaceFunc( n )
 		currentNamespace = type( n ) == 'string' and n or ''
 		currentNamespace = currentNamespace:trim() .. ' '
@@ -53,8 +82,10 @@ local function _loadUIStyleSheetSource( src )
 		return styleUpdater
 	end
 
+
 	local env = {
-		style = styleFunc;
+		import    = importFunc;
+		style     = styleFunc;
 		namespace = namespaceFunc;
 	}
 
@@ -74,69 +105,7 @@ local function _loadUIStyleSheetSource( src )
 		return false
 	end
 
-	return items
-end
-
-
---------------------------------------------------------------------
-CLASS: UIStyleSheetCache ()
-	:MODEL{}
-
-function UIStyleSheetCache:__init()
-	self.sheets   = {}
-	self.sheetSet = {}
-	self.cache = {}
-	self.dirty = true
-end
-
-function UIStyleSheetCache:addSheet( sheet )
-	assert( sheet )
-	if not self.sheetSet[ sheet ] then
-		table.insert( self.sheets, sheet )
-		self.sheetSet[ sheet ] = true
-		self:markDirty()
-	end
-	return sheet
-end
-
-function UIStyleSheetCache:markDirty()
-	self.dirty = true
-	self.cache = {}
-end
-
-function UIStyleSheetCache:update( forced )
-	if not ( forced or self.dirty ) then return end
-	--TODO
-end
-
-function UIStyleSheetCache:query( acc )
-	self:update()
-	local queryList, fullQuery = acc:getQueryList()
-	local data = self.cache[ fullQuery ]
-	if not data then
-		data = {}
-		for i, query in ipairs( queryList ) do
-			local result = self:_queryStyleData( query )
-			for k, v in pairs( result ) do
-				data[ k ] = v
-			end
-		end
-		self.cache[ fullQuery ] = data
-	end
-	return data
-end
-
-function UIStyleSheetCache:_queryStyleData( query )
-	local data = self.cache[ query ]
-	if data then return data end
-
-	data = {}
-	for i, sheet in ipairs( self.sheets ) do
-		sheet:collectData( query, data )
-	end
-	self.cache[ query ] = data
-
-	return data
+	return items, imports
 end
 
 --------------------------------------------------------------------
@@ -144,41 +113,215 @@ CLASS: UIStyleSheet ()
 	:MODEL{}
 
 function UIStyleSheet:__init()
+	self.assetPath = false
 	self.items = {}
+	self.localCache = {}
+	self.globalCache = {}
+	self.importedSheets = {}
 end
 
 function UIStyleSheet:load( src )
-	local items = _loadUIStyleSheetSource( src )
-	if items then
-		self.items = items
-		return true
-	else
+	local idx = 0
+	local noTag = {}
+	local taggedList = {}
+	local function _addItem( item )
+		item._index = idx
+		idx = idx + 1
+		for i, q in ipairs( item.qualifiers ) do
+			local tag = q.tag or false
+			local l
+			if tag then
+				l = taggedList[ tag ]
+				if not l then
+					l = {}
+					taggedList[ tag ] = l
+				end
+			else
+				l = noTag
+			end
+			insert( l, { idx, q, item } )
+		end
+	end
+
+	local items, imports = _loadUIStyleSheetSource( src )
+	if not items then
 		self.items = {}
+		return false
+	end
+	for i, item in ipairs( getBaseStyleSheet().items ) do
+		_addItem( item )
+	end
+
+	local loaded = {}
+	local importedSheets = {}
+	for i, import in pairs( imports ) do
+		--try local
+		local path = self:findImport( import )
+		if path then
+			if isAssetLoading( path ) then
+				_error( 'cyclic stylesheet imports detected', path )
+				return false
+			end
+		else
+			_error( 'cannot find stylesheet to import:', import )
+			return false
+		end
+		if not loaded[ path ] then
+			local sheet = loadAsset( path )
+			if not sheet then
+				_error( 'cannot import stylesheet', import, path )
+				return false
+			end
+			loaded[ path ] = true
+			importedSheets[ i ] = sheet
+			for i, item in ipairs( sheet.items ) do
+				_addItem( item )
+			end
+		end
+	end
+
+	for i, item in ipairs( items ) do
+		_addItem( item )
+	end
+
+	-- print('------')
+
+	table.sort( noTag, _compareStyleItemEntry )
+
+	for t, list in pairs( taggedList ) do
+		table.sort( list, _compareStyleItemEntry )
+		for _, entry0 in ipairs( noTag ) do
+			local p = entry0[2].finalPattern
+			local inserted = false
+			for i, entry1 in ipairs( list ) do
+				if match( entry1[2].name, p ) then
+					insert( list, i, entry0 )
+					inserted = true
+					break
+				end
+			end
+			if not inserted then
+				insert( list, entry0 )
+			end
+		end
+
+		-- print()
+		-- print( 'tag:', t )
+		-- for i, entry in ipairs( list ) do
+		-- 	print( i, entry[2].name, entry[1] )
+		-- end
+	end
+	self.items = items
+	self.taggedList = taggedList
+	self.importedSheets = importedSheets
+	return true
+end
+
+function UIStyleSheet:findImport( name )
+	if self.assetPath then
+		--try local asset siblings first
+		local path = dirname( self.assetPath ) .. '/' .. name
+		local node = getAssetNode( path )
+		if not node then
+			path = path .. '.ui_style'
+			node = getAssetNode( path )
+		end
+		if node then
+			return node:getPath()
+		end
+	end
+	local path = findAsset( name, 'ui_style' )
+	if not path then return false end
+	return path
+end
+
+function UIStyleSheet:loadFromAsset( node )
+	local dataPath = node:getObjectFile( 'def' )
+	return self:loadFromFile( dataPath )
+end
+
+function UIStyleSheet:loadFromFile( path )
+	local source = loadTextData( path )
+	if source then
+		return self:load( source )
+	else
 		return false
 	end
 end
 
-local extend = table.extend
-function UIStyleSheet:collectData( name, data )
-	local data = data or {}
-	for i, item in ipairs( self.items ) do
-			if item:accept( name ) then
+function UIStyleSheet:query( acc )
+	local globalCache = self.globalCache
+	local queryList, fullQuery = acc:getQueryList()
+	local data = globalCache[ fullQuery ]
+	if not data then
+		data = {}
+		for i, query in ipairs( queryList ) do
+			local result = self:_queryStyleData( unpack( query ) )
+			for k, v in pairs( result ) do
+				data[ k ] = v
+			end
+		end
+		globalCache[ fullQuery ] = data
+	end
+	return data
+end
+
+function UIStyleSheet:_queryStyleData( tag, query )
+	local globalCache = self.globalCache
+	local data = globalCache[ query ]
+	if data then return data end
+	-- print( 'looking up', query )
+	local data = {}
+	local taggedList = self.taggedList
+	local l = taggedList[ tag ]
+	if l then
+		for i, entry in ipairs( l ) do
+			local qualifier = entry[ 2 ]
+			if match( query, qualifier.finalPattern ) then
+				local item = entry[ 3 ]
 				for k,v in pairs( item.data ) do
 					data[ k ] = v
 				end
 			end
+		end
 	end
+	globalCache[ query ] = data
 	return data
 end
+
+-- function UIStyleSheet:collectLocalData( name, data )
+-- 	data = data or {}
+-- 	local localData = self:getLocalData( name )
+-- 	if localData then
+-- 		for k, v in pairs( localData ) do
+-- 			data[ k ] = v
+-- 		end
+-- 	end
+-- 	return data
+-- end
+
+-- function UIStyleSheet:getLocalData( name )
+-- 	local data = self.localCache[ name ]
+-- 	if data then return data end
+-- 	data = {}
+-- 	for i, item in ipairs( self.items ) do
+-- 		if item:accept( name ) then
+-- 			for k,v in pairs( item.data ) do
+-- 				data[ k ] = v
+-- 			end
+-- 		end
+-- 	end
+-- 	self.localCache[ name ] = data
+-- 	return data
+-- end
 
 --------------------------------------------------------------------
 CLASS: UIStyleRawItem ()
 	:MODEL{}
 
-local _itemIndex = 0
+
 function UIStyleRawItem:__init( superStyle )
-	_itemIndex = _itemIndex + 1
-	self._index = _itemIndex
+	self._index = 0
 	self.qualifiers = {}
 end
 
@@ -226,8 +369,10 @@ local function parseStyleNamePart( n )
 
 	table.sort( features )
 	local pattern = ''
+	local name = ''
 	local pass = false
 	if tag then
+		name = name .. tag
 		pattern = pattern .. tag
 		pass = false
 	else
@@ -236,6 +381,7 @@ local function parseStyleNamePart( n )
 	end
 
 	if state0 then
+		name = name .. ':' .. state0
 		pattern = pattern .. ':' .. state0
 		pass = false
 	elseif not pass then
@@ -244,6 +390,7 @@ local function parseStyleNamePart( n )
 	end
 
 	for i, f in ipairs( features ) do
+		name = name ..'.'..f
 		pattern = pattern .. '%.'..f
 		pattern = pattern .. '[^>]*'
 		pass = true
@@ -260,6 +407,7 @@ local function parseStyleNamePart( n )
 		tag      = tag or false,
 		state    = state0 or false,
 		features = features,
+		name     = name,
 		pattern  = pattern
 	}
 end
@@ -268,7 +416,7 @@ local function parseStyleName( n, ns )
 	local path = {}
 	n = n:trim()
 	n = ( ns or '' ) .. n
-
+	local name    = false
 	local pattern = false
 	local parts = n:split( '>', true ) --child element
 	for i, part in ipairs( parts ) do
@@ -279,16 +427,20 @@ local function parseStyleName( n, ns )
 		path[ i ] = data
 		if not pattern then
 			pattern = data.pattern
+			name    = data.name
 		else
 			pattern = pattern ..'>'..data.pattern
+			name = name ..'>'..data.name
 		end
 	end
 
 	-- print( n, '====>', pattern )
 	
 	return {
+		tag  = path and path[ #path ].tag,
 		path = path,
 		pattern = pattern,
+		name    = name,
 		finalPattern = pattern and ( '^' .. pattern .. '$' ) or false;
 	}
 end
@@ -303,14 +455,13 @@ function UIStyleRawItem:parseTarget( ... )
 	end
 end
 
-local match = string.match
 function UIStyleRawItem:accept( name )
 	for i, q in ipairs( self.qualifiers ) do
 		local pattern = q.finalPattern
 		if pattern then
 			local matched = match( name, pattern ) and true or false			
 			if matched then
-				-- print( 'matched >>', pattern, name  )
+				print( 'matched >>', pattern, ' ---> ', name  )
 				return true
 			-- else
 			-- 	print ( 'no match ..', pattern, name )
@@ -324,3 +475,15 @@ function UIStyleRawItem:load( data )
 	self.data = data
 end
 
+
+--------------------------------------------------------------------
+local function UIStyleSheetLoader( node )
+	local sheet = UIStyleSheet()
+	if sheet:loadFromAsset( node ) then
+		return sheet
+	else
+		return false
+	end
+end
+
+registerAssetLoader( 'ui_style', UIStyleSheetLoader )

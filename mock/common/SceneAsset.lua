@@ -1025,7 +1025,7 @@ function loadSceneDataFromPath( path, option )
 		local rootGroupDataList = {}
 		for i, filename in ipairs( files ) do
 			if filename:endwith( _SCENE_GROUP_EXTENSION ) then
-				local subName = basename( filename )
+				local subName = basename_noext( filename )
 				if matchSceneGroupFilter( subName ) then
 					local subData = loadAssetDataTable( path .. '/' .. filename )
 					rootGroupDataList[ subName ] = subData

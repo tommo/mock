@@ -100,7 +100,7 @@ local function MeshLoader( node )
 				texPath = string.gsub( texPath, "\"", "" )
 				-- print( "texture path", texPath )
 				if texPath~="" then
-					local texFileName = basename( texPath ) .. '.png'
+					local texFileName = basename_noext( texPath ) .. '.png'
 					table.insert( texPaths, rootPath .. '\\' .. texFileName )
 				end
 			
