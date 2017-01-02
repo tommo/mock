@@ -221,6 +221,7 @@ function TextLabel:getTextBounds( ... )
 end
 
 function TextLabel:drawBounds()
+	if not self._entity then return end 
 	GIIHelper.setVertexTransform( self._entity:getProp() )
 	if self.rectLimit then
 		local x1,y1, x2,y2 = self.box:getRect()	

@@ -79,6 +79,34 @@ function GraphicsPropComponent:setGrid( grid )
 	self.prop:setGrid( grid )
 end
 
+function GraphicsPropComponent:getSourceSize()
+	return 1, 1, 1
+end
+
+function GraphicsPropComponent:sizeToScl( x, y, z )
+	local sourceX, sourceY, sourceZ = self:getSourceSize()
+	return
+		sourceX ~= 0 and (x or 1)/sourceX or 0,
+		sourceY ~= 0 and (y or 1)/sourceY or 0,
+		sourceZ ~= 0 and (z or 1)/sourceZ or 0
+end
+
+function GraphicsPropComponent:getSize()
+	local sx, sy, sz = self:getScl()
+	local sourceX, sourceY, sourceZ = self:getSourceSize()
+	return sx * sourceX, sy * sourceY, sz * sourceZ 
+end
+
+function GraphicsPropComponent:setSize( x, y, z )
+	local sx, sy, sz = self:sizeToScl( x, y, z )
+	return self.prop:setScl( sx, sy, sz )
+end
+
+function GraphicsPropComponent:seekSize( x, y, z, duration, ease )
+	local sx, sy, sz = self:sizeToScl( x, y, z )
+	return self.prop:seekScl( sx, sy, sz, duration, ease )
+end
+
 --------------------------------------------------------------------
 function GraphicsPropComponent:getMoaiProp()
 	return self.prop

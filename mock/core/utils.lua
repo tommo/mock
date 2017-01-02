@@ -829,15 +829,21 @@ end
 local ssub=string.sub
 local format = string.format
 
-function hexcolor(s,alpha) --convert #ffffff to (1,1,1)
+function hexcolor( s, alpha ) --convert #ffffff to (1,1,1)
 	local l = #s
 	if l >= 7 then
+		if l == 9 then
+			alpha = alpha or tonumber('0x'..ssub(s,8,9))/255
+		end
 		local r,g,b
 		r = tonumber('0x'..ssub(s,2,3))/255
 		g = tonumber('0x'..ssub(s,4,5))/255
 		b = tonumber('0x'..ssub(s,6,7))/255
 		return r,g,b,alpha or 1
-	elseif l == 4 then
+	elseif l >= 4 then
+		if l == 5 then
+			alpha = alpha or tonumber('0x'..ssub(s,5,5))/15
+		end
 		local r,g,b
 		r = tonumber('0x'..ssub(s,2,2))/15
 		g = tonumber('0x'..ssub(s,3,3))/15

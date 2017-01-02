@@ -22,6 +22,7 @@ function DeckComponent:setDeck( deckPath )
 	self.deckPath = deckPath
 	local deck = mock.loadAsset( deckPath )
 	local moaiDeck = deck and deck:getMoaiDeck()
+	self._deck = deck
 	self._moaiDeck = moaiDeck
 	self.prop:setDeck( moaiDeck )
 	self.prop:forceUpdate()
@@ -37,6 +38,16 @@ end
 
 function DeckComponent:getTransform()
 	return self.prop
+end
+
+function DeckComponent:getSourceSize()
+	local deck = self._deck
+	if deck then
+		local w, h = deck:getSize()
+		return w, h, 1
+	else
+		return 1, 1, 1
+	end
 end
 
 --------------------------------------------------------------------

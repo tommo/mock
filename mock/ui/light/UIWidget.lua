@@ -1,6 +1,7 @@
 module 'mock'
 
 local insert, remove = table.insert, table.remove
+
 --------------------------------------------------------------------
 local function widgetZSortFunc( w1, w2 )
 	local z1 = w1:getLocZ()
@@ -20,6 +21,7 @@ local function makeRectNode( src )
 	return node
 end
 
+--------------------------------------------------------------------
 --------------------------------------------------------------------
 CLASS: UIWidgetBase ( Entity )
 	:MODEL{
@@ -47,6 +49,7 @@ end
 function UIWidgetBase:setLocalStyleSheet( path )
 	self.localStyleSheetPath = path
 	self.localStyleSheet = path and loadAsset( path )
+	self:onLocalStyleSheetChanged()
 end
 
 function UIWidgetBase:getStyleSheetObject()
@@ -56,6 +59,9 @@ function UIWidgetBase:getStyleSheetObject()
 	if p and p.FLAG_UI_WIDGET then
 		return p:getStyleSheetObject()
 	end
+end
+
+function UIWidgetBase:onLocalStyleSheetChanged()
 end
 
 function UIWidgetBase:_setParentView( v )
@@ -92,6 +98,8 @@ function UIWidgetBase:sortChildren()
 end
 
 
+
+--------------------------------------------------------------------
 --------------------------------------------------------------------
 CLASS: UIWidget ( UIWidgetBase )
 	:MODEL{
@@ -105,6 +113,7 @@ CLASS: UIWidget ( UIWidgetBase )
 		--------
 		Field 'loc'  :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc'  ) :label( 'Loc'  );
 		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size' ) :label( 'Size' );
+		Field 'layoutDisabled' :label( 'Disable Layout' );
 	}
 
 --------------------------------------------------------------------
@@ -123,6 +132,8 @@ function UIWidget:__init()
 
 	self.inputEnabled = true
 	self.eventFilters = {}
+
+	self.layoutDisabled = false
 end
 
 function UIWidget:getParentWidget()
@@ -133,11 +144,41 @@ function UIWidget:getParentWidget()
 	return true
 end
 
+function UIWidget:getChildWidgets()
+	return self.childWidgets
+end
+
+function UIWidget:getLayoutingChildInfo()
+	local result = {}
+	for i, widget in ipairs( self.childWidgets ) do
+		if not widget.layoutDisabled then
+			local hintW, hintH       = widget:getSizeHint()
+			local minW, minH         = widget:getMinSize()
+			local policyW, policyH   = widget:getSizePolicy()
+			local stretchW, stretchH = widget:getStretchFactor()
+			local entry = {
+				widget   = widget,
+				hintW    = hintW,
+				hintH    = hintH,
+				minW     = minW,
+				minH     = minH,
+				maxW     = maxW,
+				maxH     = maxH,
+				policyW  = policyW,
+				policyH  = policyH,
+				stretchW = stretchW,
+				stretchH = stretchH,
+			}
+			insert( result, entry )
+		end
+	end
+	return result
+end
+
 function UIWidget:onLoad()
 	self:initContent()
 	self:onInitContent()
 	self:invalidateStyle()
-	self:updateVisual()
 end
 
 function UIWidget:destroyNow()
@@ -218,6 +259,10 @@ function UIWidget:hasFocus()
 	return focused == self
 end
 
+function UIWidget:isHovered()
+	--==TODO
+end
+
 function UIWidget:hasChildFocus()
 	if self:hasFocus() then return true end
 	for i, child in ipairs( self.childWidgets	) do
@@ -271,6 +316,10 @@ function UIWidget:setFeature( feature, bvalue )
 	return self.styleAcc:setFeature( feature, bvalue ~= false )
 end
 
+function UIWidget:addFeature( feature )
+	return self:setFeature( feature, true )
+end
+
 function UIWidget:removeFeature( feature )
 	return self:setFeature( feature, false )
 end
@@ -304,7 +353,14 @@ end
 
 --------------------------------------------------------------------
 --geometry
-function UIWidget:onRectChange()
+function UIWidget:getViewLoc()
+	local wx, wy, wz = self:getWorldLoc()
+	local view = self:getParentView()
+	if view then
+		return view:worldToModel( wx, wy, wz )
+	else
+		return wx, wy, wz
+	end
 end
 
 function UIWidget:inside( x, y, z, pad )
@@ -349,18 +405,14 @@ function UIWidget:getContentRect()
 	return self:getRect()
 end
 
-function UIWidget:getTouchPadding()
-	return DEFAULT_TOUCH_PADDING
-end
-
 --------------------------------------------------------------------
 --layout
 function UIWidget:setLayout( l )
 	if l then
 		assert( not l.widget )
 		self.layout = l
-		l.widget = self
-		self:updateLayout()
+		l:setOwner( self )
+		self:invalidateLayout()
 		return l
 	else
 		self.layout = false
@@ -374,24 +426,35 @@ function UIWidget:invalidateLayout()
 	end
 end
 
--- function UIWidget:updateLayout()
--- 	if self.layout then
--- 		self.layout:onLayout( self )
--- 	end
--- end
---------------------------------------------------------------------
---size hints
-function UIWidget:getDefaultSize()
-	local default = self.overridedSize.default
-	if default then
-		return unpack( default )
-	else
-		return self:getDefaultSizeHint()
-	end
+function UIWidget:updateLayout()
+	local layout = self.layout 
+	if not layout then return end
+	layout:update()
 end
 
-function UIWidget:getDefaultSizeHint()
+function UIWidget:getStretchFactor()
+	return unpack( self.stretchFactor )
+end
+
+function UIWidget:setStretchFactor( h, v )
+	self.stretchFactor = { h or 0, v or 0 }
+end
+
+function UIWidget:getSizePolicy()
+	return unpack( self.sizePolicy )
+end
+
+function UIWidget:setSizePolicy( h, v )
+	self.sizePolicy = { h, v }
+	self:invalidateLayout()
+end
+
+function UIWidget:getSizeHint()
 	return 0, 0
+end
+
+function UIWidget:getMinSizeHint()
+	return 0,0
 end
 
 function UIWidget:getMinSize()
@@ -403,11 +466,8 @@ function UIWidget:getMinSize()
 	end
 end
 
-function UIWidget:getMinSizeHint()
-	return 0,0
-end
-
 function UIWidget:getMaxSize()
+	local overridedSize = self.overridedSize
 	local max = self.overridedSize.max
 	if max then
 		return unpack( max )
@@ -416,20 +476,12 @@ function UIWidget:getMaxSize()
 	end
 end
 
-function UIWidget:getMaxSizeHint()
-	return 1000, 1000
-end
-
 --------------------------------------------------------------------
 function UIWidget:setInputEnabled( enabled )
 	self.inputEnabled = enabled ~= false
 end
 
 --------------------------------------------------------------------
-function UIWidget:onSizeHint()
-	return 0, 0
-end
-
 function UIWidget:onSetActive( active )
 	self:setState( active and 'normal' or 'disabled' )	
 end
@@ -441,6 +493,12 @@ function UIWidget:setState( state )
 		self.styleAcc:setState( state )
 	end
 	return UIWidget.__super.setState( self, state )
+end
+
+--------------------------------------------------------------------
+--extra
+function UIWidget:getTouchPadding()
+	return DEFAULT_TOUCH_PADDING
 end
 
 --------------------------------------------------------------------

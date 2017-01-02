@@ -147,7 +147,10 @@ function UIView:getStyleSheetObject()
 	end
 end
 
-function UIView:notifyStyleSheetUpdate()
+function UIView:onLocalStyleSheetChanged()
+	self.pendingVisualUpdates = {}
+	self.pendingLayoutUpdates = {}
+	
 end
 
 function UIView:flushVisualUpdate()
@@ -159,8 +162,8 @@ function UIView:flushVisualUpdate()
 end
 
 function UIView:flushLayoutUpdate()
-	local updates = self.pendingVisualUpdates
-	self.pendingVisualUpdates = {}
+	local updates = self.pendingLayoutUpdates
+	self.pendingLayoutUpdates = {}
 	for w in pairs( updates ) do
 		
 	end

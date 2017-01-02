@@ -44,9 +44,10 @@ function _UIStyleLoaderEnv.script( s )
 	return s
 end
 
-local function _loadUIStyleSheetSource( src )
+local function _loadUIStyleSheetSource( src, assetFinder )
 	local items = {}
 	local imports = {}
+	local assets = {}
 	local currentNamespace = ''
 	local function importFunc( n )
 		insert( imports, n )
@@ -82,11 +83,31 @@ local function _loadUIStyleSheetSource( src )
 		return styleUpdater
 	end
 
+	local function assetFunc( name, assetTarget )
+		local assetData = {}
+		assetData.tag  = 'asset'
+		assetData.name = name
+		assetData.target = assetTarget or false
+		insert( assets, assetData )
+		return assetData
+	end
+
+	local function imageFunc( name )
+		return assetFunc( name, 'image' )
+	end
+
+	local function image9Func( name )
+		return assetFunc( name, 'image9' )
+	end
 
 	local env = {
 		import    = importFunc;
 		style     = styleFunc;
 		namespace = namespaceFunc;
+		--
+		asset     = assetFunc;
+		image     = imageFunc;
+		image9    = image9Func;
 	}
 
 	setmetatable( env, { __index = _UIStyleLoaderEnv } )
@@ -105,7 +126,7 @@ local function _loadUIStyleSheetSource( src )
 		return false
 	end
 
-	return items, imports
+	return items, imports, assets
 end
 
 --------------------------------------------------------------------
@@ -118,6 +139,49 @@ function UIStyleSheet:__init()
 	self.localCache = {}
 	self.globalCache = {}
 	self.importedSheets = {}
+end
+
+function UIStyleSheet:findAsset( name )
+	if self.assetPath then
+		--find siblings
+		local basePath = dirname( self.assetPath )
+		local siblingPath = basePath .. '/' .. name
+		if hasAsset( siblingPath ) then
+			return siblingPath
+		end
+		--try imported sheet
+		for i, sheet in ipairs( self.importedSheets ) do
+			local found = sheet:findAsset( name )
+			if found then return found end
+		end
+	end
+	return findAsset( name ) --asset library
+end
+
+function UIStyleSheet:solveAssetData( data )
+	local name = data.name
+	local target = data.target
+	local assetPath = self:findAsset( name )
+	if not assetPath then
+		data.asset = false
+		return false
+	end
+	if target == 'image' then --convert texture into deck
+		if matchAssetType( assetPath, 'texture' ) then
+			local deck = Quad2D()
+			deck:setTexture( assetPath )
+			data.asset = AdHocAsset( deck )
+		end
+	elseif target == 'image9' then --conver texture into patch deck
+		if matchAssetType( assetPath, 'texture' ) then
+			local deck = StretchPatch()
+			deck:setTexture( assetPath )
+			data.asset = AdHocAsset( deck )
+		end
+	else
+		data.asset = assetPath
+	end
+	return true
 end
 
 function UIStyleSheet:load( src )
@@ -143,7 +207,7 @@ function UIStyleSheet:load( src )
 		end
 	end
 
-	local items, imports = _loadUIStyleSheetSource( src )
+	local items, imports, assets = _loadUIStyleSheetSource( src, _findAsset )
 	if not items then
 		self.items = {}
 		return false
@@ -184,8 +248,12 @@ function UIStyleSheet:load( src )
 		_addItem( item )
 	end
 
-	-- print('------')
+	--solve assets
+	for i, assetData in ipairs( assets ) do
+		self:solveAssetData( assetData )
+	end
 
+	-- print('------')
 	table.sort( noTag, _compareStyleItemEntry )
 
 	for t, list in pairs( taggedList ) do
@@ -206,10 +274,10 @@ function UIStyleSheet:load( src )
 		end
 
 		-- print()
-		-- print( 'tag:', t )
-		-- for i, entry in ipairs( list ) do
-		-- 	print( i, entry[2].name, entry[1] )
-		-- end
+		print( 'tag:', t )
+		for i, entry in ipairs( list ) do
+			print( i, entry[2].name, entry[1] )
+		end
 	end
 	self.items = items
 	self.taggedList = taggedList

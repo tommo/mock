@@ -454,10 +454,10 @@ function StretchPatch:__init()
 	self.w = 0
 	self.h = 0
 
-	self.left   = 0.3
-	self.right  = 0.3
-	self.top    = 0.3
-	self.bottom = 0.3
+	self.left   = 0.33
+	self.right  = 0.33
+	self.top    = 0.33
+	self.bottom = 0.33
 
 end
 

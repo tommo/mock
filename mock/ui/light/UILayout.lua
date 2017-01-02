@@ -3,17 +3,28 @@ module 'mock'
 CLASS: UILayout ()
 	:MODEL{}
 
-mock.registerComponent( 'UILayout', UILayout )
-
-function UILayout:__init()
-end
-
-function UILayout:getOwnerWidget()
-	local ent = self:getEntity()
-	if ent and ent.FLAG_UI_WIDGET then
-		return ent
+function UILayout:__init( widget )
+	self.owner = false
+	if widget then
+		widget:setLayout( self )
 	end
 end
 
-function UILayout:updateLayout()
+function UILayout:setOwner( owner )
+	if self.owner == owner then return end
+	assert( not self.owner )
+	self.owner = owner
+end
+
+function UILayout:getOwner()
+	return self.owner
+end
+
+function UILayout:update()
+	self.updating = true
+	self:onUpdate()
+	self.updating = false
+end
+
+function UILayout:onUpdate()
 end

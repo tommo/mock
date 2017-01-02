@@ -666,7 +666,10 @@ function Entity:addChild( entity, layerName )
 
 	--TODO: better solution on scissor?
 	if self.scissorRect then entity:_setScissorRect( self.scissorRect ) end
-	
+
+	--attach transform/color
+	self:_attachChildEntity( entity )
+
 	local scene = self.scene
 
 	if scene then
@@ -680,10 +683,7 @@ function Entity:addChild( entity, layerName )
 	else
 		entity.layer = layerName or entity.layer or self.layer
 	end
-
-	--attach transform/color
-	self:_attachChildEntity( entity )
-
+	
 	return entity
 end
 

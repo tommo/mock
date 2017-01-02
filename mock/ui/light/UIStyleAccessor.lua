@@ -39,7 +39,8 @@ function UIStyleAccessor:__init( owner )
 	self.queryList      = false
 	self.fullQuery      = false
 
-	self.cachedData     = {}
+	self.cachedData     = false
+	self.localData      = false
 
 end
 
@@ -151,11 +152,13 @@ function UIStyleAccessor:buildQueryList()
 	return queryList, fullQuery
 end
 
-function UIStyleAccessor:get( key )
-	return self.cachedData[ key ]
+function UIStyleAccessor:get( key, default )
+	local v = self.cachedData[ key ]
+	if v == nil then return default end
+	return v
 end
 
-function UIStyleAccessor:getColor( key )
+function UIStyleAccessor:getColor( key, default )
 	local data = self.cachedData[ key ]
 	local tt = type( data )
 	if tt == 'string' then
@@ -171,10 +174,14 @@ function UIStyleAccessor:getColor( key )
 			end
 		end
 	end
-	return nil
+	if default then
+		return unpack( default )
+	else
+		return nil
+	end
 end
 
-function UIStyleAccessor:getVec2( )
+function UIStyleAccessor:getVec2( key, default )
 	local data = self.cachedData[ key ]
 	local tt = type( data )
 	if tt == 'number' then
@@ -183,10 +190,14 @@ function UIStyleAccessor:getVec2( )
 		local a,b = unpack( data )
 		return a or 0, b or 0
 	end
-	return nil
+	if default then
+		return unpack( default )
+	else
+		return nil
+	end
 end
 
-function UIStyleAccessor:getVec3( )
+function UIStyleAccessor:getVec3( key, default )
 	local data = self.cachedData[ key ]
 	local tt = type( data )
 	if tt == 'number' then
@@ -195,10 +206,14 @@ function UIStyleAccessor:getVec3( )
 		local a,b,c,d = unpack( data )
 		return a or 0, b or 0, c or 0
 	end
-	return nil
+	if default then
+		return unpack( default )
+	else
+		return nil
+	end
 end
 
-function UIStyleAccessor:getVec4( )
+function UIStyleAccessor:getVec4( key, default )
 	local data = self.cachedData[ key ]
 	local tt = type( data )
 	if tt == 'number' then
@@ -207,20 +222,43 @@ function UIStyleAccessor:getVec4( )
 		local a,b,c,d = unpack( data )
 		return a or 0, b or 0, c or 0, d or 0
 	end
+	if default then
+		return unpack( default )
+	else
+		return nil
+	end
+end
+
+function UIStyleAccessor:getString( key, default )
+	local data = self.cachedData[ key ]
+	local tt = type( data )
+	return tt == 'string' and data or default
+end
+
+function UIStyleAccessor:getNumber( key, default )
+	local data = self.cachedData[ key ]
+	local tt = type( data )
+	return tt == 'number' and data or default
+end
+
+function UIStyleAccessor:getBoolean( key, default )
+	local data = self.cachedData[ key ]
+	local tt = type( data )
+	return tt == 'boolean' and data or default
+end
+
+function UIStyleAccessor:getAsset( key, default )
+	local data = self.cachedData[ key ]
+	local tt = type( data )
+	local owner = self.owner
+	if tt == 'table' then
+		if data.tag == 'asset' then return data.asset end
+		if data.tag == 'object' then return data.object end
+	elseif tt == 'string' then
+		return data
+	end
+	if default then
+		return owner:requestAsset( default )
+	end
 	return nil
-end
-
-function UIStyleAccessor:getString( data )
-	local tt = type( data )
-	return tt == 'string' and data or nil
-end
-
-function UIStyleAccessor:getNumber( data )
-	local tt = type( data )
-	return tt == 'number' and data or nil
-end
-
-function UIStyleAccessor:getBoolean( data )
-	local tt = type( data )
-	return tt == 'boolean' and data or nil
 end

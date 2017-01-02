@@ -276,6 +276,16 @@ function checkAsset( path )
 	return AssetLibrary[ path ] ~= nil
 end
 
+function matchAssetType( path, pattern, plain )
+	local t = getAssetType( path )
+	if not t then return false end
+	if plain then
+		return t == pattern and t or false
+	else
+		return t:match( pattern ) and t or false
+	end
+end
+
 function getAssetType( path )
 	local node = getAssetNode( path )
 	return node and node:getType()
@@ -382,12 +392,24 @@ function canPreload( path ) --TODO:use a generic method for arbitary asset types
 	return true
 end
 
+local AdHocAssetRegistry = table.weak_v{} --todo: is weak safe?
+function AdHocAsset( object )
+	local box = {
+		object
+	}
+	AdHocAssetRegistry[ box ] = object
+	return box
+end
+
 function loadAsset( path, option )
+	local tmpAsset = AdHocAssetRegistry[ path ]
+	if tmpAsset then return tmpAsset end
+	
 	if path == '' then return nil end
 	if not path   then return nil end
 	option = option or {}
 	local policy   = option.policy or 'auto'
-	local node   = getAssetNode( path )
+	local node     = getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )
 		print( debug.traceback(2) )
