@@ -44,6 +44,29 @@ local function initFmodDesigner()
 
 end
 
+
+
+local event2IDCache = table.weak_k()
+
+local function _affirmFmodEvent( event )
+	if not event then return nil end
+	local id = event2IDCache[ event ]
+	if id ~= nil then return id end
+	if type( event ) == 'string' then
+		event, node = loadAsset( event ) 
+		if event then
+			id = event:getSystemID()
+		else
+			return nil
+		end
+	else
+		id = event:getSystemID()
+	end
+	event2IDCache[ event ] = id or false
+	return id
+end
+
+
 --------------------------------------------------------------------
 CLASS: FMODDeisgnerAudioManager ( AudioManager )
 	:MODEL{}
@@ -57,12 +80,14 @@ function FMODDeisgnerAudioManager:getListener( id )
 	return MOAIFmodEventMgr.getMicrophone()
 end
 
-function FMODDeisgnerAudioManager:playEvent3D( event, x, y, z )
-	return MOAIFmodEventMgr.playEvent3D( event, x,y,z )
+function FMODDeisgnerAudioManager:playEvent3D( eventPath, x, y, z )
+	local eventId = _affirmFmodEvent( eventPath )
+	return MOAIFmodEventMgr.playEvent3D( eventId, x,y,z )
 end
 
-function FMODDeisgnerAudioManager:playEvent2D( event, looped )
-	return MOAIFmodEventMgr.playEvent2D( event, looped )
+function FMODDeisgnerAudioManager:playEvent2D( eventPath, looped )
+	local eventId = _affirmFmodEvent( eventPath )
+	return MOAIFmodEventMgr.playEvent2D( eventId, looped )
 end
 
 function FMODDeisgnerAudioManager:getCategoryVolume( category )

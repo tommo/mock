@@ -57,7 +57,7 @@ require 'mock.core.DebugUI'
 require 'mock.core.DebugDrawQueue'
 
 ----audio
-require 'mock.core.Audio'
+require 'mock.core.AudioManager'
 
 
 ----game

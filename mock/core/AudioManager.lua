@@ -69,3 +69,12 @@ end
 function AudioManager:isCategoryMuted( category )
 	_error( 'need implementation' )
 end
+
+function AudioManager:isSoundInstance( sound )
+	_error( 'need implementation' )
+end
+
+function AudioManager:isSoundPlaying( sound )
+	_error( 'need implementation' )
+end
+

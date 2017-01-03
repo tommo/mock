@@ -2,55 +2,34 @@ module 'mock'
 --------------------------------------------------------------------
 --SOUND SOURCE
 --------------------------------------------------------------------
-local event2IDCache = table.weak_k()
-
-local function _affirmFmodEvent( event )
-	if not event then return nil end
-	local id = event2IDCache[ event ]
-	if id ~= nil then return id end
-	if type( event ) == 'string' then
-		event, node = loadAsset( event ) 
-		if event then
-			id = event:getSystemID()
-		else
-			return nil
-		end
-	else
-		id = event:getSystemID()
-	end
-	event2IDCache[ event ] = id or false
-	return id
-end
-
-local function clearFmodEventIDCache()
-	event2IDCache = table.weak_k()
-end
-
-
----------------------------------------------------------------------
 CLASS: SoundSource ( Component )
 	:MODEL{
 		Field 'defaultClip' :asset( getSupportedSoundAssetTypes() )  :getset('DefaultClip');
 		Field 'autoPlay'    :boolean();
+		'----';
 		Field 'is3D' :boolean();
+		Field 'singleInstance' :boolean();
 	}
 	:META{
 		category = 'audio'
 	}
+
+
 function SoundSource:__init()
 	self.eventInstances = {}
 	self.eventNamePrefix = false
 	self.is3D = true
 	self.loopSound = true
 	self.defaultClipPath = false
+	self.singleInstance = false
 end
 
 function SoundSource:onAttach( entity )
 end
 
 function SoundSource:onDetach( entity )
-	for evt, k in pairs( self.eventInstances ) do
-		evt:stop()
+	for instance, k in pairs( self.eventInstances ) do
+		instance:stop()
 	end
 	self.eventInstances = nil
 end
@@ -81,41 +60,46 @@ function SoundSource:start()
 	end
 end
 
+function SoundSource:stop()
+	for instance, k in pairs( self.eventInstances ) do
+		instance:stop()
+	end
+	self.eventInstances = {}
+end
 
 --------------------------------------------------------------------
 local inheritLoc = inheritLoc
-function SoundSource:_addInstance( evt, follow )
-	self:clearInstances()
-	self.eventInstances[ evt ] = true
-	if follow then
-		self._entity:_attachTransform( evt )
-		evt:forceUpdate()
+function SoundSource:_addInstance( instance, follow )
+	if self.singleInstance then
+		self:stop()
 	end
-	return evt
+	self:clearInstances()
+	self.eventInstances[ instance ] = true
+	if follow then
+		self._entity:_attachTransform( instance )
+		instance:forceUpdate()
+	end
+	return instance
 end
 
 function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )
-	local eventId = _affirmFmodEvent( event )
-	if not eventId then return false end
-
-	local evt	
-	evt = AudioManager.get():playEvent3D( eventId, x,y,z )
-	if evt then
-		return self:_addInstance( evt, follow~=false )
+	local instance	
+	instance = AudioManager.get():playEvent3D( event, x,y,z )
+	if instance then
+		return self:_addInstance( instance, follow~=false )
 	else
-		_error( 'sound event not found:', eventId )
+		_error( 'sound event not found:', event )
+		return false
 	end
 end
 
 function SoundSource:_playEvent2D( event, looped )
-	local eventId = _affirmFmodEvent( event )
-	if not eventId then return false end
-	
-	local evt = AudioManager.get():playEvent2D( eventId, looped )
-	if evt then
-		return self:_addInstance( evt, false )
+	local instance = AudioManager.get():playEvent2D( event, looped )
+	if instance then
+		return self:_addInstance( instance, false )
 	else
-		_error( 'sound event not found:', eventId )
+		_error( 'sound event not found:', event )
+		return false
 	end
 end
 
@@ -166,9 +150,9 @@ end
 function SoundSource:clearInstances()
 	if not self.eventInstances then return end
 	local t1 = {}
-	for evt, k in pairs( self.eventInstances ) do
-		if evt:isValid() then
-			t1[ evt ] = k
+	for instance, k in pairs( self.eventInstances ) do
+		if instance:isValid() then
+			t1[ instance ] = k
 		end
 	end
 	self.eventInstances = t1
@@ -176,15 +160,15 @@ end
 
 function SoundSource:pauseInstances( paused )
 	if not self.eventInstances then return end
-	for evt in pairs( self.eventInstances ) do
-		evt:pause( paused ~= false )
+	for instance in pairs( self.eventInstances ) do
+		instance:pause( paused ~= false )
 	end
 end
 
 function SoundSource:resumeInstances()
 	if not self.eventInstances then return end
-	for evt in pairs( self.eventInstances ) do
-		evt:pause( false )
+	for instance in pairs( self.eventInstances ) do
+		instance:pause( false )
 	end
 end
 

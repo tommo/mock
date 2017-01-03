@@ -23,6 +23,8 @@ require 'mock.audio.FMODStudioAudioManager'
 require 'mock.audio.FMODStudioProject'
 
 --------------------------------------------------------------------
+require 'mock.audio.GlobalSoundPlayer'
+--------------------------------------------------------------------
 ---- Component
 require 'mock.audio.SoundSource'
 require 'mock.audio.SoundListener'

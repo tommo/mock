@@ -49,9 +49,34 @@ local function createFMODStudioSystem()
 
 end
 
+
+local event2IDCache = table.weak_k()
+
+local function _affirmFmodEvent( event )
+	if not event then return nil end
+	local id = event2IDCache[ event ]
+	if id ~= nil then return id end
+	if type( event ) == 'string' then
+		event, node = loadAsset( event ) 
+		if event then
+			id = event:getSystemID()
+		else
+			return nil
+		end
+	else
+		id = event:getSystemID()
+	end
+	event2IDCache[ event ] = id or false
+	return id
+end
+
+
 --------------------------------------------------------------------
 CLASS: FMODStudioAudioManager ( AudioManager )
 	:MODEL{}
+
+function FMODStudioAudioManager:__init()
+end
 
 function FMODStudioAudioManager:init()
 	local system = createFMODStudioSystem()
@@ -64,6 +89,7 @@ end
 function FMODStudioAudioManager:getSystem()
 	return self.system
 end
+
 
 function FMODStudioAudioManager:clearCaches()
 	self.cacheBus = {}
@@ -156,7 +182,12 @@ function FMODStudioAudioManager:isCategoryPaused( category )
 	return bus:isPaused()
 end
 
-function FMODStudioAudioManager:createEventInstance( eventId )
+function FMODStudioAudioManager:createEventInstance( eventPath )
+	local eventId = _affirmFmodEvent( eventPath )
+	if not eventId then
+		_warn( 'no audio event found', eventPath )
+		return false
+	end
 	local ed = self:getEventById( eventId )
 	if not ed then
 		_warn( 'no event found', eventId )
@@ -166,18 +197,22 @@ function FMODStudioAudioManager:createEventInstance( eventId )
 	return instance
 end
 
-function FMODStudioAudioManager:playEvent3D( eventId, x, y, z )
-	local instance = self:createEventInstance( eventId )
+function FMODStudioAudioManager:playEvent3D( eventPath, x, y, z )
+	local instance = self:createEventInstance( eventPath )
 	if not instance then return false end
 	instance:start()
 	return instance
 end
 
-function FMODStudioAudioManager:playEvent2D( eventId, looped )
-	local instance = self:createEventInstance( eventId )
+function FMODStudioAudioManager:playEvent2D( eventPath, looped )
+	local instance = self:createEventInstance( eventPath )
 	if not instance then return false end
 	instance:start()
 	return instance
+end
+
+function FMODStudioAudioManager:isSoundPlaying( sound )
+	return sound:getPlaybackState() ~= MOAIFMODStudioEventInstance.PLAYBACK_STOPPED
 end
 
 --------------------------------------------------------------------

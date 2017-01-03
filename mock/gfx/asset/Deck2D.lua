@@ -477,7 +477,7 @@ end
 
 function StretchPatch:update()
 	local deck = self:getMoaiDeck()
-
+	if not self.texture then return false end
 	local tex, uv = self.texture:getMoaiTextureUV()
 	deck:setTexture( tex )
 	deck:setUVRect( 1, unpack( uv ) )	
