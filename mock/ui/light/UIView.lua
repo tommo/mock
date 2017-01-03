@@ -19,6 +19,11 @@ function UIView:__init()
 	self.eventQueue = {}
 	self.pendingVisualUpdates = {}
 	self.pendingLayoutUpdates = {}
+
+	self._updateNode = MOAIScriptNode.new()
+	self._updateNode:setCallback( function()
+		return self:doUpdate()
+	end)
 end
 
 function UIView:onLoad()
@@ -30,7 +35,19 @@ function UIView:onLoad()
 	)
 end
 
-function UIView:onUpdate( dt )
+function UIView:scheduleUpdate()
+	self._updateNode:scheduleUpdate()
+end
+
+function UIView:flushUpdate()
+	self._updateNode:flushUpdate()
+end
+
+function UIView:onUpdate()
+	self._updateNode:flushUpdate()
+end
+
+function UIView:doUpdate()
 	--update visual
 	self:dispatchEvents()
 	self:flushVisualUpdate()
@@ -92,6 +109,7 @@ end
 function UIView:postEvent( target, ev )
 	assert( target, ev.type )
 	insert( self.eventQueue, { target, ev } )
+	self:scheduleUpdate()
 end
 
 function UIView:dispatchEvents()
@@ -171,12 +189,13 @@ end
 
 function UIView:scheduleVisualUpdate( widget )
 	self.pendingVisualUpdates[ widget ] = true
+	self:scheduleUpdate()
 end
 
 function UIView:scheduleLayoutUpdate( widget )
 	self.pendingLayoutUpdates[ widget ] = true
+	self:scheduleUpdate()
 end
-
 
 --------------------------------------------------------------------
 --INPUT handling

@@ -36,14 +36,6 @@ function _UIStyleLoaderEnv.rgba( r,g,b,a )
 	return { ( r or 255 ) / 255, ( g or 255 ) /255, ( b or 255 ) / 255, ( a or 255 ) / 255 }
 end
 
-function _UIStyleLoaderEnv.image( path )
-	return { path = path }
-end
-
-function _UIStyleLoaderEnv.script( s )
-	return s
-end
-
 local function _loadUIStyleSheetSource( src, assetFinder )
 	local items = {}
 	local imports = {}
@@ -98,6 +90,13 @@ local function _loadUIStyleSheetSource( src, assetFinder )
 
 	local function image9Func( name )
 		return assetFunc( name, 'image9' )
+	end
+
+	local function scriptFunc( src )
+		local scriptData = {}
+		scriptData.tag = 'script'
+		scriptData.source = src
+		return scriptData
 	end
 
 	local env = {
@@ -170,12 +169,18 @@ function UIStyleSheet:solveAssetData( data )
 		if matchAssetType( assetPath, 'texture' ) then
 			local deck = Quad2D()
 			deck:setTexture( assetPath )
+			local dw, dh = deck:getSize()
+			deck:setOrigin( dw/2, dh/2 )
+			deck:update()
 			data.asset = AdHocAsset( deck )
 		end
 	elseif target == 'image9' then --conver texture into patch deck
 		if matchAssetType( assetPath, 'texture' ) then
 			local deck = StretchPatch()
 			deck:setTexture( assetPath )
+			local dw, dh = deck:getSize()
+			deck:setOrigin( dw/2, dh/2 )
+			deck:update()
 			data.asset = AdHocAsset( deck )
 		end
 	else
@@ -274,10 +279,10 @@ function UIStyleSheet:load( src )
 		end
 
 		-- print()
-		print( 'tag:', t )
-		for i, entry in ipairs( list ) do
-			print( i, entry[2].name, entry[1] )
-		end
+		-- print( 'tag:', t )
+		-- for i, entry in ipairs( list ) do
+		-- 	print( i, entry[2].name, entry[1] )
+		-- end
 	end
 	self.items = items
 	self.taggedList = taggedList
@@ -523,21 +528,21 @@ function UIStyleRawItem:parseTarget( ... )
 	end
 end
 
-function UIStyleRawItem:accept( name )
-	for i, q in ipairs( self.qualifiers ) do
-		local pattern = q.finalPattern
-		if pattern then
-			local matched = match( name, pattern ) and true or false			
-			if matched then
-				print( 'matched >>', pattern, ' ---> ', name  )
-				return true
-			-- else
-			-- 	print ( 'no match ..', pattern, name )
-			end
-		end
-	end
-	return false
-end
+-- function UIStyleRawItem:accept( name )
+-- 	for i, q in ipairs( self.qualifiers ) do
+-- 		local pattern = q.finalPattern
+-- 		if pattern then
+-- 			local matched = match( name, pattern ) and true or false			
+-- 			if matched then
+-- 				print( 'matched >>', pattern, ' ---> ', name  )
+-- 				return true
+-- 			-- else
+-- 			-- 	print ( 'no match ..', pattern, name )
+-- 			end
+-- 		end
+-- 	end
+-- 	return false
+-- end
 
 function UIStyleRawItem:load( data )
 	self.data = data

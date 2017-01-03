@@ -257,8 +257,5 @@ function UIStyleAccessor:getAsset( key, default )
 	elseif tt == 'string' then
 		return data
 	end
-	if default then
-		return owner:requestAsset( default )
-	end
-	return nil
+	return default
 end

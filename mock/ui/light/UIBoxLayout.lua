@@ -51,9 +51,9 @@ function UIBoxLayout:updateVertical()
 	local marginL, marginT, marginR, marginB = self:getMargin()
 	--size pass
 	-- local minHeight = owner:getMinHeight()
-	local availableWeight, availableHeight = owner:getSize()
-	availableHeight = availableHeight - marginT - marginB
+	local availableWidth, availableHeight = owner:getSize()
 	availableWidth  = availableWidth  - marginL - marginR
+	availableHeight = availableHeight - marginT - marginB
 
 	local minHeight = 0
 	local targetHeight = 0
@@ -79,7 +79,8 @@ function UIBoxLayout:updateVertical()
 
 	--pos pass
 	local y = marginT
-	-- for i, widget
+	-- for i, entry in ipairs( info ) do
+	-- end
 end
 
 

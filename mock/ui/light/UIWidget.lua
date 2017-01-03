@@ -113,7 +113,7 @@ CLASS: UIWidget ( UIWidgetBase )
 		--------
 		Field 'loc'  :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc'  ) :label( 'Loc'  );
 		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size' ) :label( 'Size' );
-		Field 'layoutDisabled' :label( 'Disable Layout' );
+		Field 'layoutDisabled' :boolean() :label( 'Disable Layout' );
 	}
 
 --------------------------------------------------------------------
@@ -380,9 +380,8 @@ function UIWidget:setSize( w, h )
 		w, h = self:getDefaultSize()
 	end
 	self.w, self.h = w, h
-	self:getProp():setBounds( 0,0,0, w,h,0 )
-	--todo: update layout in the root widget
-	-- self:updateLayout()
+	self:getProp():setBounds( 0,0, w,h )
+	self:invalidateStyle()
 end
 
 function UIWidget:getSize()
@@ -394,6 +393,16 @@ function UIWidget:setRect( x, y, w, h )
 	self.y = y
 	self.w = w
 	self.h = h
+end
+
+function UIWidget:getLocalRect()
+	local w, h = self:getSize()
+	return 0, 0, w, h
+end
+
+function UIWidget:getLocalRectCenter()
+	local x0, y0, x1, y1 = self:getLocalRect()
+	return ( x0 + x1 )/2, ( y0 + y1 )/2
 end
 
 function UIWidget:getRect()

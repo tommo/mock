@@ -160,6 +160,17 @@ function StyleSheet:applyToTextBox( box, defaultStyleName )
 	box:setStyle( result )
 end
 
+--------------------------------------------------------------------
+function makeStyleSheetFromFont( fontPath, size, color )
+	local sheet = StyleSheet()
+	local style = sheet:addStyle()
+	style.font  = fontPath
+	style.size  = size  or 20
+	style.color = color or { 1,1,1,1}
+	style.allowScale = false
+	sheet:updateStyles()
+	return sheet
+end
 
 --------------------------------------------------------------------
 function StyleSheetLoader( node )

@@ -107,6 +107,13 @@ function GraphicsPropComponent:seekSize( x, y, z, duration, ease )
 	return self.prop:seekScl( sx, sy, sz, duration, ease )
 end
 
+function GraphicsPropComponent:setRect( x0, y0, x1, y1 )
+	local w = x1 - x0
+	local h = y1 - y0
+	self:setLoc( x0, y0 )
+	self:setSize( w, h, 1 )
+end
+
 --------------------------------------------------------------------
 function GraphicsPropComponent:getMoaiProp()
 	return self.prop

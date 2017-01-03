@@ -50,10 +50,6 @@ function TextLabel:onDetach( entity )
 	entity:_detachProp( self.box )
 end
 
-function TextLabel:onEditorInit()
-	local sheet = getDefaultStyleSheet()
-	self:setStyleSheet( sheet )
-end
 
 --------------------------------------------------------------------
 function TextLabel:setBlend( b )
@@ -288,6 +284,14 @@ function TextLabel:applyMaterial( material )
 		self.box:setShader( defaultShader )
 	end
 end
+
+--------------------------------------------------------------------
+--Editor
+function TextLabel:onEditorInit()
+	local sheet = getDefaultStyleSheet()
+	self:setStyleSheet( sheet )
+end
+
 
 registerComponent( 'TextLabel', TextLabel )
 registerEntityWithComponent( 'TextLabel', TextLabel )
