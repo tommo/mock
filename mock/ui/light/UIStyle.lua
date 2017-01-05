@@ -18,8 +18,15 @@ local function _compareStyleItemEntry( a, b )
 	local na = qa.name
 	local nb = qb.name
 	if na ~= nb then
-		if nb:match( qa.finalPattern ) then return true end
-		if na:match( qb.finalPattern ) then return false end
+		local ma = nb:match( qa.finalPattern )
+		local mb = na:match( qb.finalPattern )
+		if ma ~= mb then
+			if ma then return true end
+			if mb then return false end
+		end
+		local as, bs = qa.state, qb.state
+		if bs and not as then return true end
+		if as and not bs then return false end
 	end
 	return a[1] < b[1]
 end
@@ -134,6 +141,7 @@ CLASS: UIStyleSheet ()
 
 function UIStyleSheet:__init()
 	self.assetPath = false
+	self.maxPathSize = 0
 	self.items = {}
 	self.localCache = {}
 	self.globalCache = {}
@@ -193,6 +201,8 @@ function UIStyleSheet:load( src )
 	local idx = 0
 	local noTag = {}
 	local taggedList = {}
+	local maxPathSize = 0
+
 	local function _addItem( item )
 		item._index = idx
 		idx = idx + 1
@@ -220,6 +230,7 @@ function UIStyleSheet:load( src )
 	for i, item in ipairs( getBaseStyleSheet().items ) do
 		_addItem( item )
 	end
+	maxPathSize = getBaseStyleSheet().maxPathSize
 
 	local loaded = {}
 	local importedSheets = {}
@@ -243,6 +254,7 @@ function UIStyleSheet:load( src )
 			end
 			loaded[ path ] = true
 			importedSheets[ i ] = sheet
+			maxPathSize = math.max( maxPathSize, sheet.maxPathSize )
 			for i, item in ipairs( sheet.items ) do
 				_addItem( item )
 			end
@@ -250,6 +262,7 @@ function UIStyleSheet:load( src )
 	end
 
 	for i, item in ipairs( items ) do
+		maxPathSize = math.max( maxPathSize, item.pathSize )
 		_addItem( item )
 	end
 
@@ -258,7 +271,6 @@ function UIStyleSheet:load( src )
 		self:solveAssetData( assetData )
 	end
 
-	-- print('------')
 	table.sort( noTag, _compareStyleItemEntry )
 
 	for t, list in pairs( taggedList ) do
@@ -283,7 +295,9 @@ function UIStyleSheet:load( src )
 		-- for i, entry in ipairs( list ) do
 		-- 	print( i, entry[2].name, entry[1] )
 		-- end
+		
 	end
+	self.maxPathSize = maxPathSize
 	self.items = items
 	self.taggedList = taggedList
 	self.importedSheets = importedSheets
@@ -310,6 +324,7 @@ end
 
 function UIStyleSheet:loadFromAsset( node )
 	local dataPath = node:getObjectFile( 'def' )
+	self.assetPath = node:getPath()
 	return self:loadFromFile( dataPath )
 end
 
@@ -340,10 +355,9 @@ function UIStyleSheet:query( acc )
 end
 
 function UIStyleSheet:_queryStyleData( tag, query )
-	local globalCache = self.globalCache
-	local data = globalCache[ query ]
+	local localCache = self.localCache
+	local data = localCache[ query ]
 	if data then return data end
-	-- print( 'looking up', query )
 	local data = {}
 	local taggedList = self.taggedList
 	local l = taggedList[ tag ]
@@ -351,6 +365,7 @@ function UIStyleSheet:_queryStyleData( tag, query )
 		for i, entry in ipairs( l ) do
 			local qualifier = entry[ 2 ]
 			if match( query, qualifier.finalPattern ) then
+				-- print( 'matched', query, qualifier.finalPattern )
 				local item = entry[ 3 ]
 				for k,v in pairs( item.data ) do
 					data[ k ] = v
@@ -358,7 +373,8 @@ function UIStyleSheet:_queryStyleData( tag, query )
 			end
 		end
 	end
-	globalCache[ query ] = data
+	
+	localCache[ query ] = data
 	return data
 end
 
@@ -395,6 +411,7 @@ CLASS: UIStyleRawItem ()
 
 function UIStyleRawItem:__init( superStyle )
 	self._index = 0
+	self.pathSize = 0
 	self.qualifiers = {}
 end
 
@@ -511,7 +528,9 @@ local function parseStyleName( n, ns )
 	
 	return {
 		tag  = path and path[ #path ].tag,
+		state = path and path[ #path ].state,
 		path = path,
+		pathSize = #path,
 		pattern = pattern,
 		name    = name,
 		finalPattern = pattern and ( '^' .. pattern .. '$' ) or false;
@@ -519,30 +538,17 @@ local function parseStyleName( n, ns )
 end
 
 function UIStyleRawItem:parseTarget( ... )
+	local pathSize = 0
 	local qualifiers = self.qualifiers
 	for i, name in ipairs( {...} ) do
 		local data = parseStyleName( name, self.namespace )
 		if data then
 			table.insert( qualifiers, data )
+			pathSize = math.max( pathSize, data.pathSize )
 		end
 	end
+	self.pathSize = pathSize
 end
-
--- function UIStyleRawItem:accept( name )
--- 	for i, q in ipairs( self.qualifiers ) do
--- 		local pattern = q.finalPattern
--- 		if pattern then
--- 			local matched = match( name, pattern ) and true or false			
--- 			if matched then
--- 				print( 'matched >>', pattern, ' ---> ', name  )
--- 				return true
--- 			-- else
--- 			-- 	print ( 'no match ..', pattern, name )
--- 			end
--- 		end
--- 	end
--- 	return false
--- end
 
 function UIStyleRawItem:load( data )
 	self.data = data

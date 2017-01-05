@@ -24,6 +24,9 @@ function UIView:__init()
 	self._updateNode:setCallback( function()
 		return self:doUpdate()
 	end)
+
+	self.focusManager = UIFocusManager( self )
+
 end
 
 function UIView:onLoad()

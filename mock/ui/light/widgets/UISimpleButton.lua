@@ -2,7 +2,6 @@ module 'mock'
 
 CLASS: UISimpleButton ( UIButton )
 	:MODEL{
-		Field 'text' :string() :getset( 'Text' )
 	}
 
 function UISimpleButton:__init()
@@ -13,14 +12,10 @@ function UISimpleButton:__init()
 	self.textLabel        = self:attachInternal( TextLabel() )
 end
 
-function UISimpleButton:getText()
-	return self.textLabel:getText()
-end
-
 function UISimpleButton:setText( t )
-	return self.textLabel:setText( t )
+	self.textLabel:setText( t )
+	return UISimpleButton.__super.setText( self, t )
 end
-
 
 local function rectAdjust( x0, y0, x1, y1, dx0, dy0, dx1, dy1 )
 	return x0 + dx0, y0 + dy0, x1 + dx1, y1 + dy1
@@ -31,8 +26,8 @@ local function rectOffset( x0, y0, x1, y1, ox, oy )
 end
 
 function UISimpleButton:onUpdateVisual( style )
-	self.buttonColor = { style:getColor( 'background_color' ) }
-	self.borderColor = { style:getColor( 'border_color' ) }
+	self.buttonColor = { style:getColor( 'background_color' , { 1,1,1,1 } ) }
+	self.borderColor = { style:getColor( 'border_color', { 1,1,1,1 } ) }
 
 	local spriteDeck = style:getAsset( 'background_sprite' )
 	if self.backgroundSpriteDeck ~= spriteDeck then
@@ -58,7 +53,7 @@ function UISimpleButton:onUpdateVisual( style )
 	local fontSize = style:get( 'font_size', 12 )
 	local styleSheet = makeStyleSheetFromFont( font, fontSize )
 	self.textLabel:setStyleSheet( AdHocAsset( styleSheet) )
-	self.textLabel:setColor( style:getColor( 'text_color' ) )
+	self.textLabel:setColor( style:getColor( 'text_color', { 1,1,1,1 } ) )
 	
 	self.backgroundSprite:setLocZ( -0.1 )
 	self.textLabel:setLocZ( 0.1 )

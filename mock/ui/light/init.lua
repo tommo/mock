@@ -12,14 +12,17 @@ require 'mock.ui.light.UIStyleBase'
 
 require 'mock.ui.light.UIEvent'
 require 'mock.ui.light.UIWidget'
-require 'mock.ui.light.UILayout'
-require 'mock.ui.light.UIView'
-require 'mock.ui.light.UIWidgetGroup'
 
-require 'mock.ui.light.UISpacer'
+require 'mock.ui.light.UILayout'
+require 'mock.ui.light.UIFocusManager'
+
+require 'mock.ui.light.UIView'
 
 --------------------------------------------------------------------
 require 'mock.ui.light.UIBoxLayout'
 
 --------------------------------------------------------------------
+require 'mock.ui.light.UIWidgetGroup'
+require 'mock.ui.light.UISpacer'
+
 require 'mock.ui.light.widgets'

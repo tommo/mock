@@ -129,6 +129,7 @@ function PhysicsShape:updateMaterial()
 		material.group or 0
 	)
 	self.parentBody:updateMass()
+	shape.materialTag = material.tag
 end
 
 function PhysicsShape:setFilter(categoryBits, maskBits, group)

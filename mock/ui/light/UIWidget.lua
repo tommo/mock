@@ -134,6 +134,16 @@ function UIWidget:__init()
 	self.eventFilters = {}
 
 	self.layoutDisabled = false
+	self.subWidget = false
+end
+
+function UIWidget:isSubWidget()
+	return self.subWidget
+end
+
+function UIWidget:setSubWidget( subWidget )
+	self.subWidget = subWidget and true or false
+	self:invalidateStyle()
 end
 
 function UIWidget:getParentWidget()
@@ -141,7 +151,7 @@ function UIWidget:getParentWidget()
 	if not p then return false end
 	if not p.FLAG_UI_WIDGET then return false end
 	if p:isRootWidget() then return false end
-	return true
+	return p
 end
 
 function UIWidget:getChildWidgets()

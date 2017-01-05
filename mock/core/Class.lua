@@ -367,8 +367,11 @@ function newClass( b, superclass, name  )
 	end
 
 	b.__name  = name or '??'
+	b.__classdirty = false
+	--TODO: automatically spread super class modification
 
 	local newindex=function( t, k, v )
+		b.__classdirty = true
 		rawset( b, k, v )
 		if k=='__init' then
 			buildInstanceBuilder(b)

@@ -370,6 +370,19 @@ function distance(x1,y1,x2,y2)
 	return sqrt(dx*dx+dy*dy)
 end
 
+function distance3Sqrd(x1,y1,z1, x2,y2,z2 )
+	local dx=x1-x2
+	local dy=y1-y2
+	local dz=z1-z2
+	return dx*dx+dy*dy+dz*dz
+end
+
+function distanceSqrd(x1,y1,x2,y2)
+	local dx=x1-x2
+	local dy=y1-y2
+	return dx*dx+dy*dy
+end
+
 function normalize(x,y)
 	local l = sqrt(x*x+y*y)
 	return x/l, y/l

@@ -154,6 +154,14 @@ function Component:getScene()
 	return ent and ent.scene
 end
 
+--- Get scene manager from owner entity's scene
+-- @p string name of the scene manager
+-- @ret Scene owner scene
+function Component:getSceneManager( id )
+	local scene = self:getScene()
+	return scene and scene:getManager( id )
+end
+
 --- Get owner entity's layer name
 -- @ret string layer's name
 function Component:getLayer()

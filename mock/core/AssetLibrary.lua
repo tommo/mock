@@ -392,7 +392,7 @@ function canPreload( path ) --TODO:use a generic method for arbitary asset types
 	return true
 end
 
-local AdHocAssetRegistry = table.weak_v{} --todo: is weak safe?
+local AdHocAssetRegistry = {} --table.weak_v{} --todo: is weak safe?
 function AdHocAsset( object )
 	local box = {
 		object

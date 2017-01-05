@@ -95,9 +95,13 @@ function UIStyleAccessor:markDirty()
 	self.owner:invalidateStyle()
 end
 
+function UIStyleAccessor:getStyleSheet()
+	return self.owner:getStyleSheetObject() or getBaseStyleSheet()
+end
+
 function UIStyleAccessor:update()
 	if self.cachedData then return end
-	local styleSheet = self.owner:getStyleSheetObject() or getBaseStyleSheet()
+	local styleSheet = self:getStyleSheet()
 	self.cachedData = styleSheet:query( self ) or {}
 end
 
@@ -109,6 +113,7 @@ end
 
 function UIStyleAccessor:buildQueryList()
 	local owner = self.owner
+	local sheet = self:getStyleSheet()
 	--update suffix
 	local features = table.keys( self.featureSet )
 	table.sort( features )
@@ -133,13 +138,16 @@ function UIStyleAccessor:buildQueryList()
 		queryList[ i ] = { prefix, query }
 	end
 
+	local maxPathSize = sheet.maxPathSize
 	local parent = owner:getParentWidget()
+	local pathSize = 1
 	while parent do
+		pathSize = pathSize + 1
+		if pathSize > maxPathSize then break end
 		local pacc = parent.styleAcc
 		local plist, pFullQuery = pacc:getQueryList()
 		for i, parentQuery in ipairs( plist ) do
 			for i, localQuery in ipairs( localQueryList ) do
-
 				local query = parentQuery[2] .. '>' .. localQuery[2]
 				insert( queryList, { localQuery[1], query } )
 			end
@@ -147,8 +155,15 @@ function UIStyleAccessor:buildQueryList()
 		fullQuery =  pFullQuery .. '>'.. fullQuery
 		parent = parent:getParentWidget()
 	end
-	--TODO: remove queries without result
+	
+	--TODO: remove queries without resul
+	-- print( '----')
+	-- for i, entry in ipairs( queryList ) do
+	-- 	print( entry[ 2 ] )
+	-- end
+
 	self.queryList = queryList
+	self.fullQuery = fullQuery
 	return queryList, fullQuery
 end
 

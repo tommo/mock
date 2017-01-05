@@ -2,16 +2,23 @@ module 'mock'
 
 CLASS: UIButton ( UIWidget )
 	:MODEL{
-
+		Field 'text' :string() :getset( 'Text' );
 	}
 	:SIGNAL{
 		clicked = '';
 	}
 
-registerEntity( 'UIButton', UIButton )
-
 function UIButton:__init()
 	self.pressed = false
+	self.text = 'Button'
+end
+
+function UIButton:setText( t )
+	self.text = t
+end
+
+function UIButton:getText()
+	return self.text
 end
 
 function UIButton:procEvent( ev )
@@ -34,6 +41,10 @@ function UIButton:procEvent( ev )
 		return self:onRelease()
 
 	end
+end
+
+function UIButton:getLabelRect()
+	return self:getContentRect()
 end
 
 function UIButton:onPress()

@@ -8,6 +8,7 @@ local gfx  = MOAIGfxDevice
 
 CLASS: GeometryComponent( DrawScript )
 	:MODEL{
+		Field 'index' :no_edit();
 		-- Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
 	}
 
@@ -173,28 +174,51 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: GeometryPolygon ( GeometryComponent )
+CLASS: GeometryLineStrip ( GeometryComponent )
 	:MODEL{
 		Field 'verts' :array( 'number' ) :getset( 'Verts' ) :no_edit();
+		Field 'looped' :boolean() :isset( 'Looped' );
 	}
-registerComponent( 'GeometryPolygon', GeometryPolygon )
+registerComponent( 'GeometryLineStrip', GeometryLineStrip )
 
-function GeometryPolygon:__init()
+function GeometryLineStrip:__init()
+	self.looped = false
 	self.boundRect = {0,0,0,0}
+	self.outputVerts = {}
 	self:setVerts{
 		0,0,
 		0,100,
 		100,100,
-		150, 50
+		100, 0
 	}
 end
 
-function GeometryPolygon:getVerts()
+function GeometryLineStrip:setLooped( looped )
+	self.looped = looped
+	self:updateVerts()
+end
+
+function GeometryLineStrip:isLooped()
+	return self.looped
+end
+
+function GeometryLineStrip:onAttach( ent )
+	GeometryLineStrip.__super.onAttach( self, ent )
+	self:updateVerts()
+end
+
+function GeometryLineStrip:getVerts()
 	return self.verts
 end
 
-function GeometryPolygon:setVerts( verts )
+function GeometryLineStrip:setVerts( verts )
 	self.verts = verts 
+	self:updateVerts()	
+end
+
+function GeometryLineStrip:updateVerts()
+	if not self._entity then return end
+	local verts = self.verts
 	local x0,y0,x1,y1
 	for i = 1, #verts, 2 do
 		local x, y = verts[ i ], verts[ i + 1 ]
@@ -204,20 +228,43 @@ function GeometryPolygon:setVerts( verts )
 		y1 = y1 and ( y > y1 and y or y1 ) or y
 	end
 	self.boundRect = { x0 or 0, y0 or 0, x1 or 0, y1 or 0 }
-	local loopVerts = { unpack(verts) }
+	local outputVerts = { unpack(verts) }
 	local count = #verts
 	if count < 6 then return end
-	table.insert( loopVerts, loopVerts[ 1 ] )
-	table.insert( loopVerts, loopVerts[ 2 ] )
-	self.loopVerts = loopVerts
+	if self:isLooped() then
+		table.insert( outputVerts, outputVerts[ 1 ] )
+		table.insert( outputVerts, outputVerts[ 2 ] )
+	end
+	self.outputVerts = outputVerts
 end
 
+
+function GeometryLineStrip:onDraw()
+	self:applyColor()
+	draw.drawLine( unpack( self.outputVerts ) )
+end
+
+function GeometryLineStrip:onGetRect()
+	return unpack( self.boundRect )
+end
+
+
+--------------------------------------------------------------------
+CLASS: GeometryPolygon ( GeometryLineStrip )
+	:MODEL{
+		Field 'looped' :boolean() :no_edit();
+	}
+registerComponent( 'GeometryPolygon', GeometryPolygon )
+
+function GeometryPolygon:__init()
+	self.looped = true
+end
+
+function GeometryPolygon:isLooped()
+	return true
+end
 
 function GeometryPolygon:onDraw()
 	self:applyColor()
-	draw.drawLine( unpack( self.loopVerts ) )
-end
-
-function GeometryPolygon:onGetRect()
-	return unpack( self.boundRect )
+	draw.drawLine( unpack( self.outputVerts ) )
 end
