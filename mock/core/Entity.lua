@@ -1581,7 +1581,6 @@ function registerEntity( name, creator )
 	-- assert( not entityTypeRegistry[ name ], 'duplicated entity type:'..name )
 	_stat( 'register entity type', name )
 	entityTypeRegistry[ name ] = creator
-
 end
 
 function getEntityRegistry()
@@ -1591,6 +1590,33 @@ end
 function getEntityType( name )
 	return entityTypeRegistry[ name ]
 end
+
+function buildEntityCategories()
+	local categories = {}
+	local unsorted   = {}
+	for name, entClass in pairs( getEntityRegistry() ) do
+		local model = Model.fromClass( entClass )
+		local category
+		if model then
+			local meta = model:getCombinedMeta()
+			category = meta[ 'category' ]
+		end
+		local entry = { name, entClass, category }
+		if not category then
+			table.insert( unsorted, entry )
+		else
+			local catTable = categories[ category ]
+			if not catTable then
+				catTable = {}
+				categories[ category ] = catTable
+			end
+			table.insert( catTable, entry )
+		end
+	end
+	categories[ '__unsorted__' ] = unsorted
+	return categories
+end
+
 
 --------------------------------------------------------------------
 registerEntity( 'Entity', Entity )

@@ -470,7 +470,7 @@ end
 function buildComponentCategories()
 	local categories = {}
 	local unsorted   = {}
-	for name, comClass in pairs( componentRegistry ) do
+	for name, comClass in pairs( getComponentRegistry() ) do
 		local model = Model.fromClass( comClass )
 		local category
 		if model then

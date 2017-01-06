@@ -15,6 +15,8 @@ require 'mock.physics.2D.PhysicsTriggerArea'
 require 'mock.physics.2D.PhysicsShapeBox'
 require 'mock.physics.2D.PhysicsShapeCircle'
 require 'mock.physics.2D.PhysicsShapePolygon'
+require 'mock.physics.2D.PhysicsShapeChain'
+
 require 'mock.physics.2D.PhysicsShapeBevelBox'
 require 'mock.physics.2D.PhysicsShapePie'
 
