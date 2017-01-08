@@ -60,7 +60,18 @@ function PhysicsShapeChain:updateVerts()
 	self:updateShape()
 end
 
-function PhysicsShapeChain:createShape( body )	
-	local chain = body:addChain( self.verts, self:isLooped() )
+function PhysicsShapeChain:createShape( body )
+	local verts = self.verts
+	local path = MOCKPolyPath.new()
+	local count = #verts/2
+	path:reserve( count )
+	for i = 1, count do
+		local k = ( i - 1 ) * 2
+		local x, y = verts[ k + 1 ], verts[ k + 2 ]
+		path:setVert( i, x, y )
+	end
+	path:clean( 2 )
+
+	local chain = body:addChain( path:getVerts(), self:isLooped() )
 	return chain
 end
