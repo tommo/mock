@@ -16,12 +16,12 @@ function GeometryComponent:__init()
 	self.color = {1,1,1,1}
 end
 
-function GeometryComponent:applyColor()
-	local ent = self._entity
-	if ent then
-		-- gfx.setPenColor( ent:getColor() )
-	end
-end
+-- function GeometryComponent:applyColor()
+-- 	local ent = self._entity
+-- 	if ent then
+-- 		-- gfx.setPenColor( ent:getColor() )
+-- 	end
+-- end
 
 -- function GeometryComponent:getBlend()
 -- 	return self.blend
@@ -61,7 +61,6 @@ function GeometryRect:setSize( w, h )
 end
 
 function GeometryRect:onDraw()
-	self:applyColor()
 	local w,h = self.w, self.h
 	if self.fill then
 		draw.fillRect( -w/2,-h/2, w/2,h/2 )
@@ -98,7 +97,6 @@ function GeometryCircle:setRadius( r )
 end
 
 function GeometryCircle:onDraw()
-	self:applyColor()
 	if self.fill then
 		draw.fillCircle( 0,0, self.radius )
 	else
@@ -124,7 +122,6 @@ function GeometryRay:__init()
 end
 
 function GeometryRay:onDraw()
-	self:applyColor()
 	local l = self.length
 	draw.fillRect( -1,-1, 1,1 )
 	draw.drawLine( 0, 0, l, 0 )
@@ -163,7 +160,6 @@ end
 
 function GeometryBoxOutline:onDraw()
 	local x,y,z = self.sizeX/2, self.sizeY/2, self.sizeZ/2
-	self:applyColor()
 	draw.drawBoxOutline( -x, -y, -z, x, y, z )
 end
 
@@ -240,7 +236,6 @@ end
 
 
 function GeometryLineStrip:onDraw()
-	self:applyColor()
 	draw.drawLine( unpack( self.outputVerts ) )
 end
 
@@ -253,18 +248,75 @@ end
 CLASS: GeometryPolygon ( GeometryLineStrip )
 	:MODEL{
 		Field 'looped' :boolean() :no_edit();
+		Field 'fill' :boolean() :isset( 'Filled' );
 	}
 registerComponent( 'GeometryPolygon', GeometryPolygon )
 
+local vtxFormat = MOAIVertexFormatMgr.getFormat ( MOAIVertexFormatMgr.XYZC )
 function GeometryPolygon:__init()
 	self.looped = true
+	self.fill = true
+	local mesh = MOAIMesh.new()
+	mesh:setVertexBuffer ( vtxBuffer, vtxFormat )
+	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
+	mesh:setShader ( MOAIShaderMgr.getShader ( MOAIShaderMgr.LINE_SHADER_3D ))
+	self.meshDeck = mesh
+end
+
+function GeometryPolygon:isFilled()
+	return self.fill
+end
+
+function GeometryPolygon:setFilled( fill )
+	self.fill = fill and true or false
+	self:updatePolygon()
 end
 
 function GeometryPolygon:isLooped()
 	return true
 end
 
-function GeometryPolygon:onDraw()
-	self:applyColor()
-	draw.drawLine( unpack( self.outputVerts ) )
+function GeometryPolygon:updateVerts()
+	GeometryPolygon.__super.updateVerts( self )
+	return self:updatePolygon()
+end
+
+function GeometryPolygon:updatePolygon()
+	if not self.fill then
+		self.prop:setDeck( self.deck ) --use drawScriptDeck
+		return
+	else
+		self.prop:setDeck( self.meshDeck )
+	end
+	
+	local tess = MOAIVectorTesselator.new ()
+	tess:setFillStyle ( MOAIVectorTesselator.FILL_SOLID )
+	tess:setFillColor ( 1,1,1,1 )
+	tess:setStrokeStyle ( MOAIVectorTesselator.STROKE_NONE )
+
+	----
+		tess:pushPoly()
+			local verts = self.verts
+			local count = #verts
+			for k = 1, count/2 do
+				local idx = (k-1) * 2
+				tess:pushVertex ( verts[idx+1], verts[idx+2] )
+			end
+		tess:finish()
+	tess:finish()
+
+	local vtxBuffer = MOAIGfxBuffer.new ()
+	local idxBuffer = MOAIGfxBuffer.new ()
+	local totalElements = tess:getTriangles ( vtxBuffer, idxBuffer, 2 );
+
+	local mesh = self.meshDeck
+	mesh:setVertexBuffer ( vtxBuffer, vtxFormat )
+	mesh:setIndexBuffer ( idxBuffer )
+	mesh:setTotalElements ( totalElements )
+	mesh:setBounds ( vtxBuffer:computeBounds ( vtxFormat ))
+
+	--triangulate
+	local x0,y0,x1,y1 = calcAABB( self.verts )
+	self.aabb  = { x0, y0, x1, y1 }
+
 end
