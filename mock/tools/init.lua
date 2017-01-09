@@ -39,6 +39,8 @@ require 'mock.tools.SpatialGrid'
 
 require 'mock.tools.EntityAlignment'
 
+require 'mock.tools.PolygonHelper'
+
 
 --------------------------------------------------------------------
 --color

@@ -68,6 +68,7 @@ require 'mock.gfx.DrawScript'
 require 'mock.gfx.Geometry'
 require 'mock.gfx.TexturePlane'
 require 'mock.gfx.TiledTextureRect'
+require 'mock.gfx.TexturePolygon'
 require 'mock.gfx.TextureCircle'
 require 'mock.gfx.SubTexturePlane'
 

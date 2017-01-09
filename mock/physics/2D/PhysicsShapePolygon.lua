@@ -127,85 +127,17 @@ function PhysicsShapePolygon:getVerts()
 	return self.verts
 end
 
-local function reversePath( path )
-	local verts = path:getVerts()
-	local count = #verts/2
-	local path1 = MOCKPolyPath.new()
-	path1:reserve( count )
-	for i = 1, count do
-		local k = ( i - 1 ) * 2
-		local x, y = verts[ k + 1 ], verts[ k + 2 ]
-		local idx = ( count - i ) + 1
-		path1:setVert( idx, x, y )
-	end
-	return path1
-end
-
-
-local function triangulate( verts )
-	if not ( MOCKPolyPath and MOCKPolyPartition ) then
-		return { verts }
-	end
-
-	local path = MOCKPolyPath.new()
-	local count = #verts/2
-	path:reserve( count )
-	for i = 1, count do
-		local k = ( i - 1 ) * 2
-		local x, y = verts[ k + 1 ], verts[ k + 2 ]
-		local idx = i
-		path:setVert( idx, x, y )
-	end
-
-	path:clean( 2 )
-	local partition = MOCKPolyPartition.new()
-	local triangulated = partition:doConvexPartition{ path }
-	if not triangulated then
-		path = path:reversed()
-		triangulated = partition:doConvexPartition{ path }
-	end
-
-	if not triangulated then
-		return { verts }
-	end
-
-	local result = {}
-	for i, tri in ipairs( triangulated ) do
-		local count = tri:getVertCount()
-		if count > 2 then
-			local triVerts = tri:getVerts()
-			while true do
-				local ccount = #triVerts
-				if ccount > 16 then
-					local partA = {}
-					local partB = {}
-					for i = 1, 16 do
-						partA[ i ] = triVerts[ i ]
-					end
-					for i = 15, ccount do
-						partB[ i - 15 + 1 ] = triVerts[ i ]
-					end
-					table.insert( partB, triVerts[1] )
-					table.insert( partB, triVerts[2] )
-					triVerts = partB
-					table.insert( result, partA )
-				else
-					table.insert( result, triVerts )
-					break
-				end
-			end
-		end
-	end
-	return result
-end
-
 function PhysicsShapePolygon:createShape( body )
 	--triangulate
 	self.aabb  = { calcAABB( self.verts ) }
-	local triangulated = triangulate( self.verts )
+	local option = {
+		maxPolygonSize = 8,
+		nearThreshold  = 2
+	}
+	local convexPolygons = PolygonHelper.convexPartition( self.verts, option )
 	local proxy = Box2DShapeGroupProxy()
-	for i, tri in ipairs( triangulated ) do
-		local poly = body:addPolygon( tri )
+	for i, poly in ipairs( convexPolygons ) do
+		local poly = body:addPolygon( poly )
 		poly.component = self
 		proxy:addShape( poly )
 	end

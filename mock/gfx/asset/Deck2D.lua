@@ -519,6 +519,8 @@ function PolygonDeck:__init()
 	self.polyline   = false
 	self.vertexList = {}
 	self.indexList  = {}
+	self.uvScale = { 1,1 }
+	self.uvOffset = { 0,0 }
 end
 
 function PolygonDeck:createMoaiDeck()
@@ -536,9 +538,14 @@ function PolygonDeck:update()
 	local tex, uv = self.texture:getMoaiTextureUV()
 	local u0,v0,u1,v1 = unpack( uv )
 	mesh:setTexture( tex )
+	local uscale,vscale = unpack( self.uvScale )
+	local uo,vo = unpack( self.uvOffset )
 	
-	local us = u1-u0
-	local vs = v1-v0
+	local usize = u1-u0
+	local vsize = v1-v0
+
+	uo = uo * usize
+	vo = vo * usize
 
 	local vertexList  = self.vertexList
 	local vertexCount = #vertexList
@@ -550,8 +557,9 @@ function PolygonDeck:update()
 	for i = 1, vertexCount, 4 do
 		local x, y = vertexList[ i ], vertexList[ i + 1 ]
 		local u, v = vertexList[ i + 2 ], vertexList[ i + 3 ]
+		local fu,fv = u*usize*uscale + u0 + uo,  v*vsize*vscale +v0 + vo
 		vbo:writeFloat ( x, y )
-		vbo:writeFloat ( u*us + u0,  v*vs +v0 )
+		vbo:writeFloat ( fu, fv )
 		vbo:writeColor32 ( 1, 1, 1 )
 	end
 
