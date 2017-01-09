@@ -189,7 +189,7 @@ function Component:callNextFrame( f, ... )
 		object = self,
 		...
 	}
-	insert( scene.pendingCall, t )
+	table.insert( scene.pendingCall, t )
 end
 
 
