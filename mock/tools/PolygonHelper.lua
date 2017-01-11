@@ -1,5 +1,15 @@
 module 'mock'
 
+local sqrt = math.sqrt
+local cos	= math.cos
+local acos = math.acos
+local pi	= math.pi
+local halfPi = pi*0.5
+local doublePi = pi*2
+local abs	= math.abs
+local atan2 = math.atan2
+
+
 local function reversePath( path )
 	local verts = path:getVerts()
 	local count = #verts/2
@@ -173,8 +183,85 @@ local function triangulate( verts, option )
 	return result
 end
 
+
+local function offsetPolygon(verts, offset, looped)
+	offset = offset or 0
+	if offset == 0 then return verts end
+	----
+	local offsetedPolygon = {}
+
+	local vertCount = #verts
+
+	local x0, y0 
+	local x1, y1 		= verts[1], verts[2]
+	local x, y
+	if looped then
+		x, y 	= verts[vertCount - 1], verts[vertCount]
+	else
+		local dx = x1 - verts[3]
+		local dy = y1 - verts[4]
+		x, y = x1 + dx, y1 + dy
+	end
+
+	--loop through all points
+	for i=1, vertCount-1, 2 do
+		--reuse previously localized points
+		x0, y0 	= x, y
+		x, y 	= x1, y1
+
+		if i < vertCount - 1 then
+			x1, y1 = verts[i + 2], verts[i + 3]
+		else
+			if looped then
+				x1, y1 = verts[1], verts[2]
+			else
+				local dx = x - x0
+				local dy = y - y0
+				x1, y1 = x + dx, y + dy
+			end
+		end
+
+		local vx0, vy0 	= x - x0, y - y0
+		local vx1, vy1 	= x1 - x, y1 - y
+
+		local length0 = sqrt( vx0^2 + vy0^2 )
+		local length1 = sqrt( vx1^2 + vy1^2 )
+
+		local nx0, ny0 	= vx0 / length0, vy0 / length0
+		local nx1, ny1 	= vx1 / length1, vy1 / length1
+		
+		local vectorAngle = atan2(ny1, nx1) - atan2(ny0, nx0)
+
+		if vectorAngle == 0 then
+			offsetedPolygon[i]   = x + ny0*offset 
+			offsetedPolygon[i+1] = y - nx0*offset
+		else
+			if vectorAngle < 0 then 
+				vectorAngle = vectorAngle - halfPi*0.5 + doublePi
+			else
+				vectorAngle = vectorAngle + halfPi*0.5
+			end
+
+			local vectorAngle2 = halfPi - acos(nx0*nx1 + ny0*ny1)
+
+			local vectorScale = 1 / cos(vectorAngle2)
+
+			if vectorAngle <= pi then
+				vectorScale = vectorScale*(-1)
+			end
+
+			offsetedPolygon[i]   = x - (nx0 - nx1)*vectorScale*offset 
+			offsetedPolygon[i+1] = y - (ny0 - ny1)*vectorScale*offset
+		end
+	end
+
+	return offsetedPolygon
+end
+
+
 PolygonHelper = {
 	reversePath     = reversePath;
 	triangulate     = triangulate;	
 	convexPartition = convexPartition;
+	offsetPolygon   = offsetPolygon;
 }
