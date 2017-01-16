@@ -1028,6 +1028,10 @@ function Field:onset( methodName )
 	return self	
 end
 
+function Field:on_set( ... )
+	return self:onset( ... )
+end
+
 function Field:isset( fieldName )
 	return self:get('is'..fieldName):set('set'..fieldName)
 end

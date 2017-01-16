@@ -40,7 +40,6 @@ function loadTextureLibrary( indexPath )
 	textureLibraryIndex = indexPath
 	textureLibrary = TextureLibrary()	
 	if MOAIFileSystem.checkFileExists( indexPath ) then
-		-- textureLibrary:loadCache( indexPath )
 		textureLibrary:load( indexPath )
 	else
 		textureLibrary:initDefault()
@@ -84,6 +83,8 @@ Texture	:MODEL{
 		Field 'scale'     ;
 		Field 'processor' :asset('texture_processor');
 		Field 'allowPacked' :boolean();
+
+		Field 'modifyState' :string() :no_edit();
 	}
 
 function Texture:__init( path )
@@ -104,56 +105,53 @@ function Texture:__init( path )
 	self.atlasId       = false
 	self.scale         = -1
 	self.allowPacked   = true
+	self.parent        = false
+
+	self.modifyState   = false
 end
 
-function Texture:saveCacheData()
-	local data = self:saveMetaData()
-	data['w']                 = self.w
-	data['h']                 = self.h
-	data['ow']                = self.ow
-	data['oh']                = self.oh
-	data['rotated']           = self.rotated
-	data['x']                 = self.x
-	data['y']                 = self.y
-	data['u0']                = self.u0
-	data['v0']                = self.v0
-	data['u1']                = self.u1
-	data['v1']                = self.v1
-	data['atlasId']           = self.atlasId
-	data['prebuiltAtlasPath'] = self.prebuiltAtlasPath
-	return data
-end
-
-function Texture:loadCacheData( data )
-	self.scale             = data[ 'scale' ]
-	self.w                 = data[ 'w' ]
-	self.h                 = data[ 'h' ]
-	self.ow                = data[ 'ow' ]
-	self.oh                = data[ 'oh' ]
-	self.rotated           = data[ 'rotated' ]
-	self.x                 = data[ 'x' ]
-	self.y                 = data[ 'y' ]
-	self.u0                = data[ 'u0' ]
-	self.v0                = data[ 'v0' ]
-	self.u1                = data[ 'u1' ]
-	self.v1                = data[ 'v1' ]
-	self.atlasId           = data[ 'atlasId' ]
-	self.prebuiltAtlasPath = data[ 'prebuiltAtlasPath' ]
-end
-
-function Texture:loadMetaData( data )
-	self.scale       = data[ 'scale' ]
-	self.processor   = data[ 'processor' ]
-	self.allowPacked = data[ 'allowPacked' ]
-end
-
-function Texture:saveMetaData()
+function Texture:saveConfigData()
 	local data = {}
 	data[ 'group' ]       = self.parent:getName()
 	data[ 'scale' ]       = self.scale
 	data[ 'processor' ]   = self.processor
 	data[ 'allowPacked' ] = self.allowPacked
 	return data
+end
+
+function Texture:onFieldChanged( fid )
+	self.modifyState = 'all'	
+end
+
+function Texture:updateConfigData( data )
+	--check modification
+	local groupName = data[ 'group' ]
+	local scale = data[ 'scale' ]
+	local processor = data[ 'processor' ]
+	local allowPacked = data[ 'allowPacked' ]
+
+	if allowPacked ~= self.allowPacked then
+		self.allowPacked = allowPacked
+		self.modifyState = 'all'
+	end
+	if groupName ~= self.parent:getName() then
+		local group =  textureLibrary:getGroup( groupName )
+		if group then
+			group:addTexture( self )
+			self.modifyState = 'all'
+		else
+			_error( 'unkown texture group', groupName )
+		end
+	end
+	if scale ~= self.scale then
+		self.scale = scale
+		self.modifyState = 'all'
+	end
+	if processor ~= self.processor then
+		self.processor = processor
+		self.modifyState = 'all'
+	end
+	
 end
 
 function Texture:getSize()
@@ -302,6 +300,9 @@ TextureGroup :MODEL{
 		Field 'textures'       :array( Texture ) :no_edit();
 		Field 'parent'         :type( TextureLibrary ) :no_edit();
 		Field 'expanded'       :boolean() :no_edit();
+
+		Field 'modifyState' :string() :no_edit();
+
 	}
 
 function TextureGroup:__init()
@@ -325,24 +326,15 @@ function TextureGroup:__init()
 	self.scale               = 1
 
 	self._atlasTexturesCache  = makeAssetCacheTable()
+
+	self.modifyState = false
 end
 
 function TextureGroup:getName()
 	return self.name
 end
 
-function TextureGroup:saveCacheData()
-	local cacheData = {}
-	local data = self:saveMetaData()
-	data[ 'atlasCachePath' ] = self.atlasCachePath
-	return data
-end
-
-function TextureGroup:loadCacheData( data )
-	self.atlasCachePath = data[ 'atlasCachePath' ]
-end
-
-function TextureGroup:saveMetaData()
+function TextureGroup:saveConfigData()
 	local data = {}
 	data['name']                = self.name
 	data['default']             = self.default
@@ -362,22 +354,47 @@ function TextureGroup:saveMetaData()
 	return data
 end
 
-function TextureGroup:loadMetaData( data )
-	self.name                = data['name']
-	self.default             = data['default']
-	self.format              = data['format']
-	self.filter              = data['filter']
-	self.premultiplyAlpha    = data['premultiplyAlpha']
-	self.mipmap              = data['mipmap']
-	self.wrap                = data['wrap']
-	self.pow2                = data['pow2']
-	self.compression         = data['compression']
-	self.atlasMode           = data['atlasMode']
-	self.maxAtlasWidth       = data['maxAtlasWidth']
-	self.maxAtlasHeight      = data['maxAtlasHeight']
-	self.repackPrebuiltAtlas = data['repackPrebuiltAtlas']
-	self.scale               = data['scale']
-	self.processor           = data['processor']
+local _FlagFields  = { 'filter', 'premultiplyAlpha', 'mipmap', 'wrap', 'pow2' }
+local _AtlasFields = { 'atlasMode','maxAtlasWidth','maxAtlasHeight', 'repackPrebuiltAtlas' }
+local _FileFields  = { 'format', 'compression', 'scale', 'processor' }
+
+local function _updateFields( obj, data, fields )
+	local updated = false
+	for i, f in ipairs( fields ) do
+		local v = data[ f ]
+		if obj[ f ] ~= v then
+			obj[ f ] = v
+			updated = true
+		end
+	end
+	return updated
+end
+
+function TextureGroup:onFieldChanged( fid )
+	local flagChanged  = table.index( _FlagFields, fid ) and true or false
+	local atlasChanged = table.index( _AtlasFields, fid ) and true or false
+	local fileChanged  = table.index( _FileFields, fid ) and true or false
+	if fileChanged then
+		self:setModifyState( 'file' )
+	elseif atlasChanged then
+		self:setModifyState( 'atlas' )
+	elseif flagChanged then
+		self:setModifyState( 'flag' )
+	end
+end
+
+function TextureGroup:updateConfigData( data )
+	local default             = data['default']
+	local flagChanged  = _updateFields( self, data, _FlagFields )
+	local atlasChanged = _updateFields( self, data, _AtlasFields )
+	local fileChanged  = _updateFields( self, data, _FileFields )
+	if fileChanged then
+		self:setModifyState( 'file' )
+	elseif atlasChanged then
+		self:setModifyState( 'atlas' )
+	elseif flagChanged then
+		self:setModifyState( 'flag' )
+	end
 end
 
 function TextureGroup:addTextureFromPath( path )
@@ -389,10 +406,29 @@ end
 function TextureGroup:addTexture( t )
 	local pg = t.parent
 	if pg == self then return end
-	if pg then pg:removeTexture( t ) end
+	if pg then 
+		pg:removeTexture( t )
+	else
+		t.modifyState = 'all'
+	end
 	table.insert( self.textures, t )
 	t.parent = self
+	self:setModifyState( 'atlas' )
 	return t
+end
+
+function TextureGroup:setModifyState( s )
+	local s0 = self.modifyState
+	if s0 == s then return end
+	if not s0 then
+		self.modifyState = s
+	elseif s0 == 'flag' then
+		if s == 'file' or s == 'atlas' then self.modifyState = s end
+	elseif s0 == 'atlas' then
+		if s == 'file' then self.modifyState = s end
+	elseif s0 == 'file' then
+		--do nothing
+	end
 end
 
 function TextureGroup:removeTexture( t )
@@ -401,6 +437,7 @@ function TextureGroup:removeTexture( t )
 		if t1 == t then 
 			table.remove( self.textures, i )
 			t.parent = false
+			self:setModifyState( 'atlas' )
 			return
 		end
 	end
@@ -495,7 +532,9 @@ function TextureGroup:isAtlasLoaded()
 end
 
 function TextureGroup:loadTexture( instance )
-	if instance:isPrebuiltAtlas() then	return self:loadPrebuiltAtlas( instance ) end
+	if instance:isPrebuiltAtlas() then
+		return self:loadPrebuiltAtlas( instance )
+	end
 	local node = getAssetNode( instance:getPath() )
 	if self:isAtlas() then
 		if not self:isAtlasLoaded() then
@@ -505,13 +544,23 @@ function TextureGroup:loadTexture( instance )
 		local tex = self._atlasTexturesCache[ atlasId ]
 		if not tex then
 			_error( 'texture atlas not in cache', atlasId, self.name )
+			instance.valid = false
+		else
+			instance.valid = true
 		end
 		instance._texture = tex
 	else
 		local pixmapPath = node:getObjectFile( 'pixmap' )
 		local tex = self:_loadSingleTexture( pixmapPath, instance:getPath() )
+		if tex then
+			tex._ownerObject = instance
+			instance.valid = true
+		else
+			tex = MOAITexture.new()
+			tex:load( getTexturePlaceHolderImage() )
+			instance.valid = false
+		end
 		instance._texture = tex
-		tex._ownerObject = instance
 	end
 end
 
@@ -578,10 +627,9 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 	tex:setWrap( self.wrap )
 
 	local filePath = getProjectPath( pixmapPath )	
-	if not filePath then
+	if not ( pixmapPath and filePath ) then
 		_warn( 'nil imagepath specified', self.debugName )
-		tex:load( getTexturePlaceHolderImage() )
-		return tex
+		return nil		
 	end
 	
 	local async = TEXTURE_ASYNC_LOAD
@@ -631,6 +679,17 @@ function TextureLibrary:__init()
 	-- defaultGroup.name = 'DEFAULT'
 	-- defaultGroup.default = true
 	-- self.defaultGroup = defaultGroup
+	self.modifiedGroups = false
+	self.modifiedTextures = false
+end
+
+function TextureLibrary:initDefault()
+	_stat( 'initializing texture library' )
+	self.groups = {}
+	local defaultGroup = self:addGroup()
+	defaultGroup.name = 'DEFAULT'
+	defaultGroup.default = true
+	self.defaultGroup = defaultGroup
 end
 
 function TextureLibrary:save( path )
@@ -638,41 +697,10 @@ function TextureLibrary:save( path )
 	return serializeToFile( self, path )
 end
 
-function TextureLibrary:saveCacheData()
-	local cacheData = {}
-	local groupCacheData   = {}
-	local textureCacheData = {}
-	for i, group in ipairs( self.groups ) do
-		groupCacheData[ group.name ] = group:saveCacheData()
-		for j, texture in ipairs( group.textures ) do
-			textureCacheData[ texture.path ] = texture:saveCacheData()
-		end
-	end
-	cacheData[ 'groups' ]   = groupCacheData
-	cacheData[ 'textures' ] = textureCacheData
-	return cacheData
-end
-
-function TextureLibrary:loadCacheData( data )
-	local groups = {}
-	local defaultGroup = false
-	for name, groupCacheData in pairs( data[ 'groups' ] ) do
-		local group = TextureGroup()
-		group.parent = self
-		table.insert( groups, group )
-		group:loadCacheData( groupCacheData )
-		if group.default then
-			defaultGroup = group
-		end
-	end
-	self.groups = groups
-	self.defaultGroup = defaultGroup
-end
-
 function TextureLibrary:saveGroupData()
 	local output = {}
 	for i, group in ipairs( self.groups ) do
-		local data = group:saveMetaData()
+		local data = group:saveConfigData()
 		local name = group.name
 		output[ name ] = data
 	end
@@ -686,7 +714,7 @@ function TextureLibrary:loadGroupData( data )
 		local group = TextureGroup()
 		group.parent = self
 		groups[ i ] = group
-		group:loadMetaData( entry )
+		group:loadConfigData( entry )
 		if group.default then
 			if defaultGroup then
 				_warn( 'multiple default texture group', defaultGroup.name, group.name )
@@ -698,24 +726,16 @@ function TextureLibrary:loadGroupData( data )
 	self.defaultGroup = defaultGroup
 end
 
-function TextureLibrary:collectTextureMetaData()
+function TextureLibrary:collectTextureConfigData()
 	local result = {}
 	for i, group in ipairs( self.groups ) do
 		for _, tex in ipairs( group.textures ) do
-			result[ tex.path ] = tex:saveMetaData()
+			result[ tex.path ] = tex:saveConfigData()
 		end
 	end
 	return result
 end
 
-function TextureLibrary:initDefault()
-	_stat( 'initializing texture library' )
-	self.groups = {}
-	local defaultGroup = self:addGroup()
-	defaultGroup.name = 'DEFAULT'
-	defaultGroup.default = true
-	self.defaultGroup = defaultGroup
-end
 
 function TextureLibrary:load( path )
 	_stat( 'loading textureLibrary', path )
@@ -730,22 +750,36 @@ function TextureLibrary:load( path )
 	end
 end
 
-function TextureLibrary:loadCache( path )
-	self.defaultGroup = nil
-	self.groups = {}
-	local cacheData = tryLoadJSONFile( path )
-	if not cacheData then error( 'invalid texture cache data' ) end
-	self:loadCacheData( cacheData )
-end
-
 function TextureLibrary:saveGroupDataToFile( path )
 	local data = self:saveGroupData()
 	saveJSONFile( data, path )
 end
 
-function TextureLibrary:saveCacheDataToFile( path )
-	local data = self:saveCacheData()
-	saveJSONFile( data, path )
+function TextureLibrary:updateGroupDataFromFile( path )
+	local data = loadJSONFile( path )
+	if not data then return false end
+	for name, groupData in pairs( data ) do
+		local group0 = self:getGroup( name )
+		if group0 then
+			group0:updateConfigData( groupData )
+		else --new group?
+			local group = self:addGroup()
+			group.name = name
+			group:updateConfigData( groupData )
+			group.modifyState = 'file'
+		end
+	end
+	return true
+end
+
+function TextureLibrary:updateTextureConfig( path, data )
+	--data might be python dict
+	local tex = self:findTexture( path )
+	if not tex then
+		--missing texture node?
+		tex = self:addTexture( path )
+	end
+	tex:updateConfigData( data )
 end
 
 function TextureLibrary:clearEmptyNodes()
@@ -805,6 +839,7 @@ function TextureLibrary:addTexture( path, groupName )
 		group = self:getDefaultGroup()
 	end
 	local t = Texture( path )
+	t.modifyState = 'all'
 	group:addTexture( t )
 	self.lookupDict[ path ] = t
 	return t
@@ -846,6 +881,42 @@ function TextureLibrary:getReport()
 	report[ 'count_peak'  ] = 0
 	report[ 'memory_peak' ] = 0
 	return report
+end
+
+function TextureLibrary:updateModifyState()
+	local modifiedTextures = {}
+	local modifiedGroups    = {}
+	for i, g in ipairs( self.groups ) do
+		if g:isAtlas() and not g.atlasCachePath then --missing atlas, try rebuild it
+			g:setModifyState( 'atlas' )
+			modifiedGroups[ g ] = g.modifyState
+		end
+		if g.modifyState then
+			modifiedGroups[ g ] = g.modifyState
+		end
+		for j, t in ipairs( g.textures ) do
+			if t.modifyState then
+				modifiedTextures[ t ] = t.modifyState
+			end
+		end		
+	end
+	self.modifiedGroups   = modifiedGroups
+	self.modifiedTextures = modifiedTextures
+end
+
+function TextureLibrary:clearModifyState()
+	if self.modifiedGroups then 
+		for g, s in pairs( self.modifiedGroups ) do
+			g.modifyState = false
+		end
+	end
+	if self.modifiedTextures then 
+		for t, s in pairs( self.modifiedTextures ) do
+			t.modifyState = false
+		end
+	end
+	self.modifiedGroups = false
+	self.modifiedTextures = false 
 end
 
 --------------------------------------------------------------------

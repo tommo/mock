@@ -10,6 +10,8 @@ function UISimpleButton:__init()
 	self.backgroundSpriteDeck = false
 	self.backgroundSprite = self:attachInternal( DeckComponent() )
 	self.textLabel        = self:attachInternal( TextLabel() )
+	-- self.textLabel:setRectLimit( false, false )
+	self.textLabel.fitAlignment = false
 end
 
 function UISimpleButton:setText( t )
@@ -46,9 +48,9 @@ function UISimpleButton:onUpdateVisual( style )
 
 	self.textLabel:setAlignment( 'center' )
 	self.textLabel:setAlignmentV( 'center' )
-	self.textLabel:setLoc( self:getLocalRectCenter() )
+	self.textLabel:setRect( self:getLocalRect() )
 	self.textLabel:addLoc( style:getVec2( 'text_offset', { 0, 0 } ) )
-	
+
 	local font = style:getAsset( 'font' )
 	local fontSize = style:get( 'font_size', 12 )
 	local styleSheet = makeStyleSheetFromFont( font, fontSize )
@@ -61,4 +63,5 @@ end
 
 
 registerEntity( 'UISimpleButton', UISimpleButton )
+
 

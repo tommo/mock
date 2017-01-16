@@ -39,6 +39,7 @@ function TextLabel:__init(  )
 	self:useDeckShader()	
 	self.wordBreak = false
 	self.lineSpacing = 0
+	self.fitAlignment = true
 	-- self:useFontShader()
 end
 
@@ -118,6 +119,12 @@ function TextLabel:setRectLimit( limit )
 	self:updateRect()
 end
 
+function TextLabel:setRect( x, y, w, h )
+	self:setLoc( x, y )
+	self:setSize( w, h )
+end
+
+
 function TextLabel:getSize()
 	return self.w, self.h
 end
@@ -137,24 +144,28 @@ function TextLabel:updateRect()
 		self.box:setRectLimits( false, false )
 	else
 		local w, h = self.w, self.h
-		local alignH = self.alignment
-		local alignV = self.alignmentV
-		local x,y
-		if alignH == 'left' then
-			x = 0
-		elseif alignH == 'center' then
-			x = -w/2
-		else --'right'
-			x = -w
+		if self.fitAlignment then
+			local alignH = self.alignment
+			local alignV = self.alignmentV
+			local x,y
+			if alignH == 'left' then
+				x = 0
+			elseif alignH == 'center' then
+				x = -w/2
+			else --'right'
+				x = -w
+			end
+			if alignV == 'top' then
+				y = -h
+			elseif alignV == 'center' then
+				y = -h/2
+			else --'right'
+				y = 0
+			end
+			self.box:setRect( x, y, x + w, y + h )
+		else
+			self.box:setRect( 0,0,w,h )
 		end
-		if alignV == 'top' then
-			y = -h
-		elseif alignV == 'center' then
-			y = -h/2
-		else --'right'
-			y = 0
-		end
-		self.box:setRect( x, y, x + w, y + h )
 	end
 	self.box:setString( self.text ) --trigger layout
 end

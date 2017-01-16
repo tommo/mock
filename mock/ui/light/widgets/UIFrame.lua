@@ -8,7 +8,6 @@ function UIFrame:__init()
 end
 
 function UIFrame:setSize( w, h )
-	print( 'size', w, h )
 	UIFrame.__super.setSize( self, w, h )
 	self:setScissorRect( 0, 0, w, h )
 end

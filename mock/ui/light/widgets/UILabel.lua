@@ -9,7 +9,7 @@ mock.registerEntity( 'UILabel', UILabel )
 
 function UILabel:__init()
 	self.textLabel = self:attachInternal( TextLabel() )
-	
+	self.textLabel.fitAlignment = false
 end
 
 function UILabel:getText( t )
@@ -31,5 +31,5 @@ function UILabel:onUpdateVisual( style )
 	self.textLabel:setColor( style:getColor( 'text_color', { 1,1,1,1 } ) )
 	self.textLabel:setAlignment( style:get( 'align', 'left' ) )
 	self.textLabel:setAlignmentV( style:get( 'align_vertical', 'center' ) )
-	self.textLabel:setLoc( self:getLocalRectCenter() )
+	self.textLabel:setRect( self:getLocalRect() )
 end

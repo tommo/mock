@@ -182,12 +182,19 @@ function UIView:flushVisualUpdate()
 	end
 end
 
+local function _sortUIWidgetForLayout( a, b )
+
+end
+
+local insert = table.insert
 function UIView:flushLayoutUpdate()
 	local updates = self.pendingLayoutUpdates
 	self.pendingLayoutUpdates = {}
+	local queue = {}
 	for w in pairs( updates ) do
-		
+		insert( queue, w )
 	end
+	table.sort( queue, _sortUIWidgetForLayout )
 end
 
 function UIView:scheduleVisualUpdate( widget )

@@ -522,14 +522,13 @@ end
 
 --------------------------------------------------------------------
 --editor
-function UIWidget:onBuildGizmo(  )
-	return mock_edit.SimpleBoundGizmo()	
+function UIWidget:onBuildGizmo( )
+	return mock_edit.DrawScriptGizmo()	
 end
 
-function UIWidget:drawBounds()
+function UIWidget:onDrawGizmo( selected )
 	GIIHelper.setVertexTransform( self:getProp() )
-	-- local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
-	-- MOAIDraw.drawRect( x1,y1,x2,y2 )
+	MOAIGfxDevice.setPenColor( hexcolor('#fc0bff', selected and 0.9 or 0.4 ) )
 	local w, h = self:getSize()
 	MOAIDraw.drawRect( 0, 0, w, h )
 end
