@@ -93,7 +93,33 @@ end
 function SQNode:hasTag( t )
 	if not self.tags then return false end
 	for i, tag in ipairs( self.tags ) do
-		if tag == t then return true end
+		if tag == t then return tag end
+	end
+	return false
+end
+
+local match = string.match
+function SQNode:matchTag( pattern )
+	if not self.tags then return false end
+	for i, tag in ipairs( self.tags ) do
+		if match( pattern, t ) then return tag end
+	end
+	return false
+end
+
+function SQNode:findFirstTag( targets )
+	if not self.tags then return false end
+	for i, target in ipairs( targets ) do
+		if self:hasTag( target ) then return target end
+	end
+	return false
+end
+
+function SQNode:matchFirstTag( targets )
+	if not self.tags then return false end
+	for i, target in ipairs( targets ) do
+		local tag = self:matchTag( target ) 
+		if tag then return tag end
 	end
 	return false
 end

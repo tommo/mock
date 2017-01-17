@@ -647,6 +647,10 @@ function Entity:addSibling( entity, layerName )
 	end
 end
 
+function Entity:addRootEntity( entity, layerName )
+	return self.scene:addEntity( entity, layerName )
+end
+
 function Entity:_attachChildEntity( child )
 	local _prop = self._prop
 	local _p1   = child._prop
