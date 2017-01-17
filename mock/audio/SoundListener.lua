@@ -28,17 +28,21 @@ end
 
 function SoundListener:onAttach( entity )
 	local audioManager = AudioManager.get()
-	self._listener = audioManager:getListener( self.idx )
-	if not self._listener then
+	local listener = audioManager:getListener( self.idx )
+	if not listener then
 		_warn( 'failed to get system sound listener' )
 		return
 	end
 	if self.syncRot then
-		entity:_attachTransform( self._listener )
+		entity:_attachTransform( listener, 'physics' )
 	else
-		entity:_attachLoc( self._listener )
+		entity:_attachLoc( listener, 'physics' )
 	end
-	self:updateVectors()	
+	self._listener = listener
+	self:updateVectors()
+	if self.updateVelocity then
+		self:addCoroutine( 'actionUpdateVelocity' )
+	end
 end
 
 function SoundListener:updateVectors()
@@ -72,6 +76,22 @@ function SoundListener:setVectorUp( x,y,z )
 	self:updateVectors()
 end
 
+function SoundListener:actionUpdateVelocity()
+	local ent = self:getEntity()
+	local x, y, z = ent:getWorldLoc()
+	local _listener = self._listener
+	while true do
+		local dt = coroutine.yield()
+		ent:forceUpdate()
+		local x1, y1, z1 = ent:getWorldLoc()
+		if dt > 0 then
+			local vx = (x1 - x)/dt
+			local vy = (y1 - y)/dt
+			local vz = (z1 - z)/dt
+			_listener:setVelocity( vx, vy, vz )
+		end
+	end
+end
 
 registerComponent( 'SoundListener', SoundListener )
 

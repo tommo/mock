@@ -1,5 +1,9 @@
 module 'mock'
 
+DefaultAudioOption = {
+	unitsToMeters = 1.0,
+}
+
 --------------------------------------------------------------------
 CLASS: AudioManager ()
 	:MODEL{}
@@ -14,7 +18,7 @@ function AudioManager:__init()
 	_singleton = self	
 end
 
-function AudioManager:init()
+function AudioManager:init( option )
 	initFmodDesigner()
 end
 

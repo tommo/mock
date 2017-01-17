@@ -71,7 +71,7 @@ end
 CLASS: FMODDeisgnerAudioManager ( AudioManager )
 	:MODEL{}
 
-function FMODDeisgnerAudioManager:init()
+function FMODDeisgnerAudioManager:init( option )
 	local succ = initFmodDesigner()
 	return succ
 end

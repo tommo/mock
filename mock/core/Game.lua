@@ -268,16 +268,21 @@ function Game:initSubSystems( config, fromEditor )
 
 	--audio
 	_stat( 'init audio' )
+	self.audioOption = table.simplecopy( DefaultAudioOption )
+	if config['audio'] then
+		table.extend( self.audioOption, config['audio'] )
+	end
 	local audioManager = AudioManager.get()
 	if not audioManager then
 		error( 'no audio manager registered' )
 	end
 
-	if not audioManager:init() then
+	if not audioManager:init( self.audioOption ) then
 		error( 'failed to initialize audio system' )
 	end
 
 	--physics
+	_stat( 'init physics' )
 	--config for default physics world
 	self.physicsOption = table.simplecopy( DefaultPhysicsWorldOption )
 	if config['physics'] then
@@ -443,6 +448,7 @@ function Game:saveConfigToTable()
 
 		graphics       = self.graphicsOption,
 		physics        = self.physicsOption,
+		audio          = self.audioOption,
 		layers         = layerConfigs,
 		
 		scenes         = self.scenes,

@@ -78,10 +78,13 @@ CLASS: FMODStudioAudioManager ( AudioManager )
 function FMODStudioAudioManager:__init()
 end
 
-function FMODStudioAudioManager:init()
+function FMODStudioAudioManager:init( option )
 	local system = createFMODStudioSystem()
 	if not system then return false end
 	self.system = system
+	local u2m = option[ 'unitsToMeters'] or 1
+	self.system:setUnitsToMeters( u2m )
+	system:setNumListeners( 1 )
 	self:clearCaches()
 	return true
 end
@@ -201,6 +204,7 @@ function FMODStudioAudioManager:playEvent3D( eventPath, x, y, z )
 	local instance = self:createEventInstance( eventPath )
 	if not instance then return false end
 	instance:start()
+	instance:setLoc( x, y, z )
 	return instance
 end
 

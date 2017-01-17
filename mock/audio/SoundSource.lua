@@ -7,8 +7,10 @@ CLASS: SoundSource ( Component )
 		Field 'defaultClip' :asset( getSupportedSoundAssetTypes() )  :getset('DefaultClip');
 		Field 'autoPlay'    :boolean();
 		'----';
-		Field 'is3D' :boolean();
 		Field 'singleInstance' :boolean();
+		Field 'following' :boolean();
+		Field 'initialVolume' :number();
+		Field 'is3D' :boolean();
 	}
 	:META{
 		category = 'audio'
@@ -22,6 +24,8 @@ function SoundSource:__init()
 	self.loopSound = true
 	self.defaultClipPath = false
 	self.singleInstance = false
+	self.initialVolume = -1
+	self.following = true
 end
 
 function SoundSource:onAttach( entity )
@@ -68,15 +72,18 @@ function SoundSource:stop()
 end
 
 --------------------------------------------------------------------
-local inheritLoc = inheritLoc
 function SoundSource:_addInstance( instance, follow )
 	if self.singleInstance then
 		self:stop()
 	end
 	self:clearInstances()
 	self.eventInstances[ instance ] = true
+	if self.initialVolume >= 0 then
+		instance:setVolume( self.initialVolume )
+	end
 	if follow then
 		self._entity:_attachTransform( instance )
+		instance:setLoc( 0,0,0 )
 		instance:forceUpdate()
 	end
 	return instance
@@ -86,6 +93,7 @@ function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )
 	local instance	
 	instance = AudioManager.get():playEvent3D( event, x,y,z )
 	if instance then
+		follow = follow == nil and self.following or follow
 		return self:_addInstance( instance, follow~=false )
 	else
 		_error( 'sound event not found:', event )
