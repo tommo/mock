@@ -33,12 +33,15 @@ function SoundListener:onAttach( entity )
 		_warn( 'failed to get system sound listener' )
 		return
 	end
+	local targetProp = entity:getProp( 'physics' )
 	if self.syncRot then
-		entity:_attachTransform( listener, 'physics' )
+		inheritTransform( listener, targetProp )
 	else
-		entity:_attachLoc( listener, 'physics' )
+		inheritLoc( listener, targetProp )
 	end
 	self._listener = listener
+	listener:setLoc( 0,0,0 )
+	listener:forceUpdate()
 	self:updateVectors()
 	if self.updateVelocity then
 		self:addCoroutine( 'actionUpdateVelocity' )

@@ -76,6 +76,8 @@ CLASS: FMODStudioAudioManager ( AudioManager )
 	:MODEL{}
 
 function FMODStudioAudioManager:__init()
+	self.system = false
+	self.unitsToMeters = 1
 end
 
 function FMODStudioAudioManager:init( option )
@@ -83,10 +85,16 @@ function FMODStudioAudioManager:init( option )
 	if not system then return false end
 	self.system = system
 	local u2m = option[ 'unitsToMeters'] or 1
+	self.unitsToMeters = u2m
 	self.system:setUnitsToMeters( u2m )
 	system:setNumListeners( 1 )
+	self:getListener( 1 ):setLoc( 1000000, 1000000, 1000000 )
 	self:clearCaches()
 	return true
+end
+
+function FMODStudioAudioManager:getUnitToMeters()
+	return self.unitsToMeters
 end
 
 function FMODStudioAudioManager:getSystem()
@@ -185,18 +193,24 @@ function FMODStudioAudioManager:isCategoryPaused( category )
 	return bus:isPaused()
 end
 
-function FMODStudioAudioManager:createEventInstance( eventPath )
+function FMODStudioAudioManager:getEventDescription( eventPath )
 	local eventId = _affirmFmodEvent( eventPath )
 	if not eventId then
 		_warn( 'no audio event found', eventPath )
 		return false
 	end
-	local ed = self:getEventById( eventId )
-	if not ed then
+	local eventDescription = self:getEventById( eventId )
+	if not eventDescription then
 		_warn( 'no event found', eventId )
 		return false
 	end
-	local instance = ed:createInstance()
+	return eventDescription
+end
+
+function FMODStudioAudioManager:createEventInstance( eventPath )
+	local eventDescription = self:getEventDescription( eventPath )
+	if not eventDescription then return false end
+	local instance = eventDescription:createInstance()
 	return instance
 end
 
@@ -215,8 +229,83 @@ function FMODStudioAudioManager:playEvent2D( eventPath, looped )
 	return instance
 end
 
-function FMODStudioAudioManager:isSoundPlaying( sound )
+function FMODStudioAudioManager:isEventInstancePlaying( sound )
 	return sound:getPlaybackState() ~= MOAIFMODStudioEventInstance.PLAYBACK_STOPPED
+end
+
+
+local FMODStudioEventSettingNames = {
+	[ 'min_distance' ] = MOAIFMODStudioEventInstance.PROPERTY_MINIMUM_DISTANCE,
+	[ 'max_distance' ] = MOAIFMODStudioEventInstance.PROPERTY_MAXIMUM_DISTANCE,
+}
+
+function FMODStudioAudioManager:getEventSetting( path, key )
+	local ed = self:getEventDescription( path )
+	if not ed then return nil end
+	if key == 'min_distance' then
+		return ed:getMinimumDistance()
+	elseif key == 'max_distance' then
+		return ed:getMaximumDistance()
+	else
+		return nil
+	end
+end
+
+function FMODStudioAudioManager:setEventSetting( path, key, value )
+	--do nothing
+	return	
+end
+
+function FMODStudioAudioManager:getEventInstanceSetting( eventInstance, key )
+	local id
+	if type( key ) == 'number' then
+		id = key
+	else
+		id = FMODStudioEventSettingNames[ key ]
+	end
+	return id and eventInstance:getProperty( id )
+end
+
+
+function FMODStudioAudioManager:setEventInstanceSetting( eventInstance, key, value )
+	local id
+	if type( key ) == 'number' then
+		id = key
+	else
+		id = FMODStudioEventSettingNames[ key ]
+	end
+	if not id then
+		_warn( 'no valid event property', key )
+	end
+	return eventInstance:setProperty( id, value )
+end
+
+
+local function _getEventInstanceParameterIndex( eventInstance, key )
+	local desc = eventInstance:getDescription()
+	if not desc then return nil end
+	local parameterIndexCache = desc.parameterIndexCache
+	if not parameterIndexCache then
+		parameterIndexCache = {}
+		desc.parameterIndexCache = parameterIndexCache
+	end
+	local index = parameterIndexCache[ key ]
+	if index ~= nil then return index end
+	index = desc:getParameterIndex( key ) or false
+	parameterIndexCache[ key ] = index
+	return index
+end
+
+function FMODStudioAudioManager:getEventInstaceParameter( eventInstance, key )
+	local index = _getEventInstanceParameterIndex( key )
+	return eventInstance:getParameterValueByIndex( index )
+end
+
+function FMODStudioAudioManager:setEventInstanceParameter( eventInstance, key, value )
+	local index = _getEventInstanceParameterIndex( eventInstance )
+	if index then
+		return eventInstance:setParameterValueByIndex( index, value )
+	end
 end
 
 --------------------------------------------------------------------

@@ -49,24 +49,24 @@ EnumTimerModeWithDefault = {
 
 --------------------------------------------------------------------
 EnumTextureFilter = {
-	{ 'Linear',    'linear'  },
-	{ 'Nearest',   'nearest' }
+	{ 'linear',    'linear'  },
+	{ 'nearest',   'nearest' }
 }
 
 --------------------------------------------------------------------
 EnumTextureAtlasMode = {
-	{ 'No Atlas',  false },
-	{ 'Multiple',  'multiple' },
-	{ 'Single',    'single' }
+	{ 'none',      false },
+	{ 'multiple',  'multiple' },
+	{ 'single',    'single' }
 }
 
 --------------------------------------------------------------------
 EnumBlendMode = {
-	{ 'Alpha',     'alpha'    },
-	{ 'Add',       'add'      },
-	{ 'Multiply',  'multiply' },
-	{ 'Normal',    'normal'   },
-	{ 'Solid',     'solid'    },
+	{ 'alpha',     'alpha'    },
+	{ 'add',       'add'      },
+	{ 'multiply',  'multiply' },
+	{ 'normal',    'normal'   },
+	{ 'solid',     'solid'    },
 }
 
 --------------------------------------------------------------------

@@ -53,7 +53,7 @@ end
 function GlobalSoundPlayerSession:isPlaying()
 	local instance = self.soundInstance
 	if not instance then return false end
-	return AudioManager.get():isSoundPlaying( instance )
+	return AudioManager.get():isEventInstancePlaying( instance )
 end
 
 -- function GlobalSoundPlayerSession:stopSession()

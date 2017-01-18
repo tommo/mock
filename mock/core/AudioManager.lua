@@ -26,6 +26,10 @@ function AudioManager:getListener()
 	return nil
 end
 
+function AudioManager:getUnitToMeters()
+	return 1
+end
+
 function AudioManager:getMasterVolume()
 	return self:getCategoryVolume( 'master' )
 end
@@ -74,11 +78,44 @@ function AudioManager:isCategoryMuted( category )
 	_error( 'need implementation' )
 end
 
-function AudioManager:isSoundInstance( sound )
+function AudioManager:playEvent3D( eventPath, x, y, z )
 	_error( 'need implementation' )
 end
 
-function AudioManager:isSoundPlaying( sound )
+--RETURN event instance
+function AudioManager:playEvent2D( eventPath, looped )
+	_error( 'need implementation' )
+end
+
+function AudioManager:isEventInstance( sound )
+	_error( 'need implementation' )
+end
+
+function AudioManager:isEventInstancePlaying( sound )
+	_error( 'need implementation' )
+end
+
+function AudioManager:setEventSetting( eventInstance, id, value )
+	_error( 'need implementation' )
+end
+
+function AudioManager:getEventSetting( eventInstance, id )
+	_error( 'need implementation' )
+end
+
+function AudioManager:setEventInstanceSetting( eventInstance, id, value )
+	_error( 'need implementation' )
+end
+
+function AudioManager:getEventInstanceSetting( eventInstance, id )
+	_error( 'need implementation' )
+end
+
+function AudioManager:setEventInstanceParameter( eventInstance, id, value )
+	_error( 'need implementation' )
+end
+
+function AudioManager:getEventInstanceParameter( eventInstance, id )
 	_error( 'need implementation' )
 end
 
