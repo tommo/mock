@@ -124,7 +124,7 @@ function getAssetLibrary()
 end
 
 --------------------------------------------------------------------
-function loadAssetLibrary( indexPath )
+function loadAssetLibrary( indexPath, searchPatches )
 	if not indexPath then
 		_stat( 'asset library not specified, skip.' )
 		return
@@ -152,7 +152,42 @@ function loadAssetLibrary( indexPath )
 		registerAssetNode( path, value )		
 	end
 	AssetLibraryIndex = indexPath
+
+	if searchPatches then
+		--TODO: better asset patch storage
+		findAndLoadAssetPatches( 'asset_index_patch.json' )
+	end
 	emitSignal( 'asset_library.loaded' )
+end
+
+local function _extendDeep( t0, t1 )
+	for k, v1 in pairs( t1 ) do
+		local v0 = t0[ k ]
+		if v0 == nil then
+			t0[ k ] = v1
+		end
+		if type( v0 ) == 'table' then
+			if type( v1 ) ~= 'table' then
+				return false
+			end
+			if not _extendDeep( v0, v1 ) then return false end
+		else
+			if type( v1 ) == 'table' then
+				return false
+			end
+			t0[ k ] = v1
+		end
+	end
+	return true
+end
+
+function findAndLoadAssetPatches( patchPath )
+	if MOAIFileSystem.checkFileExists( patchPath ) then
+		local data = loadJSONFile( patchPath )
+		if data then
+			_extendDeep( AssetLibrary, data )
+		end
+	end
 end
 
 --------------------------------------------------------------------

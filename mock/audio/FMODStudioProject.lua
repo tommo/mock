@@ -64,6 +64,34 @@ function FMODStudioProject:load( path, id )
 	self:loadAllBanks()
 end
 
+function FMODStudioProject:updateChildAssetFromBanks( node )
+	local basePath = node:getPath()
+	local lib = getAssetLibrary()
+	for fmodPath, guid in pairs( self.strings ) do
+		local t, subPath = fmodPath:match( '(%w+):/(.*)' )
+		if t == 'event' then
+			local assetPath = basePath .. '/event/' .. subPath
+			if not lib[ assetPath ] then
+				local data ={
+					filePath = false,
+					type = 'fs_event',
+					deploy = false,
+					properties = {
+						path = fmodPath,
+						guid = guid,
+					},
+					fileTime = 0,
+					dependency = false,
+					objectFiles = {},
+				}
+				local node = registerAssetNode( assetPath, data )
+				node.parent = false
+				print( 'add extra fmod event:', assetPath)
+			end
+		end
+	end
+end
+
 function FMODStudioProject:unloadBank( bankPath )
 	local bank = self.banks[ bankPath ]
 	if not bank then
@@ -94,9 +122,8 @@ function FMODStudioProject:loadBank( bankPath, blocking )
 		_warn( 'bank already in loading', bankPath )
 		return false
 	end
-	print( 'loading bank', bankPath, blocking )
-
 	local fullPath = self.rootPath .. '/' ..bankPath
+	print( 'loading bank', fullPath, blocking )
 	sys = AudioManager.get():getSystem()
 	local bank = sys:loadBankFile( fullPath, blocking == true )
 
@@ -237,6 +264,10 @@ local function FMODStudioProjectLoader( node )
 	local proj = FMODStudioProject()
 	local dataPath = node:getObjectFile( 'data' )
 	proj:load( dataPath )
+	if not game.editorMode then
+		proj:updateChildAssetFromBanks( node )
+	end
+
 	loadedFMODStudioProjects[ nodePath ] = proj
 	return proj
 end

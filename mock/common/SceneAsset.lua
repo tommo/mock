@@ -751,6 +751,7 @@ function SceneDeserializer:deserializeMultipleScene( data, scene )
 		groups[ name ] = { groupData, group, objMap }
 	end
 
+
 	for name, entry in pairs( groups ) do
 		local groupData, group, objMap = unpack( entry )
 		self.currentRootGroup = group
@@ -1023,15 +1024,30 @@ function loadSceneDataFromPath( path, option )
 		local indexData = loadAssetDataTable( indexDataPath )
 		local files = MOAIFileSystem.listFiles( path )
 		local rootGroupDataList = {}
+		local assetDependency = {}
 		for i, filename in ipairs( files ) do
 			if filename:endwith( _SCENE_GROUP_EXTENSION ) then
 				local subName = basename_noext( filename )
 				if matchSceneGroupFilter( subName ) then
 					local subData = loadAssetDataTable( path .. '/' .. filename )
 					rootGroupDataList[ subName ] = subData
+					local dep = subData[ 'asset_dependency' ]
+					if dep then
+						for path, tag in pairs( dep ) do
+							local tag0 = assetDependency[ tag ]
+							local tag1
+							if tag == 'preload' then
+								tag1 = 'preload'
+							elseif tag == 'dep' then
+								tag1 = ( not tag0 ) and 'dep'
+							end
+							assetDependency[ path ] = tag1
+						end
+					end
 				end
 			end
 		end
+		data[ 'asset_dependency' ] = assetDependency
 		data[ 'index' ] = indexData
 		data[ 'roots' ] = rootGroupDataList
 		return data
@@ -1057,6 +1073,7 @@ local function sceneLoader( node, option )
 			node.cached.data = data
 		end
 	end
+	
 
 	local allowConditional = option and option.allowConditional
 	local scene  = option.scene or Scene()
@@ -1064,17 +1081,27 @@ local function sceneLoader( node, option )
 	scene:init()
 	scene.path = node:getNodePath()
 
-	--entities
-	deserializeScene( data, scene, allowConditional )
-
-	local dep = data['asset_dependency']
-	if dep then
-		for assetPath, tag in pairs( dep ) do
-			if tag == 'preload' and canPreload( assetPath ) then
-				mock.loadAsset( assetPath, { preload = true } )
+	_Stopwatch.start( 'scene_load_dependency' )
+		--entities
+		local dep = data['asset_dependency']
+		if dep then
+			for assetPath, tag in pairs( dep ) do
+				if tag == 'preload' and canPreload( assetPath ) then
+					mock.loadAsset( assetPath, { preload = true } )
+				end
 			end
 		end
-	end
+		
+	_Stopwatch.stop( 'scene_load_dependency' )
+	
+	_Stopwatch.start( 'scene_load_deserialization' )
+	
+		deserializeScene( data, scene, allowConditional )
+	
+	_Stopwatch.stop( 'scene_load_deserialization' )
+
+	_stat( _Stopwatch.report( 'scene_load_dependency', 'scene_load_deserialization' ) )
+
 	return scene, false --no cache
 end
 

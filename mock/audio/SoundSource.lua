@@ -24,12 +24,13 @@ CLASS: SoundSource ( Component )
 function SoundSource:__init()
 	self.eventInstances = {}
 	self.eventNamePrefix = false
+	self.autoPlay = true
 	self.loopSound = true
 	self.defaultEventPath = false
 	self.singleInstance = false
 	self.initialVolume = -1
 	self.is3D = true
-	self.following = true
+	self.following = false
 	self.minDistance = -1
 	self.maxDistance = -1
 end

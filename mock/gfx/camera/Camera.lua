@@ -114,6 +114,7 @@ function Camera:onAttach( entity )
 	self:bindSceneLayers()
 	self:reloadPasses()
 	getCameraManager():register( self )	
+	self:setShowDebugLines( self.showDebugLines )
 end
 
 function Camera:onDetach( entity )

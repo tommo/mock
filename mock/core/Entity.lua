@@ -18,7 +18,7 @@ local type   = type
 CLASS: Entity ( Actor )
 	:MODEL{
 		--editor related
-		Field '__gizmoColor' :type( 'color') :no_edit();
+		Field '__gizmoColor' :type( 'color') :tuple_getset() :no_edit();
 
 		--prefab
 		Field '__prefabId':string() :no_edit();

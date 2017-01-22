@@ -95,7 +95,6 @@ registerGlobalSignals{
 	'device.resize',
 
 	'mainscene.open',
-	'mainscene.refresh',
 	'mainscene.close',
 
 	'scene.init',
@@ -180,7 +179,6 @@ function Game:init( config, fromEditor )
 
 	--Systems
 	self:initGraphics   ( config, fromEditor )
-	self:initDebugUI    ()
 	self:applyPlaceHolderRenderTable()
 
 	self:initSystem     ( config, fromEditor )
@@ -191,6 +189,7 @@ function Game:init( config, fromEditor )
 		self:initCommonData( config, fromEditor )
 	end
 	
+	self:initDebugUI()
 
 end
 
@@ -348,7 +347,7 @@ function Game:initAsset( config, fromEditor )
 
 	--assetlibrary
 	_stat( '...loading asset library' )
-	loadAssetLibrary( self.assetLibraryIndex )
+	loadAssetLibrary( self.assetLibraryIndex, not fromEditor )
 	loadTextureLibrary( self.textureLibraryIndex )
 	getTextureLibrary():clearEmptyNodes()
 	
@@ -505,6 +504,8 @@ end
 --------Graphics related
 --------------------------------------------------------------------
 function Game:initGraphics( option, fromEditor )
+	_stat( 'init graphics' )
+
 	self.graphicsOption = option['graphics'] or {}
 	
 	local gfxOption = self.graphicsOption
@@ -543,6 +544,7 @@ function Game:initGraphics( option, fromEditor )
 
 	self.graphicsInitialized = true
 	if self.pendingResize then
+		_stat( 'send pending resize' )
 		self.pendingResize = nil
 		self:onResize( unpack( pendingResize ) )
 	end
@@ -555,6 +557,7 @@ function Game:initGraphics( option, fromEditor )
 end
 
 function Game:initDebugUI()
+	_stat( 'init graphics' )
 	local debugUIManager = getDebugUIManager()
 	debugUIManager:init()
 	debugUIManager:setEnabled( false )
@@ -703,17 +706,6 @@ end
 
 function Game:getPendingSceneData()
 	return self.pendingLoading
-end
-
-function Game:onSceneExit( scn )
-	assert( scn == self.mainScene )
-	local pendingScene = self.pendingScene
-	self.mainScene = false
-	emitSignal( 'mainscene.close', scn )
-	if pendingScene then
-		self.pendingScene = false
-		return self:openSceneByPath( pendingScene )
-	end
 end
 
 function Game:getMainScene()
