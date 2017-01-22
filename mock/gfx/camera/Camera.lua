@@ -78,6 +78,8 @@ function Camera:__init( option )
 
 	self.includedLayers = option.included or 'all'
 	self.excludedLayers = {}
+
+	self.passGroupStates = {}
 	
 	--extra
 	self.imageEffects = {}
@@ -168,6 +170,12 @@ function Camera:reloadPasses()
 	self.passes = {}
 	self:loadPasses()
 	self:updateRenderLayers()
+	--update group active state
+	for id, active in pairs( self.passGroupStates ) do
+		for i, pass in ipairs( self.passes ) do
+			pass:setGroupActive( id, active )
+		end
+	end
 end
 
 function Camera:loadPasses()
@@ -178,6 +186,13 @@ function Camera:addPass( pass )
 	pass:init( self )
 	table.insert( self.passes, pass )
 	return pass
+end
+
+function Camera:setPassGroupActive( id, active )
+	self.passGroupStates[ id ] = active
+	for i, pass in ipairs( self.passes ) do
+		pass:setGroupActive( id, active )
+	end
 end
 
 --------------------------------------------------------------------

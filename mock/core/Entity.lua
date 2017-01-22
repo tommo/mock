@@ -886,6 +886,15 @@ function Entity:getScene()
 	return self.scene
 end
 
+--- Get scene manager from owner entity's scene
+-- @p string name of the scene manager
+-- @ret Scene owner scene
+function Entity:getSceneManager( id )
+	local scene = self.scene
+	return scene and scene:getManager( id )
+end
+
+
 function Entity:getActionRoot()
 	if self.scene then return self.scene:getActionRoot() end
 	return nil

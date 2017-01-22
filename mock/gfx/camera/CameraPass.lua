@@ -6,7 +6,6 @@ CLASS: CameraPass ()
 
 function CameraPass:__init()
 	self.camera = false
-	self.renderLayers = {}
 	self.renderTarget  = false
 	self.renderTargets = {}
 	self.passes = {}
@@ -14,6 +13,21 @@ function CameraPass:__init()
 	self.defaultRenderTarget = false
 	self.outputRenderTarget  = false
 	self.debugLayers = {}
+	self.groups = {}
+	self.groupStates = {}
+end
+
+function CameraPass:setGroupActive( id, active )
+	self.groupStates[ id ] = active ~= false
+	local group = self.groups[ id ]
+	if not group then return end
+	for layer in pairs( group ) do
+		layer:setVisible( active )
+	end
+end
+
+function CameraPass:isGroupActive( id )
+	return self.groupStates[ id ] ~= false
 end
 
 function CameraPass:init( camera )
@@ -41,6 +55,8 @@ end
 
 function CameraPass:build()
 	self.passes = {}
+	self.groups = {}
+	self:setCurrentGroup( 'default' )
 	self:onBuild()
 	self:buildImageEffects()
 	self:postBuild()
@@ -55,7 +71,6 @@ end
 
 function CameraPass:postBuild()
 end
-
 
 function CameraPass:getCamera()
 	return self.camera
@@ -73,15 +88,30 @@ function CameraPass:getOutputRenderTarget()
 	return self.outputRenderTarget
 end
 
+function CameraPass:setCurrentGroup( id )
+	local group = self.groups[ id ]
+	if not group then
+		group = {}
+		self.groups[ id ] = group
+	end
+	self.currentGroup = group
+	self.currentGroupId = id
+end
+
 function CameraPass:pushPassData( data )
 	data[ 'camera' ] = self:getCamera()
+	data[ 'group'  ] = self.currentGroupId or 'default'
 	table.insert( self.passes, data )
 end
 
-function CameraPass:pushRenderLayer( layer, layerType )
+function CameraPass:pushRenderLayer( layer, layerType, debugLayer )
 	if not layer then 
 		_error( 'no render layer given!' )
 		return
+	end
+	
+	if not debugLayer then
+		self.currentGroup[ layer ] = true
 	end
 	
 	self:pushPassData {
