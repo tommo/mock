@@ -277,12 +277,11 @@ function resizeMOAIGrid( grid, w, h, tw, th ,ox, oy, cw, ch, gx, gy )
 	gx = gx or 0
 	gy = gy or 0
 	local ow, oh = grid:getSize()
-	local nw, nh = math.min( ow, w ), math.min( oh, h )
 	local tmpGrid = MOAIGrid.new()
-	tmpGrid:setSize( nw, nh )
+	tmpGrid:setSize( w, h )
 	local w0, h0 = grid:getSize()
-	for y = 1, nh do
-		for x = 1, nw do
+	for y = 1, h do
+		for x = 1, w do
 			local x1, y1 = x + gx, y + gy
 			if _isValidCoord( x1, y1, w0, h0 ) then
 				tmpGrid:setTile( x, y, grid:getTile( x1, y1 ) )
@@ -290,8 +289,8 @@ function resizeMOAIGrid( grid, w, h, tw, th ,ox, oy, cw, ch, gx, gy )
 		end
 	end
 	grid:setSize( w,h,tw,th,ox,oy,cw,ch )
-	for y = 1, nh do
-		for x = 1, nw do
+	for y = 1, h do
+		for x = 1, w do
 			grid:setTile( x, y, tmpGrid:getTile( x, y ) )
 		end
 	end
