@@ -20,8 +20,8 @@ function CodeTileGrid:setSize( w, h, tw, th, ox, oy, cw, ch )
 	self.height = h	
 end
 
-function CodeTileGrid:resize( w, h, tw, th, ox, oy, cw, ch )
-	resizeMOAIGrid( self.grid, w, h, tw, th, ox, oy, cw, ch )
+function CodeTileGrid:resize( w, h, tw, th, ox, oy, cw, ch, gx, gy )
+	resizeMOAIGrid( self.grid, w, h, tw, th, ox, oy, cw, ch, gx, gy )
 	self.width  = w
 	self.height = h
 end
@@ -158,10 +158,10 @@ function CodeTileMapLayer:createRenderProp()
 	return prop
 end
 
-function CodeTileMapLayer:onResize( w, h )
-	local w, h = self:getSize()
+function CodeTileMapLayer:onResize( x0, y0, x1, y1 )
+	local w, h = x1 - x0, y1 - y0
 	local tw, th = self:getTileSize()
-	self.mapGrid:resize( w, h, tw, th, 0,0, tw,th )
+	self.mapGrid:resize( w, h, tw, th, 0,0, tw,th, x0, y0 )
 end
 
 function CodeTileMapLayer:setVisible( vis )

@@ -94,6 +94,7 @@ registerGlobalSignals{
 	'gfx.resize',
 	'device.resize',
 
+	'mainscene.schedule_open',
 	'mainscene.open',
 	'mainscene.close',
 
@@ -702,6 +703,11 @@ function Game:scheduleOpenSceneByPath( scnPath, additive, arguments, autostart )
 		['arguments'] = arguments,
 		['autostart'] = autostart
 	}
+	emitGlobalSignal( 'mainscene.schedule_open', self.pendingLoading )
+end
+
+function Game:clearPendingScene()
+	self.pendingLoading = false
 end
 
 function Game:getPendingSceneData()

@@ -179,8 +179,8 @@ function TileMapLayer:onInit()
 	self.mapGrid:setSize( w, h, tw, th )
 end
 
-function TileMapLayer:resize( w, h )
-	self:onResize( w, h )
+function TileMapLayer:resize( x0, y0, x1, y1 )
+	self:onResize( x0, y0, x1, y1 )
 end
 
 function TileMapLayer:setSubDivision( div )
@@ -196,7 +196,7 @@ end
 function TileMapLayer:onSubDivisionChange( div, div0 )
 end
 
-function TileMapLayer:onResize( w, h )
+function TileMapLayer:onResize( x0, y0, x1, y1 )
 end
 
 function TileMapLayer:getName()
@@ -455,8 +455,14 @@ CLASS: TileMapResizeParam ()
 :MODEL {
 	Field 'width'          :int() :readonly();
 	Field 'height'         :int() :readonly();
-	Field 'newWidth'       :int() :range(1);
-	Field 'newHeight'      :int() :range(1);
+	-- Field 'newWidth'       :int() :range(1);
+	-- Field 'newHeight'      :int() :range(1);
+	Field 'expandN'        :int();
+	Field 'expandS'        :int();
+	Field 'expandW'        :int();
+	Field 'expandE'        :int();
+	'----';
+	Field 'adjustLoc'      :boolean();
 }
 
 -- function TileMapParam:updateTileSizeFromTileset()
@@ -629,12 +635,31 @@ function TileMap:init( param )
 end
 
 function TileMap:resize( resizeParam )
-	local newWidth  = resizeParam.newWidth
-	local newHeight = resizeParam.newHeight
+	local N = resizeParam.expandN
+	local E = resizeParam.expandE
+	local S = resizeParam.expandS
+	local W = resizeParam.expandW
+	local x0, y0, x1, y1 = 0, 0, self.width, self.height
+	x0 = x0 - W
+	x1 = x1 + E
+	y0 = y0 - S
+	y1 = y1 + N
+	local newWidth  = x1 - x0
+	local newHeight = y1 - y0
+	if newWidth <= 0 or newHeight <= 0 then
+		mock_edit.alertMessage( 'message', 'invalid size', 'info' )
+		return false
+	end
+	
 	self.width  = newWidth
 	self.height = newHeight
 	for i, layer in ipairs( self.layers ) do
-		layer:resize( newWidth, newHeight )
+		layer:resize( x0, y0, x1, y1 )
+	end
+
+	local tw, th = self:getTileSize()
+	if resizeParam.adjustLoc then
+		self:getEntity():addLoc( x0*tw, y0*th, 0 )
 	end
 end
 
@@ -665,8 +690,11 @@ function TileMap:toolActionResize()
 	local param = TileMapResizeParam()
 	param.width     = self.width
 	param.height    = self.height
-	param.newWidth  = self.width
-	param.newHeight = self.height
+	param.expandN   = 0
+	param.expandS   = 0
+	param.expandW   = 0
+	param.expandE   = 0
+	param.adjustLoc = true
 
 	if mock_edit.requestProperty( 'input tilemap parameters', param ) then
 		self:resize( param )

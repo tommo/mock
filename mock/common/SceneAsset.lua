@@ -1100,7 +1100,7 @@ local function sceneLoader( node, option )
 	
 	_Stopwatch.stop( 'scene_load_deserialization' )
 
-	_stat( _Stopwatch.report( 'scene_load_dependency', 'scene_load_deserialization' ) )
+	_log( _Stopwatch.report( 'scene_load_dependency', 'scene_load_deserialization' ) )
 
 	return scene, false --no cache
 end

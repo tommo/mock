@@ -20,8 +20,8 @@ function NamedTileGrid:setSize( w, h, tw, th, ox, oy, cw, ch )
 	self.height = h	
 end
 
-function NamedTileGrid:resize( w, h, tw, th, ox, oy, cw, ch )
-	resizeMOAIGrid( self.grid, w, h, tw, th, ox, oy, cw, ch )
+function NamedTileGrid:resize( w, h, tw, th, ox, oy, cw, ch, gx, gy )
+	resizeMOAIGrid( self.grid, w, h, tw, th, ox, oy, cw, ch, gx, gy )
 	self.width  = w
 	self.height = h
 end
@@ -159,9 +159,10 @@ function NamedTileMapLayer:onInit()
 
 end
 
-function NamedTileMapLayer:onResize( w, h )
+function NamedTileMapLayer:onResize( x0, y0, x1, y1 )
+	local w, h = x1 - x0, y1 - y0
 	local tw, th = self:getTileSize()
-	self.mapGrid:resize( w, h, tw, th, 0, 0, 1, 1 )
+	self.mapGrid:resize( w, h, tw, th, 0, 0, 1, 1, x0, y0 )
 end
 
 function NamedTileMapLayer:worldToModel( x, y )
