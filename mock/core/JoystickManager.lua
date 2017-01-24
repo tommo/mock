@@ -94,6 +94,8 @@ function JoystickManager:onJoystickAdd( instance )
 		local mapping = mock.getSDLJoystickMapping( instance:getGUID() )
 		if mapping then
 			joystickState:setMapping( mapping )
+		else
+			_warn( 'no joystick mapping found:', instance:getGUID() )
 		end
 	end
 end

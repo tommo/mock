@@ -297,3 +297,7 @@ d814000000000000cecf000000000000,MC Cthulhu,platform:Mac OS X,leftx:,lefty:,righ
 addSDLJoystickMapping[[
 351200000000000011ab000000000000,FC30  Joystick, platform: Mac OS X,a:b2,b:b1,x:b3,y:b0,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftx:a0,lefty:a1
 ]]
+
+addSDLJoystickMapping[[
+4d000000000000000000000000000000,XInput, platform: Windows10,a:b0,b:b1,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftx:a0,lefty:a1
+]]
