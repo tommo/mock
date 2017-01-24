@@ -46,20 +46,23 @@ function MQuadDeck:update()
 	vbo:reserve ( memSize )
 	for i = 1, vertCount do
 		local vert = verts[ i ]
-		vbo:writeFloat ( vert[1], vert[2], vert[3] )
-		vbo:writeFloat ( vert[4]*us + u0,  vert[5]*vs + v0 )
+		local x, y, z =  vert[1], vert[2], vert[3]
+		local u, v = vert[4], vert[5]
+		vbo:writeFloat ( x,y,z )
+		vbo:writeFloat ( u*us + u0,  v*vs + v0 )
 		vbo:writeColor32 ( 1, 1, 1 )
 	end
-	mesh:setVertexBuffer ( vbo, mquadVertexFormat )
 	local count =  vbo:countElements ( mquadVertexFormat )
-	mesh:setTotalElements ( count )
-	local u = {vbo:computeBounds ( mquadVertexFormat ) }
-	if u[1] then
-		local x0,y0,z0, x1,y1,z1 = unpack(u)
+	local bound = { vbo:computeBounds ( mquadVertexFormat ) }
+	if bound[1] then
+		local x0,y0,z0, x1,y1,z1 = unpack(bound)
+
 		mesh:setBounds ( x0,y0,z0, x1,y1,z1 )
 		self.w, self.h, self.depth = x1 - x0, y1 - y0 , z1 - z0
 		self.bounds = { x0,y0,z0, x1,y1,z1 }
 	end
+	mesh:setVertexBuffer ( vbo, mquadVertexFormat )
+	mesh:setTotalElements ( count )
 	mesh:setTile( 1, 0, count )
 
 end
