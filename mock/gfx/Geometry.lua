@@ -225,8 +225,6 @@ function GeometryLineStrip:updateVerts()
 	end
 	self.boundRect = { x0 or 0, y0 or 0, x1 or 0, y1 or 0 }
 	local outputVerts = { unpack(verts) }
-	local count = #verts
-	if count < 6 then return end
 	if self:isLooped() then
 		table.insert( outputVerts, outputVerts[ 1 ] )
 		table.insert( outputVerts, outputVerts[ 2 ] )
@@ -288,16 +286,16 @@ function GeometryPolygon:updatePolygon()
 	else
 		self.prop:setDeck( self.meshDeck )
 	end
+
+	local verts = self.verts
+	local count = #verts	
+	if count < 6 then return end
 	
 	local tess = MOAIVectorTesselator.new ()
 	tess:setFillStyle ( MOAIVectorTesselator.FILL_SOLID )
 	tess:setFillColor ( 1,1,1,1 )
 	tess:setStrokeStyle ( MOAIVectorTesselator.STROKE_NONE )
-
-	----
 		tess:pushPoly()
-			local verts = self.verts
-			local count = #verts
 			for k = 1, count/2 do
 				local idx = (k-1) * 2
 				tess:pushVertex ( verts[idx+1], verts[idx+2] )
