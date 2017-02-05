@@ -61,6 +61,9 @@ function UISimpleButton:onUpdateVisual( style )
 	self.textLabel:setLocZ( 0.1 )
 end
 
+function UISimpleButton:getMinSizeHint()
+	return 80, 40
+end
 
 registerEntity( 'UISimpleButton', UISimpleButton )
 

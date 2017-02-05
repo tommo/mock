@@ -344,7 +344,7 @@ function Game:initAsset( config, fromEditor )
 	self.textureLibraryIndex = config['texture_library']
 
 	--misc
-	setTextureThreadTaskGroupSize( 4 )
+	setTextureThreadTaskGroupSize( 10 )
 
 	--assetlibrary
 	_stat( '...loading asset library' )

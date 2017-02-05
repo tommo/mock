@@ -53,8 +53,8 @@ end
 function UIView:doUpdate()
 	--update visual
 	self:dispatchEvents()
-	self:flushVisualUpdate()
 	self:flushLayoutUpdate()
+	self:flushVisualUpdate()
 end
 
 function UIView:onWidgetDestroyed( widget )
@@ -188,13 +188,16 @@ end
 
 local insert = table.insert
 function UIView:flushLayoutUpdate()
-	local updates = self.pendingLayoutUpdates
-	self.pendingLayoutUpdates = {}
-	local queue = {}
-	for w in pairs( updates ) do
-		insert( queue, w )
+	while true do
+		local updates = self.pendingLayoutUpdates
+		if not next( updates ) then break end
+		self.pendingLayoutUpdates = {}
+		local queue = table.keys( updates )
+		table.sort( queue, _sortUIWidgetForLayout )
+		for _, w in ipairs( queue ) do
+			w:updateLayout()
+		end
 	end
-	table.sort( queue, _sortUIWidgetForLayout )
 end
 
 function UIView:scheduleVisualUpdate( widget )

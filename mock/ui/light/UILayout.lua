@@ -1,7 +1,10 @@
 module 'mock'
 
-CLASS: UILayout ()
+CLASS: UILayout ( Component )
 	:MODEL{}
+	:META{
+		category = 'UI'
+	}
 
 function UILayout:__init( widget )
 	self.owner = false
@@ -20,6 +23,13 @@ function UILayout:getOwner()
 	return self.owner
 end
 
+function UILayout:invalidate()
+	local owner = self:getOwner()
+	if owner then
+		return owner:invalidateLayout()
+	end
+end
+
 function UILayout:update()
 	self.updating = true
 	self:onUpdate()
@@ -27,4 +37,21 @@ function UILayout:update()
 end
 
 function UILayout:onUpdate()
+end
+
+
+function UILayout:onAttach( ent )
+	if not ent:isInstance( UIWidget ) then
+		_warn( 'UILayout should be attached to UIWidget' )
+		return false
+	end
+	local widget = ent
+	widget:setLayout( self )
+end
+
+function UILayout:onDetach( ent )
+	if not ent:isInstance( UIWidget ) then return end
+	local widget = ent
+	self.owner = false
+	widget:setLayout( false )
 end

@@ -11,6 +11,7 @@ CLASS: UIButton ( UIWidget )
 function UIButton:__init()
 	self.pressed = false
 	self.text = 'Button'
+	self.layoutPolicy = { 'expand', 'expand' }
 end
 
 function UIButton:setText( t )

@@ -29,6 +29,7 @@ local function isTupleValue( ft )
 	return
 		   ft == 'vec2' 
 		or ft == 'vec3' 
+		or ft == 'vec4' 
 		or ft == 'color'
 end
 

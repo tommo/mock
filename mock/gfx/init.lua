@@ -71,6 +71,7 @@ require 'mock.gfx.TiledTextureRect'
 require 'mock.gfx.TexturePolygon'
 require 'mock.gfx.TextureCircle'
 require 'mock.gfx.SubTexturePlane'
+require 'mock.gfx.PatchTexturePlane'
 
 require 'mock.gfx.TileMap'
 require 'mock.gfx.NamedTileMap'

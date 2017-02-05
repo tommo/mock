@@ -1087,21 +1087,28 @@ function FieldGroup:__init( id )
 end
 
 function FieldGroup:__call( t )
-	assert( type(t) == 'table' )
-	local children = {}
-	self.__children = children
-	for i, f in ipairs( t ) do
-		local mt = getmetatable( f )
-		if mt == Field or mt == FieldGroup then
-			insert( children, f )
-			f.__group = self
-		elseif f == '----' then
-			insert( children, f )
-		else
-			error('Field/FieldGroup expected in Model, given:'..type( f ), 3)
+	local tt = type( t )
+	if tt == 'string' then
+		self.__name = t
+		return self
+	elseif tt == 'table' then
+		local children = {}
+		self.__children = children
+		for i, f in ipairs( t ) do
+			local mt = getmetatable( f )
+			if mt == Field or mt == FieldGroup then
+				insert( children, f )
+				f.__group = self
+			elseif f == '----' then
+				insert( children, f )
+			else
+				error( 'Field/FieldGroup expected in Model, given:'..type( f ), 3 )
+			end
 		end
+		return self
+	else
+		error( 'invalid FieldGroup usage' )
 	end
-	return self
 end
 
 function FieldGroup:getChildren()
@@ -1110,6 +1117,14 @@ end
 
 function FieldGroup:_addChild( f )
 	insert( self.__children, f )
+end
+
+function FieldGroup:label( label )
+	self.__label = label
+end
+
+function FieldGroup:folded()
+	self.__folded = true
 end
 
 --------------------------------------------------------------------

@@ -159,9 +159,12 @@ function CodeTileMapLayer:createRenderProp()
 end
 
 function CodeTileMapLayer:onResize( x0, y0, x1, y1 )
+	local subdivision = self.subdivision or 1
 	local w, h = x1 - x0, y1 - y0
 	local tw, th = self:getTileSize()
-	self.mapGrid:resize( w, h, tw, th, 0,0, tw,th, x0, y0 )
+	local sw, sh = w * subdivision, h * subdivision
+	local sx, sy = x0 * subdivision, y0 * subdivision
+	self.mapGrid:resize( sw, sh, tw, th, 0,0, tw,th, sx, sy )
 end
 
 function CodeTileMapLayer:setVisible( vis )

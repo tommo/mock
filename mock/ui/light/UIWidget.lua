@@ -113,7 +113,10 @@ CLASS: UIWidget ( UIWidgetBase )
 		--------
 		Field 'loc'  :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc'  ) :label( 'Loc'  );
 		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size' ) :label( 'Size' );
+		'----';
 		Field 'layoutDisabled' :boolean() :label( 'Disable Layout' );
+		Field 'layoutProportion' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'LayoutProportion' ) :label( 'Proportion' );
+		'----';
 	}
 
 --------------------------------------------------------------------
@@ -135,6 +138,28 @@ function UIWidget:__init()
 
 	self.layoutDisabled = false
 	self.subWidget = false
+
+	self.layoutPolicy     = { 'expand', 'expand' }
+	self.layoutProportion = { 0, 0 }
+	self.layoutAlignment  = { 'left', 'top' }
+end
+
+function UIWidget:setVisible( visible )
+	local parent = self:getParentWidget()
+	if parent then
+		parent:invalidateLayout()
+	end
+	return UIWidget.__super.setVisible( self, visible )
+end
+
+function UIWidget:_attachChildEntity( entity, layerName )
+	self:invalidateLayout()
+	return UIWidget.__super._attachChildEntity( self, entity, layerName )	
+end
+
+function UIWidget:_detachChildEntity( entity )
+	self:invalidateLayout()
+	return UIWidget.__super._detachChildEntity( self, entity )	
 end
 
 function UIWidget:isSubWidget()
@@ -158,27 +183,30 @@ function UIWidget:getChildWidgets()
 	return self.childWidgets
 end
 
-function UIWidget:getLayoutingChildInfo()
+function UIWidget:getLayoutInfo()
+	local minWidth, minHeight      = self:getMinSize()
+	local maxWidth, maxHeight      = self:getMaxSize()
+	local policyH, policyV         = self:getLayoutPolicy()
+	local alignH, alignV           = self:getLayoutAlignment()
+	local proportionH, proportionV = self:getLayoutProportion()
+	return {
+		widget      = self,
+		minWidth    = minWidth,
+		minHeight   = minHeight,
+		maxWidth    = maxWidth,
+		maxHeight   = maxHeight,
+		policyH     = policyH,
+		policyV     = policyV,
+		proportionH = proportionH,
+		proportionV = proportionV,
+	}
+end
+
+function UIWidget:getLayoutableChildInfo()
 	local result = {}
 	for i, widget in ipairs( self.childWidgets ) do
-		if not widget.layoutDisabled then
-			local hintW, hintH       = widget:getSizeHint()
-			local minW, minH         = widget:getMinSize()
-			local policyW, policyH   = widget:getSizePolicy()
-			local stretchW, stretchH = widget:getStretchFactor()
-			local entry = {
-				widget   = widget,
-				hintW    = hintW,
-				hintH    = hintH,
-				minW     = minW,
-				minH     = minH,
-				maxW     = maxW,
-				maxH     = maxH,
-				policyW  = policyW,
-				policyH  = policyH,
-				stretchW = stretchW,
-				stretchH = stretchH,
-			}
+		if ( not widget.layoutDisabled ) and widget:isVisible() then
+			local entry = widget:getLayoutInfo()
 			insert( result, entry )
 		end
 	end
@@ -385,13 +413,17 @@ function UIWidget:inside( x, y, z, pad )
 	end
 end
 
-function UIWidget:setSize( w, h )
-	if not w then
-		w, h = self:getDefaultSize()
-	end
+function UIWidget:setSize( w, h, updateLayout, updateStyle )
+	w, h = w or self.w, h or self.h
 	self.w, self.h = w, h
-	self:getProp():setBounds( 0,0, w,h )
-	self:invalidateStyle()
+	self:getProp():setBounds( 0,0, w, h )
+	if updateLayout ~= false then
+		self:invalidateLayout()
+	else
+		if updateStyle ~= false then
+			self:invalidateStyle()
+		end
+	end
 end
 
 function UIWidget:getSize()
@@ -441,7 +473,11 @@ end
 function UIWidget:invalidateLayout()
 	local view = self:getParentView()
 	if view then
-		view:scheduleLayoutUpdate( self )
+		local p = self
+		while p do
+			view:scheduleLayoutUpdate( p )
+			p = p:getParentWidget()
+		end
 	end
 end
 
@@ -449,31 +485,42 @@ function UIWidget:updateLayout()
 	local layout = self.layout 
 	if not layout then return end
 	layout:update()
+	self:invalidateStyle()
 end
 
-function UIWidget:getStretchFactor()
-	return unpack( self.stretchFactor )
+function UIWidget:getLayoutPolicy()
+	return unpack( self.layoutPolicy )
 end
 
-function UIWidget:setStretchFactor( h, v )
-	self.stretchFactor = { h or 0, v or 0 }
-end
-
-function UIWidget:getSizePolicy()
-	return unpack( self.sizePolicy )
-end
-
-function UIWidget:setSizePolicy( h, v )
-	self.sizePolicy = { h, v }
+function UIWidget:setLayoutPolicy( h, v )
+	self.layoutPolicy = { h, v }
 	self:invalidateLayout()
 end
 
-function UIWidget:getSizeHint()
-	return 0, 0
+function UIWidget:getLayoutAlignment()
+	return unpack( self.layoutAlignment )
+end
+
+function UIWidget:setLayoutAlignment( h, v )
+	self.layoutAlignment = { h, v }
+	self:invalidateLayout()
+end
+
+function UIWidget:getLayoutProportion()
+	return unpack( self.layoutProportion )
+end
+
+function UIWidget:setLayoutProportion( h, v )
+	self.layoutProportion = { h, v }
+	self:invalidateLayout()
 end
 
 function UIWidget:getMinSizeHint()
 	return 0,0
+end
+
+function UIWidget:getMaxSizeHint()
+	return -1,-1
 end
 
 function UIWidget:getMinSize()

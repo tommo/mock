@@ -28,7 +28,7 @@ function GraphicsPropComponent:setBillboard( billboard )
 end
 
 function GraphicsPropComponent:getMoaiDeck()
-	return self._moaiDeck
+	return self.prop:getDeck()
 end
 
 function GraphicsPropComponent:setIndex( i )
