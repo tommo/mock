@@ -34,11 +34,18 @@ function ScenePortalRegistry:__init()
 	self.portals = {}
 	self.connections = {}
 	self.graphs  = {}
+	self.groups  = {}
 	self.dirty   = true
 end
 
 function ScenePortalRegistry:getPortalInfo( id )
 	return self.portals[ id ] or false
+end
+
+function ScenePortalRegistry:getPortalGroupDefaultScene( id )
+	local groupInfo = self.groups[ id ]
+	if not groupInfo then return false end
+	return groupInfo.defaultScene
 end
 
 function ScenePortalRegistry:addGraph( graphPath )
@@ -93,6 +100,8 @@ function ScenePortalRegistry:reload()
 		return {} 
 	end
 	local portals = {}
+	local groups  = {}
+	local groupToScenePriority = {}
 	for key, itemData in pairs( data ) do
 		local info = ScenePortalInfo()
 		info.id = key
@@ -101,8 +110,24 @@ function ScenePortalRegistry:reload()
 		info.data     = itemData[ 'data' ]
 		info.priority = itemData[ 'priority' ] or 0
 		portals[ key ] = info
+		local namespace = stripext( info.fullname )
+		local g = groups[ namespace ]
+		if not g then
+			g = {
+				scenes = {};
+				defaultScene = false;
+			}
+			groups[ namespace ] = g
+		end
+		g.scenes[ info.scene ] = true
+		local sPriority = groupToScenePriority[ namespace ] or false
+		if (not sPriority) or ( info.priority > sPriority ) then
+			groupToScenePriority[ namespace ] = info.priority
+			g.defaultScene = info.scene
+		end
 	end
 	self.portals = portals
+	self.groups  = groups
 end
 
 function ScenePortalRegistry:saveConfig()
