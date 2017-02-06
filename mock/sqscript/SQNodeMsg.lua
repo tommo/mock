@@ -30,6 +30,37 @@ function SQNodeMsg:getRichText()
 	return string.format( '<cmd>MSG</cmd> <data>%s ( <string>%s</string> )</data>', self.msg, self.data )
 end
 
+--------------------------------------------------------------------
+CLASS: SQNodeChildMsg ( SQNode )
+	:MODEL{
+		Field 'target'  :string();
+		Field 'msg'  :string();
+		Field 'data' :string();
+	}
+
+function SQNodeChildMsg:__init()
+	self.target  = ''
+	self.msg  = ''
+	self.data = ''
+end
+
+function SQNodeChildMsg:load( data )
+	local args = data.args
+	self.target = args[1]
+	self.msg = args[2] or false
+	self.data = args[3] or ''
+end
+
+function SQNodeChildMsg:enter( state, env )
+	if not self.msg or self.msg == '' then return false end
+	local target = self:getContextEntity( state ):findChildCom( self.target )
+	target:tell( self.msg, self.data )
+end
+
+function SQNodeChildMsg:getRichText()
+	return string.format( '<cmd>MSG</cmd> <data>%s ( <string>%s</string> )</data>', self.msg, self.data )
+end
+
 
 --------------------------------------------------------------------
 CLASS: SQNodeWaitMsg ( SQNode )
@@ -71,4 +102,5 @@ end
 
 --------------------------------------------------------------------
 registerSQNode( 'tell', SQNodeMsg   )
+registerSQNode( 'tellto', SQNodeChildMsg   )
 registerSQNode( 'wait_msg', SQNodeWaitMsg )
