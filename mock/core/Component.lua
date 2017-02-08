@@ -232,7 +232,7 @@ end
 --- Get owner entity's current state
 -- @ret string current entity state
 function Component:getState()
-	return self._entity.state()
+	return self._entity:getState()
 end
 
 --- Check if entity is in one of the given states

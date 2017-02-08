@@ -800,16 +800,22 @@ oneOf = _oneOf
 
 
 --------------TIME & DATE
-function formatSecs( s, hour ) --return 'mm:ss'
-	local m=math.floor(s/60)
+function formatSecs( s, hour, millisecs ) --return 'mm:ss'
+	local m = math.floor(s/60)
 	local ss=s-m*60
+	local fac = s - math.floor( s )
+	local result
 	if hour then
 		local hh=math.floor(s/60/60)
 		m=m-hh*60
-		return string.format('%02d:%02d:%02d',hh,m,ss)
+		result = string.format('%02d:%02d:%02d',hh,m,ss)
 	else
-		return string.format('%02d:%02d',m,ss)
+		result = string.format('%02d:%02d',m,ss)
 	end
+	if millisecs then
+		result = result .. string.format( '.%02d', fac*100 )
+	end
+	return result
 end
 
 

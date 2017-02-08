@@ -511,6 +511,15 @@ function Entity:hasComponentOf( clas )
 	return false
 end
 
+--- Check if the entity has given component object
+-- @p Class  component object to be looked for
+-- @ret boolean result
+function Entity:hasComponent( com )
+	local components = self.components
+	if not components then return nil end
+	return components[ com ] and true or false
+end
+
 --- Get all components of given type, by class or by class name
 -- @p string|Class  component type to be looked for
 -- @ret {Component} array of result

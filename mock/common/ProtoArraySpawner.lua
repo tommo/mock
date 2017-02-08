@@ -46,6 +46,7 @@ function ProtoArraySpawner:setOffset( x, y, z )
 end
 
 function ProtoArraySpawner:onSpawn()
+	local result = {}
 	local gx, gy, gz = unpack( self.gridSize )
 	local cx, cy, cz = unpack( self.cellSize )
 	local ox, oy, oz = unpack( self.offset )
@@ -55,10 +56,12 @@ function ProtoArraySpawner:onSpawn()
 		local dx = ( k - 1 ) * cx + rand( -ox, ox )
 		local dy = ( j - 1 ) * cy + rand( -oy, oy )
 		local dz = ( i - 1 ) * cz + rand( -oz, oz )
-		self:spawnOne( dx, dy, dz )
+		local one = self:spawnOne( dx, dy, dz )
+		table.insert( result, one )
 	end
 	end
 	end
+	return unpack( result )
 end
 
 --------------------------------------------------------------------

@@ -107,9 +107,9 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 end
 
 function ProtoSpawner:spawn()
-	local ent = self:onSpawn()
+	local result = { self:onSpawn() }
 	self:postSpawn()
-	return ent
+	return unpack( result )
 end
 
 function ProtoSpawner:onSpawn()
