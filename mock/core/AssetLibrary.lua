@@ -155,6 +155,7 @@ function loadAssetLibrary( indexPath, searchPatches )
 
 	if searchPatches then
 		--TODO: better asset patch storage
+		findAndLoadAssetPatches( '../asset_index_patch.json' )
 		findAndLoadAssetPatches( 'asset_index_patch.json' )
 	end
 	emitSignal( 'asset_library.loaded' )

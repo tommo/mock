@@ -719,3 +719,9 @@ function TileMap:applyMaterial( material )
 		layer:updateMaterial()
 	end
 end
+
+function TileMap:markDataModified()
+	mock.markProtoInstanceFieldsOverrided(
+		self, 'serializedData'
+	)
+end
