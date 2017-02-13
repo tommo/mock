@@ -195,6 +195,11 @@ end
 -- Asset Node
 --------------------------------------------------------------------
 CLASS: AssetNode ()
+function AssetNode:__init()
+	self.children = {}
+	self.parent   = false
+end
+
 function AssetNode:getName()
 	return stripDir( self.path )
 end
@@ -215,6 +220,32 @@ end
 
 function AssetNode:getChildPath( name )
 	return self.path..'/'..name
+end
+
+function AssetNode:getChildren()
+	return self.children
+end
+
+local function _collectAssetOf( node, targetType, collected, deepSearch )
+	collected = collected or {}
+	local t = node:getType()
+	if ( not targetType ) or t:match( targetType ) then
+		collected[ node.path ] = node
+	end
+	if deepSearch then
+		for name, child in pairs( node.children ) do
+			_collectAssetOf( child, targetType, collected, deepSearch )
+		end
+	end
+	return collected
+end
+
+function AssetNode:enumChildren( targetType, deepSearch )
+	local collected = {}
+	for name, child in pairs( self.children ) do
+		_collectAssetOf( child, targetType, collected, deepSearch )
+	end
+	return collected
 end
 
 function AssetNode:getObjectFile( name )
@@ -278,16 +309,37 @@ function AssetNode:load()
 	return loadAsset( self:getNodePath() )
 end
 
+local function _affirmAssetNode( path )
+	local node = AssetLibrary[ path ]
+	if not node then
+		node = AssetNode()
+		node.path = ''
+		node.type = '' --not ready
+		AssetLibrary[ path ] = node
+	end
+	return node
+end
+
 function registerAssetNode( path, data )
-	local ppath = splitPath(path)
-	local node = AssetNode()
+	local ppath, name = splitPath( path )
+	ppath = ppath:trim()
+	if ppath == '' then ppath = false end
+	local node = _affirmAssetNode( path )
+	node.type        = data['type']
+	node.name        = name
 	node.path        = path
 	node.filePath    = data['filePath']
-	node.parent      = ppath			
+	node.parent      = ppath
 	node.cached = makeAssetCacheTable()
 	node.cached.asset = data['type'] == 'folder' and true or false
+
 	updateAssetNode( node, data )
 	AssetLibrary[ path ] = node
+	if ppath then
+		local pnode = _affirmAssetNode( ppath )
+		node.parentNode = pnode
+		pnode.children[ name ] = node
+	end
 	return node
 end
 
@@ -301,6 +353,16 @@ function updateAssetNode( node, data ) --dynamic attributes
 end
 
 function unregisterAssetNode( path )
+	local node = AssetLibrary[ path ]
+	if not node then return end
+	for name, child in pairs( node.children ) do
+		unregisterAssetNode( child.path )
+	end
+	local pnode = node.parentNode
+	if pnode then
+		pnode.children[ node.name ] = nil
+	end
+	node.parentNode = nil
 	AssetLibrary[ path ] = nil
 end
 
@@ -437,9 +499,10 @@ function AdHocAsset( object )
 	return box
 end
 
-function loadAsset( path, option )
+
+function loadAsset( path, option, warning )
 	local tmpAsset = AdHocAssetRegistry[ path ]
-	if tmpAsset then return tmpAsset end
+	if tmpAsset then return tmpAsset, false end
 	
 	if path == '' then return nil end
 	if not path   then return nil end
@@ -447,7 +510,9 @@ function loadAsset( path, option )
 	local policy   = option.policy or 'auto'
 	local node     = getAssetNode( path )
 	if not node then 
-		_warn ( 'no asset found', path or '???' )
+		if warning ~= false then
+			_warn ( 'no asset found', path or '???' )
+		end
 		-- print( debug.traceback(2) )
 		return nil
 	end
@@ -466,14 +531,19 @@ function loadAsset( path, option )
 	local atype  = node.type
 	local loaderConfig = AssetLoaderConfigs[ atype ]
 	if not loaderConfig then
-		_warn( 'no loader config for asset', atype, path )
+		if warning ~= false then
+			_warn( 'no loader config for asset', atype, path )
+		end
 		return false
 	end
+	
 	if node.parent and ( not loaderConfig.skip_parent or option['skip_parent'] ) then
 		if not loadingAsset[ node.parent ] then
 			loadAsset( node.parent, option )
 		end
-		if node.cached.asset then return node.cached.asset end --already preloaded		
+		if node.cached.asset then 
+			return node.cached.asset, node
+		end --already preloaded		
 	end
 
 	--load from file
@@ -494,6 +564,10 @@ function loadAsset( path, option )
 		_stat( 'failed to load asset:', path )
 		return nil
 	end
+end
+
+function tryLoadAsset( path, option ) --no warning
+	return loadAsset( path, option, false )
 end
 
 function forceLoadAsset( path ) --no cache

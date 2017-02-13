@@ -1,6 +1,8 @@
 module 'mock'
 if not MOAIFMODStudioMgr then return end
 
+local _mgr = false
+
 --------------------------------------------------------------------
 injectMoaiClass( MOAIFMODStudioEventInstance, {
 	isValid = function( self )
@@ -32,13 +34,17 @@ local function createFMODStudioSystem()
 		['EnvironmentalReverbEnabled'] = nil;
 		['Near2DBlendEnabled']         = nil;
 		['AuditioningEnabled']         = nil;
-		['ProfilingEnabled']           = nil;
+		['ProfilingEnabled']           = true;
+		['ProfilingPort']              = nil;
 		['FsCallbacksEnabled']         = nil;
 		['SoundDisabled']              = nil;
 		['DopplerScale']               = nil;
 	}
 
-	local system = MOAIFMODStudioMgr.createSystem()
+	if game:isEditorMode() then
+		option[ 'ProfilingEnabled' ] = false
+	end
+	local system = MOAIFMODStudioMgr.createSystem( option )
 	if not system then
 		_error('FMODStudio not initialized...')
 		return false
@@ -57,7 +63,7 @@ local function _affirmFmodEvent( event )
 	local id = event2IDCache[ event ]
 	if id ~= nil then return id end
 	if type( event ) == 'string' then
-		event, node = loadAsset( event ) 
+		event, node = tryLoadAsset( event ) 
 		if event then
 			id = event:getSystemID()
 		else
@@ -70,7 +76,6 @@ local function _affirmFmodEvent( event )
 	return id
 end
 
-
 --------------------------------------------------------------------
 CLASS: FMODStudioAudioManager ( AudioManager )
 	:MODEL{}
@@ -78,15 +83,22 @@ CLASS: FMODStudioAudioManager ( AudioManager )
 function FMODStudioAudioManager:__init()
 	self.system = false
 	self.unitsToMeters = 1
+	_mgr = self
 end
 
 function FMODStudioAudioManager:init( option )
 	local system = createFMODStudioSystem()
 	if not system then return false end
 	self.system = system
-	local u2m = option[ 'unitsToMeters'] or 1
+	
+	--apply options
+	local u2m = option[ 'unitsToMeters' ] or 1
 	self.unitsToMeters = u2m
 	self.system:setUnitsToMeters( u2m )
+
+	self.default3DSpread = option[ '3DSpread' ] or 360
+	self.default3DLevel  = option[ '3DLevel' ] or 1
+
 	system:setNumListeners( 1 )
 	self:getListener( 1 ):setLoc( 1000000, 1000000, 1000000 )
 	self:clearCaches()
@@ -196,21 +208,34 @@ end
 function FMODStudioAudioManager:getEventDescription( eventPath )
 	local eventId = _affirmFmodEvent( eventPath )
 	if not eventId then
-		_warn( 'no audio event found', eventPath )
+		-- _warn( 'no audio event found', eventPath )
 		return false
 	end
 	local eventDescription = self:getEventById( eventId )
 	if not eventDescription then
-		_warn( 'no event found', eventId )
+		-- _warn( 'no event found', eventId )
 		return false
 	end
 	return eventDescription
+end
+
+local EVENT_CREATE = MOAIFMODStudioEventInstance.EVENT_CREATE
+local function _CallbackOnCreate3DEvent( this )
+	-- this:set3DLevel( _mgr.default3DLevel )
+end
+
+local function _CallbackOnCreate2DEvent( this )
 end
 
 function FMODStudioAudioManager:createEventInstance( eventPath )
 	local eventDescription = self:getEventDescription( eventPath )
 	if not eventDescription then return false end
 	local instance = eventDescription:createInstance()
+	-- if eventDescription:is3D() then
+	-- 	instance:setListener( EVENT_CREATE, _CallbackOnCreate3DEvent )
+	-- else
+	-- 	instance:setListener( EVENT_CREATE, _CallbackOnCreate2DEvent )
+	-- end
 	return instance
 end
 
@@ -222,7 +247,7 @@ function FMODStudioAudioManager:playEvent3D( eventPath, x, y, z )
 	return instance
 end
 
-function FMODStudioAudioManager:playEvent2D( eventPath, looped )
+function FMODStudioAudioManager:playEvent2D( eventPath )
 	local instance = self:createEventInstance( eventPath )
 	if not instance then return false end
 	instance:start()

@@ -61,7 +61,15 @@ function DebugUIManager:setEnabled( enabled )
 	else
 		game:hideCursor( 'DebugUI' )
 	end
-
+	if enabled then
+		for key, uiModule in pairs( self.uiModules ) do
+			uiModule:onEnabled()
+		end
+	else
+		for key, uiModule in pairs( self.uiModules ) do
+			uiModule:onDisabled()
+		end
+	end
 end
 
 function DebugUIManager:isEnabled()
@@ -85,6 +93,12 @@ function DebugUIModule:_onDebugGUI( gui, scn )
 end
 
 function DebugUIModule:onDebugGUI( gui, scn )
+end
+
+function DebugUIModule:onEnabled()
+end
+
+function DebugUIModule:onDisabled()
 end
 
 --------------------------------------------------------------------

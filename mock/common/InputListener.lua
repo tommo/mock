@@ -9,6 +9,7 @@ CLASS: InputListenerCategory ()
 
 function InputListenerCategory:__init()
 	self.active = true
+	self.muted  = false
 	self.id = false
 end
 
@@ -17,16 +18,21 @@ function InputListenerCategory:getId()
 end
 
 function InputListenerCategory:isActive()
-	return self.active
+	return self.active and ( not self.muted )
 end
 
 function InputListenerCategory:setActive( act )
 	self.active = act ~= false
 end
 
+function InputListenerCategory:setMuted( muted )
+	self.muted = muted
+end
+
 
 --------------------------------------------------------------------
 local inputListenerCategories = {}
+local soloInputListenerCategory = false
 
 function affirmInputListenerCategory( id )
 	local category = inputListenerCategories[ id ]
@@ -51,6 +57,27 @@ function isInputListenerCategoryActive( id )
 	local cat = getInputListenerCategory( id )
 	if cat then return cat:isActive() end
 	return nil
+end
+
+function getSoloInputListenerCategory()
+	return soloInputListenerCategory
+end
+
+function setInputListenerCategorySolo( id, solo )
+	local cat = getInputListenerCategory( id )
+	if not cat then return false end
+	if cat == soloInputListenerCategory then return false end
+	soloInputListenerCategory = cat
+	if solo then
+		for _, cat0 in pairs( inputListenerCategories ) do
+			cat0:setMuted( true )
+		end
+		cat:setMuted( false )
+	else
+		for _, cat0 in pairs( inputListenerCategories ) do
+			cat0:setMuted( false )
+		end
+	end
 end
 
 --------------------------------------------------------------------

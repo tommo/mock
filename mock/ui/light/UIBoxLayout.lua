@@ -11,15 +11,13 @@ EnumBoxLayoutDirection = _ENUM_V{
 --------------------------------------------------------------------
 CLASS: UIBoxLayout ( UILayout )
 	:MODEL{
-		Field 'margin' :type('vec4') :getset( 'Margin' );
-		Field 'spacing' :getset( 'Spacing' );
 		Field 'direction' :enum( EnumBoxLayoutDirection ) :getset( 'Direction' );
+		Field 'spacing' :getset( 'Spacing' );
 	}
 
 function UIBoxLayout:__init()
 	self.direction = 'vertical'
-	self.margin = { 20,20,20,20 }
-	self.spacing = 20
+	self.spacing = 5
 end
 
 function UIBoxLayout:setDirection( dir )
@@ -37,15 +35,6 @@ end
 
 function UIBoxLayout:getSpacing()
 	return self.spacing
-end
-
-function UIBoxLayout:getMargin()
-	return unpack( self.margin )
-end
-
-function UIBoxLayout:setMargin( left, top, right, bottom )
-	self.margin = { left or 0, top or 0, right or 0, bottom or 0 }
-	self:invalidate()
 end
 
 function UIBoxLayout:onUpdate()
@@ -98,10 +87,9 @@ function UIBoxLayout:calcLayoutVertical( info )
 	local marginL, marginT, marginR, marginB = self:getMargin()
 
 	local owner = self:getOwner()
-	local availableWidth, availableHeight = owner:getSize()
+	local availableWidth, availableHeight = self:getAvailableSize()
 
-	availableWidth  = availableWidth  - marginL - marginR
-	availableHeight = availableHeight - marginT - marginB - spacing * ( count - 1 )
+	availableHeight = availableHeight - spacing * ( count - 1 )
 	local minHeightTotal = 0
 	local minWidthTotal = 0
 
@@ -221,10 +209,9 @@ function UIBoxLayout:calcLayoutHorizontal( info )
 	local marginL, marginT, marginR, marginB = self:getMargin()
 
 	local owner = self:getOwner()
-	local availableWidth, availableHeight = owner:getSize()
+	local availableWidth, availableHeight = self:getAvailableSize()
 
-	availableWidth  = availableWidth  - marginL - marginR - spacing * ( count - 1 )
-	availableHeight = availableHeight - marginT - marginB
+	availableWidth  = availableWidth - spacing * ( count - 1 )
 
 	local minWidthTotal = 0
 	local minHeightTotal = 0

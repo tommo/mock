@@ -128,6 +128,13 @@ function Entity:_insertIntoScene( scene, layer )
 	if self.onUpdate then
 		scene:addUpdateListener( self )
 	end
+
+	local onMsg = self.onMsg
+	if onMsg then
+		self:addMsgListener( function( msg, data, src )
+			return onMsg( self, msg, data, src )
+		end )
+	end
 	
 	local name = self.name
 	if name then

@@ -542,6 +542,35 @@ function UIWidget:getMaxSize()
 	end
 end
 
+function UIWidget:getWidth()
+	local w, h = self:getSize()
+	return w
+end
+
+function UIWidget:getHeight()
+	local w, h = self:getSize()
+	return h
+end
+
+function UIWidget:getMaxWidth()
+	local w, h = self:getMaxSize()
+	return w
+end
+
+function UIWidget:getMaxHeight()
+	local w, h = self:getMaxSize()
+	return h
+end
+
+function UIWidget:getMinWidth()
+	local w, h = self:getMinSize()
+	return w
+end
+
+function UIWidget:getMinHeight()
+	local w, h = self:getMinSize()
+	return h
+end
 --------------------------------------------------------------------
 function UIWidget:setInputEnabled( enabled )
 	self.inputEnabled = enabled ~= false

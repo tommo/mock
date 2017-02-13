@@ -54,6 +54,8 @@ local btnNameToId = {
 	middle = 2,
 	right = 1,
 }
+
+
 function ImGuiLayer:onMouseEvent ( ev, x, y, btn, mock )
 	local gui = self.imgui
 	local layer = self.imguiLayer
@@ -71,7 +73,39 @@ function ImGuiLayer:onMouseEvent ( ev, x, y, btn, mock )
 	end
 end
 
+local key2ImguiKey = {
+	[ 'tab'      ] = MOAIImGui.Key_Tab,
+	[ 'left'     ] = MOAIImGui.Key_LeftArrow,
+	[ 'right'    ] = MOAIImGui.Key_RightArrow,
+	[ 'up'       ] = MOAIImGui.Key_UpArrow,
+	[ 'down'     ] = MOAIImGui.Key_DownArrow,
+	[ 'pageup'   ] = MOAIImGui.Key_PageUp,
+	[ 'pagedown' ] = MOAIImGui.Key_PageDown,
+	[ 'home'     ] = MOAIImGui.Key_Home
+}
+
+local key2Text = {
+	[ 'space' ] = ' ';
+	[ 'tab' ] = '\t';
+}
+
 function ImGuiLayer:onKeyEvent( key, down )
-	--TODO
-	-- return self.imgui:sendKeyEvent( key, down )
+	local code = key2ImguiKey[ key ]
+	if code then
+		print( code )
+		return self.imgui:sendKeyEvent( code, down )
+	elseif down then
+		--FIXME: this is just a quick workaround, use text input event from host instead
+		if key:match( '^[%w%.%-=\\,/]$') then
+			if isShiftDown() then
+				return self.imgui:sendTextEvent( key:upper() )
+			else
+				return self.imgui:sendTextEvent( key )
+			end
+		end
+		local t = key2Text[ key ]
+		if t then
+			return self.imgui:sendTextEvent( t )
+		end
+	end
 end

@@ -61,6 +61,7 @@ end
 
 function SoundSource:start()
 	if self.defaultEventPath then
+		print( 'play', self.defaultEventPath )
 		if self.is3D then
 			return self:playEvent3D( self.defaultEventPath )
 		else
@@ -69,15 +70,26 @@ function SoundSource:start()
 	end
 end
 
-function SoundSource:stop()
+function SoundSource:playOrResume()
+	if self:isBusy() then return end
+	return self:play()
+end
+
+function SoundSource:play()
+	return self:start()
+end
+
+function SoundSource:stop( allowFadeOut )
+	print( 'stop', self.defaultEventPath )
+	allowFadeOut = allowFadeOut ~= false
 	for instance, k in pairs( self.eventInstances ) do
-		instance:stop()
+		instance:stop( allowFadeOut )
 	end
 	self.eventInstances = {}
 end
 
 --------------------------------------------------------------------
-function SoundSource:_addInstance( instance, follow )
+function SoundSource:_addInstance( instance )
 	local mgr = AudioManager.get()
 	if self.singleInstance then
 		self:stop()
@@ -95,20 +107,22 @@ function SoundSource:_addInstance( instance, follow )
 	if d1 >= 0 then
 		mgr:setEventInstanceSetting( instance, 'max_distance', d1 * u2m )
 	end
-	if follow then
-		inheritTransform( instance, self._entity:getProp( 'physics' ) )
-		instance:setLoc( 0,0,0 )
-		instance:forceUpdate()
-	end
+	
 	return instance
 end
 
-function SoundSource:_playEvent3DAt( event, x,y,z, follow, looped )
+function SoundSource:_playEvent3DAt( event, x,y,z, follow, followTarget )
 	local instance	
 	instance = AudioManager.get():playEvent3D( event, x,y,z )
+
 	if instance then
-		follow = follow == nil and self.following or follow
-		return self:_addInstance( instance, follow~=false )
+		if follow then
+			followTarget = followTarget or self._entity
+			inheritTransform( instance, followTarget:getProp( 'physics' ) )
+			instance:setLoc( 0,0,0 )
+			instance:forceUpdate()
+		end
+		return self:_addInstance( instance )
 	else
 		_error( 'sound event not found:', event )
 		return false
@@ -126,16 +140,21 @@ function SoundSource:_playEvent2D( event, looped )
 end
 
 --------------------------------------------------------------------
-function SoundSource:playEvent3DAt( event, x,y,z, follow )
-	return self:_playEvent3DAt( event, x,y,z, follow, nil )
+function SoundSource:playEvent3DFor( target, event, follow )
+	local x,y,z
+	target:forceUpdate()
+	local prop = target:getProp( 'physics' )
+	x,y,z = prop:getWorldLoc()
+	return self:_playEvent3DAt( event, x,y,z, follow, target )
+end
+
+function SoundSource:playEvent3DAt( event, x,y,z )
+	return self:_playEvent3DAt( event, x,y,z, false )
 end
 
 function SoundSource:playEvent3D( event, follow )
-	local x,y,z
-	self._entity:forceUpdate()
-	local prop = self._entity:getProp( 'physics' )
-	x,y,z = prop:getWorldLoc()
-	return self:playEvent3DAt( event, x,y,z, follow )
+	if follow == nil then follow = self.following end
+	return self:playEvent3DFor( self._entity, event, follow )
 end
 
 function SoundSource:playEvent2D( event )
@@ -239,10 +258,10 @@ function SoundSource:getDefaultEventDistanceSetting()
 	local mgr = AudioManager.get()
 	local u2m = mgr:getUnitToMeters()
 	if d0 < 0 then
-		d0 = self:getDefaultEventSetting( 'min_distance' ) / u2m
+		d0 = ( self:getDefaultEventSetting( 'min_distance' ) or 0 ) / u2m
 	end
 	if d1 < 0  then
-		d1 = self:getDefaultEventSetting( 'max_distance' ) / u2m
+		d1 = ( self:getDefaultEventSetting( 'max_distance' ) or 0 ) / u2m
 	end
 	return d0, d1
 end
