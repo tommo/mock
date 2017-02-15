@@ -12,6 +12,7 @@ CLASS: MSpriteAnimatorKey ( AnimatorEventKey )
 		Field 'range'     :type( 'vec2' ) :getset( 'Range' ) :meta{ decimals = 3, step = 0.01 };
 		'----';
 		Field 'resetLength' :action( 'resetLength' );
+		Field 'makeRange'   :action( 'makeRange' );
 	}
 
 function MSpriteAnimatorKey:__init()
@@ -49,6 +50,10 @@ function MSpriteAnimatorKey:resetLength()
 	if clipData then
 		self:setLength( clipData.length / self.throttle )
 	end
+end
+
+function MSpriteAnimatorKey:makeRange()
+	--TODO
 end
 
 --------------------------------------------------------------------

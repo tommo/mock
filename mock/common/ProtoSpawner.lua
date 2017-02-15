@@ -99,6 +99,8 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 
 			end
 		end
+		
+		--FIXME:remove this non-generic code
 		if ent:isInstance( 'EWMapObject' ) then
 			instance:setFloor( ent:getFloor() )
 		end

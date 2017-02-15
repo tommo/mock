@@ -590,19 +590,19 @@ function Model:getName()
 	return self.__name
 end
 
-local function _collectFieldForUpdate( group, fields, fieldMap, f )
+local function _collectFieldForUpdate( model, group, fields, fieldMap, f )
 	local mt = getmetatable( f )
 	if mt == FieldGroup then
 		for i, child in ipairs( f:getChildren() ) do
-			_collectFieldForUpdate( nil, fields, fieldMap, child )
+			_collectFieldForUpdate( model, nil, fields, fieldMap, child )
 		end
-		f.__model = self
+		f.__model = model
 	elseif mt == Field then
 		local id = f.__id
 		if fieldMap[id] then error( 'duplicated Field:'..id, 3 ) end
 		fieldMap[ id ] = f
 		insert( fields, f )
-		f.__model = self
+		f.__model = model
 		if group then
 			group:_addChild( f )
 		end
@@ -621,7 +621,7 @@ function Model:update( body )
 	local fieldMap = {}
 	local rootGroup = FieldGroup()
 	for i, f in ipairs( body ) do
-		_collectFieldForUpdate( rootGroup, fields, fieldMap, f )
+		_collectFieldForUpdate( self, rootGroup, fields, fieldMap, f )
 	end
 	self.__fields   = fields
 	self.__fieldMap = fieldMap
@@ -930,7 +930,9 @@ function Field:get( getter )
 		local getterName = getter
 		getter = function( obj )
 			local f = obj[getterName]
-			if f then return f( obj ) else error( 'getter not found:'..getterName ) end
+			if f then return f( obj ) else 
+				error( string.format( 'getter not found: %s -> %s', self.__model.__name, getterName ) )
+			end
 		end
 	end
 	self.__getter = getter
@@ -942,7 +944,9 @@ function Field:set( setter )
 		local setterName = setter
 		setter = function( obj, ... )
 			local f = obj[setterName]
-			if f then return f( obj, ... ) else error( 'setter not found:'..setterName ) end
+			if f then return f( obj, ... ) else 
+				error( string.format( 'setter not found: %s -> %s', self.__model.__name, setterName ) )
+			end
 		end
 	end
 	self.__setter = setter

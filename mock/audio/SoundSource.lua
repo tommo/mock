@@ -61,7 +61,6 @@ end
 
 function SoundSource:start()
 	if self.defaultEventPath then
-		print( 'play', self.defaultEventPath )
 		if self.is3D then
 			return self:playEvent3D( self.defaultEventPath )
 		else
@@ -80,7 +79,6 @@ function SoundSource:play()
 end
 
 function SoundSource:stop( allowFadeOut )
-	print( 'stop', self.defaultEventPath )
 	allowFadeOut = allowFadeOut ~= false
 	for instance, k in pairs( self.eventInstances ) do
 		instance:stop( allowFadeOut )
