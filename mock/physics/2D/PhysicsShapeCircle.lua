@@ -43,9 +43,9 @@ function PhysicsShapeCircle:matchSize()
 	if deck then
 		local x1,y1,z1, x2,y2,z2 = deck.prop:getBounds()
 
-		local radius = ((x2-x1) + (y2-y1)) / 4
+		local radius = ( ( x2 - x1 ) + ( y2 - y1 ) ) / 4
 		self.radius = radius
-		self:setLoc((x1 + x2)/2, (y1+y2)/2)
+		self:setLoc( ( x1 + x2 ) / 2, ( y1 + y2 ) / 2 )
 		
 		self:updateShape()
 	end

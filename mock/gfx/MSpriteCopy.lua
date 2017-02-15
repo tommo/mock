@@ -3,7 +3,7 @@ module 'mock'
 CLASS: MSpriteCopy ( mock.GraphicsPropComponent )
 	:MODEL{
 		Field 'sourceSprite' :type( MSprite ) :set( 'setSourceSprite');
-		Field 'overrideFeatures' :boolean();
+		Field 'overrideFeatures' :boolean():set( 'setOverrideFeatures' );
 		Field 'hiddenFeatures' :collection( 'string' ) :selection( 'getAvailFeatures' ) :getset( 'HiddenFeatures' );
 		-- Field 'copyScl'      :boolean();
 		-- Field 'copyRot'      :boolean();
@@ -46,6 +46,11 @@ end
 function MSpriteCopy:getTargetData()
 	local source = self.sourceSprite
 	return source and source.spriteData
+end
+
+function MSpriteCopy:setOverrideFeatures( state )
+	self.overrideFeatures = state
+	self:updateFeatures()
 end
 
 function MSpriteCopy:setHiddenFeatures( hiddenFeatures )
