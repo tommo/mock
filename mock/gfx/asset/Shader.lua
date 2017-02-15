@@ -477,7 +477,7 @@ function buildShader( shaderPath, id )
 	local shader = loadAsset( shaderPath )
 	if id then
 		if shader then
-			return shader:getProgram():affirmShader( id )
+			return shader.config:affirmShader( id )
 		end
 	end
 	return shader

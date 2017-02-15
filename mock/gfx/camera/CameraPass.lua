@@ -173,6 +173,19 @@ function CameraPass:pushOverridedShader( shader )
 	end)
 end
 
+function CameraPass:pushRenderTargetCopy( targetId, sourceId, scaleX, scaleY )
+	self:pushRenderTarget( targetId )
+	local copyLayer = self:buildSimpleOrthoRenderLayer()
+	local copyProp = self:buildSimpleQuadProp( 1, 1, self:getRenderTargetTexture( sourceId ) )
+	local scaleX, scaleY = scaleX or 1, scaleY or 1
+	local ox, oy = ( 1 - scaleX ) / 2, ( 1 - scaleY ) / 2
+	copyProp:setScl( scaleX, scaleY )
+	copyProp:setLoc( -ox, oy )
+	copyLayer:insertProp( copyProp )
+	self:pushRenderLayer( copyLayer )
+	return copyLayer, copyProp
+end
+
 
 ----
 --Render Targets
