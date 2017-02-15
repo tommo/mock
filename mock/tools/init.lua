@@ -56,3 +56,5 @@ require 'mock.tools.PlaceHolder'
 require 'mock.tools.DialogScript'
 
 
+--------------------------------------------------------------------
+require 'mock.tools.I18N'
