@@ -13,8 +13,13 @@ function SQNodeScene:__init()
 end
 
 function SQNodeScene:load( data )
-	self.cmd = data.args[ 1 ]
-	self.path = data.args[ 2 ]
+	local cmd = data.args[ 1 ]
+	self.cmd = cmd
+	if cmd == 'reopen' then
+		self.path = false
+	else
+		self.path = data.args[ 2 ]
+	end
 end
 
 function SQNodeScene:enter( state, env )
@@ -26,6 +31,9 @@ function SQNodeScene:enter( state, env )
 
 	elseif cmd == 'add' then
 		self:onCmdAdd( state, env, path )
+
+	elseif cmd == 'reopen' then
+		self:onCmdReopen( state, env )
 
 	end
 end
@@ -54,6 +62,9 @@ function SQNodeScene:onCmdOpen( state, env, path )
 	game:scheduleOpenSceneByPath( path )
 end
 
+function SQNodeScene:onCmdReopen( state, env, path )
+	game:scheduleReopenMainScene()
+end
 
 registerSQNode( 'scene', SQNodeScene )
 
