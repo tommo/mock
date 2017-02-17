@@ -154,7 +154,8 @@ local defaultGameConfig={
 	forceResolution  = false
 }
 
-function Game:loadConfig( path, fromEditor )
+function Game:loadConfig( path, fromEditor, extra )
+	extra = extra or {}
 	_stat( 'loading game config from :', path )
 	local data = self:loadJSONData( path )
 	if not data then
@@ -162,10 +163,11 @@ function Game:loadConfig( path, fromEditor )
 		return
 	end
 
-	return self:init( data, fromEditor )
+	return self:init( data, fromEditor, extra )
 end
 
-function Game:init( config, fromEditor )
+function Game:init( config, fromEditor, extra )
+	extra = extra or {}
 	
 	_stat( '...init game' )
 	
@@ -179,8 +181,11 @@ function Game:init( config, fromEditor )
 	self.title   = config['title'] or self.name
 
 	--Systems
-	self:initGraphics   ( config, fromEditor )
-	self:applyPlaceHolderRenderTable()
+	local noGraphics = extra[ 'no_graphics' ]
+	if not noGraphics then
+		self:initGraphics   ( config, fromEditor )
+		self:applyPlaceHolderRenderTable()
+	end
 
 	self:initSystem     ( config, fromEditor )
 	self:initAsset      ( config, fromEditor )
@@ -190,7 +195,9 @@ function Game:init( config, fromEditor )
 		self:initCommonData( config, fromEditor )
 	end
 	
-	self:initDebugUI()
+	if not noGraphics then
+		self:initDebugUI()
+	end
 
 end
 

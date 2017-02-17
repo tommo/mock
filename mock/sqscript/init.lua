@@ -15,6 +15,7 @@ require 'mock.sqscript.SQNodeSignal'
 require 'mock.sqscript.SQNodeMsg'
 
 require 'mock.sqscript.SQNodeEval'
+require 'mock.sqscript.SQNodeAssert'
 require 'mock.sqscript.SQNodeSwitch'
 require 'mock.sqscript.SQNodeIf'
 -- require 'mock.sqscript.SQNodeCondition'
@@ -31,3 +32,5 @@ require 'mock.sqscript.SQNodeAnimator'
 require 'mock.sqscript.SQNodeScript'
 require 'mock.sqscript.SQNodeEntity'
 require 'mock.sqscript.SQNodeScene'
+
+require 'mock.sqscript.SQNodeQuest'

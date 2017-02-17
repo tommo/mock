@@ -82,6 +82,7 @@ require 'mock.gui'
 
 ------STORY
 require 'mock.story'
+require 'mock.quest'
 
 ------Sequence
 require 'mock.sqscript'
@@ -126,8 +127,8 @@ mock.injectGlobalSymbols( _G )
 --------------------------------------------------------------------
 ----INIT
 --------------------------------------------------------------------
-function mock.init( configPath, fromEditor )
-	mock.game:loadConfig( configPath,fromEditor )
+function mock.init( configPath, fromEditor, extra )
+	mock.game:loadConfig( configPath, fromEditor, extra )
 end
 
 function mock.start( option )
