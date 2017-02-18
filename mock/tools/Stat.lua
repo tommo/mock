@@ -18,7 +18,6 @@ function Stat:__init( data )
 				end,
 
 			__newindex = function( t, k, v )
-					print('set', k, v)
 					return self:set( k, v )
 				end
 		}

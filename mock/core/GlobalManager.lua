@@ -30,7 +30,16 @@ function GlobalManager:getKey()
 	-- _error('global manager key required, override this function!', self:getClassName() )
 end
 
+function GlobalManager:postInit( game )
+end
+
 function GlobalManager:onInit( game )
+end
+
+function GlobalManager:onStart( game )
+end
+
+function GlobalManager:onStop( game )
 end
 
 function GlobalManager:onUpdate( game, dt )

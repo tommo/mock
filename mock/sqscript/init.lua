@@ -25,6 +25,8 @@ require 'mock.sqscript.SQNodeRandom'
 --component
 require 'mock.sqscript.SQActor'
 
+--------------------------------------------------------------------
+require 'mock.sqscript.SQGlobalManger'
 
 --------------------------------------------------------------------
 --builtin node types
@@ -33,4 +35,6 @@ require 'mock.sqscript.SQNodeScript'
 require 'mock.sqscript.SQNodeEntity'
 require 'mock.sqscript.SQNodeScene'
 
+--------------------------------------------------------------------
+require 'mock.sqscript.SQQuestSupport'
 require 'mock.sqscript.SQNodeQuest'

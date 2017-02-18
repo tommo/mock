@@ -414,6 +414,11 @@ function Game:initCommonData( config, fromEditor )
 	self.mainScene:init()
 	_stat( '...init game done!' )
 
+	
+	for i, manager in ipairs( self.globalManagers ) do
+		manager:postInit( self )
+	end
+
 end
 
 
@@ -838,6 +843,9 @@ end
 
 function Game:stop()
 	_stat( 'game stop' )
+	for i, manager in ipairs( self.globalManagers ) do
+		manager:onStop( self )
+	end
 	self.mainScene:stop()
 	self.mainScene:clear( true )
 	self:resetClock()
@@ -846,8 +854,10 @@ function Game:stop()
 end
 
 function Game:start()
-
 	_stat( 'game start' )
+	for i, manager in ipairs( self.globalManagers ) do
+		manager:onStart( self )
+	end
 	self.paused = false
 	self.mainScene:start()
 	if self.paused then

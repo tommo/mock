@@ -4,6 +4,9 @@ module 'mock'
 CLASS: SQContextProvider ()
 	:MODEL{}
 
+function SQContextProvider:init()
+end
+
 function SQContextProvider:getContextEntity( actor, contextId )
 	return nil
 end
@@ -16,6 +19,10 @@ end
 local SQContextProviders = {}
 function registerSQContextProvider( id, provider )
 	SQContextProviders[ id ] = provider
+end
+
+function getSQContextProviders()
+	return SQContextProviders
 end
 
 
@@ -31,7 +38,6 @@ function SQActor:__init()
 	self.name         = ''
 	self.activeState  = false
 	self.autoStart    = true
-	self.envAccessors = {}
 end
 
 function SQActor:onStart( ent )
@@ -143,6 +149,9 @@ function SQActor:startAllRoutines()
 end
 
 function SQActor:getEnvVar( varKey )
+	local globalEnv = getGlobalSQEvalEnv()
+	local value = globalEnv[ varKey ]
+	if value ~= nil then return value end
 	for key, provider in pairs( SQContextProviders ) do
 		local value = provider:getEnvVar( self, varKey )
 		if value ~= nil then return value end

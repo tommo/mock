@@ -51,8 +51,15 @@ end
 CLASS: SQNode ()
 CLASS: SQRoutine ()
 CLASS: SQScript ()
-
 CLASS: SQState ()
+
+
+--------------------------------------------------------------------
+local _globalSQEvalEnv = {}
+
+function getGlobalSQEvalEnv()
+	return _globalSQEvalEnv
+end
 
 --------------------------------------------------------------------
 SQNode :MODEL{
@@ -1081,7 +1088,12 @@ function SQState:initEvalEnv( actor )
 	local mt = {}
 	local env = setmetatable( {}, mt )
 	function mt.__index( t, k )
-		return actor:getEnvVar( k )
+		local v = _globalSQEvalEnv[ k ]
+		if v == nil then
+			return actor:getEnvVar( k )
+		else
+			return v
+		end
 	end
 	self.evalEnv = env
 end

@@ -1,4 +1,12 @@
 module 'mock'
+--------------------------------------------------------------------
+--Node State:
+-- *nil  *active *finished *abort
+--Command:
+-- *ABORT *AND *RESET
+--Connection Type:
+-- *move *spawn
+--------------------------------------------------------------------
 
 --------------------------------------------------------------------
 CLASS: QuestNodeBase ()
@@ -122,6 +130,17 @@ function QuestConnection:__init( from, to, ctype, cond )
 	table.insert( from.connectionsOut, self )
 	table.insert( to.connectionsIn,   self  )
 	self._isExitConn = ctype == 'move' and ( not cond )
+	--build condition expr
+	self.condFunc = false
+	if cond then
+		local valueFunc, err   = loadEvalScriptWithEnv( cond )
+		if not valueFunc then
+			_warn( 'failed compiling quest condition:', err, from.fullname, '->', to.fullname )
+		else
+			self.condFunc = valueFunc
+		end
+	end
+
 end
 
 function QuestConnection:isExitConn()
@@ -150,7 +169,10 @@ end
 function QuestConnection:evaluate( questState )
 	local cond = self.cond
 	if not cond then return true end
-	--TODO: eval
+	local func = self.condFunc
+	if not func then return false end --failed compiling
+	local ok, result = func( questState:getEvalEnv() )
+	if ok then return result end
 	return false
 end
 
@@ -234,11 +256,13 @@ function QuestNodeAnd:start( questState, from )
 	--check from states
 	local result = true
 	for i, conn in ipairs( self.connectionsIn ) do
-		local node = conn.from
-		local ns = node.state
-		if not ( ns == 'active' or ns == 'finished' ) then
-			result = false
-			break
+		local nodeFrom = conn.from
+		local ns = questState:getNodeState( nodeFrom.fullname, 'includeChange' )
+		local ctype = conn.type
+		if ctype == 'spawn' then
+			if ns ~= 'active' and ns ~= 'finished' then result = false break end
+		else
+			if ns ~= 'finished' then result = false	break	end
 		end
 	end
 	if not result then return false end
@@ -291,6 +315,7 @@ function QuestScheme:__init()
 	self.nodes = {}
 	self.nodeByName  = {}
 	self.connections = {}
+	self.path = false
 end
 
 function QuestScheme:getRoot()
@@ -364,203 +389,11 @@ end
 
 
 --------------------------------------------------------------------
---Node State:
--- *false  *start -> *active -> *finish/*abort
---Connection Type:
--- *move *spawn *stop
---------------------------------------------------------------------
---------------------------------------------------------------------
-CLASS: QuestVariableProvider ()
-	:MODEL{}
-
-function QuestVariableProvider:__init()
-	self.changed = false
-end
-
-function QuestVariableProvider:getVar( key )
-	return false
-end
-
-function QuestVariableProvider:peek()
-	return self.changed or false
-end
-
-function QuestVariableProvider:poll()
-	local result = self.changed
-	self.changed = false
-	return result
-end
-
-
---------------------------------------------------------------------
-CLASS: QuestState ()
-	:MODEL{}
-
-function QuestState:__init( scheme )
-	self.nodeStates   = {}
-	self.activeNodes  = {}
-	self.changedNodes = {}
-	self.variableProviders = {}
-	self.changed = false
-	self.running = true
-	self.scheme  = scheme
-end
-
-function QuestState:addVariableProvider( provider, prepend )
-	if prepend then
-		table.insert( self.variableProviders, 1, provider )
-	else
-		table.insert( self.variableProviders, provider )
-	end
-end
-
-function QuestState:getVar( key )
-	for i, provider in ipairs( self.variableProviders ) do
-		local value = provider:getVar( key )
-		if value ~= nil then return value end
-	end
-	return nil
-end
-
-function QuestState:reset()
-	self.nodeStates = {}
-	self.activeNodes = {}
-	self.changedNodes = {}
-	self.changed = true
-	--find entry node
-	local scheme = self.scheme
-	local entryNode = scheme:getRoot():getChild( 'start' )
-	if not entryNode then
-		_warn( 'no start node in scheme' )
-		return false
-	end
-	entryNode:start( self )
-end
-
-function QuestState:getScheme()
-	return self.scheme
-end
-
-function QuestState:getNodeState( fullname ) --use fullname here, ID is not stable
-	return self.nodeStates[ fullname ]
-end
-
-function QuestState:setNodeState( target, state )
-	local fullname
-	if type( target ) == 'string' then
-		fullname = target
-	else 
-		fullname = target.fullname
-	end
-	local s0 = self:getNodeState( fullname )
-	if s0 == state then return false end
-	_logf( '%s -> %s', fullname, tostring( state )  )
-	local node = self.scheme:getNodeByName( fullname )
-	if not node then
-		return _error( 'failed to found quest node to change:', fullname )
-	end
-	local entry = { node, state }
-	-- local newstate0 = self.changedNodes[ node ]
-	-- if newstate0 ~= nil and newstate0 ~= state then
-	-- 	return _warn( 'quest node is already changed', fullname, newstate0, state )
-	-- end
-	-- self.changedNodes[ node ] = state
-	table.insert( self.changedNodes, entry )
-	self.changed = true
-end
-
-function QuestState:update()
-	if not self.running then return end
-	local scheme = self.scheme
-	local _CYCLE = 0
-	while true do
-		--apply change
-		local changedNodes = table.simplecopy( self.changedNodes )
-		self.changedNodes = {}
-		self.changed = false
-		local newActiveNodes = {}
-		local activeNodes = self.activeNodes
-		for _, entry in ipairs( changedNodes ) do
-			local node, newState = unpack( entry )
-			local fullname = node.fullname
-			local oldState = self:getNodeState( fullname )
-			self.nodeStates[ fullname ] = newState
-			if newState == 'finished' then
-				for i, conn in ipairs( node.connectionsOut ) do
-					conn:onSourceFinished( self )
-				end
-				activeNodes[ node ] = nil
-			elseif newState == 'aborted' or newState == nil then
-				activeNodes[ node ] = nil
-			elseif newState == 'active' then
-				activeNodes[ node ] = true
-			else
-				_error( 'unknown quest node state', newState )
-			end
-		end
-		for node in pairs( activeNodes ) do
-			node:update( self )
-		end
-		if not self.changed then break end
-		_CYCLE = _CYCLE + 1
-		if _CYCLE > 100 then
-			_error( 'too much quest update cycles! possible endless loop in graph.' )
-			self.running = false
-			return false
-		end
-	end
-end
-
-function QuestState:save()
-	local data = {}
-	local changedNames = {}
-	local activeNames = {}
-	for node in pairs( self.changedNodes ) do
-		table.insert( changedNames, node.fullname )
-	end
-	for node in pairs( self.activeNodes ) do
-		table.insert( activeNames, node.fullname )
-	end
-	data[ 'changed' ] = changedNames
-	data[ 'active'  ] = activeNames
-	data[ 'states'  ] = self.nodeStates
-	return data
-end
-
-function QuestState:load( data )
-	local changedNodes = {}
-	local activeNodes = {}
-	local scheme = self.scheme
-	local hasError = false
-	for i, name in ipairs( data[ 'changed' ] ) do
-		local node = scheme:getNodeByName( name )
-		if node then
-			changedNodes[ node ] = true
-		else
-			_warn( 'quest node not found while loading:', name )
-			hasError = true
-		end
-	end
-	for i, name in ipairs( data[ 'active' ] ) do
-		local node = scheme:getNodeByName( name )
-		if node then
-			activeNodes[ node ] = true
-		else
-			_warn( 'quest node not found while loading:', name )
-			hasError = true
-		end
-	end
-	self.nodeStates   = data[ 'nodeStates' ]
-	self.activeNodes  = activeNodes
-	self.changedNodes = changedNodes
-	return not hasError
-end
-
---------------------------------------------------------------------
 local function QuestSchemeLoader( node )
 	local defFile = node:getObjectFile( 'def' )
 	local data = loadAssetDataTable( defFile )
 	local scheme = QuestScheme()
+	scheme.path = node:getPath()
 	scheme:load( data )
 	return scheme
 end
