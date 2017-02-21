@@ -7,158 +7,176 @@ function getQuestManger()
 end
 
 --------------------------------------------------------------------
+CLASS: QuestSessionSchemeEntry ()
+	:MODEL{}
+
+function QuestSessionSchemeEntry:__init( session, path )
+	self.session  = session
+	self.path     = path or false
+	self.valid    = true
+end
+
+function QuestSessionSchemeEntry:save()
+	return {
+		path = self.path;
+	}
+end
+
+function QuestSessionSchemeEntry:load( data )
+	self.path = data[ 'path' ]
+end
+
+--------------------------------------------------------------------
 CLASS: QuestSession ()
 	:MODEL{}
 
 function QuestSession:__init()
-	self.name = false
+	self.name = 'QuestSession'
 	self.comment = ''
-	self.states  = {}
+	self.schemeEntries = {}
 	self.default = false
+
+	self.state = QuestState()
+	self.needRebuild = true
+
+end
+
+function QuestSession:getState()
+	return self.state
+end
+
+function QuestSession:hasScheme( path )
+	for i, entry in ipairs( self.schemeEntries ) do
+		if entry.path == path then return true end
+	end
+	return false
+end
+
+function QuestSession:addSchemeEntry( path )
+	local scheme = loadAsset( path )
+	if not scheme then
+		_error( 'failed loading Quest Scheme', path )
+		return false
+	end
+	local entry = QuestSessionSchemeEntry( self, path )
+	table.insert( self.schemeEntries, entry )
+	self.needRebuild = true
+	return entry
+end
+
+function QuestSession:removeSchemeEntry( entry )
+	local idx = table.index( self.schemeEntries, entry )
+	if not idx then return false end
+	table.remove( self.schemeEntries, idx )
+	self.needRebuild = true
+	return true
 end
 
 function QuestSession:setName( name )
 	self.name = name
-	_questManger:updateSessionMap()
+	_questManger:resetSessionMap()
 end
 
-function QuestSession:getState( name )
-	for i, state in ipairs( self.states ) do
-		if state.name == name then return state end
-	end
+function QuestSession:getNode( name )
+	return self.state:getNode( name )
 end
 
-function QuestSession:addState( schemePath )
-	if not schemePath then return false end
-	local scheme = mock.loadAsset( schemePath)
-	local state = QuestState( scheme )
-	table.insert( self.states, state )
-	return state
+function QuestSession:findNode( pattern )
+	return self.state:findNode( pattern )
 end
 
-function QuestSession:getNodes( name )
-	local result = {}
-	for i, state in ipairs( self.states ) do
-		local scheme = state:getScheme()
-		if scheme then
-			local node = scheme:getNode( name )
-			if node then table.insert( result, { state, node } ) end
-		end
-	end
-	return result
-end
-
-function QuestSession:findNodes( pattern )
-	local result = {}
-	for i, state in ipairs( self.states ) do
-		local scheme = state:getScheme()
-		if scheme then
-			local node = scheme:findNode( pattern ) --TODO: find all
-			if node then table.insert( result, { state, node } ) end
-		end
-	end
-	return result
-end
-
-function QuestSession:checkQuestState( name, checkState )
-	local found = self:getNodes( name )
-	if not next( found ) then
-		_warn( 'no quest node found', name )
-		return false
-	end
-	for i, entry in ipairs( found ) do
-		local state, node = unpack( entry )
-		local nodeState = state:getNodeState( node.fullname )
-		if nodeState ~= checkState then return false end
-	end
-	return true
+function QuestSession:checkQuestState( name, value )
+	return self.state:checkNodeState( name, value )	
 end
 
 function QuestSession:update( dt )
-	for i, state in ipairs( self.states ) do
-		state:update()
-	end
+	self.state:update()
 end
 
 function QuestSession:reset()
-	for i, state in ipairs( self.states ) do
-		state:reset()
-	end
+	self.state:reset()
 end
 
 function QuestSession:saveState()
-	local stateData = {}
-	for i, state in ipairs( self.states ) do
-		stateData[ i ] = {
-			name   = state.name,
-			scheme = state.scheme.path,
-			state  = state:save(),
-		}
-	end
-	return {
-		states = stateData
-	}
+	local state = self.state
+	return state:save()
 end
 
 function QuestSession:loadState( data )
-	--validate
-	for i, stateData in ipairs( data[ 'states' ] or {} ) do
-		local name = stateData[ 'name' ]
-		local state = self:getState( name )
-		if not state then
-			_error( 'quest state not exists', name )
-			return false
-		end
-		if stateData[ 'scheme' ] ~= state.scheme.path then
-			_error( 'quest state scheme mismatched', name, stateData[ 'scheme' ] )
-			return false
+	-- self:rebuild()
+	self.state:load( data )
+	--TODO: check scheme matching?
+	-- --validate
+	-- for i, stateData in ipairs( data[ 'states' ] or {} ) do
+	-- 	local name = stateData[ 'name' ]
+	-- 	local state = self:getState( name )
+	-- 	if not state then
+	-- 		_error( 'quest state not exists', name )
+	-- 		return false
+	-- 	end
+	-- 	if stateData[ 'scheme' ] ~= state.scheme.path then
+	-- 		_error( 'quest state scheme mismatched', name, stateData[ 'scheme' ] )
+	-- 		return false
+	-- 	end
+	-- end
+
+	-- local hasError = false
+	-- for i, stateData in ipairs( data[ 'states' ] or {} ) do
+	-- 	local name = stateData[ 'name' ]
+	-- 	local state = self:getState( name )
+	-- 	if not state:load( stateData[ 'state' ] ) then hasError = true end
+	-- end
+	-- return not hasError
+end
+
+function QuestSession:rebuild()
+	if not self.needRebuild then return false end
+	self.needRebuild = false
+	local retainedStateData = self:saveState()
+	local schemes = {}
+	for i, entry in ipairs( self.schemeEntries ) do
+		local path = entry.path
+		local scheme = mock.loadAsset( path )
+		if scheme then
+			table.insert( schemes, scheme )
+			entry.valid = true
+		else
+			_error( 'failed loading quest scheme:', path )
+			entry.valid = false
 		end
 	end
-
-	local hasError = false
-	for i, stateData in ipairs( data[ 'states' ] or {} ) do
-		local name = stateData[ 'name' ]
-		local state = self:getState( name )
-		if not state:load( stateData[ 'state' ] ) then hasError = true end
-	end
-
-	return not hasError
+	local state = QuestState( unpack( schemes ) )
+	state.session = self
+	self.state = state
+	self:loadState( retainedStateData )
 end
 
 function QuestSession:saveConfig()
-	local stateConfig = {}
-	for i, state in ipairs( self.states ) do
-		local name = state.name
-		stateConfig[ i ] = {
-			name = state.name,
-			scheme = state.scheme and state.scheme.path
-		}
+	local entryDatas = {}
+	for i, entry in ipairs( self.schemeEntries ) do
+		entryDatas[i] = entry:save()
 	end
 	return {
 		name    = self.name,
 		comment = self.comment,
-		states  = stateConfig,
 		default = self.default,
+		entries = entryDatas,
 	}
 end
 
 function QuestSession:loadConfig( data )
-	local states = {}
-	self.name = data[ 'name' ]
+	self.name    = data[ 'name' ]
 	self.comment = data[ 'comment' ]
-	for i, stateConfig in ipairs( data[ 'states' ] ) do
-		local schemePath = stateConfig[ 'scheme' ]
-		local scheme = mock.loadAsset( schemePath )
-		if not scheme then
-			_error( 'failed loading quest scheme:', schemePath )
-			return false
-		end
-		local state = QuestState( scheme )
-		state.name = stateConfig[ 'name' ]
-		table.insert( states, state )
+	self.default = data[ 'default' ]
+	local entries =  {}
+	for i, entryData in ipairs( data[ 'entries' ] or {} ) do
+		local entry = QuestSessionSchemeEntry( self )
+		entry:load( entryData )
+		table.insert( entries, entry )
 	end
-	self.states = states
-	self.default = data[ 'default' ] or false
+	self.schemeEntries = entries
+	self.needRebuild = true
+	self:rebuild()
 end
 
 
@@ -168,7 +186,7 @@ CLASS: QuestManager ( GlobalManager )
 
 function QuestManager:__init()
 	self.sessions = {}
-	self.sessionMap = {}
+	self.sessionMap = false
 	self.pendingUpdate = true
 end
 
@@ -189,10 +207,15 @@ function QuestManager:updateSessionMap()
 		end
 	end
 	self.sessionMap = map
+	return map
 end
 
 function QuestManager:scheduleUpdate()
 	self.pendingUpdate = true
+end
+
+function QuestManager:resetSessionMap()
+	self.sessionMap = false
 end
 
 function QuestManager:postInit( game )
@@ -214,13 +237,30 @@ function QuestManager:getDefaultSession()
 end
 
 function QuestManager:getSession( name )
-	return self.sessionMap[ name ]
+	local map = self.sessionMap
+	if not map then
+		map = self:updateSessionMap()
+	end
+	return map and map[ name ]
 end
 
 function QuestManager:addSession()
 	local session = QuestSession()
 	table.insert( self.sessions, session )
+	self:resetSessionMap()
 	return session
+end
+
+function QuestManager:removeSession( session )
+	local idx = table.index( self.sessions, session )
+	if not idx then return false end
+	table.remove( self.sessions, idx )
+	self:resetSessionMap()
+	return true
+end
+
+function QuestManager:renameSession( session, name )
+	session:setName( name )
 end
 
 function QuestManager:saveConfig()
@@ -253,33 +293,68 @@ function QuestManager:loadConfig( data )
 		end
 	end
 	self.defaultSession = defaultSession
-	self:updateSessionMap()
 	self.sessions = sessions
+	self:updateSessionMap()
 end
+
+local function splitSession( n, defaultSessionName )
+	local a, b = n:match( '(%w+):(.*)' )
+	if a then return a, b end
+	return defaultSessionName, n
+end
+
+function QuestManager:getQuestNode( fullname, defaultSessionName )
+	local sessionName, nodeName =  splitSession( fullname, defaultSessionName )
+	local session = sessionName and self:getSession( sessionName )
+	if not session then
+		if sessionName then
+			_warn( 'no session found', sessionName )
+		else
+			_warn( 'no session specified', sessionName )
+		end
+		return false
+	end
+	node = session:getNode( nodeName )
+	return session, node
+end
+
+function QuestManager:getQuestNodeState( fullname, defaultSessionName )
+	local session, node = self:getQuestNode( fullname, defaultSessionName )
+	if session then
+		return session:getState():getNodeState( node.fullname )
+	else
+		return false
+	end
+end
+
+function QuestManager:checkQuestNodeState( fullname, state, defaultSessionName )
+	local nstate = self:getQuestNodeState( fullname, defaultSessionName )
+	return nstate == state
+end
+
 
 --------------------------------------------------------------------
 -- tool function
 --------------------------------------------------------------------
+function getQuestNodeState( name )
+	return getQuestManger():getQuestNodeState( name )
+end
+
 function isQuestActive ( name )
-	local session = getQuestManger():getDefaultSession()
-	return session and session:checkQuestState( name, 'active' )
+	return getQuestManger():checkQuestNodeState( name, 'active' )
 end
 
 function isQuestFinished ( name )
-	local session = getQuestManger():getDefaultSession()
-	return session and session:checkQuestState( name, 'finished' )
+	return getQuestManger():checkQuestNodeState( name, 'finished' )
 end
 
 function isQuestNotPlayed ( name )
-	local session = getQuestManger():getDefaultSession()
-	return session and session:checkQuestState( name, nil )
+	return getQuestManger():checkQuestNodeState( name, nil )
 end
 
 function isQuestPlayed ( name )
-	local session = getQuestManger():getDefaultSession()
-	return session and ( not session:checkQuestState( name, nil ) )
+	return not getQuestManger():checkQuestNodeState( name, nil )
 end
-
 
 --------------------------------------------------------------------
 _questManger = QuestManager()

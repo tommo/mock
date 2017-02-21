@@ -34,16 +34,17 @@ end
 CLASS: QuestState ()
 	:MODEL{}
 
-function QuestState:__init( scheme, name )
+function QuestState:__init( scheme, ... )
 	self.nodeStates   = {}
 	self.activeNodes  = {}
 	self.changedNodes = {}
 	self.changed = false
 	self.started = false
 	self.running = true
-	self.scheme  = scheme
-	self.name    = name
+	self.schemes = { scheme, ... }
+	self.name    = ''
 	self.evalEnv = false
+	self.session = false
 end
 
 function QuestState:setName( name )
@@ -73,19 +74,27 @@ function QuestState:start()
 	if self.started then return end
 	self.started = true
 	--find entry node
-	local scheme = self.scheme
-	local entryNode = scheme:getRoot():getChild( 'start' )
-	if not entryNode then
-		_warn( 'no start node in scheme' )
-		return false
+	for i, scheme in ipairs( self.schemes ) do
+		local entryNode = scheme:getRoot():getChild( 'start' )
+		if entryNode then
+			if self:getNodeState( entryNode.fullname ) then return false end
+			entryNode:start( self )
+			self.changed = true
+		else
+			_warn( 'no start node in scheme', tostring( scheme.path ) )
+		end
 	end
-	if self:getNodeState( entryNode.fullname ) then return false end
-	entryNode:start( self )
-	self.changed = true
 end
 
-function QuestState:getScheme()
-	return self.scheme
+function QuestState:addScheme( scheme )
+	table.insert( self.schemes, scheme )
+	if self.started then
+		--TODO????
+	end
+end
+
+function QuestState:getSchemes()
+	return self.schemes
 end
 
 function QuestState:getNodeState( fullname, includeChange ) --use fullname here, ID is not stable
@@ -113,13 +122,42 @@ function QuestState:setNodeState( target, state )
 	local s0 = self:getNodeState( fullname )
 	if s0 == state then return false end
 	_logf( '%s -> %s', fullname, tostring( state )  )
-	local node = self.scheme:getNodeByName( fullname )
+	local node = self:getNodeByName( fullname )
 	if not node then
 		return _error( 'failed to found quest node to change:', fullname )
 	end
 	local entry = { node, state }
 	table.insert( self.changedNodes, entry )
 	self.changed = true
+end
+
+function QuestState:checkNodeState( fullname, value )
+	local found = self:getNode( fullname )
+	if not next( found ) then
+		_warn( 'no quest node found', fullname )
+		return nil
+	end
+	return self:getNodeState( fullname ) == value
+end
+
+function QuestState:getNode( fullname )
+	return self:getNodeByName( fullname )
+end
+
+function QuestState:getNodeByName( fullname )
+	for i, scheme in ipairs( self.schemes ) do
+		local node = scheme:getNodeByName( fullname )
+		if node then return node end
+	end
+	return nil
+end
+
+function QuestState:findNode( term, ... )
+	for i, scheme in ipairs( self.schemes ) do
+		local node = scheme:findNode( term, ... )
+		if node then return node end
+	end
+	return nil
 end
 
 function QuestState:getEvalEnv()
@@ -139,7 +177,6 @@ function QuestState:update()
 		self:start()
 	end
 	if not self.running then return end
-	local scheme = self.scheme
 	local _CYCLE = 0
 	while true do
 		--apply change
@@ -185,6 +222,7 @@ function QuestState:save()
 		local node, newState = unpack( entry )
 		changeData[ i ] = { node.fullname, newState }
 	end
+
 	return {
 		states  = self.nodeStates,
 		changes = changeData,
@@ -192,7 +230,6 @@ function QuestState:save()
 end
 
 function QuestState:load( data )
-	local scheme = self.scheme
 	local hasError = false
 
 	local activeNodes = {}
@@ -200,25 +237,25 @@ function QuestState:load( data )
 
 	local nodeStates = data[ 'states' ]
 	for fullname, state in pairs( nodeStates ) do
-		local node = scheme:getNode( fullname )
+		local node = self:getNode( fullname )
 		if node then
 			if state == 'active' then
 				activeNodes[ node ] = true
 			end
 		else
 			hasError = true
-			_error( 'quest node not found', scheme.path, fullname )
+			_error( 'quest node not found', fullname )
 		end
 	end
 
 	for i, entry in ipairs( data[ 'changes' ] ) do
 		local fullname, newState = unpack( entry )
-		local node = scheme:getNode( fullname )
+		local node = self:getNode( fullname )
 		if node then
 			changedNodes[ i ] = { node, newState }
 		else
 			hasError = true
-			_error( 'quest node not found', scheme.path, fullname )
+			_error( 'quest node not found', fullname )
 		end
 	end
 	self.nodeStates   = nodeStates

@@ -30,60 +30,49 @@ function SQNodeQuest:load( data )
 end
 
 function SQNodeQuest:enter( state, env )
+	if not self.target then return true end
 	local cmd = self.cmd
 	local mgr = getQuestManger()
-	local session = mgr:getDefaultSession()
-	if not session then
-		self:_warn( 'no default quest session' )
-		return
-	end
-	if not self.target then return true end
-	local entries = session:getNodes( self.target )
-	if not next( entries ) then
-		self:_warn( 'no node found in quest session', self.target )
+	local session, node = mgr:getQuestNode( self.target )
+	if not ( node and session ) then
+		self:_warn( 'no node/session found in quest session', self.target )
 		return false
 	end
+	local questState = session:getState()
+	local nodeState = questState:getNodeState( node.fullname )
 	if cmd == 'finish' then
-		for i, entry in ipairs( entries ) do
-			local questState, node = unpack( entry )
-			local nodeState = questState:getNodeState( node.fullname )
-			if nodeState ~= 'active' then
-				self:_warn( 'quest node is not active' )
-			end
-			node:finish( questState )
-			mgr:scheduleUpdate()
+		if nodeState ~= 'active' then
+			self:_warn( 'quest node is not active' )
 		end
+		node:finish( questState )
+
 	elseif cmd == 'abort' then
-		for i, entry in ipairs( entries ) do
-			local questState, node = unpack( entry )
-			local nodeState = questState:getNodeState( node.fullname )
-			if nodeState ~= 'active' then
-				self:_warn( 'quest node is not active' )
-			end
-			node:abort( questState )
-			mgr:scheduleUpdate()
+		if nodeState ~= 'active' then
+			self:_warn( 'quest node is not active' )
 		end
+		node:abort( questState )
+		mgr:scheduleUpdate()
+
 	elseif cmd == 'reset' then
-		for i, entry in ipairs( entries ) do
-			local questState, node = unpack( entry )
-			local nodeState = questState:getNodeState( node.fullname )
-			if not nodeState then
-				self:_warn( 'quest node is not started yet' )
-			end
-			node:reset( questState )
-			mgr:scheduleUpdate()
+		if not nodeState then
+			self:_warn( 'quest node is not started yet' )
 		end
+		node:reset( questState )
+
 	elseif cmd == 'start' then
-		for i, entry in ipairs( entries ) do
-			local questState, node = unpack( entry )
-			local nodeState = questState:getNodeState( node.fullname )
-			if nodeState then
-				self:_warn( 'quest node is started or stopped already' )
-			end
-			node:start( questState )
-			mgr:scheduleUpdate()
+		if nodeState then
+			self:_warn( 'quest node is started or stopped already' )
 		end
+		node:start( questState )
+
+	else --unknown command
+		self:_warn( 'unknown quest cmd', cmd )
+		return false
+
 	end
+	
+	mgr:scheduleUpdate()
+
 end
 
 
