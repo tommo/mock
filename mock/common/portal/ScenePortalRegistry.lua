@@ -135,6 +135,7 @@ function ScenePortalRegistry:saveConfig()
 	for path, graph in pairs( self.graphs ) do
 		table.insert( graphPaths, path )
 	end
+	table.sort( graphPaths )
 	return {
 		graphs = graphPaths
 	}

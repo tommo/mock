@@ -106,11 +106,7 @@ function Entity:_insertIntoScene( scene, layer )
 	scene.entities[ self ] = true
 	scene.entityCount = scene.entityCount + 1
 
-	local copy = {} --there might be new components attached inside component starting
-	for com in pairs( self.components ) do
-		copy[ com ] = true
-	end 
-	for com in pairs( copy ) do
+	for i, com in ipairs( self:getSortedComponentList() ) do
 		if not com._entity then
 			com._entity = self
 			local onAttach = com.onAttach

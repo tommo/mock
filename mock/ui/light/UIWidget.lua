@@ -4,8 +4,8 @@ local insert, remove = table.insert, table.remove
 
 --------------------------------------------------------------------
 local function widgetZSortFunc( w1, w2 )
-	local z1 = w1:getLocZ()
-	local z2 = w2:getLocZ()
+	local z1 = w1.zorder
+	local z2 = w2.zorder
 	return z1 < z2
 end
 
@@ -36,6 +36,7 @@ function UIWidgetBase:__init()
 	self.childWidgets   = {}
 	self.localStyleSheetPath = false
 	self.localStyleSheet = false
+	self.zorder = 0
 end
 
 function UIWidgetBase:isRootWidget()
@@ -97,6 +98,18 @@ function UIWidgetBase:sortChildren()
 	table.sort( self.childWidgets, widgetZSortFunc )	
 end
 
+function UIWidgetBase:getZOrder()
+	return self.zorder
+end
+
+function UIWidgetBase:setZOrder( z )
+	self.zorder = z
+	self:setLocZ( z )
+	local p = self.parent
+	if p and p.FLAG_UI_WIDGET then
+		return p:sortChildren()
+	end
+end
 
 
 --------------------------------------------------------------------
@@ -113,6 +126,7 @@ CLASS: UIWidget ( UIWidgetBase )
 		--------
 		Field 'loc'  :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc'  ) :label( 'Loc'  );
 		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size' ) :label( 'Size' );
+		Field 'ZOrder' :int()  :getset( 'ZOrder' ) :label( 'Z-Order' );
 		'----';
 		Field 'layoutDisabled' :boolean() :label( 'Disable Layout' );
 		Field 'layoutProportion' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'LayoutProportion' ) :label( 'Proportion' );
@@ -122,6 +136,7 @@ CLASS: UIWidget ( UIWidgetBase )
 --------------------------------------------------------------------
 function UIWidget:__init()
 	self.styleAcc = UIStyleAccessor( self )
+
 
 	self.w = 100
 	self.h = 100
@@ -160,6 +175,11 @@ end
 function UIWidget:_detachChildEntity( entity )
 	self:invalidateLayout()
 	return UIWidget.__super._detachChildEntity( self, entity )	
+end
+
+function UIWidget:setZOrder( z )
+	UIWidget.__super.setZOrder( self, z )
+	return self:invalidateLayout()
 end
 
 function UIWidget:isSubWidget()

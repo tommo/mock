@@ -257,10 +257,10 @@ function UIBoxLayout:calcLayoutHorizontal( info )
 	local fixed = {}
 	local totalProportion = 0
 	for i, entry in ipairs( info ) do
-		if entry.policyV == 'expand' then
-			if entry.proportionV > 0 then
+		if entry.policyH == 'expand' then
+			if entry.proportionH > 0 then
 				insert( proportional, entry )
-				totalProportion = totalProportion + entry.proportionV
+				totalProportion = totalProportion + entry.proportionH
 			else
 				entry.targetWidth = entry.minWidth
 				propAvailWidth = propAvailWidth - entry.minWidth
@@ -292,13 +292,13 @@ function UIBoxLayout:calcLayoutHorizontal( info )
 		local widthUnit = propAvailWidth / totalProportion
 		totalProportion = 0
 		for _, entry in ipairs( proportional ) do
-			local targetWidth = entry.proportionV * widthUnit
+			local targetWidth = entry.proportionH * widthUnit
 			if targetWidth < entry.minWidth then
 				entry.targetWidth = entry.minWidth
 				propAvailWidth = propAvailWidth - entry.minWidth
 			else
 				entry.targetWidth = targetWidth
-				totalProportion = totalProportion + entry.proportionV
+				totalProportion = totalProportion + entry.proportionH
 				insert( proportional2, entry )
 			end
 		end

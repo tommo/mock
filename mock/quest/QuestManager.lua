@@ -321,7 +321,12 @@ end
 function QuestManager:getQuestNodeState( fullname, defaultSessionName )
 	local session, node = self:getQuestNode( fullname, defaultSessionName )
 	if session then
-		return session:getState():getNodeState( node.fullname )
+		if node then
+			return session:getState():getNodeState( node.fullname )
+		else
+			_warn( 'no quest node found', fullname )
+			return false
+		end
 	else
 		return false
 	end
