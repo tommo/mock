@@ -162,4 +162,5 @@ function JoystickManager:initSDL()
 	)
 end
 
+--------------------------------------------------------------------
 joystickManager = JoystickManager()

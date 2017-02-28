@@ -1,6 +1,5 @@
 --------------------------------------------------------------------
 --JoysticConfig
-require 'mock.tools.JoystickConfig'
 require 'mock.tools.SDLJoystickMapping'
 
 --------------------------------------------------------------------

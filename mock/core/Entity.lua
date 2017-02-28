@@ -173,7 +173,7 @@ end
 
 --- Destroy the Entity if it's inserted into a scene, deferred. ( scene checking )
 function Entity:tryDestroy()
-	if not self.scene then return end
+	if not self.scene then return false end
 	return self:destroy()
 end
 
@@ -194,6 +194,8 @@ function Entity:destroy()
 			entitiesByName[ self.name ] = nil
 		end
 	end
+
+	return true
 end
 
 --- Destroy the Entity later.

@@ -41,7 +41,11 @@ function SQNodeEntity:enter( state, env )
 		end
 	elseif cmd == 'destroy' then
 		for i, target in ipairs( targets ) do
-			target:destroy()
+			if target.scene then
+				target:tryDestroy()
+			else
+				self:_warn( 'entity destroyed already', target:getName() )
+			end
 		end
 	elseif cmd == 'deactivate' then
 		for i, target in ipairs( targets ) do
