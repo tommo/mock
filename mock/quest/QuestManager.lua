@@ -263,6 +263,33 @@ function QuestManager:renameSession( session, name )
 	session:setName( name )
 end
 
+
+function QuestManager:saveState()
+	local data = {}
+	local sessionStates = {}
+	for i, session in ipairs( self.sessions ) do
+		sessionStates[ i ] = {
+			name  = session.name,
+			state = session:saveState()
+		}
+	end
+	return sessionStates
+end
+
+function QuestManager:loadState( data )
+	for i, sdata in ipairs( data ) do
+		local name = sdata[ 'name' ]
+		local session = self:getSession( name )
+		_log( 'loading q state', name, sdata[ 'state' ] )
+		if not session then
+			_error( 'failed to get session', name )
+			return false
+		end
+		session:loadState( assert( sdata[ 'state' ] ) )
+	end
+	return true
+end
+
 function QuestManager:saveConfig()
 	local data = {}
 	local sessionDatas = {}

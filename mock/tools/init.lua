@@ -11,6 +11,7 @@ require 'mock.tools.UserAction' --non coroutine action
 ---------------------------------------------------------------------
 --Stat
 require 'mock.tools.Stat'
+require 'mock.tools.GameSave'
 -- require 'mock.tools.Analytic'
 require 'mock.tools.Achievement'
 -- require 'mock.tools.HighscoreTable'

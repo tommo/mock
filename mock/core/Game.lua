@@ -167,6 +167,8 @@ function Game:loadConfig( path, fromEditor, extra )
 end
 
 function Game:init( config, fromEditor, extra )
+	
+
 	extra = extra or {}
 	
 	_stat( '...init game' )
@@ -184,6 +186,7 @@ function Game:init( config, fromEditor, extra )
 	local noGraphics = extra[ 'no_graphics' ]
 	if not noGraphics then
 		self:initGraphics   ( config, fromEditor )
+		self:initDebugUI()
 		self:applyPlaceHolderRenderTable()
 	end
 
@@ -195,10 +198,6 @@ function Game:init( config, fromEditor, extra )
 		self:initCommonData( config, fromEditor )
 	end
 	
-	if not noGraphics then
-		self:initDebugUI()
-	end
-
 end
 
 

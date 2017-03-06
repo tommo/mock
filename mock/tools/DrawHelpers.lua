@@ -88,3 +88,19 @@ function MOAIDraw.fillRectC( x, y, w, h )
 	return MOAIDraw.fillRect( x - w/2, y - h/2, w + w/2, h + w/2 )
 end
 
+function MOAIDraw.drawDiamond( x, y, w, h )
+	local x0, y0 = x, y+h/2
+	local x1, y1 = x+w/2, y
+	local x2, y2 = x, y-h/2
+	local x3, y3 = x-w/2, y
+	return drawLine( x0, y0, x1, y1, x2, y2, x3, y3, x0, y0 )
+end
+
+function MOAIDraw.fillDiamond( x, y, w, h )
+	local x0, y0 = x, y+h/2
+	local x1, y1 = x+w/2, y
+	local x2, y2 = x, y-h/2
+	local x3, y3 = x-w/2, y
+	fillFan( x0, y0, x1,y1, x2,y2, x3,y3 )
+end
+

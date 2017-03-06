@@ -46,6 +46,7 @@ function DebugUIManager:onDeviceResize( w, h )
 end
 
 function DebugUIManager:onGUI( gui )
+	if not self.enabled then return end
 	local scn = game:getMainScene()
 	for key, uiModule in pairs( self.uiModules ) do
 		uiModule:_onDebugGUI( gui, scn )
@@ -54,7 +55,7 @@ end
 
 function DebugUIManager:setEnabled( enabled )
 	self.enabled = enabled
-	self.imgui:setVisible( enabled )
+	-- self.imgui:setVisible( enabled )
 	setInputListenerCategoryActive( 'DebugUI', enabled )
 	if enabled then
 		game:showCursor( 'DebugUI' )

@@ -28,7 +28,9 @@ stateCollectorMT = {
 			action ~= 'jumpin' and action ~= 'jumpout'
 			and action~='step' and action~='enter' and action~='exit'
 		then
-			return error('unsupported state action:'..action)
+			return error(
+				string.format( 'unsupported state action: %s:%s', id, action )
+			)
 		end
 		--NOTE:validation will be done after setting scheme to controller
 		--save under fullname

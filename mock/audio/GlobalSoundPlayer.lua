@@ -155,6 +155,10 @@ function GlobalSoundPlayerSession:resume( fadeDuration, delay )
 	end
 end
 
+function GlobalSoundPlayerSession:getEventInstance()
+	return self.soundInstance
+end
+
 
 --------------------------------------------------------------------
 CLASS: GlobalSoundPlayer ( GlobalManager )
