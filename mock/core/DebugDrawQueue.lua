@@ -19,8 +19,14 @@ local fillEllipse     = MOAIDraw.fillEllipse
 local fillFan         = MOAIDraw.fillFan
 local fillRect        = MOAIDraw.fillRect
 local setBlendMode    = MOAIDraw.setBlendMode
-
 local setPenColor     = MOAIGfxDevice.setPenColor
+
+--------------------------------------------------------------------
+--extra
+local drawArrow       = MOAIDraw.drawArrow
+local fillArrow       = MOAIDraw.fillArrow
+
+
 ---------------------------------------------------------------------
 local insert = table.insert
 
@@ -158,6 +164,10 @@ function DebugDrawQueueGroup:drawLine( x, y, x1, y1 )
 	return self:append( DebugDrawCommandLine( x,y,x1,y1 ) )
 end
 
+function DebugDrawQueueGroup:drawArrow( x, y, x1, y1, size, angle )
+	return self:append( DebugDrawCommandArrow( x,y,x1,y1, size or 10, angle ) )
+end
+
 function DebugDrawQueueGroup:drawRay( x, y, dx, dy )
 	return self:append( DebugDrawCommandRay( x,y,dx, dy ) )
 end
@@ -220,6 +230,23 @@ function DebugDrawCommandLine:onDraw()
 	return drawLine( self.x, self.y, self.x1, self.y1 )
 end
 
+--------------------------------------------------------------------
+CLASS: DebugDrawCommandArrow ( DebugDrawCommand )
+	:MODEL{}
+
+function DebugDrawCommandArrow:__init( x, y, x1, y1, size, angle )
+	self.x = x
+	self.y = y
+	self.x1 = x1
+	self.y1 = y1
+	self.size = size
+	self.angle = angle
+end
+
+function DebugDrawCommandArrow:onDraw()
+	return drawArrow( self.x, self.y, self.x1, self.y1, self.size, self.angle )
+end
+
 
 --------------------------------------------------------------------
 CLASS: DebugDrawCommandRay ( DebugDrawCommand )
@@ -272,6 +299,10 @@ end
 
 function _DebugDraw.drawLine( x, y, x1, y1 )
 	return currentDebugDrawQueueGroup:drawLine( x, y, x1, y1 )
+end
+
+function _DebugDraw.drawArrow( x, y, x1, y1, size, angle )
+	return currentDebugDrawQueueGroup:drawArrow( x, y, x1, y1, size, angle )
 end
 
 function _DebugDraw.drawRect( x, y, x1, y1 )

@@ -46,9 +46,6 @@ end
 
 function PhysicsBodySteerController:pause()
 	self._controller:pause(true)
-
-	self._controller:setLinearVelocity(0, 0, 0)
-	self._controller:setAngularVelocity(0)
 end
 
 function PhysicsBodySteerController:resume()
@@ -105,7 +102,6 @@ function PhysicsBodySteerController:getLinearAcceleration()
 	return self._controller:getLinearAcceleration()
 end
 
-
 function PhysicsBodySteerController:getAngularVelocity()
 	return self._controller:getAngularVelocity()
 end
@@ -116,5 +112,13 @@ end
 
 function PhysicsBodySteerController:getAngularAcceleration()
 	return self._controller:getAngularAcceleration()
+end
+
+function PhysicsBodySteerController:getEfficiency()
+	return self._controller:getEfficiency()
+end
+
+function PhysicsBodySteerController:setEfficiency( linear, angular )
+	return self._controller:setEfficiency( linear, angular )
 end
 

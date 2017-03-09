@@ -503,7 +503,7 @@ function Scene:resetActionRoot()
 	end
 	self.actionPriorityGroups = {}
 	local root = self.actionRoot
-	for i = 8, -8, -1 do
+	for i = 9, -9, -1 do
 		local group = MOAIAction.new()
 		group:setAutoStop( false )
 		group:attach( root )

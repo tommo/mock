@@ -19,6 +19,7 @@ require 'mock.core.MOAIHelpers'
 require 'mock.core.MOAIActionHelpers'
 require 'mock.core.MOAIPropHelpers'
 require 'mock.core.MOAINodeHelper'
+require 'mock.core.MOAIDrawHelpers'
 
 require 'mock.core.MOAIHack'
 

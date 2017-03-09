@@ -71,15 +71,6 @@ function QuestNodeBase:getName()
 end
 
 function QuestNodeBase:getFullName()
-	if not self.parent then return false end--root
-	if not self.fullname then
-		local base = self.parent:getFullName()
-		if base then
-			self.fullname = base .. '.' .. self.name
-		else
-			self.fullname = self.name
-		end
-	end
 	return self.fullname
 end
 
@@ -312,9 +303,12 @@ CLASS: QuestScheme ()
 function QuestScheme:__init()
 	self.root = QuestNode()
 	self.root.scheme = self
+	self.root.name     = '@root'
+	self.root.fullname = '@root'
 	self.nodes = {}
 	self.nodeByName  = {}
 	self.connections = {}
+	self.nodeByName[ '@root' ] = self.root
 	self.path = false
 end
 
