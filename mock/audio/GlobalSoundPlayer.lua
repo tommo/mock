@@ -69,6 +69,7 @@ function GlobalSoundPlayerSession:stop( fadeDuration )
 		instance:stop()
 	end
 	self.soundInstance = false
+	self.currentEvent  = false
 end
 
 function GlobalSoundPlayerSession:changeEvent( eventPath, fadeDuration, delay )
@@ -93,6 +94,7 @@ end
 function GlobalSoundPlayerSession:playEvent( eventPath, fadeDuration, delay )
 	self:stop( fadeDuration )
 	local instance = AudioManager.get():playEvent2D( eventPath, looped )
+	-- print( 'play event', eventPath, instance )
 	self.currentEvent = eventPath
 	self.soundInstance = instance
 	if instance then

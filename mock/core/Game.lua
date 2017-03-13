@@ -340,6 +340,7 @@ function Game:initLayers( config, fromEditor )
 	
 	if fromEditor then
 		local layer = self:addLayer( '_GII_EDITOR_LAYER' )
+		layer.sortMode = 'priority_ascending'
 		layer.priority = 1000000
 	end
 end
