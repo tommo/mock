@@ -42,3 +42,5 @@ end
 function SQNodeAssert:getIcon()
 	return 'sq_node_assert'
 end
+
+registerSQNode( 'assert', SQNodeAssert )
