@@ -23,6 +23,16 @@ function DebugUIManager:init()
 	self.imgui:init( 'DebugUI' )
 	self.imgui:setViewport( game:getMainRenderTarget():getMoaiViewport() )
 	self:onDeviceResize( game:getDeviceResolution() )
+	addKeyboardListener( function( ... )
+		return self:onKeyEvent( ... )
+	end
+	 )
+end
+
+function DebugUIManager:onKeyEvent( key, down )
+	if key == '`' and down then
+		game:setDebugUIEnabled( not game:isDebugUIEnabled() )
+	end
 end
 
 function DebugUIManager:getKey()

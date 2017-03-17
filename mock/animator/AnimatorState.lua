@@ -176,6 +176,8 @@ end
 
 function AnimatorState:start()
 	self.anim:start()
+	local p0, p1 = self:getRange()
+	self:apply( p0 )
 	self.anim:pause( false )
 	return self.anim
 end

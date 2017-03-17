@@ -246,8 +246,8 @@ function Game:initSystem( config, fromEditor )
 		collectgarbage( 'setpause',   70  )
 		collectgarbage( 'setstepmul', 150 )	
 	else
-		collectgarbage( 'setpause',   70  )
-		collectgarbage( 'setstepmul', 150 )	
+		collectgarbage( 'setpause',   50  )
+		collectgarbage( 'setstepmul', 120 )	
 	end
 
 	MOAISim.setStep( 1/60 )
