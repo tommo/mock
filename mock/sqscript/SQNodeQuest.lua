@@ -51,7 +51,6 @@ function SQNodeQuest:enter( state, env )
 			self:_warn( 'quest node is not active' )
 		end
 		node:abort( questState )
-		mgr:scheduleUpdate()
 
 	elseif cmd == 'reset' then
 		if not nodeState then
@@ -71,7 +70,7 @@ function SQNodeQuest:enter( state, env )
 
 	end
 	
-	mgr:scheduleUpdate()
+	mgr:forceUpdate()
 
 end
 

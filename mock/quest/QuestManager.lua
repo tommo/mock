@@ -89,7 +89,7 @@ function QuestSession:checkQuestState( name, value )
 	return self.state:checkNodeState( name, value )	
 end
 
-function QuestSession:update( dt )
+function QuestSession:update()
 	self.state:update()
 end
 
@@ -214,6 +214,17 @@ function QuestManager:scheduleUpdate()
 	self.pendingUpdate = true
 end
 
+function QuestManager:forceUpdate()
+	return self:updateSessions()
+end
+
+function QuestManager:updateSessions()
+	self.pendingUpdate = false
+	for _, session in ipairs( self.sessions ) do
+		session:update()
+	end
+end
+
 function QuestManager:resetSessionMap()
 	self.sessionMap = false
 end
@@ -226,10 +237,7 @@ end
 
 function QuestManager:onUpdate( game, dt )
 	if not self.pendingUpdate then return end
-	self.pendingUpdate = false
-	for _, session in ipairs( self.sessions ) do
-		session:update( dt )
-	end
+	self:updateSessions()
 end
 
 function QuestManager:getDefaultSession()
