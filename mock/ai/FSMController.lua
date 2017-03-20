@@ -92,10 +92,10 @@ end
 
 function FSMController:onAttach( entity )
 	Behaviour.onAttach( self, entity )
+	entity:addMsgListener( self.msgBoxListener )
 end
 
 function FSMController:onStart( entity )
-	entity:addMsgListener( self.msgBoxListener )
 	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
 	self.threadFSMUpdate:setDefaultParent( true )
 	return Behaviour.onStart( self, entity )
