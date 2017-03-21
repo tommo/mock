@@ -1351,7 +1351,7 @@ function Entity:getColor()
 end
 
 function Entity:setColor( r,g,b,a )
-	return self._prop:setColor( r,g,b,a )
+	return self._prop:setColor( r or 1, g or 1, b or 1, a or 1 )
 end
 
 --------------------------------------------------------------------

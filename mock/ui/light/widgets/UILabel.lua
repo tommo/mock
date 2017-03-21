@@ -20,9 +20,6 @@ function UILabel:setText( t )
 	self.textLabel:setText( t )
 end
 
-function UILabel:initContent( style )
-end
-
 function UILabel:onUpdateVisual( style )	
 	local font = style:getAsset( 'font' )
 	local fontSize = style:get( 'font_size', 12 )

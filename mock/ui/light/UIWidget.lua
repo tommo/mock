@@ -118,7 +118,6 @@ CLASS: UIWidget ( UIWidgetBase )
 	:MODEL{
 		--- hide common entity properties
 			Field '__gizmoIcon' :no_edit();
-			Field 'color' :type('color') :no_edit();
 			Field 'rot'   :no_edit();
 			Field 'scl'   :no_edit();
 			Field 'piv'   :no_edit();
@@ -157,6 +156,54 @@ function UIWidget:__init()
 	self.layoutPolicy     = { 'expand', 'expand' }
 	self.layoutProportion = { 0, 0 }
 	self.layoutAlignment  = { 'left', 'top' }
+
+	self.renderers = {}
+	self.contentModified = true
+	self.styleModified = true
+end
+
+function UIWidget:initRenderers()
+	self:addRenderer( UICommonStyleWidgetRenderer() )
+end
+
+function UIWidget:insertRenderer( idx, renderer, option )
+	if not idx then
+		table.insert( self.renderers, renderer )
+	else
+		table.insert( self.renderers, idx, renderer )
+	end
+	renderer:setWidget( self )
+	renderer:setOptions( option or {} )
+	if self.scene then
+		renderer:onInit( self )
+	end
+	self:invalidateStyle()
+	self:invalidateLayout()
+	return renderer
+end
+
+function UIWidget:addRenderer( renderer, option )
+	return self:insertRenderer( nil, renderer, option )
+end
+
+function UIWidget:removeRenderer( renderer )
+	local idx = table.index( self.renderers, renderer )
+	if idx then
+		if self.scene then
+			renderer:onDestroy( self )
+		end
+		table.remove( self.renderers, idx )
+	end
+end
+
+function UIWidget:clearRenderers()
+	if self.scene then
+		local renderers = self.renderers
+		for i, r in ipairs( renderers ) do
+			r:onDestroy( self )
+		end
+	end
+	self.renderers = {}
 end
 
 function UIWidget:setVisible( visible )
@@ -188,7 +235,7 @@ end
 
 function UIWidget:setSubWidget( subWidget )
 	self.subWidget = subWidget and true or false
-	self:invalidateStyle()
+	self:invalidateVisual()
 end
 
 function UIWidget:getParentWidget()
@@ -222,27 +269,19 @@ function UIWidget:getLayoutInfo()
 	}
 end
 
-function UIWidget:getLayoutableChildInfo()
-	local result = {}
-	for i, widget in ipairs( self.childWidgets ) do
-		if ( not widget.layoutDisabled ) and widget:isVisible() then
-			local entry = widget:getLayoutInfo()
-			insert( result, entry )
-		end
-	end
-	return result
-end
 
 function UIWidget:onLoad()
-	self:initContent()
-	self:onInitContent()
-	self:invalidateStyle()
+	self:initRenderers()
+	for i, renderer in ipairs( self.renderers ) do
+		renderer:onInit( self )
+	end
 end
 
 function UIWidget:destroyNow()
 	if self._parentView then
 		self._parentView:onWidgetDestroyed( self )
 	end
+	self:clearRenderers()
 	local parent = self.parent
 	local childWidgets = parent and parent.childWidgets
 	if childWidgets then
@@ -354,6 +393,12 @@ function UIWidget:setModal( modal )
 end
 
 --------------------------------------------------------------------
+function UIWidget:getContentData( key, role )
+	return nil
+end
+
+
+--------------------------------------------------------------------
 function UIWidget:getFeatures()
 	return self.styleAcc.features
 end
@@ -386,26 +431,35 @@ function UIWidget:toggleFeature( feature )
 	return self:setFeature( feature, not self:hasFeature( feature ) )
 end
 
-function UIWidget:invalidateStyle()
+function UIWidget:invalidateContent()
+	self.contentModified = true
+	self:invalidateVisual()
+end
+
+function UIWidget:invalidateVisual()
 	local view = self:getParentView()
 	if view then
 		view:scheduleVisualUpdate( self )
 	end
 end
 
+function UIWidget:invalidateStyle()
+	self.styleAcc:markDirty()
+end
+
 function UIWidget:updateVisual()
 	local style = self.styleAcc
 	style:update()
-	return self:onUpdateVisual( style )
+	local contentModified = self.contentModified
+	local styleModified = self.styleModified
+	self.contentModified = false
+	self.styleModified = false
+	for i, r in ipairs( self.renderers ) do
+		r:update( self, style, styleModified, contentModified )
+	end
 end
 
 function UIWidget:onUpdateVisual( style )
-end
-
-function UIWidget:initContent()
-end
-
-function UIWidget:onInitContent()
 end
 
 
@@ -441,7 +495,7 @@ function UIWidget:setSize( w, h, updateLayout, updateStyle )
 		self:invalidateLayout()
 	else
 		if updateStyle ~= false then
-			self:invalidateStyle()
+			self:invalidateVisual()
 		end
 	end
 end
@@ -505,7 +559,7 @@ function UIWidget:updateLayout()
 	local layout = self.layout 
 	if not layout then return end
 	layout:update()
-	self:invalidateStyle()
+	self:invalidateVisual()
 end
 
 function UIWidget:getLayoutPolicy()
@@ -534,6 +588,20 @@ function UIWidget:setLayoutProportion( h, v )
 	self.layoutProportion = { h, v }
 	self:invalidateLayout()
 end
+
+
+function UIWidget:getLayoutableChildInfo()
+	local result = {}
+	for i, widget in ipairs( self.childWidgets ) do
+		if ( not widget.layoutDisabled ) and widget:isVisible() then
+			local entry = widget:getLayoutInfo()
+			insert( result, entry )
+		end
+	end
+	return result
+end
+
+--------------------------------------------------------------------
 
 function UIWidget:getMinSizeHint()
 	return 0,0
@@ -628,4 +696,3 @@ function UIWidget:onDrawGizmo( selected )
 	local w, h = self:getSize()
 	MOAIDraw.drawRect( 0, 0, w, h )
 end
-

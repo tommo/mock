@@ -26,7 +26,7 @@ function UICheckBox:setChecked( checked )
 	checked = checked and true or false
 	if self.checked == checked then return end
 	self.checked = checked
-	self:invalidateStyle()
+	self:invalidateVisual()
 	self.markSprite:setVisible( checked )
 	self.valueChanged( self.checked )
 end

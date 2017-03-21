@@ -92,7 +92,9 @@ function UIStyleAccessor:markDirty()
 	self.cachedData     = false
 	self.queryList      = false
 	self.localQueryList = false
-	self.owner:invalidateStyle()
+	local owner = self.owner
+	owner.styleModified = true
+	owner:invalidateVisual()
 end
 
 function UIStyleAccessor:getStyleSheet()

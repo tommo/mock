@@ -16,10 +16,17 @@ end
 
 function UIButton:setText( t )
 	self.text = t
+	self:invalidateContent()
 end
 
 function UIButton:getText()
 	return self.text
+end
+
+function UIButton:getContentData( key, role )
+	if key == 'text' then
+		return self:getText()
+	end
 end
 
 function UIButton:procEvent( ev )
@@ -56,3 +63,4 @@ end
 
 function UIButton:onClick()
 end
+

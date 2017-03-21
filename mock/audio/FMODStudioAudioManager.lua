@@ -138,7 +138,7 @@ function FMODStudioAudioManager:getBus( path )
 	local bus = self.cacheBus[ path ]
 	if bus == nil then
 		local fullpath = 'bus:/' .. path
-		local bus = self.system:getBus( fullpath ) or false
+		bus = self.system:getBus( fullpath ) or false
 		self.cacheBus[ path ] = bus
 	end
 	return bus
@@ -185,12 +185,20 @@ end
 
 function FMODStudioAudioManager:pauseCategory( category, paused )
 	local bus = self:getBus( category )
-	if bus then bus:setPaused( paused ~= false ) end
+	if bus then 
+		bus:setPaused( paused ~= false )
+	else
+		_warn( 'no audio bus found', category )
+	end
 end
 
 function FMODStudioAudioManager:muteCategory( category, muted )
 	local bus = self:getBus( category )
-	if bus then bus:setMute( paused ~= false ) end
+	if bus then
+		bus:setMute( paused ~= false )
+	else
+		_warn( 'no audio bus found', category )
+	end
 end
 
 function FMODStudioAudioManager:isCategoryMuted( category )

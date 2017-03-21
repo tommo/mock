@@ -167,7 +167,6 @@ function Game:loadConfig( path, fromEditor, extra )
 end
 
 function Game:init( config, fromEditor, extra )
-	
 
 	extra = extra or {}
 	
