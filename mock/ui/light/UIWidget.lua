@@ -493,10 +493,10 @@ function UIWidget:setSize( w, h, updateLayout, updateStyle )
 	self:getProp():setBounds( 0,0, w, h )
 	if updateLayout ~= false then
 		self:invalidateLayout()
-	else
-		if updateStyle ~= false then
-			self:invalidateVisual()
-		end
+	end
+	
+	if updateStyle ~= false then
+		self:invalidateVisual()
 	end
 end
 

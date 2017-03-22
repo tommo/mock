@@ -692,6 +692,13 @@ function Scene:addEntity( entity, layer, group )
 	return entity
 end
 
+
+function Scene:addInternalEntity( entity, layer, group )
+	entity.FLAG_INTERNAL = true
+	return self:addEntity( entity, layer, group )
+end
+
+
 function Scene:addEntities( list, layer )
 	for k, entity in pairs( list ) do
 		self:addEntity( entity, layer )
