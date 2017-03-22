@@ -171,7 +171,7 @@ end
 function UIView:onLocalStyleSheetChanged()
 	self.pendingVisualUpdates = {}
 	self.pendingLayoutUpdates = {}
-	
+	--update
 end
 
 function UIView:flushVisualUpdate()

@@ -630,12 +630,6 @@ function SQRoutine:addLabel( labelNode )
 	insert( self.labelNodes, labelNode )
 end
 
-
-function SQRoutine:addMsgCallback( msg, node )
-	table.insert( self.msgCallbackNodes, node )
-	return node
-end
-
 function SQRoutine:getName()
 	return self.name
 end
@@ -785,9 +779,10 @@ function SQRoutineState:start( sub )
 	if self.started then return end
 	self.started = true
 	self:setLocalRunning( true )
-	if not sub then
-		self:registerMsgCallbacks()
-	end
+	-- if not sub then
+	-- 	self:registerMsgCallbacks()
+	-- end
+	self.msgListeners = table.weak_k()
 end
 
 function SQRoutineState:stop()
@@ -795,6 +790,7 @@ function SQRoutineState:stop()
 		subState:stop()
 	end
 	self.subRoutineStates = {}
+	self:unregisterMsgCallbacks()
 end
 
 function SQRoutineState:isRunning()
@@ -838,22 +834,36 @@ function SQRoutineState:getNodeEnvTable( node )
 	return self.nodeEnvMap[ node ]
 end
 
-function SQRoutineState:registerMsgCallbacks()
-	local msgListeners = table.weak_k()
-	-- for i, entryNode in ipairs( )
-	for i, callbackNode in ipairs( self.routine.msgCallbackNodes ) do
-		for j, target in ipairs( callbackNode:getContextEntities( self ) ) do
-			local msg1 = callbackNode.msg
-			local listener = function( msg, data, src )
-				if msg == msg1 then
-					return self:startSubRoutine( callbackNode )
-				end
+-- function SQRoutineState:registerMsgCallbacks()
+-- 	local msgListeners = table.weak_k()
+-- 	-- for i, entryNode in ipairs( )
+-- 	for i, callbackNode in ipairs( self.routine.msgCallbackNodes ) do
+-- 		for j, target in ipairs( callbackNode:getContextEntities( self ) ) do
+-- 			local msg1 = callbackNode.msg
+-- 			local listener = function( msg, data, src )
+-- 				if msg == msg1 then
+-- 					return self:startSubRoutine( callbackNode )
+-- 				end
+-- 			end
+-- 			target:addMsgListener( listener )
+-- 			msgListeners[ target ] = listener
+-- 		end
+-- 	end
+-- 	self.msgListeners = msgListeners
+-- end
+
+function SQRoutineState:registerMsgCallback( msg, node )
+	local msgListeners = self.msgListeners
+	for j, target in ipairs( node:getContextEntities( self ) ) do
+		local listener = function( msgIn, data, src )
+			if msgIn == msg then
+				return self:startSubRoutine( node )
 			end
-			target:addMsgListener( listener )
-			msgListeners[ target ] = listener
 		end
+		target:addMsgListener( listener )
+		msgListeners[ target ] = listener
 	end
-	self.msgListeners = msgListeners
+	return node
 end
 
 function SQRoutineState:unregisterMsgCallbacks()

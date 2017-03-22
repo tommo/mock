@@ -865,6 +865,15 @@ function Entity:findEntityByPath( path )
 	return e
 end
 
+function Entity:foreachChild( func, deep )
+	for child in pairs( self.children ) do
+		func( child )
+		if deep then
+			child:foreachChild( func, true )
+		end
+	end
+end
+
 --------------------------------------------------------------------
 ------ Meta
 --------------------------------------------------------------------

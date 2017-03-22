@@ -11,7 +11,7 @@ function SQNodeMsgCallback:__init()
 end
 
 function SQNodeMsgCallback:isExecutable()
-	return false
+	return true
 end
 
 function SQNodeMsgCallback:load( data )
@@ -20,14 +20,14 @@ function SQNodeMsgCallback:load( data )
 end
 
 function SQNodeMsgCallback:build( buildContext )
-	local routine = self:getRoutine()
-	local msg = self.msg
-	if isNonEmptyString( msg ) then 
-		return routine:addMsgCallback( self.msg, self )
-	end
 end
 
 function SQNodeMsgCallback:enter( state, env )
+	local msg = self.msg
+	if isNonEmptyString( msg ) then 
+		state:registerMsgCallback( self.msg, self )
+	end
+	return false
 end
 
 function SQNodeMsgCallback:exit( state, env )

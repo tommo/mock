@@ -36,6 +36,7 @@ function UIWidgetBase:__init()
 	self.childWidgets   = {}
 	self.localStyleSheetPath = false
 	self.localStyleSheet = false
+	self.inheritedStyleSheet = false
 	self.zorder = 0
 end
 
@@ -50,19 +51,47 @@ end
 function UIWidgetBase:setLocalStyleSheet( path )
 	self.localStyleSheetPath = path
 	self.localStyleSheet = path and loadAsset( path )
-	self:onLocalStyleSheetChanged()
+	self:clearInheritStyleSheet()
+	self:onStyleSheetChanged()
 end
 
 function UIWidgetBase:getStyleSheetObject()
 	local localStyleSheet = self.localStyleSheet
 	if localStyleSheet then return localStyleSheet end
+	local inheritedStyleSheet = self.inheritedStyleSheet
+	if inheritedStyleSheet then return inheritedStyleSheet end
+	--update inheritedStyleSheet
 	local p = self.parent
 	if p and p.FLAG_UI_WIDGET then
-		return p:getStyleSheetObject()
+		inheritedStyleSheet = p:getStyleSheetObject()
+		self.inheritedStyleSheet = inheritedStyleSheet
+		return inheritedStyleSheet
+	end
+	return nil
+end
+
+function UIWidgetBase:refreshStyle()
+	self.inheritedStyleSheet = false
+	self.localStyleSheet = false
+	if self.localStyleSheetPath then
+		self:setLocalStyleSheet( self.localStyleSheetPath )
+	else
+		self:onStyleSheetChanged()
 	end
 end
 
-function UIWidgetBase:onLocalStyleSheetChanged()
+function UIWidgetBase:clearInheritStyleSheet()
+	self.inheritedStyleSheet = false
+	for i, child in pairs( self.childWidgets ) do
+		if not child.localStyleSheet then
+			child:clearInheritStyleSheet()
+		end
+	end
+	self:onStyleSheetChanged()
+end
+
+function UIWidgetBase:onStyleSheetChanged()
+	
 end
 
 function UIWidgetBase:_setParentView( v )
@@ -494,7 +523,6 @@ function UIWidget:setSize( w, h, updateLayout, updateStyle )
 	if updateLayout ~= false then
 		self:invalidateLayout()
 	end
-	
 	if updateStyle ~= false then
 		self:invalidateVisual()
 	end
@@ -695,4 +723,8 @@ function UIWidget:onDrawGizmo( selected )
 	MOAIGfxDevice.setPenColor( hexcolor('#fc0bff', selected and 0.9 or 0.4 ) )
 	local w, h = self:getSize()
 	MOAIDraw.drawRect( 0, 0, w, h )
+end
+
+function UIWidget:onStyleSheetChanged()
+	self:invalidateStyle()
 end

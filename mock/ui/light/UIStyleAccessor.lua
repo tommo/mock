@@ -26,7 +26,6 @@ CLASS: UIStyleAccessor ()
 
 function UIStyleAccessor:__init( owner )
 	self.owner   = owner
-	self.styleSheet    = false
 	self.state   = false
 
 	self.featureSet = {}
@@ -42,16 +41,6 @@ function UIStyleAccessor:__init( owner )
 	self.cachedData     = false
 	self.localData      = false
 
-end
-
-function UIStyleAccessor:setStyleSheet( styleSheet )
-	self.styleSheet = styleSheet or false
-	self:markDirty()
-end
-
-function UIStyleAccessor:getStyleSheet()
-	local styleSheet = self.styleSheet
-	if not styleSheet then return getBaseStyleSheet() end
 end
 
 function UIStyleAccessor:setState( s )
