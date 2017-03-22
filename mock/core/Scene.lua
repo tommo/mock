@@ -333,6 +333,7 @@ function Scene:threadMain( dt )
 	_stat( 'entering scene main loop', self )
 	dt = 0
 	
+	local firstFrame = true
 	local debugDrawQueue = self.debugDrawQueue
 	local lastTime = self:getTime()
 	while true do	
@@ -341,18 +342,22 @@ function Scene:threadMain( dt )
 			-- local dt = nowTime - lastTime
 			lastTime = nowTime
 
-			--callNextFrame
-			local pendingCall = self.pendingCall
-			self.pendingCall = {}
-			for i, t in ipairs( pendingCall ) do
-				local func = t.func
-				if type( func ) == 'string' then --method call
-					local object = t.object
-					func = object[ func ]
-					func( object, unpack(t) )
-				else
-					func( unpack(t) )
+			if not firstFrame then
+				--callNextFrame
+				local pendingCall = self.pendingCall
+				self.pendingCall = {}
+				for i, t in ipairs( pendingCall ) do
+					local func = t.func
+					if type( func ) == 'string' then --method call
+						local object = t.object
+						func = object[ func ]
+						func( object, unpack(t) )
+					else
+						func( unpack(t) )
+					end
 				end
+			else
+				firstFrame = false
 			end
 
 			--onUpdate
