@@ -69,13 +69,17 @@ end
 --------------------------------------------------------------------
 --INPUT
 function UIView:getPointer( touch, create )
-	local p = self.pointers[touch]
+	local p = self.pointers[ touch ]
 	if (not p) and create then 
-		p  =  UIPointer()
+		p  =  UIPointer( self )
 		p.touch = touch
 		self.pointers[touch] = p
 	end
 	return p
+end
+
+function UIView:getMousePointer()
+	return self:getPointer( 'mouse', true )
 end
 
 function UIView:getFocusedWidget()
@@ -213,49 +217,30 @@ end
 --------------------------------------------------------------------
 --INPUT handling
 
+function UIView:onKeyEvent( key, down )
+	if not self.inputEnabled then return end
+
+end
+
+function UIView:onMouseEvent( ev, x, y, btn )
+	x, y = self:wndToWorld( x, y )
+	local pointer = self:getMousePointer()
+	if ev == 'move' then
+		pointer:onMove( self, x, y )
+	end
+end
+
 function UIView:onTouchEvent( ev, touch, x, y )
+	x, y = self:wndToWorld( x, y )
+	local pointer = self:getPointer( touch, true )
 	if ev == 'down' then
-		if not self.inputEnabled then return end
-		local p = self:getPointer( touch, true )
-		p.state = 'down'
-		x, y    = self:wndToWorld( x, y )
-		local widget = self:findTopWidget( x, y )
-		if widget then 
-			p.activeWidget = widget
-			local ev = UIEvent( UIEvent.TOUCH_DOWN, { x = x, y = y } )
-			self:postEvent( widget, ev )
-			-- if not widget._allowMultiTouch then
-			-- 	if not widget._activeTouch then widget._activeTouch = touch end
-			-- end
-		end
+		pointer:onDown( self, x, y )
 
 	elseif ev == 'up' then
-		local p = self.pointers[ touch ]
-		if not p then return end
-		p.state = 'up'
-		if p.activeWidget then
-			x, y = self:wndToWorld(x,y)
-			local widget = p.activeWidget
-			local ev = UIEvent( UIEvent.TOUCH_UP, { x = x, y = y } )
-			self:postEvent( widget, ev )
-			-- if not widget._allowMultiTouch then	
-			-- 	widget._activeTouch = false
-			-- end
-		end
-
-		p.activeWidget = false
-		p.touch = false
-		self.pointers[ touch ] = nil
+		pointer:onUp( self, x, y )
 		
 	elseif ev == 'move' then
-		local p = self.pointers[touch]
-		if not p then return end
-		local widget = p.activeWidget
-		if widget then
-			x, y = self:wndToWorld( x, y )
-			local ev = UIEvent( UIEvent.TOUCH_MOVE, { x = x, y = y } )
-			self:postEvent( widget, ev )
-		end
+		pointer:onMove( self, x, y )
 
 	end
 end

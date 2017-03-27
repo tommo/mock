@@ -65,7 +65,10 @@ function UIStyleAccessor:setFeatures( f )
 	local t = {}
 	if f then
 		for i, k in ipairs( f ) do
-			t[ k ] = true
+			k = k:trim()
+			if k ~= '' then
+				t[ k ] = true
+			end
 		end
 	end
 	self.featureSet = t

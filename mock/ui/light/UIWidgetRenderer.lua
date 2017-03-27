@@ -46,12 +46,17 @@ function UIWidgetRenderer:update( widget, style, updateStyle, updateContent )
 	if updateStyle then
 		self:onUpdateStyle( widget, style )
 	end
+	self:onUpdateSize( widget, style )
 	if updateContent then
 		self:onUpdateContent( widget, style )
 	end
+
 end
 
 function UIWidgetRenderer:onUpdateContent( widget, style )
+end
+
+function UIWidgetRenderer:onUpdateSize( widget, style )
 end
 
 function UIWidgetRenderer:onUpdateStyle( widget, style )

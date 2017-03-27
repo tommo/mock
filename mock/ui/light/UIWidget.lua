@@ -159,6 +159,9 @@ CLASS: UIWidget ( UIWidgetBase )
 		Field 'layoutDisabled' :boolean() :label( 'Disable Layout' );
 		Field 'layoutProportion' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'LayoutProportion' ) :label( 'Proportion' );
 		'----';
+		Field 'defaultFeatures' :string() :getset( 'DefaultFeatures' );
+		'----';
+
 	}
 
 --------------------------------------------------------------------
@@ -189,6 +192,8 @@ function UIWidget:__init()
 	self.renderers = {}
 	self.contentModified = true
 	self.styleModified = true
+
+	self.defaultFeatures = ''
 end
 
 function UIWidget:initRenderers()
@@ -428,6 +433,25 @@ end
 
 
 --------------------------------------------------------------------
+function UIWidget:getDefaultFeatures()
+	return self.defaultFeatures
+end
+
+function UIWidget:setDefaultFeatures( f )
+	local tt = type( f )
+	local features
+	if tt == 'string' then
+		features = f:split( ',', true )
+		self.defaultFeatures = f
+	elseif tt == 'table' then
+		features = f
+	else
+		_warn( 'invalid features type', tt )
+		return false
+	end
+	return self:setFeatures( features )
+end
+
 function UIWidget:getFeatures()
 	return self.styleAcc.features
 end

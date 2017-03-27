@@ -9,6 +9,7 @@ CLASS: UIButton ( UIWidget )
 	}
 
 function UIButton:__init()
+	self.hovered = false
 	self.pressed = false
 	self.text = 'Button'
 	self.layoutPolicy = { 'expand', 'expand' }
@@ -29,20 +30,42 @@ function UIButton:getContentData( key, role )
 	end
 end
 
+function UIButton:updateState()
+	if self.pressed then
+		return self:setState( 'press' )
+	end
+
+	if self.hovered then
+		return self:setState( 'hover' )
+	end
+
+	return self:setState( 'normal' )
+end
+
+
 function UIButton:procEvent( ev )
 	local t = ev.type
 	local d = ev.data
-	if t == UIEvent.TOUCH_DOWN then
+	if t == UIEvent.POINTER_ENTER then
+		self.hovered = true
+		self:updateState()
+
+	elseif t == UIEvent.POINTER_EXIT then
+		self.hovered = false
+		self:updateState()
+
+	elseif t == UIEvent.POINTER_DOWN then
 		self.pressed = true
-		self:setState( 'press' )
+		self:updateState()
 		return self:onPress()
 
-	elseif t == UIEvent.TOUCH_UP then
+	elseif t == UIEvent.POINTER_UP then
 		if self.pressed then
 			self.pressed = false
-			self:setState( 'normal' )
+			self:updateState()
 			local px,py,pz = self:getWorldLoc()
 			if self:inside( d.x, d.y, pz, self:getTouchPadding() ) then
+				self:onClick()
 				self.clicked()
 			end
 		end

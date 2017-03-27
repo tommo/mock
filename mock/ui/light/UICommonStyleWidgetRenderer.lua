@@ -5,14 +5,20 @@ CLASS: UICommonStyleWidgetRenderer ( UIWidgetRenderer )
 	:MODEL{}
 
 function UICommonStyleWidgetRenderer:onInit( widget )
-	self.backgroundSprite = widget:attachInternal( DeckComponent() )
-	self.textLabel        = widget:attachInternal( TextLabel() )
-	self.textLabel:setText('')
-	self.textLabel:setVisible( false )
 	self.borderColor = {0,0,0,1}
 	self.bgColor = {1,1,1,1}
+	--
+	local label = widget:attachInternal( TextLabel() )
+	self.textLabel = label
+	label:setText('')
+	label:setVisible( false )
+	label.fitAlignment = false
+	label:setLocZ( 0.1 )
+
+	local bgSprite = widget:attachInternal( DeckComponent() )
+	self.backgroundSprite = bgSprite
 	self.backgroundSpriteDeck = false
-	self.textLabel.fitAlignment = false
+	bgSprite:setLocZ( -0.1 )
 end
 
 function UICommonStyleWidgetRenderer:onDestroy( widget )
@@ -43,27 +49,30 @@ function UICommonStyleWidgetRenderer:updateBackgroundStyle( widget, style )
 	local padding = style:get( 'padding', 0 )
 
 	sprite:setColor( unpack( self.bgColor ) )
-	sprite:setRect( self:getBackgroundRect() )
-	sprite:setLocZ( -0.1 )
 end
 
 function UICommonStyleWidgetRenderer:updateTextStyle( widget, style )
 	local label = self.textLabel
-
 	label:setAlignment( 'center' )
 	label:setAlignmentV( 'center' )
-	label:setRect( self:getContentRect() )
-	label:addLoc( style:getVec2( 'text_offset', { 0, 0 } ) )
-
 	local font = style:getAsset( 'font' )
 	local fontSize = style:get( 'font_size', 12 )
 	local styleSheet = makeStyleSheetFromFont( font, fontSize )
 	label:setStyleSheet( AdHocAsset( styleSheet) )
 	label:setColor( style:getColor( 'text_color', { 1,1,1,1 } ) )
-	
-	label:setLocZ( 0.1 )
+	label:addLoc( style:getVec2( 'text_offset', { 0, 0 } ) )
 end
 
+function UICommonStyleWidgetRenderer:onUpdateSize( widget, style )
+	--bg size
+	local sprite = self.backgroundSprite
+	sprite:setRect( self:getBackgroundRect() )
+
+	--text size
+	local label = self.textLabel
+	label:setRect( self:getContentRect() )
+
+end
 
 function UICommonStyleWidgetRenderer:onUpdateStyle( widget, style )
 	self.bgColor = { style:getColor( 'background_color' , { 1,1,1,1 } ) }

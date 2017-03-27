@@ -21,9 +21,12 @@ end
 --------------------------------------------------------------------
 
 --INPUT
-UIEvent.TOUCH_DOWN    = "touchDown"
-UIEvent.TOUCH_UP      = "touchUp"
-UIEvent.TOUCH_MOVE    = "touchMove"
+UIEvent.POINTER_DOWN  = "pointerDown"
+UIEvent.POINTER_UP    = "pointerUp"
+UIEvent.POINTER_MOVE  = "pointerMove"
+
+UIEvent.POINTER_ENTER = "pointerEnter"
+UIEvent.POINTER_EXIT  = "pointerExit"
 
 UIEvent.RESIZE        = "resize"
 UIEvent.SKIN_CHANGED  = "themeChanged"
