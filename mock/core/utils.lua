@@ -320,19 +320,19 @@ function between(a,min,max)
 	return a>=min and a<=max
 end
 
-function clamp(v,minv,maxv)
+function clamp( v, minv, maxv)
 	return v>maxv and maxv or v<minv and minv or v
 end
 
-function wrap(v,minv,maxv)
-	local r=maxv-minv
-	if r<=0 then return minv end
+function wrap( v, minv, maxv)
+	local r = maxv - minv
+	if r <= 0 then return minv end
 	while true do
-		if v>=minv and v<maxv then return v end
-		if v>=maxv then
-			v=minv+v-maxv
-		elseif v<minv then
-			v=maxv+v-minv
+		if v >= minv and v < maxv then return v end
+		if v >= maxv then
+			v = minv + v - maxv
+		elseif v < minv then
+			v = maxv + v - minv
 		end
 	end
 end
@@ -357,14 +357,14 @@ math.wrap  = wrap
 math.wrapangle = wrapAngle
 
 --Vector helpers
-function distance3(x1,y1,z1, x2,y2,z2 )
+function distance3( x1, y1, z1, x2, y2, z2 )
 	local dx=x1-x2
 	local dy=y1-y2
 	local dz=z1-z2
 	return sqrt(dx*dx+dy*dy+dz*dz)
 end
 
-function distance(x1,y1,x2,y2)
+function distance( x1, y1, x2, y2 )
 	local dx=x1-x2
 	local dy=y1-y2
 	return sqrt(dx*dx+dy*dy)

@@ -87,7 +87,7 @@ end
 
 function PhysicsBody:setTransformSyncPolicy( policy )
 	self.transformSyncPolicy = policy
-	if self.body then
+	if self:isEntityStarted() then
 		return self:updateTransformSyncPolicy( self._entity )
 	end
 end
