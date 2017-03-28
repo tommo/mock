@@ -74,23 +74,38 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 				ent:addSibling( instance )
 
 			elseif spawnMethod == 'parent_sibling' then
-				ent:forceUpdate()
-
 				if ent.parent then
-					ent.parent:addSibling( instance )
-					if self.copyLoc then	instance:setWorldLoc( ent:getWorldLoc() ) end
+					ent:forceUpdate()
+					ent.parent:forceUpdate()
+					if self.copyLoc then
+						local x, y, z 
+						if ent.parent.parent then
+							x, y, z = ent.parent.parent:worldToModel( ent:getWorldLoc() )
+						else
+							x, y, z = ent:getWorldLoc()
+						end
+						instance:setLoc( x, y, z )
+						instance:forceUpdate()
+					end
 					if self.copyRot then	instance:setRot( ent:getRot() ) end
 					if self.copyScl then	instance:setScl( ent:getScl() ) end
-				else 
+
+					if ox then
+						instance:addLoc( ox, oy, oz )
+					end
+
+					ent.parent:addSibling( instance )
+
+				else --as root
+					ent:forceUpdate()
 					if self.copyLoc then	instance:setLoc( ent:getWorldLoc() ) end
 					if self.copyRot then	instance:setRot( ent:getRot() ) end
 					if self.copyScl then	instance:setScl( ent:getScl() ) end
+					if ox then
+						instance:addLoc( ox, oy, oz )
+					end
 					instance:forceUpdate()
 					ent:getScene():addEntity( instance )
-				end
-
-				if ox then
-					instance:addLoc( ox, oy, oz )
 				end
 
 			elseif spawnMethod == 'root' then
