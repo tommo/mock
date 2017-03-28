@@ -26,7 +26,7 @@ end
 
 function Deck2D:setTexture( path, autoResize )
 	local tex, node = mock.loadAsset( path )
-	if not tex then return end
+	if not tex then return false end
 	if autoResize ~= false then
 		local w, h = tex:getSize()
 		self.w = w
@@ -35,6 +35,7 @@ function Deck2D:setTexture( path, autoResize )
 	self.texturePath = path
 	self.texture = tex
 	self:update()
+	return true
 end
 
 function Deck2D:getTexture()

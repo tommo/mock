@@ -30,7 +30,7 @@ function UIButton:getContentData( key, role )
 	end
 end
 
-function UIButton:updateState()
+function UIButton:updateStyleState()
 	if self.pressed then
 		return self:setState( 'press' )
 	end
@@ -48,21 +48,21 @@ function UIButton:procEvent( ev )
 	local d = ev.data
 	if t == UIEvent.POINTER_ENTER then
 		self.hovered = true
-		self:updateState()
+		self:updateStyleState()
 
 	elseif t == UIEvent.POINTER_EXIT then
 		self.hovered = false
-		self:updateState()
+		self:updateStyleState()
 
 	elseif t == UIEvent.POINTER_DOWN then
 		self.pressed = true
-		self:updateState()
+		self:updateStyleState()
 		return self:onPress()
 
 	elseif t == UIEvent.POINTER_UP then
 		if self.pressed then
 			self.pressed = false
-			self:updateState()
+			self:updateStyleState()
 			local px,py,pz = self:getWorldLoc()
 			if self:inside( d.x, d.y, pz, self:getTouchPadding() ) then
 				self:onClick()

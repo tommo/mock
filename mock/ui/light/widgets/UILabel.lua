@@ -8,25 +8,24 @@ CLASS: UILabel ( UIWidget )
 mock.registerEntity( 'UILabel', UILabel )
 
 function UILabel:__init()
-	self.textLabel = self:attachInternal( TextLabel() )
-	self.textLabel.fitAlignment = false
+	self.text = 'Label Text'
+end
+
+function UILabel:initRenderers()
+	self:addRenderer( UILabelRenderer() )
 end
 
 function UILabel:getText( t )
-	return self.textLabel:getText()
+	return self.text
 end
 
 function UILabel:setText( t )
-	self.textLabel:setText( t )
+	self.text = t
+	self:invalidateContent()
 end
 
-function UILabel:onUpdateVisual( style )	
-	local font = style:getAsset( 'font' )
-	local fontSize = style:get( 'font_size', 12 )
-	local styleSheet = makeStyleSheetFromFont( font, fontSize )
-	self.textLabel:setStyleSheet( AdHocAsset( styleSheet) )
-	self.textLabel:setColor( style:getColor( 'text_color', { 1,1,1,1 } ) )
-	self.textLabel:setAlignment( style:get( 'align', 'left' ) )
-	self.textLabel:setAlignmentV( style:get( 'align_vertical', 'center' ) )
-	self.textLabel:setRect( self:getLocalRect() )
+function UILabel:getContentData( key, role )
+	if key == 'text' then
+		return self.text
+	end
 end

@@ -29,5 +29,6 @@ require 'mock.ui.light.UIWidgetGroup'
 require 'mock.ui.light.UISpacer'
 
 require 'mock.ui.light.UICommonStyleWidgetRenderer'
+require 'mock.ui.light.UILabelRenderer'
 
 require 'mock.ui.light.widgets'

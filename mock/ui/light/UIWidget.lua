@@ -717,6 +717,10 @@ function UIWidget:setInputEnabled( enabled )
 end
 
 --------------------------------------------------------------------
+function UIWidget:updateStyleState()
+	
+end
+
 function UIWidget:onSetActive( active )
 	self:setState( active and 'normal' or 'disabled' )	
 end

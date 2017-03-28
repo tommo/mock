@@ -60,7 +60,6 @@ function UICommonStyleWidgetRenderer:updateTextStyle( widget, style )
 	local styleSheet = makeStyleSheetFromFont( font, fontSize )
 	label:setStyleSheet( AdHocAsset( styleSheet) )
 	label:setColor( style:getColor( 'text_color', { 1,1,1,1 } ) )
-	label:addLoc( style:getVec2( 'text_offset', { 0, 0 } ) )
 end
 
 function UICommonStyleWidgetRenderer:onUpdateSize( widget, style )
@@ -71,6 +70,7 @@ function UICommonStyleWidgetRenderer:onUpdateSize( widget, style )
 	--text size
 	local label = self.textLabel
 	label:setRect( self:getContentRect() )
+	label:addLoc( style:getVec2( 'text_offset', { 0, 0 } ) )
 
 end
 

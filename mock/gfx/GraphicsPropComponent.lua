@@ -86,9 +86,9 @@ end
 function GraphicsPropComponent:sizeToScl( x, y, z )
 	local sourceX, sourceY, sourceZ = self:getSourceSize()
 	return
-		sourceX ~= 0 and (x or 1)/sourceX or 0,
-		sourceY ~= 0 and (y or 1)/sourceY or 0,
-		sourceZ ~= 0 and (z or 1)/sourceZ or 0
+		sourceX ~= 0 and (x or sourceX)/sourceX or 0,
+		sourceY ~= 0 and (y or sourceY)/sourceY or 0,
+		sourceZ ~= 0 and (z or sourceZ)/sourceZ or 0
 end
 
 function GraphicsPropComponent:getSize()
@@ -102,6 +102,15 @@ function GraphicsPropComponent:setSize( x, y, z )
 	return self.prop:setScl( sx, sy, sz )
 end
 
+function GraphicsPropComponent:fitSize( x, y, z )
+	local sourceX, sourceY, sourceZ = self:getSourceSize()
+	local sx = math.max( ( x or sourceX ) / sourceX, 0 )
+	local sy = math.max( ( y or sourceY ) / sourceY, 0 )
+	local sz = math.max( ( z or sourceZ ) / sourceZ, 0 )
+	local s = math.min( sx, sy, sz )
+	self.prop:setScl( s, s, s )
+end
+
 function GraphicsPropComponent:seekSize( x, y, z, duration, ease )
 	local sx, sy, sz = self:sizeToScl( x, y, z )
 	return self.prop:seekScl( sx, sy, sz, duration, ease )
@@ -111,7 +120,14 @@ function GraphicsPropComponent:setRect( x0, y0, x1, y1 )
 	local w = x1 - x0
 	local h = y1 - y0
 	self:setLoc( x0, y0 )
-	self:setSize( w, h, 1 )
+	self:setSize( w, h, nil )
+end
+
+function GraphicsPropComponent:fitRect( x0, y0, x1, y1 )
+	local w = x1 - x0
+	local h = y1 - y0
+	self:setLoc( x0, y0 )
+	return self:fitSize( w, h, nil )
 end
 
 --------------------------------------------------------------------
