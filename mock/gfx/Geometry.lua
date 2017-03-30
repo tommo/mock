@@ -74,6 +74,14 @@ function GeometryRect:onGetRect()
 	return -w/2,-h/2, w/2,h/2
 end
 
+function GeometryRect:setFilled( fill )
+	self.fill = fill
+end
+
+function GeometryRect:isFilled()
+	return self.fill
+end
+
 
 --------------------------------------------------------------------
 CLASS: GeometryCircle ( GeometryComponent )

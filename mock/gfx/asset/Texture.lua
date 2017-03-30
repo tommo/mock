@@ -110,6 +110,11 @@ function Texture:__init( path )
 	self.modifyState   = false
 end
 
+function Texture:setModifyState( s )
+	self.modifyState = s
+end
+
+
 function Texture:saveConfigData()
 	local data = {}
 	data[ 'group' ]       = self.parent:getName()

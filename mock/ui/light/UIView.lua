@@ -223,10 +223,22 @@ function UIView:onKeyEvent( key, down )
 end
 
 function UIView:onMouseEvent( ev, x, y, btn )
-	x, y = self:wndToWorld( x, y )
 	local pointer = self:getMousePointer()
 	if ev == 'move' then
+		x, y = self:wndToWorld( x, y )
 		pointer:onMove( self, x, y )
+
+	elseif ev == 'down' then
+		x, y = self:wndToWorld( x, y )
+		pointer:onDown( self, x, y, btn )
+
+	elseif ev == 'up' then
+		x, y = self:wndToWorld( x, y )
+		pointer:onUp( self, x, y, btn )
+
+	elseif ev == 'scroll' then
+		pointer:onScroll( self, x, y )
+
 	end
 end
 

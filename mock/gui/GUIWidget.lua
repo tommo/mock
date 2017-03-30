@@ -217,7 +217,8 @@ end
 
 --------------------------------------------------------------------
 function registerGUIWidget( name, class )
-	registerEntity( '[UI]'..name, class )
+	--Deprecated
+	-- registerEntity( '[UI]'..name, class )
 end
 
 --------------------------------------------------------------------

@@ -240,9 +240,11 @@ function Actor:_weakHoldCoroutine( newCoro )
 end
 
 function Actor:findCoroutine( method )
-	for coro in pairs( self.coroutines ) do
-		if coro._func == method and (not coro:isDone()) then
-			return coro
+	if self.coroutines then
+		for coro in pairs( self.coroutines ) do
+			if coro._func == method and (not coro:isDone()) then
+				return coro
+			end
 		end
 	end
 	return nil
@@ -250,18 +252,22 @@ end
 
 function Actor:findAllCoroutines( method )
 	local found = {}
-	for coro in pairs( self.coroutines ) do
-		if coro._func == method and (not coro:isDone()) then
-			table.insert( found, coro )
+	if self.coroutines then
+		for coro in pairs( self.coroutines ) do
+			if coro._func == method and (not coro:isDone()) then
+				table.insert( found, coro )
+			end
 		end
 	end
 	return found
 end
 
 function Actor:findAndStopCoroutine( method )
-	for coro in pairs( self.coroutines ) do
-		if coro._func == method and (not coro:isDone()) then
-			coro:stop()
+	if self.coroutines then
+		for coro in pairs( self.coroutines ) do
+			if coro._func == method and (not coro:isDone()) then
+				coro:stop()
+			end
 		end
 	end
 end

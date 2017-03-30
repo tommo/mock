@@ -499,6 +499,9 @@ function AdHocAsset( object )
 	return box
 end
 
+function isAdHocAsset( box )
+	return AdHocAssetRegistry[ box ] and true or false
+end
 
 function loadAsset( path, option, warning )
 	local tmpAsset = AdHocAssetRegistry[ path ]
@@ -512,8 +515,8 @@ function loadAsset( path, option, warning )
 	if not node then 
 		if warning ~= false then
 			_warn ( 'no asset found', path or '???' )
+			_warn ( singletraceback( 2 ) )
 		end
-		-- print( debug.traceback(2) )
 		return nil
 	end
 

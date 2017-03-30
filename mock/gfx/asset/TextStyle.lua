@@ -74,8 +74,12 @@ end
 
 function TextStyle:update()
 	local style = self.moaiTextStyle
-	local font, node = loadAsset( self.font )
-
+	local font, node
+	if self.font == 'default' then
+		--do nothing
+	else
+		font, node = loadAsset( self.font )
+	end
 	if not font then font = getFontPlaceHolder() end
 	assert( font )
 	style:setFont( font )

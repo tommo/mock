@@ -49,6 +49,7 @@ function UIStyleAccessor:setState( s )
 end
 
 function UIStyleAccessor:setFeature( f, bvalue )
+	f = f:lower()
 	bvalue = bvalue or nil
 	local featureSet = self.featureSet
 	local b0 = featureSet[ f ]
@@ -58,6 +59,7 @@ function UIStyleAccessor:setFeature( f, bvalue )
 end
 
 function UIStyleAccessor:hasFeature( f )
+	f = f:lower()
 	return self.featureSet[ f ] and true
 end
 
@@ -65,7 +67,7 @@ function UIStyleAccessor:setFeatures( f )
 	local t = {}
 	if f then
 		for i, k in ipairs( f ) do
-			k = k:trim()
+			k = k:trim():lower()
 			if k ~= '' then
 				t[ k ] = true
 			end

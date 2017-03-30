@@ -1452,7 +1452,9 @@ end
 function Entity:makeScissorRect( x1, y1, x2, y2, noFollow )
 	local rect = MOAIScissorRect.new()
 	rect:setRect( x1, y2, x2, y1 )
-	if not noFollow then self:_attachTransform( rect ) end
+	if not noFollow then
+		self:_attachTransform( rect )
+	end
 	return rect
 end
 

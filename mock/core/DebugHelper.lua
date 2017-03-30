@@ -238,3 +238,10 @@ end
 function try( func, errFunc )
 	return _innerTry( errFunc, pcall( func ) )
 end
+
+function singletraceback( level )
+	local info = debug.getinfo( level + 1, 'nSl' )
+	return string.format(
+			'%s:%d', info.source, info.currentline
+		)
+end

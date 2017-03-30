@@ -399,7 +399,7 @@ function Scene:threadMain( dt )
 				entity:destroyNow()
 			end
 		end
-
+		
 		dt = coroutine.yield()
 		
 		debugDrawQueue:update( dt )

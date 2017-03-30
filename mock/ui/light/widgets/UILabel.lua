@@ -11,8 +11,8 @@ function UILabel:__init()
 	self.text = 'Label Text'
 end
 
-function UILabel:initRenderers()
-	self:addRenderer( UILabelRenderer() )
+function UILabel:onLoad()
+	self:setRenderer( UILabelRenderer() )
 end
 
 function UILabel:getText( t )
