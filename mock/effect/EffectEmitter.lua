@@ -12,6 +12,7 @@ CLASS: EffectEmitter ( Component )
 		Field 'effect'        :asset('effect') :set('setEffect');
 		Field 'autoPlay'      :boolean();
 		Field 'actionOnStop'  :enum( EnumActionOnStop );
+		Field 'delay'					:number();
 	}
 	:META{
 		category = 'FX'
@@ -31,6 +32,7 @@ function EffectEmitter:__init()
 	self.mirrorX    = false
 	self.mirrorY    = false
 	self.actionOnStop = 'default'
+	self.delay = 0
 end
 
 function EffectEmitter:setEffect( e )
@@ -54,7 +56,10 @@ end
 
 function EffectEmitter:onStart()
 	if self.autoPlay then
-		self:start()
+		self:addCoroutine( function () 
+			self:wait( self.delay )
+			self:start()
+		end)
 	end
 end
 

@@ -75,7 +75,7 @@ end
 
 function MSprite:onStart( entity )
 	if self.autoPlay and self.default then
-		self:play( self.default, self.autoPlayMode )
+		self:play( )
 	end
 end
 
@@ -348,6 +348,8 @@ end
 
 -----------Play control
 function MSprite:play( clipName, mode )
+	if not clipName then clipName = self.default end
+	if not mode then mode = self.autoPlayMode end
 	if self:setClip( clipName, mode ) then return self:start() end
 end
 
