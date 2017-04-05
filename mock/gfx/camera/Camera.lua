@@ -175,6 +175,9 @@ function Camera:tryBindSceneLayer( layer )
 end
 
 function Camera:reloadPasses()
+	for i, pass in ipairs( self.passes ) do
+		pass:release()
+	end
 	self.passes = {}
 	self:loadPasses()
 	self:updateRenderLayers()

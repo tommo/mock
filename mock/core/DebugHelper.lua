@@ -158,26 +158,34 @@ function _reportTracingCoroutines()
 	local countActive = {}
 	for coro, tb in pairs( tracingCoroutines ) do
 		count[ tb ] = ( count[ tb ] or 0 ) + 1
+		print( tb )
 		if coro:isBusy() then
 			countActive[ tb ] = ( countActive[ tb ] or 0 ) + 1
+		else
+			-- print( 'inactive coro' )
+			-- print( tb )
 		end
 	end
-	for tb, c in pairs( count ) do
-		if c > 1 then
-			print( '------CORO COUNT:', c, countActive[ tb ] )
-			print( tb )
-		end
-	end
+	-- for tb, c in pairs( count ) do
+	-- 	if c > 1 then
+	-- 		print( '------CORO COUNT:', c, countActive[ tb ] )
+	-- 		print( tb )
+	-- 	end
+	-- end
 end
 
-local oldNew = MOAICoroutine.new
-MOAICoroutine.new = function( ... )
-	local coro = oldNew( ... )
-	-- print( 'CREATE COROUTINE', coro )
-	-- print( debug.traceback() )
-	tracingCoroutines[ coro ] = debug.traceback( 3 )
-	return coro
-end
+-- local oldNew = MOAICoroutine.new
+-- MOAICoroutine.new = function( f, ... )
+-- 	local coro = oldNew( f, ... )
+-- 	-- print( 'CREATE COROUTINE', coro )
+-- 	-- print( debug.traceback() )
+-- 	-- local funcinfo = debug.getinfo( f, 'nSl' )
+-- 	-- local infoString string.format(
+-- 	-- 		'%s:%d', funcinfo.source, funcinfo.currentline
+-- 	-- 	)
+-- 	tracingCoroutines[ coro ] =  debug.traceback( 3 )
+-- 	return coro
+-- end
 
 --------------------------------------------------------------------
 --dump calltree

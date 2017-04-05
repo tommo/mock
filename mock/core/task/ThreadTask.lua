@@ -169,8 +169,6 @@ function ThreadTaskQueue:__init()
 	self.totalTaskSize  = 0
 	self.totalTaskCount = 0
 	self.thread = false
-	self.coro = MOAICoroutine.new()
-
 end
 
 function ThreadTaskQueue:getThread()
