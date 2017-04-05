@@ -27,6 +27,10 @@ end
 
 function TBCanvas:onDestroy()
 	self:_detachProp( self.canvas )
+	self.canvas:stop()
+	self.rootWidget = nil
+	self.canvas = nil
+	uninstallInputListener( self )
 end
 
 function TBCanvas:onStart()

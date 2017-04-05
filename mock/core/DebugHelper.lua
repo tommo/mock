@@ -240,8 +240,35 @@ function try( func, errFunc )
 end
 
 function singletraceback( level )
-	local info = debug.getinfo( level + 1, 'nSl' )
+	local info = debug.getinfo( ( level or 2 ) + 1, 'nSl' )
 	return string.format(
 			'%s:%d', info.source, info.currentline
 		)
+end
+
+local trackingMOAIObjects = {}
+function trackMOAIObject( clas )
+	local oldNew = clas.new
+	local t = table.weak_k()
+	trackingMOAIObjects[ clas ] = t
+	clas.new = function( ... )
+		local obj = oldNew( ... )
+		t[ obj ] = debug.traceback( 3 )
+		return obj
+	end
+end
+
+function reportTrackingMOAIObject( clas )
+	local t = trackingMOAIObjects[ clas ]
+	if not t then
+		_log( 'not tracking', clas )
+		return false
+	end
+	_log( 'allocated moai object:', clas )
+	for obj, trace in pairs( t ) do
+		_log( obj )
+		_log( trace )
+	end
+	_log( '----' )
+
 end

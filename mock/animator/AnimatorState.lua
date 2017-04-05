@@ -1,5 +1,6 @@
 module 'mock'
 
+local insert, remove = table.insert, table.remove
 local function _onAnimUpdate( anim )
 	local t = anim:getTime()
 	local state = anim.source
@@ -15,11 +16,22 @@ local function _onAnimKeyFrame( timer, keyId, timesExecuted, time, value )
 	end
 end
 
+
+local animPool = {}
+local newAnim = function()
+	local anim = remove( animPool, 1 )
+	if not anim then
+		return MOAIAnim.new()
+	end
+	return anim
+end
 --------------------------------------------------------------------
 CLASS: AnimatorState ()
 	:MODEL{}
 
 function AnimatorState:__init()
+	self.animator = false	
+	-- self.anim = newAnim()
 	self.anim = MOAIAnim.new()
 	self.anim.source = self
 	self.trackContexts = {}
@@ -179,19 +191,35 @@ function AnimatorState:start()
 	local p0, p1 = self:getRange()
 	self:apply( p0 )
 	self.anim:pause( false )
+	if self.animator then
+		self.animator:onStateStart( self )
+	end
 	return self.anim
 end
 
 function AnimatorState:stop()
 	self.stopping = true
-	self.elapsedTimer:stop()
 	self.anim:stop()
+	self.elapsedTimer:stop()
+	if self.animator then
+		self.animator:onStateStop( self )
+	end
 	return self.anim
 end
 
 function AnimatorState:reset()
 	self:resetContext()
 	self:seek( 0 )
+end
+
+function AnimatorState:clear()
+	local anim = self.anim
+	anim:clear()
+	anim.source = false
+	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, nil )
+	anim:setListener( MOAIAnim.EVENT_NODE_POST_UPDATE, nil )
+	self.anim = false
+	-- insert( animPool, anim )
 end
 
 function AnimatorState:resetAndPlay( mode )
@@ -281,6 +309,10 @@ function AnimatorState:resetContext()
 		local context = entry[2]
 		track:reset( self, context )
 	end
+end
+
+function AnimatorState:getAnimator()
+	return self.animator
 end
 
 function AnimatorState:loadClip( animator, clip )

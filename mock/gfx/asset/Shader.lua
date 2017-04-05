@@ -239,6 +239,7 @@ function ShaderProgram:buildShader( key )
 	if not self.built then self:build() end
 	local shader = Shader()
 	shader:setProgram( self )
+	shader._id = key
 	key = key or shader
 	self.shaders[ key ] = shader
 	return shader
@@ -246,6 +247,15 @@ end
 
 function ShaderProgram:findShader( key )	
 	return self.shaders[ key ]
+end
+
+function ShaderProgram:releaseShader( id )
+	local shader = self.shaders[ id ]
+	if not shader then
+		_warn( 'no shader found', id )
+		return false
+	end
+	self.shaders[ id ] = nil
 end
 
 function ShaderProgram:affirmShader( key )	
@@ -260,9 +270,34 @@ end
 --------------------------------------------------------------------
 --class shader
 --------------------------------------------------------------------
+local shaders = table.weak()
+function reportShader()
+	print( 'remaining shaders:')
+	for shader in pairs( shaders ) do
+		local id = shader._id
+		if type( id ) == 'table' then
+			print( '>>', id.__name, shader.released )
+		else
+			-- print( shader._id )
+		end
+	end
+end
+
 function Shader:__init()
 	self.shader = MOAIShader.new()
 	self.shader.parent = self
+	shaders[ self ] = true
+end
+
+function Shader:release()
+	if self.prog then
+		self.prog:releaseShader( self._id )
+	end
+	if self.config then
+		self.config:releaseShader( self._id )
+	end
+	self.shader.parent = nil
+	self.released = true
 end
 
 function Shader:setProgram( prog )
@@ -332,8 +367,17 @@ function MultiShader:__init()
 end
 
 function MultiShader:init( maxPass )
-	-- print( 'maxpass', maxPass )
 	self.shader:reserve( maxPass + 1 )
+end
+
+function MultiShader:release()
+	for k, sub in pairs( self.subShaders ) do
+		sub:release()
+	end
+	if self.config then
+		self.config:releaseShader( self._id )
+	end
+	self.shader.parent = nil
 end
 
 function MultiShader:setSubShader( pass, shader )
@@ -440,6 +484,7 @@ function ShaderConfig:buildShader( id )
 	else
 		shader = self.program:buildShader( id )
 	end
+	shader._id = id
 	shader.config = self
 	self.shaders[ id ] = shader
 	return shader
@@ -453,6 +498,18 @@ function ShaderConfig:affirmShader( id )
 	local shader = self:getShader( id )
 	if not shader then shader = self:buildShader( id ) end
 	return shader
+end
+
+function ShaderConfig:releaseShader( id )
+	local shader = self.shaders[ id ]
+	if not shader then
+		_warn( 'no shader found', id )
+		return false
+	end
+	for pass, subConfig in pairs( self.subShaders ) do
+		subConfig:releaseShader( id )
+	end
+	self.shaders[ id ] = nil
 end
 
 

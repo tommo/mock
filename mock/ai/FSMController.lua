@@ -102,7 +102,7 @@ function FSMController:onStart( entity )
 end
 
 function FSMController:onDetach( ent )
-	Behaviour.onDetach( self, ent )
+	FSMController.__super.onDetach( self, ent )
 	ent:removeMsgListener( self.msgBoxListener )
 end
 

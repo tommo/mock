@@ -38,6 +38,10 @@ function UIView:onLoad()
 	)
 end
 
+function UIView:onDestroy()
+	uninstallInputListener( self )
+end
+
 function UIView:scheduleUpdate()
 	self._updateNode:scheduleUpdate()
 end

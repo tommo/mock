@@ -45,12 +45,19 @@ end
 
 function CameraPass:release()
 	self:onRelease()
+	self.passes = false
+	self.debugLayers = false
+	self.groupStates = false
+	self.groups = false
+	self.renderTargets = false
 end
 
 function CameraPass:onRelease()
 	for key, renderTarget in pairs( self.renderTargets ) do
 		renderTarget:clear()
 	end
+	self.renderTargets = {}
+	self.camera = false
 end
 
 function CameraPass:build()
@@ -210,7 +217,7 @@ end
 
 function CameraPass:clearRenderTargets()
 	for name, renderTarget in pairs( self.renderTargets ) do
-		renderTarget:release()
+		renderTarget:clear()
 	end
 	self.renderTargets = {}
 end

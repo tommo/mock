@@ -15,7 +15,9 @@ require 'mock.story.StoryActor'
 
 --------------------------------------------------------------------
 --Global Manager
-require 'mock.story.StoryManager'
+
+--DEPRECATED
+-- require 'mock.story.StoryManager'
 
 --------------------------------------------------------------------
 --Nodes

@@ -117,24 +117,24 @@ local function makeSkewBoxMesh ( xMin, yMin, zMin, xMax, yMax, zMax, texture )
 	
 	local p = {}
 	
-	-- pushPoint ( p, xMin, yMax, zMax - yMax ) -- p1
-	-- pushPoint ( p, xMin, yMin, zMax - yMin ) -- p2
-	-- pushPoint ( p, xMax, yMin, zMax - yMin ) -- p3
-	-- pushPoint ( p, xMax, yMax, zMax - yMax ) -- p4
+	pushPoint ( p, xMin, yMax, zMax - yMax ) -- p1
+	pushPoint ( p, xMin, yMin, zMax - yMin ) -- p2
+	pushPoint ( p, xMax, yMin, zMax - yMin ) -- p3
+	pushPoint ( p, xMax, yMax, zMax - yMax ) -- p4
 	
-	-- pushPoint ( p, xMin, yMax, zMin - yMax ) -- p5
-	-- pushPoint ( p, xMin, yMin, zMin - yMin  ) -- p6
-	-- pushPoint ( p, xMax, yMin, zMin - yMin  ) -- p7
-	-- pushPoint ( p, xMax, yMax, zMin - yMax  ) -- p8
-	pushPoint ( p, xMin, yMax - zMax, zMax ) -- p1
-	pushPoint ( p, xMin, yMin - zMax, zMax ) -- p2
-	pushPoint ( p, xMax, yMin - zMax, zMax ) -- p3
-	pushPoint ( p, xMax, yMax - zMax, zMax ) -- p4
+	pushPoint ( p, xMin, yMax, zMin - yMax ) -- p5
+	pushPoint ( p, xMin, yMin, zMin - yMin  ) -- p6
+	pushPoint ( p, xMax, yMin, zMin - yMin  ) -- p7
+	pushPoint ( p, xMax, yMax, zMin - yMax  ) -- p8
+	-- pushPoint ( p, xMin, yMax - zMax, zMax ) -- p1
+	-- pushPoint ( p, xMin, yMin - zMax, zMax ) -- p2
+	-- pushPoint ( p, xMax, yMin - zMax, zMax ) -- p3
+	-- pushPoint ( p, xMax, yMax - zMax, zMax ) -- p4
 	
-	pushPoint ( p, xMin, yMax - zMin, zMin ) -- p5
-	pushPoint ( p, xMin, yMin - zMin, zMin ) -- p6
-	pushPoint ( p, xMax, yMin - zMin, zMin ) -- p7
-	pushPoint ( p, xMax, yMax - zMin, zMin ) -- p8
+	-- pushPoint ( p, xMin, yMax - zMin, zMin ) -- p5
+	-- pushPoint ( p, xMin, yMin - zMin, zMin ) -- p6
+	-- pushPoint ( p, xMax, yMin - zMin, zMin ) -- p7
+	-- pushPoint ( p, xMax, yMax - zMin, zMin ) -- p8
 
 	local uv = {}
 	

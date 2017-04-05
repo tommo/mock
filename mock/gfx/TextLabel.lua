@@ -49,6 +49,7 @@ end
 
 function TextLabel:onDetach( entity )
 	entity:_detachProp( self.box )
+	self.box:stop()
 end
 
 

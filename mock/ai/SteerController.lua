@@ -20,6 +20,7 @@ function PhysicsBodySteerController:onStart()
 end
 
 function PhysicsBodySteerController:onDetach( ent )
+	self._controller:clearBehaviours()
 	self._controller:stop()
 end
 
@@ -88,7 +89,6 @@ end
 function PhysicsBodySteerController:setMaxAngularAcceleration( v )
 	return self._controller:getLimiter():setMaxAngularAcceleration( v )
 end
-
 
 function PhysicsBodySteerController:getLinearVelocity()
 	return self._controller:getLinearVelocity()
