@@ -174,18 +174,18 @@ function _reportTracingCoroutines()
 	-- end
 end
 
--- local oldNew = MOAICoroutine.new
--- MOAICoroutine.new = function( f, ... )
--- 	local coro = oldNew( f, ... )
--- 	-- print( 'CREATE COROUTINE', coro )
--- 	-- print( debug.traceback() )
--- 	-- local funcinfo = debug.getinfo( f, 'nSl' )
--- 	-- local infoString string.format(
--- 	-- 		'%s:%d', funcinfo.source, funcinfo.currentline
--- 	-- 	)
--- 	tracingCoroutines[ coro ] =  debug.traceback( 3 )
--- 	return coro
--- end
+local oldNew = MOAICoroutine.new
+MOAICoroutine.new = function( f, ... )
+	local coro = oldNew( f, ... )
+	-- print( 'CREATE COROUTINE', coro )
+	-- print( debug.traceback() )
+	-- local funcinfo = debug.getinfo( f, 'nSl' )
+	-- local infoString string.format(
+	-- 		'%s:%d', funcinfo.source, funcinfo.currentline
+	-- 	)
+	tracingCoroutines[ coro ] =  debug.traceback( 3 )
+	return coro
+end
 
 --------------------------------------------------------------------
 --dump calltree

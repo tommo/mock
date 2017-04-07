@@ -5,6 +5,7 @@
 module 'mock'
 --------------------------------------------------------------------
 local insert, remove = table.insert, table.remove
+local sort = table.sort
 local pairs, ipairs  = pairs, ipairs
 local unpack = unpack
 local next   = next
@@ -427,9 +428,9 @@ function Entity:getSortedComponentList( reversed )
 		insert( list , com )
 	end
 	if reversed then
-		table.sort( list, componentSortFuncReversed )
+		sort( list, componentSortFuncReversed )
 	else
-		table.sort( list, componentSortFunc )
+		sort( list, componentSortFunc )
 	end
 	return list
 end
@@ -1606,7 +1607,7 @@ end
 --- Registry
 --------------------------------------------------------------------
 
-local entityTypeRegistry = {}
+local entityTypeRegistry = setmetatable( {}, { __no_traverse = true } )
 function registerEntity( name, creator )
 	if not creator then
 		return _error( 'no entity to register', name )

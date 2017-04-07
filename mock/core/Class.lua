@@ -33,11 +33,11 @@ local insert = table.insert
 --------------------------------------------------------------------
 local newClass
 local separatorField
-local globalClassRegistry = {}
+local globalClassRegistry = setmetatable( {}, { __no_traverse = true } )
 local tracingObjectMark            = 0
 local tracingObjectAllocation      = false
 local tracingObjectAllocationStack = false
-local tracingObjectTable = setmetatable( {}, { __mode = 'kv' } )
+local tracingObjectTable = setmetatable( {}, { __mode = 'kv', __no_traverse = true } )
 
 local buildInstanceBuilder
 

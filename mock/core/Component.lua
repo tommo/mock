@@ -356,7 +356,6 @@ function Component:_weakHoldCoroutine( newCoro )
 			[newCoro] = true
 		}
 		self.coroutines = coroutines
-		-- print('create new coroutine')
 		return newCoro
 	end
 	--remove dead ones
@@ -367,6 +366,7 @@ function Component:_weakHoldCoroutine( newCoro )
 		end
 	end
 	for coro in pairs( dead ) do
+		coro._func = nil
 		coroutines[ coro ] = nil
 	end
 	coroutines[ newCoro ] = true
@@ -396,6 +396,7 @@ function Component:clearCoroutines()
 	if not self.coroutines then return end
 	for coro in pairs( self.coroutines ) do
 		coro:stop()
+		coro._func = nil
 	end
 	self.coroutines = nil
 end
@@ -426,6 +427,7 @@ function Component:findAndStopCoroutine( method )
 	for coro in pairs( self.coroutines ) do
 		if coro._func == method and (not coro:isDone()) then
 			coro:stop()
+			coro._func = nil
 		end
 	end
 end
@@ -434,7 +436,7 @@ end
 --------------------------------------------------------------------
 -------Component management
 --------------------------------------------------------------------
-local componentRegistry = {}
+local componentRegistry = setmetatable( {}, { __no_traverse = true } )
 function registerComponent( name, clas )
 	-- assert( not componentRegistry[ name ], 'duplicated component type:'..name )
 	if not clas then

@@ -15,6 +15,7 @@ function CameraPass:__init()
 	self.debugLayers = {}
 	self.groups = {}
 	self.groupStates = {}
+	self.finalizers = {}
 end
 
 function CameraPass:setGroupActive( id, active )
@@ -50,6 +51,10 @@ function CameraPass:release()
 	self.groupStates = false
 	self.groups = false
 	self.renderTargets = false
+	for i, finalizer in ipairs( self.finalizers ) do
+		finalizer()
+	end
+	self.finalizers = false
 end
 
 function CameraPass:onRelease()
@@ -189,6 +194,9 @@ function CameraPass:pushRenderTargetCopy( targetId, sourceId, scaleX, scaleY )
 	copyProp:setScl( scaleX, scaleY )
 	copyProp:setLoc( -ox, oy )
 	copyLayer:insertProp( copyProp )
+	self:pushFinalizer( function()
+		copyLayer:removeProp( copyProp )
+	end )
 	self:pushRenderLayer( copyLayer )
 	return copyLayer, copyProp
 end
@@ -266,6 +274,10 @@ function CameraPass:buildDebugDrawLayer()
 	table.insert( self.debugLayers, layer )
 	layer:setVisible( false )
 	return layer
+end
+
+function CameraPass:pushFinalizer( f ) 
+	table.insert( self.finalizers, f )
 end
 
 function CameraPass:setShowDebugLayers( visible )
@@ -373,6 +385,9 @@ function CameraPass:buildSingleQuadRenderLayer( texture, shader )
 	local prop, quad = self:buildSimpleQuadProp( w, h, texture, shader )
 	layer:insertProp( prop )
 	layer.prop = prop
+	self:pushFinalizer( function()
+		layer:removeProp( prop )
+	end )
 	return layer, prop, quad
 end
 
@@ -391,6 +406,7 @@ function CameraPass:pushGfxPass( passId )
 		'gfx-pass'
 	)
 end
+
 
 function CameraPass:pushCallback( func, layerType )
 	return self:pushRenderLayer(

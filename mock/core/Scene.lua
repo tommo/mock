@@ -285,6 +285,15 @@ function Scene:deserializeConfig( data )
 	end
 end
 
+local insert = table.insert
+function Scene:callNextFrame( f, ... )
+	local t = {
+		func = f,
+		...
+	}
+	insert( self.pendingCall, t )
+end
+
 function Scene:flushPendingStart()
 	if not self.running then return self end
 	local pendingStart = self.pendingStart
@@ -472,6 +481,7 @@ function Scene:resetActionRoot()
 		self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, nil )
 		self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, nil )
 		self.actionRoot:stop()
+		self.actionRoot:clear()
 		self.actionRoot = false
 	end
 
@@ -493,20 +503,6 @@ function Scene:resetActionRoot()
 	self.timer:setMode( MOAITimer.CONTINUE )
 	self.timer:attach( self.actionRoot )
 
-	_stat( 'global action group reset' )
-	for id, gg in pairs( self.globalActionGroups ) do
-		gg:clear()
-		gg:stop()
-	end
-	self.globalActionGroups = {}
-
-	_stat( 'scene action priority group reset' )
-	for i, g in ipairs( self.actionPriorityGroups ) do
-		_stat( 'stop priorityGroup', g )
-		g:clear()
-		g:stop()
-	end
-	self.actionPriorityGroups = {}
 	local root = self.actionRoot
 	for i = 9, -9, -1 do
 		local group = MOAIAction.new()
@@ -630,8 +626,10 @@ function Scene:stop()
 	if not self.running then return end
 	self.running = false
 	self.mainThread:stop()
+	self.mainThread:clear()
 	self.mainThread = false
 	self.actionRoot:stop()
+	self.actionRoot:clear()
 end
 
 function Scene:exitLater(time)
@@ -804,7 +802,7 @@ function Scene:clear( keepEditorEntity )
 	for e in pairs( toRemove ) do
 		e:destroyWithChildrenNow()
 	end
-	_stat( 'post clear', table.len( self.entities) )
+	_stat( 'post clear', table.len( self.entities ) )
 	
 	--layers in Scene is not in render stack, just let it go
 	self.laterDestroy    = {}
@@ -812,7 +810,7 @@ function Scene:clear( keepEditorEntity )
 	self.pendingCall     = {}
 	self.entitiesByName  = {}
 	self.pendingStart    = {}
-
+	self.updateListeners = {}
 	self.rootGroups      = {}
 	
 	self.defaultRootGroup = self:addRootGroup( 'default' )
@@ -823,6 +821,25 @@ function Scene:clear( keepEditorEntity )
 	self.arguments = {}
 	self.userObjects = {}
 	
+	_stat( 'global action group reset' )
+	for id, gg in pairs( self.globalActionGroups ) do
+		gg:clear()
+		gg:stop()
+	end
+	self.globalActionGroups = {}
+
+	_stat( 'scene action priority group reset' )
+	for i, g in ipairs( self.actionPriorityGroups ) do
+		_stat( 'stop priorityGroup', g )
+		g:clear()
+		g:stop()
+	end
+	self.actionPriorityGroups = {}
+
+	for key, manager in pairs( self.managers ) do
+		manager:clear()
+	end
+
 	for i, globalManager in ipairs( getGlobalManagerRegistry() ) do
 		globalManager:onSceneClear( self )
 	end

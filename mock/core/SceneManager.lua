@@ -55,12 +55,20 @@ function SceneManager:init( scn )
 	self:onInit( scn )
 end
 
+function SceneManager:clear()
+	self:onClear()
+end
+
 function SceneManager:reset()
 	self:onReset()
 end
 
 function SceneManager:start()
 	self:onStart()
+end
+
+
+function SceneManager:onClear()
 end
 
 function SceneManager:onReset()

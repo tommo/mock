@@ -110,7 +110,7 @@ local AssetLibrary = {}
 local AssetSearchCache = {}
 
 --asset loaders
-local AssetLoaderConfigs = {}
+local AssetLoaderConfigs = setmetatable( {}, { __no_traverse = true } )
 
 ---env
 local AssetLibraryIndex = false
