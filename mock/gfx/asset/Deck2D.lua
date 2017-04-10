@@ -132,13 +132,12 @@ end
 
 function Quad2D:update()
 	local deck = self:getMoaiDeck()
+	local w, h = self.w, self.h
+	deck:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 	if not self.texture then return end	
 	local tex, uv = self.texture:getMoaiTextureUV()
 	deck:setTexture( tex )
 	deck:setUVRect( unpack( uv ) )
-
-	local w, h = self.w, self.h
-	deck:setRect( self.ox - w/2, self.oy - h/2, self.ox + w/2, self.oy + h/2 )
 end
 
 function Quad2D:reset()

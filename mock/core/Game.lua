@@ -98,6 +98,10 @@ registerGlobalSignals{
 	'mainscene.open',
 	'mainscene.close',
 
+	'scene.schedule_open',
+	'scene.open',
+	'scene.close',	
+
 	'scene.init',
 	'scene.update',
 	'scene.clear',
@@ -118,18 +122,17 @@ CLASS: Game ()
 function Game:__init() --INITIALIZATION
 	self.initialized          = false
 	self.graphicsInitialized  = false
+	self.started              = false
 	self.currentRenderContext = 'game'    -- for editor integration
 
 	self.version = ""
 	self.editorMode = false
-	self.scenes        = {}
+	self.namedSceneMap = {}
 	self.layers        = {}
 	self.configObjects = {}
 	self.gfx           = { w = 640, h = 480, viewportRect = {0,0,640,480} }
 	self.time          = 0
 	self.frame 				 = 0
-	self.mainScene     = Scene()
-	self.mainScene.main = true
 
 	local l = self:addLayer( 'main' )
 	l.default = true
@@ -138,6 +141,8 @@ function Game:__init() --INITIALIZATION
 	self.showCursorReasons = {}
 
 	self.properties     = {}
+	self.sceneSessions  = {}
+	self.sceneSessionMap = {}
 
 end
 
@@ -167,12 +172,12 @@ function Game:loadConfig( path, fromEditor, extra )
 end
 
 function Game:init( config, fromEditor, extra )
+	assert( not self.initialized )
 
 	extra = extra or {}
 	
 	_stat( '...init game' )
 	
-	self.initialized = true
 	self.editorMode  = fromEditor and true or false
 	self.initOption  = config
 
@@ -192,11 +197,18 @@ function Game:init( config, fromEditor, extra )
 	self:initSystem     ( config, fromEditor )
 	self:initAsset      ( config, fromEditor )
 
+	self.mainSceneSession = self:affirmSceneSession( 'main' )
+	self.mainSceneSession.main = true
+	self.mainScene        = self.mainSceneSession:getScene()
+	self.mainScene.main   = true
+
 	--postInit
 	if not fromEditor then --initCommonData will get called after scanning asset modifications
 		self:initCommonData( config, fromEditor )
 	end
-	
+
+	self.initialized = true
+
 end
 
 
@@ -403,17 +415,21 @@ function Game:initCommonData( config, fromEditor )
 	--load scenes
 	if config['scenes'] then
 		for alias, scnPath in pairs( config['scenes'] ) do
-			self.scenes[ alias ] = scnPath
+			self.namedSceneMap[ alias ] = scnPath
 		end
 	end
 
 	self.entryScene = config['entry_scene']
-	self.firstOpenedScene = false
+	self.initialScene = false
 
-	self.mainScene:init()
 	_stat( '...init game done!' )
-
 	
+
+	--init scenes
+	for i, sceneSession in ipairs( self.sceneSessions ) do
+		sceneSession:init()
+	end
+
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:postInit( self )
 	end
@@ -462,7 +478,7 @@ function Game:saveConfigToTable()
 		audio          = self.audioOption,
 		layers         = layerConfigs,
 		
-		scenes         = self.scenes,
+		scenes         = self.namedSceneMap,
 		entry_scene    = self.entryScene,
 
 		palettes        = self.paletteLibrary:save(),
@@ -516,6 +532,7 @@ end
 --------Graphics related
 --------------------------------------------------------------------
 function Game:initGraphics( option, fromEditor )
+	assert( not self.graphicsInitialized )
 	_stat( 'init graphics' )
 
 	self.graphicsOption = option['graphics'] or {}
@@ -624,6 +641,55 @@ function Game:onResize( w, h )
 end
 
 --------------------------------------------------------------------
+------Scene Sessions
+--------------------------------------------------------------------
+function Game:getSceneSession( key )
+	return self.sceneSessionMap[ key ]
+end
+
+function Game:affirmSceneSession( key )
+	local session = self.sceneSessionMap[ key ]
+	if not session then
+		session = SceneSession()
+		session.name = key
+		self.sceneSessionMap[ key ] = session
+		table.insert( self.sceneSessions, session )
+		if self.initialized then
+			session:init()
+		end
+		if self.started then
+			session:start()
+		end
+	end
+	return session
+end
+
+function Game:getScene( key )
+	local session = self:getSceneSession( key )
+	return session and session:getScene()
+end
+
+function Game:getMainSceneSession()
+	return self:getSceneSession( 'main' )
+end
+
+function Game:removeSceneSession( key )
+	local session = self:getSceneSession( key )
+	if not session then
+		_error( 'no scene session found', key )
+		return false
+	end
+	session:stop()
+	session:clear()
+	self.sceneSessionMap[ key ] = nil
+	local idx = table.index( self.sceneSessions, session )
+	table.remove( self.sceneSessions, idx )
+	--TODO: clear
+	return true
+
+end
+
+--------------------------------------------------------------------
 ------Scene control
 --------------------------------------------------------------------
 function Game:openEntryScene()
@@ -634,7 +700,7 @@ function Game:openEntryScene()
 end
 
 function Game:openScene( id, additive, arguments, autostart )
-	local scnPath = self.scenes[ id ]
+	local scnPath = self.namedSceneMap[ id ]
 	if not scnPath then
 		return _error( 'scene not defined', id )
 	end
@@ -642,87 +708,24 @@ function Game:openScene( id, additive, arguments, autostart )
 end
 
 function Game:scheduleOpenScene( id, additive, arguments, autostart )
-	local scnPath = self.scenes[ id ]
+	local scnPath = self.namedSceneMap[ id ]
 	if not scnPath then
 		return _error( 'scene not defined', id )
-	end
+	end	
 	return self:scheduleOpenSceneByPath( scnPath, additive, arguments, autostart ) 
 end
 
+--------------------------------------------------------------------
 function Game:openSceneByPath( scnPath, additive, arguments, autostart )
-	_stat( 'openning scene:', scnPath )
-	if not self.firstOpenedScene then
-		self.firstOpenedScene = scnPath
-	end
-	local mainScene = self.mainScene
-	autostart = autostart ~= false
-	
-	local fromEditor = arguments and arguments[ 'fromEditor' ] or false
-	
-	if not additive then
-		mainScene:stop()
-		mainScene:clear( true )
-		collectAssetGarbage()
-		mainScene:reset()
-	end
-
-	--load arguments first
-	local args = mainScene.arguments or {}
-	if not additive then args = {} end
-	if arguments then
-		for k,v in pairs( arguments ) do
-			args[ k ] = v
-		end
-	end
-
-	mainScene.assetPath = scnPath
-	--todo: previous scene
-	mainScene.arguments = args and table.simplecopy( args ) or {}
-
-	--load entities
-	local runningState = mainScene.running
-	mainScene.running = false --start entity in batch
-	local scn, node = loadAsset(
-		scnPath, 
-		{ 
-			scene = mainScene,
-			allowConditional = not fromEditor
-		}
-	)
-	if not node then 
-		return _error('scene not found', id, scnPath )
-	end
-	if node.type ~= 'scene' then
-		return _error('invalid type of entry scene:', tostring( node.type ), scnPath )
-	end
-	mainScene.running = runningState
-	emitSignal( 'mainscene.open', scn, arguments )
-	
-	mainScene:notifyLoad( scnPath )
-
-	if autostart then
-		scn:start()
-	end
-	return scn
+	return self:getMainSceneSession():openSceneByPath( scnPath, additive, arguments, autostart ) 
 end
 
 function Game:scheduleOpenSceneByPath( scnPath, additive, arguments, autostart )
-	autostart = true
-	self.pendingLoading = { 
-		['path']      = scnPath,
-		['additive']  = additive,
-		['arguments'] = arguments,
-		['autostart'] = autostart
-	}
-	emitGlobalSignal( 'mainscene.schedule_open', self.pendingLoading )
-end
-
-function Game:clearPendingScene()
-	self.pendingLoading = false
+	return self:getMainSceneSession():scheduleOpenSceneByPath( scnPath, additive, arguments, autostart ) 
 end
 
 function Game:getPendingSceneData()
-	return self.pendingLoading
+	return self:getMainSceneSession():getPendingSceneData()
 end
 
 function Game:getMainScene()
@@ -730,23 +733,11 @@ function Game:getMainScene()
 end
 
 function Game:reopenMainScene()
-	if not self.mainScene then return false end
-	local assetPath = self.mainScene.assetPath
-	if assetPath then
-		return self:openSceneByPath( assetPath )
-	else
-		return false
-	end
+	return self:getMainSceneSession():reopenScene()
 end
 
 function Game:scheduleReopenMainScene()
-	if not self.mainScene then return false end
-	local assetPath = self.mainScene.assetPath
-	if assetPath then
-		return self:scheduleOpenSceneByPath( assetPath )
-	else
-		return false
-	end
+	return self:getMainSceneSession():scheduleReopenScene()
 end
 
 --------------------------------------------------------------------
@@ -811,16 +802,20 @@ function Game:onRootUpdate( delta )
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:onUpdate( self, delta )
 	end
-	if self.pendingLoading then
-		local loadingParams = self.pendingLoading
-		self.pendingLoading = false
-		self:openSceneByPath( 
-			loadingParams['path'],
-			loadingParams['additive'],
-			loadingParams['arguments'],
-			loadingParams['autostart']
-		)
+	for i, session in ipairs( self.sceneSessions ) do
+		session:update()
 	end
+
+	-- if self.pendingLoading then
+	-- 	local loadingParams = self.pendingLoading
+	-- 	self.pendingLoading = false
+	-- 	self:openSceneByPath( 
+	-- 		loadingParams['path'],
+	-- 		loadingParams['additive'],
+	-- 		loadingParams['arguments'],
+	-- 		loadingParams['autostart']
+	-- 	)
+	-- end
 end
 
 function Game:resetClock()
@@ -836,7 +831,6 @@ function Game:pause()
 	if self.paused then return end 
 	self.paused = true
 	self.actionRoot:pause()
-	self.mainScene:pause()
 	emitSignal( 'game.pause', self )
 end
 
@@ -845,20 +839,26 @@ function Game:stop()
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:onStop( self )
 	end
-	self.mainScene:stop()
-	self.mainScene:clear( true )
+	for i, session in ipairs( self.sceneSessions ) do
+		session:stop()
+		session:clear()
+	end
 	self:resetClock()
 	emitSignal( 'game.stop', self )
 	_stat( 'game stopped' )
 end
 
 function Game:start()
+	assert( not self.started )
 	_stat( 'game start' )
+	self.started = true
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:onStart( self )
 	end
 	self.paused = false
-	self.mainScene:start()
+	for i, session in ipairs( self.sceneSessions ) do
+		session:start()
+	end
 	if self.paused then
 		emitSignal( 'game.resume', self )
 	else

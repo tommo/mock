@@ -74,7 +74,7 @@ end
 function SceneManager:onReset()
 end
 
-function SceneManager:onLoad( scnPath )
+function SceneManager:onLoad()
 end
 
 function SceneManager:onStart()

@@ -349,12 +349,14 @@ end
 
 ----------state control
 
-function Actor:setState(s)
+function Actor:setState( state )
 	--TODO: add acceptable state table
-	local ps   = self.state
-	self.state = s
+	local state0   = self.state
+	if state0 == state then return end
+	self.state = state
+	self:tell( 'state.change', { state, state0 } )
 	local onStateChange = self.onStateChange
-	if onStateChange then return onStateChange( self, s, ps ) end
+	if onStateChange then onStateChange( self, state, state0 ) end
 end
 
 function Actor:getState()

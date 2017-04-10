@@ -21,6 +21,7 @@ CLASS:
 function Scene:__init( option )
 	self.active = false
 	self.main   = false
+	self.session = false
 
 	self.FLAG_EDITOR_SCENE = false
 	self.running = false
@@ -63,6 +64,15 @@ function Scene:__init( option )
 	self.debugDrawQueue = DebugDrawQueue()
 	self.debugPropPartition = MOAIPartition.new()
 	return self
+end
+
+function Scene:getSession()
+	return self.session
+end
+
+function Scene:getSessionName()
+	local session = self.session
+	return session and session:getName()
 end
 
 function Scene:addRootGroup( name )
@@ -228,9 +238,9 @@ function Scene:reset()
 	end
 end
 
-function Scene:notifyLoad( scnPath )
+function Scene:notifyLoad()
 	for key, manager in pairs( self.managers ) do
-		manager:onLoad( scnPath )
+		manager:onLoad()
 	end
 end
 
@@ -551,6 +561,10 @@ function Scene:isGlobalActionGroupPaused( id )
 	local group = self:getGlobalActionGroup( id, false )
 	if not group then return false end
 	return group:isPaused()
+end
+
+function Scene:isPaused()
+	return self.actionRoot:isPaused()
 end
 
 function Scene:pause( paused )
