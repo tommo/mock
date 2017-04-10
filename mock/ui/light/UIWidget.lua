@@ -189,55 +189,15 @@ function UIWidget:__init()
 	self.layoutProportion = { 0, 0 }
 	self.layoutAlignment  = { 'left', 'top' }
 
-	self.renderers = {}
+	self.renderer = false
 	self.contentModified = true
-	self.styleModified = true
+	self.styleModified   = true
 
 	self.defaultFeatures = ''
 end
 
-function UIWidget:initRenderers()
-	self:addRenderer( UICommonStyleWidgetRenderer() )
-end
-
-function UIWidget:insertRenderer( idx, renderer, option )
-	if not idx then
-		table.insert( self.renderers, renderer )
-	else
-		table.insert( self.renderers, idx, renderer )
-	end
-	renderer:setWidget( self )
-	renderer:setOptions( option or {} )
-	if self.scene then
-		renderer:onInit( self )
-	end
-	self:invalidateStyle()
-	self:invalidateLayout()
-	return renderer
-end
-
-function UIWidget:addRenderer( renderer, option )
-	return self:insertRenderer( nil, renderer, option )
-end
-
-function UIWidget:removeRenderer( renderer )
-	local idx = table.index( self.renderers, renderer )
-	if idx then
-		if self.scene then
-			renderer:onDestroy( self )
-		end
-		table.remove( self.renderers, idx )
-	end
-end
-
-function UIWidget:clearRenderers()
-	if self.scene then
-		local renderers = self.renderers
-		for i, r in ipairs( renderers ) do
-			r:onDestroy( self )
-		end
-	end
-	self.renderers = {}
+function UIWidget:initRenderer()
+	return UICommonStyleWidgetRenderer()
 end
 
 function UIWidget:setVisible( visible )
@@ -304,18 +264,34 @@ function UIWidget:getLayoutInfo()
 end
 
 
-function UIWidget:onLoad()
-	self:initRenderers()
-	for i, renderer in ipairs( self.renderers ) do
-		renderer:onInit( self )
+function UIWidget:getRenderer()
+	return self.renderer
+end
+
+function UIWidget:setRenderer( r )
+	local r0 = self.renderer
+	if r0 then
+		r0:destroy( self )
 	end
+	self.renderer = r
+	if r then
+		r:init( self )
+	end
+	self:invalidateVisual()
+	self:invalidateLayout()
+	return r
+end
+
+function UIWidget:onLoad()
 end
 
 function UIWidget:destroyNow()
 	if self._parentView then
 		self._parentView:onWidgetDestroyed( self )
 	end
-	self:clearRenderers()
+	if self.renderer then
+		self.renderer:destroy( self )
+	end
 	local parent = self.parent
 	local childWidgets = parent and parent.childWidgets
 	if childWidgets then
@@ -507,8 +483,8 @@ function UIWidget:updateVisual()
 	local styleModified = self.styleModified
 	self.contentModified = false
 	self.styleModified = false
-	for i, r in ipairs( self.renderers ) do
-		r:update( self, style, styleModified, contentModified )
+	if self.renderer then
+		self.renderer:update( self, style, styleModified, contentModified )
 	end
 end
 
@@ -733,6 +709,10 @@ function UIWidget:setState( state )
 	end
 	return UIWidget.__super.setState( self, state )
 end
+
+function UIWidget:onStateChange( state )
+end
+
 
 --------------------------------------------------------------------
 --extra

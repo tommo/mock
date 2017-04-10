@@ -110,7 +110,7 @@ end
 --------------------------------------------------------------------
 --GLOBAL SIGALS
 --------------------------------------------------------------------
-local globalSignalTable = {}
+local globalSignalTable = setmetatable( {}, { __no_traverse = true } )
 local weakmt = {__mode='v'}
 
 local function registerGlobalSignal( sigName )

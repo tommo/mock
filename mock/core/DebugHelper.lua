@@ -158,24 +158,32 @@ function _reportTracingCoroutines()
 	local countActive = {}
 	for coro, tb in pairs( tracingCoroutines ) do
 		count[ tb ] = ( count[ tb ] or 0 ) + 1
+		print( tb )
 		if coro:isBusy() then
 			countActive[ tb ] = ( countActive[ tb ] or 0 ) + 1
+		else
+			-- print( 'inactive coro' )
+			-- print( tb )
 		end
 	end
-	for tb, c in pairs( count ) do
-		if c > 1 then
-			print( '------CORO COUNT:', c, countActive[ tb ] )
-			print( tb )
-		end
-	end
+	-- for tb, c in pairs( count ) do
+	-- 	if c > 1 then
+	-- 		print( '------CORO COUNT:', c, countActive[ tb ] )
+	-- 		print( tb )
+	-- 	end
+	-- end
 end
 
 local oldNew = MOAICoroutine.new
-MOAICoroutine.new = function( ... )
-	local coro = oldNew( ... )
+MOAICoroutine.new = function( f, ... )
+	local coro = oldNew( f, ... )
 	-- print( 'CREATE COROUTINE', coro )
 	-- print( debug.traceback() )
-	tracingCoroutines[ coro ] = debug.traceback( 3 )
+	-- local funcinfo = debug.getinfo( f, 'nSl' )
+	-- local infoString string.format(
+	-- 		'%s:%d', funcinfo.source, funcinfo.currentline
+	-- 	)
+	tracingCoroutines[ coro ] =  debug.traceback( 3 )
 	return coro
 end
 
@@ -237,4 +245,38 @@ end
 
 function try( func, errFunc )
 	return _innerTry( errFunc, pcall( func ) )
+end
+
+function singletraceback( level )
+	local info = debug.getinfo( ( level or 2 ) + 1, 'nSl' )
+	return string.format(
+			'%s:%d', info.source, info.currentline
+		)
+end
+
+local trackingMOAIObjects = {}
+function trackMOAIObject( clas )
+	local oldNew = clas.new
+	local t = table.weak_k()
+	trackingMOAIObjects[ clas ] = t
+	clas.new = function( ... )
+		local obj = oldNew( ... )
+		t[ obj ] = debug.traceback( 3 )
+		return obj
+	end
+end
+
+function reportTrackingMOAIObject( clas )
+	local t = trackingMOAIObjects[ clas ]
+	if not t then
+		_log( 'not tracking', clas )
+		return false
+	end
+	_log( 'allocated moai object:', clas )
+	for obj, trace in pairs( t ) do
+		_log( obj )
+		_log( trace )
+	end
+	_log( '----' )
+
 end

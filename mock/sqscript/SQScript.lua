@@ -1258,8 +1258,11 @@ local function loadSQNode( data, parentNode, tags )
 		local actionName = data.name
 		local entry = SQNodeRegistry[ actionName ]
 		if not entry then
-			_error( 'unkown action node type', actionName )
-			return SQNode() --dummy node
+			local dummy = SQNode()
+			_error( string.format( '%s:%3d >', 
+				parentNode:getScript():getSourcePath(), data[ 'line' ]
+			), 'unkown action node type', actionName )
+			return dummy
 		end
 		local clas = entry.clas
 		node = clas()

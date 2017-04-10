@@ -101,6 +101,9 @@ function AnimatorFSM:setState( state )
 	local name, args = parseAnimatorFSMState( state )
 	if name then
 		local state = animator:loadClip( name )
+		if not state then
+			return
+		end
 		local range0 = args['start']
 		local range1 = args['stop']
 		state:setRange( range0, range1 )

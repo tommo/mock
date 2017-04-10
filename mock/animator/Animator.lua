@@ -28,7 +28,8 @@ function Animator:__init()
 	self.autoPlayMode= false
 	self.vars        = {}
 	self.varSeq      = 0
-	self.states      = table.weak_k()
+	self.states      = {}
+	self.statePool   = {}
 	self.activeStateLocked = false
 end
 
@@ -45,6 +46,8 @@ function Animator:setDataPath( dataPath )
 	if self.data then
 		self.data:prebuildAll()
 	end
+	self:stop()
+	self.statePool = {}
 end
 
 function Animator:getDataPath()
@@ -97,10 +100,16 @@ function Animator:hasClip( name )
 end
 
 function Animator:_loadClip( clip, makeActive, _previewing )
-	local state = AnimatorState()
-	state.previewing = _previewing
-	state:setThrottle( self.throttle )
-	state:loadClip( self, clip )
+	local state
+	if not _previewing then --try pool
+		state = self:popStateFromPool( clip )
+	end
+	if not state then
+		state = AnimatorState()
+		state.previewing = _previewing
+		state:setThrottle( self.throttle )
+		state:loadClip( self, clip )
+	end
 	if makeActive ~= false then 
 		self:stop()
 		self.activeState = state
@@ -112,6 +121,7 @@ end
 function Animator:loadClip( name, makeActive, _previewing )
 	makeActive = makeActive ~= false
 	if self.activeStateLocked and makeActive then
+		_warn( singletraceback(3) )
 		_warn( 'attempt to change clip of locked animator' )
 		return false
 	end
@@ -130,6 +140,39 @@ end
 
 function Animator:getActiveState()
 	return self.activeState
+end
+
+function Animator:onStateStart( state )
+end
+
+function Animator:onStateStop( state )
+	--push into pool
+	if not state.previewing then
+		self:pushStateIntoPool( state )
+	end
+end
+
+function Animator:pushStateIntoPool( state )
+	local pool = self.statePool
+	if not pool then return end
+	local clip = state.clip
+	local list = pool[ clip ]
+	if not list then
+		list = {}
+		pool[ clip ] = list
+	end
+	table.insert( list, state )
+end
+
+function Animator:popStateFromPool( clip )
+	local list = self.statePool[ clip ]
+	if not list then return false end
+	local state = table.remove( list, 1 )
+	if state then
+		state.stopping = false
+		state:reset()
+		return state
+	end
 end
 
 function Animator:loopClip( clipName )
@@ -156,6 +199,10 @@ end
 function Animator:stop()
 	if not self.activeState then return end
 	self.activeState:stop()
+	-- for state in pairs( self.states ) do
+	-- 	state:stop()
+	-- end
+	-- self.states = {}
 end
 
 function Animator:pause( paused )
@@ -165,7 +212,6 @@ end
 
 function Animator:resume()
 	return self:pause( false )
-	
 end
 
 function Animator:startDefaultClip()
@@ -195,18 +241,18 @@ function Animator:onStart( ent )
 end
 
 function Animator:onDetach( ent )
+	self.statePool = false
 	self:stop()
+	for s in pairs( self.states ) do
+		s:clear()
+	end
+	self.activeState = false
+	self.states = {}
 end
 
 function Animator:setVar( id, value )
 	self.vars[ id ] = value
 	self.varSeq = self.varSeq + 1
-	-- for state in pairs( self.states ) do
-	-- 	local onVarChanged = state.onVarChanged
-	-- 	if onVarChanged then
-	-- 		onVarChanged( state, id, value )
-	-- 	end
-	-- end
 	for listener in pairs( GlobalAnimatorVarChangeListeners ) do
 		listener( self, id, value )
 	end

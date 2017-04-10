@@ -38,7 +38,7 @@ end
 
 function BehaviourScript:onStart( ent )
 	self:loadScript( ent )
-	Behaviour.onStart( self, ent )
+	BehaviourScript.__super.onStart( self, ent )
 end
 
 function BehaviourScript:loadScript( ent )
@@ -95,6 +95,9 @@ function BehaviourScript:onDetach( ent )
 		ent:removeMsgListener( self.msgListener )
 	end
 	ent.scene:removeUpdateListener( self )
+	BehaviourScript.__super.onDetach( self, ent )
+	self.delegate = false
+	self.onThread = false
 end
 
 function BehaviourScript:openExternalEdit()
@@ -109,6 +112,8 @@ function BehaviourScript:installInputListener( option )
 end
 
 function BehaviourScript:uninstallInputListener()
-	return uninstallInputListener( self.delegate )
+	if self.delegate then
+		return uninstallInputListener( self.delegate )
+	end
 end
 

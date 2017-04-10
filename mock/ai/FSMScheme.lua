@@ -39,51 +39,15 @@ local function buildFSMScheme( scheme )
 	local function parseExprJump( msg )
 		local content = msg:match('%s*if%s*%((.*)%)%s*')
 		if not content then return nil end
-		content=content:trim()
-		local var, op, value = content:match( '^([%w_.]+)%s*([><~=]=?)%s*(.*)%s*$' )
-		if var then
-			local succ, value = tovalue( value )
-			if succ then
-				if op=='~' or op=='=' then
-					_warn( 'invalid fsm transition experssion operartor', msg )
-					return false
-				end
-				local src
-				if op == '==' or op == '~=' then
-					src = string.format(
-						[[
-						local print = ...
-						local function exprFunc(controller) 
-							if controller:getVar(%q)%s%s then return controller:tell( exprFunc ) end
-						end
-						return exprFunc
-						]]
-						,var ,op ,value )
-				else
-					src = string.format(
-						[[
-						local print = ...
-						local function exprFunc(controller) 
-							local nv = controller:getVarN(%q)
-							if nv and (nv%s%s) then return controller:appendMsg( exprFunc ) end
-						end
-						return exprFunc
-						]]
-						,var ,op ,value )
-				end
-				local checkerFuncBuilder, err = loadstring( src )
-				if not checkerFuncBuilder then
-					print( err )
-					_warn( 'fail building invalid fsm transition experssion', msg )
-					return false
-				end
-				local exprFunc = checkerFuncBuilder( print )
-				return exprFunc
-			end
-		end
+		content = content:trim()
 
-		_warn( 'invalid fsm transition experssion', msg )
-		return false
+		local valueFunc, err = loadEvalScriptWithEnv( content )
+		if not valueFunc then
+			_warn( 'failed compiling condition expr:', err )
+			return false
+		else
+			return valueFunc
+		end
 	end
 
 	--build state funcs
@@ -104,13 +68,14 @@ local function buildFSMScheme( scheme )
 				if exprFunc then
 					if not exprJump then exprJump = {} end
 					exprJump[ msg ] = exprFunc
-					-- print( name, msg, exprFunc, exprJump )
 				end
 			end
 			if exprJump then
-				for msg, exprFunc in pairs( exprJump ) do --replace msg
-					jump[ exprFunc ] = jump[ msg ]
+				for msg, exprFunc in pairs( exprJump ) do
+					--replace msg
+					local target = jump[ msg ]
 					jump[ msg ] = nil
+					jump[ exprFunc ] = target
 				end
 			end
 		end
@@ -167,9 +132,9 @@ local function buildFSMScheme( scheme )
 					table.insert( trackedStates, name )
 					if switchCount > DEADLOCK_THRESHOLD + DEADLOCK_TRACK then
 						--state traceback
-						print( "state switch deadlock:", switchCount )
+						_log( "state switch deadlock:", switchCount )
 						for i, s in ipairs( trackedStates ) do 
-							print( i, s )
+							_log( i, s )
 						end
 						if debugstop then
 							debugStop()

@@ -33,10 +33,11 @@ local insert = table.insert
 --------------------------------------------------------------------
 local newClass
 local separatorField
-local globalClassRegistry = {}
+local globalClassRegistry = setmetatable( {}, { __no_traverse = true } )
+local tracingObjectMark            = 0
 local tracingObjectAllocation      = false
 local tracingObjectAllocationStack = false
-local tracingObjectTable = setmetatable( {}, { __mode = 'kv' } )
+local tracingObjectTable = setmetatable( {}, { __mode = 'kv', __no_traverse = true } )
 
 local buildInstanceBuilder
 
@@ -59,7 +60,7 @@ function getTracingObjectCount()
 	return table.len( tracingObjectTable )
 end
 
-function reportTracingObject( filter, ignoreMockObject )
+function countTracingObject( filter, ignoreMockObject )
 	local objectCounts = {}
 	for o in pairs( tracingObjectTable ) do
 		local name = o:getClassFullName() or '<unknown>'
@@ -71,7 +72,11 @@ function reportTracingObject( filter, ignoreMockObject )
 				objectCounts[ name ] = ( objectCounts[ name ] or 0 ) + 1
 		end
 	end
+	return objectCounts
+end
 
+function reportTracingObject( filter, ignoreMockObject )
+	local objectCounts = countTracingObject( filter, ignoreMockObject )
 	local total  = 0
 	local output = {}
 	for name, count in pairs( objectCounts ) do
@@ -84,8 +89,13 @@ function reportTracingObject( filter, ignoreMockObject )
 		total = total + item[2]
 	end
 	print( '-- total objects:', total )
-
+	return objectCounts
 end
+
+function _incObjectTracingMark()
+	tracingObjectMark = tracingObjectMark + 1
+end
+
 
 --------------------------------------------------------------------
 local BaseClass = {
@@ -315,7 +325,7 @@ function buildInstanceBuilder( class )
 		if initSignals then initSignals(o,...) end
 		if init then init(o,...) end
 		if tracingObjectAllocation then
-			tracingObjectTable[ o ] = true
+			tracingObjectTable[ o ] = tracingObjectMark
 			if tracingObjectAllocationStack then
 				o.__createtraceback = debug.traceback( 2 )
 			end

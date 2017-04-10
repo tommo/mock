@@ -52,7 +52,7 @@ function SQActor:onAttach( ent )
 	local scene = ent:getScene()
 	local actorRegistry = scene:getUserObject( 'SQActors' )
 	if not actorRegistry then
-		actorRegistry = {}
+		actorRegistry = setmetatable( {}, { __no_traverse = true } )
 		scene:setUserObject( 'SQActors', actorRegistry )
 	end
 	actorRegistry[ self ] = true

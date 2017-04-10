@@ -102,7 +102,7 @@ function FSMController:onStart( entity )
 end
 
 function FSMController:onDetach( ent )
-	Behaviour.onDetach( self, ent )
+	FSMController.__super.onDetach( self, ent )
 	ent:removeMsgListener( self.msgBoxListener )
 end
 
@@ -120,6 +120,7 @@ function FSMController:setState( state )
 	if self._entity and self.syncEntityState then
 		self._entity:setState( state )
 	end
+	self:updateExprJump()
 end
 
 function FSMController:getEntityState()
@@ -206,34 +207,45 @@ function FSMController:getStateElapsedTime()
 end
 
 ----
-function FSMController:setVar( id, value )
-	self.vars[ id ] = value
+function FSMController:setVar( key, value )
+	local v0 = self.vars[ key ]
+	if v0 == value then
+		return
+	end
+	self.vars[ key ] = value
 	self.varDirty = true
 end
 
-function FSMController:getVar( id, default )
-	local v = self.vars[ id ]
+function FSMController:getVar( key, default )
+	local v = self.vars[ key ]
 	if v == nil then return default end
 	return v
 end
 
-function FSMController:getVarN( id, default )
-	local v = self.vars[ id ]
-	v = tonumber( v )
-	if not v then return default end
-	return v
-end
-
-function FSMController:seekVar( id, value, duration ,easeMode )
-	--TODO
+function FSMController:getEvalEnv()
+	local evalEnv = self.evalEnv
+	if not evalEnv then
+		local mt = {
+			__index = function( t, k )
+				return self:getVar( k )
+			end
+		}
+		evalEnv = setmetatable( {}, mt )
+		self.evalEnv = evalEnv
+	end
+	return evalEnv
 end
 
 function FSMController:updateExprJump()
 	self.varDirty = false
 	local exprJump = self.currentExprJump
 	if not exprJump then return end
+	local env = self:getEvalEnv()
 	for msg, exprFunc in pairs( exprJump ) do
-		exprFunc( self )
+		local ok, value = exprFunc( env )
+		if ok and value then
+			self:tell( exprFunc )
+		end
 	end
 end
 

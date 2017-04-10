@@ -70,7 +70,7 @@ end
 
 function TBWidget:_detachChildEntity( entity )
 	if entity.__TBWIDGET then
-		return self:detachChildWidget( entity, layerName )
+		return self:detachChildWidget( entity )
 	end	
 	return TBWidget.__super._detachChildEntity( entity )
 end
@@ -108,7 +108,6 @@ function TBWidget:detachChildWidget( widget )
 	self:refreshCanvas()
 end
 
-
 function TBWidget:onDestroy()
 	local internal = self:getInternalWidget()
 	if internal then
@@ -116,7 +115,10 @@ function TBWidget:onDestroy()
 		if parent then
 			parent:removeChild( internal )
 		end
+		internal.__entity = nil
+		internal:setListener( MOAITBWidget.EVENT_WIDGET_EVENT, nil )
 	end
+	self.internalWidget = nil
 end
 
 function TBWidget:getInternalWidget()

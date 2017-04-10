@@ -1,6 +1,6 @@
 module 'mock'
 
-local _GlobalManagerRegistry = {}
+local _GlobalManagerRegistry = setmetatable( {}, { __no_traverse = true } )
 
 function getGlobalManagerRegistry()
 	return _GlobalManagerRegistry

@@ -24,6 +24,7 @@ end
 UIEvent.POINTER_DOWN  = "pointerDown"
 UIEvent.POINTER_UP    = "pointerUp"
 UIEvent.POINTER_MOVE  = "pointerMove"
+UIEvent.POINTER_SCROLL = "pointerScroll"
 
 UIEvent.POINTER_ENTER = "pointerEnter"
 UIEvent.POINTER_EXIT  = "pointerExit"

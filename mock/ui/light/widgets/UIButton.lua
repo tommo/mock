@@ -15,6 +15,10 @@ function UIButton:__init()
 	self.layoutPolicy = { 'expand', 'expand' }
 end
 
+function UIButton:onLoad()
+	self:setRenderer( UIButtonRenderer() )
+end
+
 function UIButton:setText( t )
 	self.text = t
 	self:invalidateContent()

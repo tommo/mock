@@ -121,10 +121,18 @@ end
 
 function Camera:onDetach( entity )
 	getCameraManager():unregister( self )
-	for i, pass in ipairs(self.passes) do
+	for i, pass in ipairs( self.passes ) do
 		pass:release()
 	end
 	self.renderTarget:clear()
+	self.renderTarget:setParent( nil )
+	self.passes = {}
+	self.zoomControlNode.camera = nil
+	self.zoomControlNode = nil
+	self.dummyLayer = nil
+	self._camera.source = nil
+	self._camera = nil
+	self._renderCommandTable = nil
 end
 
 
@@ -167,6 +175,9 @@ function Camera:tryBindSceneLayer( layer )
 end
 
 function Camera:reloadPasses()
+	for i, pass in ipairs( self.passes ) do
+		pass:release()
+	end
 	self.passes = {}
 	self:loadPasses()
 	self:updateRenderLayers()

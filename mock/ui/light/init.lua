@@ -13,6 +13,7 @@ require 'mock.ui.light.UISkin'
 
 require 'mock.ui.light.UIEvent'
 require 'mock.ui.light.UIWidget'
+require 'mock.ui.light.UIWidgetElement'
 require 'mock.ui.light.UIWidgetRenderer'
 
 require 'mock.ui.light.UILayout'
@@ -28,7 +29,5 @@ require 'mock.ui.light.UIGridLayout'
 require 'mock.ui.light.UIWidgetGroup'
 require 'mock.ui.light.UISpacer'
 
-require 'mock.ui.light.UICommonStyleWidgetRenderer'
-require 'mock.ui.light.UILabelRenderer'
-
+require 'mock.ui.light.renderers'
 require 'mock.ui.light.widgets'

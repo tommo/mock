@@ -1,7 +1,7 @@
 
 module( 'GameModule', package.seeall )
 
-local GameModules = {}
+local GameModules = setmetatable( {}, { __no_traverse = true } )
 
 local callbackModuleRelease = {}
 local callbackModuleLoad    = {}

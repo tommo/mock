@@ -5,6 +5,7 @@
 module 'mock'
 --------------------------------------------------------------------
 local insert, remove = table.insert, table.remove
+local sort = table.sort
 local pairs, ipairs  = pairs, ipairs
 local unpack = unpack
 local next   = next
@@ -427,9 +428,9 @@ function Entity:getSortedComponentList( reversed )
 		insert( list , com )
 	end
 	if reversed then
-		table.sort( list, componentSortFuncReversed )
+		sort( list, componentSortFuncReversed )
 	else
-		table.sort( list, componentSortFunc )
+		sort( list, componentSortFunc )
 	end
 	return list
 end
@@ -1452,7 +1453,9 @@ end
 function Entity:makeScissorRect( x1, y1, x2, y2, noFollow )
 	local rect = MOAIScissorRect.new()
 	rect:setRect( x1, y2, x2, y1 )
-	if not noFollow then self:_attachTransform( rect ) end
+	if not noFollow then
+		self:_attachTransform( rect )
+	end
 	return rect
 end
 
@@ -1604,7 +1607,7 @@ end
 --- Registry
 --------------------------------------------------------------------
 
-local entityTypeRegistry = {}
+local entityTypeRegistry = setmetatable( {}, { __no_traverse = true } )
 function registerEntity( name, creator )
 	if not creator then
 		return _error( 'no entity to register', name )

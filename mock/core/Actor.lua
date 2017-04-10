@@ -230,6 +230,7 @@ function Actor:_weakHoldCoroutine( newCoro )
 	for coro in pairs( coroutines ) do
 		if coro:isDone() then
 			dead[ coro ] = true
+			coro._func = nil
 		end
 	end
 	for coro in pairs( dead ) do
@@ -240,9 +241,11 @@ function Actor:_weakHoldCoroutine( newCoro )
 end
 
 function Actor:findCoroutine( method )
-	for coro in pairs( self.coroutines ) do
-		if coro._func == method and (not coro:isDone()) then
-			return coro
+	if self.coroutines then
+		for coro in pairs( self.coroutines ) do
+			if coro._func == method and (not coro:isDone()) then
+				return coro
+			end
 		end
 	end
 	return nil
@@ -250,18 +253,23 @@ end
 
 function Actor:findAllCoroutines( method )
 	local found = {}
-	for coro in pairs( self.coroutines ) do
-		if coro._func == method and (not coro:isDone()) then
-			table.insert( found, coro )
+	if self.coroutines then
+		for coro in pairs( self.coroutines ) do
+			if coro._func == method and (not coro:isDone()) then
+				table.insert( found, coro )
+			end
 		end
 	end
 	return found
 end
 
 function Actor:findAndStopCoroutine( method )
-	for coro in pairs( self.coroutines ) do
-		if coro._func == method and (not coro:isDone()) then
-			coro:stop()
+	if self.coroutines then
+		for coro in pairs( self.coroutines ) do
+			if coro._func == method and (not coro:isDone()) then
+				coro:stop()
+				coro._func = nil
+			end
 		end
 	end
 end
@@ -271,7 +279,6 @@ local newCoroutine = MOAICoroutine.new
 function Actor:_createCoroutine( defaultParent, func, obj, ... )
 	--TODO: use pool
 	local coro = newCoroutine()
-
 	if defaultParent then coro:setDefaultParent( true ) end
 	local tt = type( func )
 	if tt == 'string' then --method name
@@ -285,7 +292,6 @@ function Actor:_createCoroutine( defaultParent, func, obj, ... )
 	else
 		error('unknown coroutine func type:'..tt)
 	end
-
 	local coro = self:_weakHoldCoroutine( coro )
 	return coro
 end
@@ -336,6 +342,7 @@ function Actor:clearCoroutines()
 	if not self.coroutines then return end
 	for coro in pairs( self.coroutines ) do
 		coro:stop()
+		coro._func = nil
 	end
 	self.coroutines = nil
 end

@@ -110,7 +110,7 @@ local AssetLibrary = {}
 local AssetSearchCache = {}
 
 --asset loaders
-local AssetLoaderConfigs = {}
+local AssetLoaderConfigs = setmetatable( {}, { __no_traverse = true } )
 
 ---env
 local AssetLibraryIndex = false
@@ -130,6 +130,7 @@ function loadAssetLibrary( indexPath, searchPatches )
 		return
 	end
 	_stat( 'loading library from', indexPath )
+	_Stopwatch.start( 'load_asset_library' )
 	
 	--json assetnode
 	local fp = io.open( indexPath, 'r' )
@@ -144,7 +145,10 @@ function loadAssetLibrary( indexPath, searchPatches )
 		_error( 'can not parse asset library index file', indexPath )
 		return
 	end
-	
+	_Stopwatch.stop( 'load_asset_library' )
+	_log( _Stopwatch.report( 'load_asset_library' ) )
+
+	_Stopwatch.start( 'load_asset_library' )
 	AssetLibrary = {}
 	AssetSearchCache = {}
 	for path, value in pairs( data ) do
@@ -159,6 +163,8 @@ function loadAssetLibrary( indexPath, searchPatches )
 		findAndLoadAssetPatches( 'asset_index_patch.json' )
 	end
 	emitSignal( 'asset_library.loaded' )
+	_Stopwatch.stop( 'load_asset_library' )
+	_log( _Stopwatch.report( 'load_asset_library' ) )
 end
 
 local function _extendDeep( t0, t1 )
@@ -499,6 +505,9 @@ function AdHocAsset( object )
 	return box
 end
 
+function isAdHocAsset( box )
+	return AdHocAssetRegistry[ box ] and true or false
+end
 
 function loadAsset( path, option, warning )
 	local tmpAsset = AdHocAssetRegistry[ path ]
@@ -512,8 +521,8 @@ function loadAsset( path, option, warning )
 	if not node then 
 		if warning ~= false then
 			_warn ( 'no asset found', path or '???' )
+			_warn ( singletraceback( 2 ) )
 		end
-		-- print( debug.traceback(2) )
 		return nil
 	end
 

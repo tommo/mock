@@ -151,6 +151,7 @@ end
 function TextureRenderTarget:clear()
 	if self.frameBuffer then
 		self.frameBuffer:release()
+		self.frameBuffer = nil
 	end
 	TextureRenderTarget.__super.clear( self )
 end

@@ -83,3 +83,14 @@ function UIPointer:onUp( view, x, y, button )
 		view:postEvent( activeWidget, ev )
 	end
 end
+
+function UIPointer:onScroll( view, x, y )
+	local targetWidget = self.activeWidget or self.hoverWidget
+	if not targetWidget then return end
+	local ev = UIEvent(
+			UIEvent.POINTER_SCROLL,
+			{ x = x, y = y, pointer = self }
+		)
+	view:postEvent( targetWidget, ev )
+end
+
