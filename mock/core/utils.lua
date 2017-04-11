@@ -29,7 +29,7 @@ local random       = math.random
 local floor        = math.floor
 local tonumber     = tonumber
 local tostring     = tostring
-
+local next         = next
 local _print       =  print
 
 function printf(patt,...)
@@ -140,7 +140,9 @@ function table.randremove(t)
 end
 
 function table.clear( t )
-	for _, k in ipairs( table.keys( t ) ) do
+	while true do
+		local k = next( t )
+		if k == nil then return end
 		t[ k ] = nil
 	end
 end

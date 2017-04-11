@@ -38,6 +38,10 @@ function UIView:onLoad()
 	)
 end
 
+function UIView:onStart()
+	self.threadUpdate = self:addCoroutine( 'actionUpdate' )
+end
+
 function UIView:onDestroy()
 	uninstallInputListener( self )
 end
@@ -50,8 +54,11 @@ function UIView:flushUpdate()
 	self._updateNode:flushUpdate()
 end
 
-function UIView:onUpdate()
-	self._updateNode:flushUpdate()
+function UIView:actionUpdate()
+	while true do
+		self:flushUpdate()
+		coroutine.yield()
+	end
 end
 
 function UIView:doUpdate()
@@ -59,6 +66,10 @@ function UIView:doUpdate()
 	self:dispatchEvents()
 	self:flushLayoutUpdate()
 	self:flushVisualUpdate()
+end
+
+function UIView:getUpdateThread()
+	return self.threadUpdate
 end
 
 function UIView:onWidgetDestroyed( widget )

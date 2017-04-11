@@ -61,11 +61,13 @@ end
 --TODO
 CLASS: AnimatorFSM ( FSMController )
 	:MODEL{
+		Field 'syncEntityState' :boolean() :no_edit();
 	}
 
 function AnimatorFSM:__init()
 	self.animator = false
 	self.currentAnimState = false
+	self.syncEntityState = false
 end
 
 function AnimatorFSM:onStart( ent )
@@ -110,7 +112,6 @@ function AnimatorFSM:setState( state )
 		local duration = args['duration']
 		local throttle = args['throttle']
 		local mode = args['mode']
-		-- print( throttle, duration )
 		if mode then
 			state:setMode( mode )
 		end

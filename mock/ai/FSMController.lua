@@ -71,12 +71,16 @@ end
 
 function FSMController:__init()
 	self.stateElapsedTime = 0
-	self.msgBox = {}
+	local msgBox = {}
+	self.msgBox = msgBox
 	self.syncEntityState = false
 	local msgFilter = false
 	self.msgBoxListener = function( msg, data, source )
-		if msgFilter and msgFilter( msg,data,source ) == false then return end
-		return insert( self.msgBox, { msg, data, source } )
+		if msgFilter and msgFilter( msg, data, source ) == false then return end
+		if msg == 'state.change' then
+			self:setVar( 'entity_state', data[1] )
+		end
+		return insert( msgBox, { msg, data, source } )
 	end
 	self._msgFilterSetter = function( f ) msgFilter = f end
 	self.forceJumping = false
@@ -96,8 +100,7 @@ function FSMController:onAttach( entity )
 end
 
 function FSMController:onStart( entity )
-	self.threadFSMUpdate = self:addCoroutine( 'onThreadFSMUpdate' )
-	self.threadFSMUpdate:setDefaultParent( true )
+	self.threadFSMUpdate = self:addDaemonCoroutine( 'onThreadFSMUpdate' )
 	return Behaviour.onStart( self, entity )
 end
 
@@ -132,7 +135,7 @@ function FSMController:forceState( state, msg, args )
 end
 
 function FSMController:clearMsgBox()
-	self.msgBox = {}
+	table.clear( self.msgBox )
 end
 
 function FSMController:pushTopMsg( msg, data, source )
@@ -223,17 +226,7 @@ function FSMController:getVar( key, default )
 end
 
 function FSMController:getEvalEnv()
-	local evalEnv = self.evalEnv
-	if not evalEnv then
-		local mt = {
-			__index = function( t, k )
-				return self:getVar( k )
-			end
-		}
-		evalEnv = setmetatable( {}, mt )
-		self.evalEnv = evalEnv
-	end
-	return evalEnv
+	return self.vars
 end
 
 function FSMController:updateExprJump()
