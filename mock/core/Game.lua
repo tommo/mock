@@ -841,11 +841,12 @@ function Game:stop()
 	end
 	for i, session in ipairs( self.sceneSessions ) do
 		session:stop()
-		session:clear()
+		session:clear( true )
 	end
 	self:resetClock()
 	emitSignal( 'game.stop', self )
 	_stat( 'game stopped' )
+	self.started = false
 end
 
 function Game:start()

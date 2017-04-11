@@ -252,7 +252,7 @@ end
 function ShaderProgram:releaseShader( id )
 	local shader = self.shaders[ id ]
 	if not shader then
-		_warn( 'no shader found', id )
+		-- _warn( 'no shader found', id )
 		return false
 	end
 	self.shaders[ id ] = nil
@@ -503,7 +503,7 @@ end
 function ShaderConfig:releaseShader( id )
 	local shader = self.shaders[ id ]
 	if not shader then
-		_warn( 'no shader found', id )
+		-- _warn( 'no shader found', id )
 		return false
 	end
 	for pass, subConfig in pairs( self.subShaders ) do
