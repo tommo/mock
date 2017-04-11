@@ -27,6 +27,12 @@ module 'mock'
 
 require 'mock.core.keymaps'
 
+
+DefaultInputOption = {
+	allowTouchSimulation = false
+}
+
+--------------------------------------------------------------------
 local _inputDevices = {}
 
 function getInputDevice( name )
