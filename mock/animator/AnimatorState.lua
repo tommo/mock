@@ -199,6 +199,7 @@ end
 
 function AnimatorState:stop()
 	self.stopping = true
+	if self.stopping then return end
 	self.anim:stop()
 	self.elapsedTimer:stop()
 	if self.animator then
