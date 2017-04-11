@@ -12,12 +12,14 @@ require 'mock.gfx.camera.CameraImageEffectSepia'
 require 'mock.gfx.camera.CameraImageEffectInvert'
 require 'mock.gfx.camera.CameraImageEffectColorGrading'
 require 'mock.gfx.camera.CameraImageEffectGamma'
+require 'mock.gfx.camera.CameraImageEffectGaussianBlur'
 require 'mock.gfx.camera.CameraImageEffectBlur'
 require 'mock.gfx.camera.CameraImageEffectSharpen'
 require 'mock.gfx.camera.CameraImageEffectBloom'
 require 'mock.gfx.camera.CameraImageEffectRadialBlur'
 require 'mock.gfx.camera.CameraImageEffectMosaic'
 require 'mock.gfx.camera.CameraImageEffectYUVOffset'
+require 'mock.gfx.camera.CameraImageEffectHue'
 
 --------------------------------------------------------------------
 --ETC

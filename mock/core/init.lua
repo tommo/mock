@@ -73,6 +73,7 @@ require 'mock.core.SceneManager'
 require 'mock.core.Scene'
 require 'mock.core.GlobalObject'
 require 'mock.core.ScreenProfile'
+require 'mock.core.SceneSession'
 require 'mock.core.Game'
 
 ----Helpers

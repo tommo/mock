@@ -136,7 +136,10 @@ function Camera:onDetach( entity )
 end
 
 
-function Camera:buildRenderCommandTable()
+function Camera:buildRenderCommandTable( force )
+	if self._renderCommandTable and not force then
+		return self._renderCommandTable
+	end
 	local renderCommandTable = buildCameraRenderCommandTable( self )
 	self._renderCommandTable = renderCommandTable
 	return renderCommandTable
@@ -240,6 +243,7 @@ function Camera:_isLayerExcluded( name, allowEditorLayer )
 end
 
 function Camera:updateRenderLayers()
+	self._renderCommandTable = false
 	return getCameraManager():update()
 end
 
