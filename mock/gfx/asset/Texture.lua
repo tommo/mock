@@ -130,9 +130,9 @@ end
 
 function Texture:updateConfigData( data )
 	--check modification
-	local groupName = data[ 'group' ]
-	local scale = data[ 'scale' ]
-	local processor = data[ 'processor' ]
+	local groupName   = data[ 'group' ]
+	local scale       = data[ 'scale' ]
+	local processor   = data[ 'processor' ]
 	local allowPacked = data[ 'allowPacked' ]
 
 	if allowPacked ~= self.allowPacked then
@@ -177,6 +177,9 @@ end
 
 function Texture:isPrebuiltAtlas()
 	local node = getAssetNode( self.path )
+	if not node then
+		_warn( 'no asset node', self.path )
+	end
 	return node:getType() == 'prebuilt_atlas'
 end
 

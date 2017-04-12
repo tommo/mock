@@ -40,6 +40,8 @@ require 'mock.core.task'
 ----common class
 require 'mock.core.GlobalManager'
 
+require 'mock.core.LocaleManager'
+
 ----asset
 require 'mock.core.AssetLibrary'
 require 'mock.core.AssetScanner'
