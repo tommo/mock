@@ -793,6 +793,15 @@ function isMetaDown()
 	return _defaultInputDevice:isMetaDown()
 end
 
+function getModifierKeyStates()
+	return {
+		ctrl  = isCtrlDown(),
+		alt   = isAltDown(),
+		meta  = isMetaDown(),
+		shift = isShiftDown()
+	}
+end
+
 function pollKeyHit(key) --get key hit counts since last polling
 	return _defaultInputDevice:pollKeyHit(key)	
 end

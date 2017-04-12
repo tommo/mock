@@ -40,6 +40,11 @@ function UIWidgetBase:__init()
 	self.zorder = 0
 end
 
+-- local newUIProp = MOCKUIProp.new
+-- function UIWidgetBase:_createEntityProp()
+-- 	return newUIProp()
+-- end
+
 function UIWidgetBase:isRootWidget()
 	return false
 end
@@ -505,21 +510,14 @@ function UIWidget:getViewLoc()
 end
 
 function UIWidget:inside( x, y, z, pad )
-	x,y = self:worldToModel( x, y )
-	local x0,y0,x1,y1 = self:getRect()
-	if x0 > x1 then x1,x0 = x0,x1 end
-	if y0 > y1 then y1,y0 = y0,y1 end
-	if pad then
-		return x >= x0-pad and x <= x1+pad and y >= y0-pad and y<=y1+pad
-	else
-		return x >= x0 and x <= x1 and y >= y0 and y <= y1
-	end
+	local x0, y0, z0 = self:getWorldLoc()
+	return self:getProp():inside( x,y,z0, pad )
 end
 
 function UIWidget:setSize( w, h, updateLayout, updateStyle )
 	w, h = w or self.w, h or self.h
 	self.w, self.h = w, h
-	self:getProp():setBounds( 0,0, w, h )
+	self:getProp():setBounds( 0,0,0, w, h, 1 )
 	if updateLayout ~= false then
 		self:invalidateLayout()
 	end

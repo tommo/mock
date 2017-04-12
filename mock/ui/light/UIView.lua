@@ -29,6 +29,11 @@ function UIView:__init()
 
 end
 
+
+function UIView:_createEntityProp()
+	return Entity._createEntityProp( self )
+end
+
 function UIView:onLoad()
 	self.pointers = {}
 	installInputListener( self, {
@@ -108,7 +113,8 @@ function UIView:setFocusedWidget( widget, reason )
 		self:postEvent( previous, UIEvent( UIEvent.FOCUS_OUT ) )
 	end
 	if widget then
-		self:postEvent( widget, UIEvent( UIEvent.FOCUS_IN, { reason = reason } ) )
+		local ev = self:postEvent( widget, UIEvent( UIEvent.FOCUS_IN, { reason = reason } ) )
+
 	end
 	self.focusedWidget = widget or false
 	return true
@@ -132,6 +138,7 @@ function UIView:postEvent( target, ev )
 	assert( target, ev.type )
 	insert( self.eventQueue, { target, ev } )
 	self:scheduleUpdate()
+	return ev
 end
 
 function UIView:dispatchEvents()
@@ -173,7 +180,8 @@ end
 
 function UIView:findTopWidget( x, y, pad )
 	local start = self.modalWidget or self 
-	return _findTopWidget( start, x, y, pad )
+	local result = _findTopWidget( start, x, y, pad )
+	return result
 end
 
 
@@ -233,8 +241,34 @@ end
 --INPUT handling
 
 function UIView:onKeyEvent( key, down )
-	if not self.inputEnabled then return end
+	local focused = self:getFocusedWidget()
+	if not focused then return end
+	if down then
+		local ev = UIEvent( UIEvent.KEY_DOWN, { key = key, modifiers = getModifierKeyStates() } )
+		return self:postEvent( focused, ev )
+	else
+		local ev = UIEvent( UIEvent.KEY_UP, { key = key, modifiers = getModifierKeyStates() } )
+		return self:postEvent( focused, ev )
+	end
+end
 
+function UIView:onJoyAxisMove( joy, axis, value )
+	local focused = self:getFocusedWidget()
+	if not focused then return end
+	local ev = UIEvent( UIEvent.JOYSTICK_AXIS_MOVE, { axis = axis, value = value } )
+	return self:postEvent( focused, ev )
+end
+
+function UIView:onJoyButtonEvent( joy, btn, down )
+	local focused = self:getFocusedWidget()
+	if not focused then return end
+	if down then
+		local ev = UIEvent( UIEvent.JOYSTICK_BUTTON_DOWN, { button = btn } )
+		return self:postEvent( focused, ev )
+	else
+		local ev = UIEvent( UIEvent.JOYSTICK_BUTTON_UP, { button = btn } )
+		return self:postEvent( focused, ev )
+	end
 end
 
 function UIView:onMouseEvent( ev, x, y, btn )

@@ -163,7 +163,7 @@ function Texture:getSize()
 	return self.ow, self.oh
 end
 
-function Texture:getCroppedSize()
+function Texture:getOutputSize()
 	return self.w, self.h
 end
 
@@ -232,8 +232,8 @@ function TextureInstance:getSize()
 	return self._src:getSize()
 end
 
-function TextureInstance:getCroppedSize()
-	return self._src:getCroppedSize()
+function TextureInstance:getOutputSize()
+	return self._src:getOutputSize()
 end
 
 function TextureInstance:getPixmapRect()
