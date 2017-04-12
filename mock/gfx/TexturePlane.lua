@@ -52,7 +52,7 @@ end
 function TexturePlane:resetSize()
 	if self.texture then
 		local tex = loadAsset( self.texture )
-		self:setSize( tex:getSize() )
+		self:setSize( tex:getOutputSize() )
 	end
 end
 

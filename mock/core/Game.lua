@@ -319,6 +319,10 @@ function Game:initSubSystems( config, fromEditor )
 		manager:loadConfig( managerConfig )
 	end
 
+	--input
+	_stat( 'init input' )
+	self.inputOption = table.simplecopy( DefaultInputOption )
+	getDefaultInputDevice().allowTouchSimulation = self.inputOption[ 'allowTouchSimulation' ]
 end
 
 function Game:initLayers( config, fromEditor )
@@ -476,6 +480,7 @@ function Game:saveConfigToTable()
 		graphics       = self.graphicsOption,
 		physics        = self.physicsOption,
 		audio          = self.audioOption,
+		input          = self.inputOption,
 		layers         = layerConfigs,
 		
 		scenes         = self.namedSceneMap,
@@ -484,6 +489,7 @@ function Game:saveConfigToTable()
 		palettes        = self.paletteLibrary:save(),
 		global_managers = globalManagerConfigs,
 		global_objects  = self.globalObjectLibrary:save(),
+
 	}
 	emitSignal( 'game_config.save', data )
 	return data

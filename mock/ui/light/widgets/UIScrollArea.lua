@@ -48,6 +48,11 @@ function UIScrollArea:_attachChildEntity( child )
 	inheritVisible( pchild, p )
 end
 
+function UIScrollArea:setSize( w, h, updateLayout, updateStyle )
+	UIScrollArea.__super.setSize( self, w, h, updateLayout, updateStyle )
+	self.innerTransform:setPiv( 0, -h )
+end
+
 --------------------------------------------------------------------
 function UIScrollArea:worldToScroll( x, y )
 	return self.innerTransform:worldToModel( x, y )

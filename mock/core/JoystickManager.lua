@@ -8,6 +8,7 @@ function JoystickState:__init( mgr, instance )
 	self._instance = instance
 	self.mapping = false
 	self.axisValues = {}
+	self.buttonState = {}
 	local device = self:getInputDevice()
 	self.FFB = device.FFB
 	device.buttons:setCallback(
@@ -34,10 +35,47 @@ function JoystickState:onButtonEvent( btn, down )
 	if self.mapping then
 		local ev, cmd, value = self.mapping:mapButtonEvent( btn, down )
 		if ev == 'button' then
+			self.buttonState[ cmd ] = value
 			self._mgr:dispatchButtonEvent( self, cmd, value )
 		end
 	end
 	self._mgr:dispatchRawButtonEvent( self, btn, down )
+end
+
+function JoystickState:updateAxisArrowButton( axisId, v, pv )
+	-- gate = gate or 0.5
+	local gate = 0.7
+	local i1 = ( v >gate and 1 ) or ( v < -gate and -1 ) or 0
+	local i0 = ( pv >gate and 1 ) or ( pv < -gate and -1 ) or 0
+	local btnHigh, btnLow
+
+	if i0 == i1 then return false end
+	--simulate axis->arrow
+	if axisId == 'LX' then
+		btnLow = 'L-left'
+		btnHigh = 'L-right'
+	elseif axisId == 'LY' then
+		btnLow = 'L-up'
+		btnHigh = 'L-down'
+	elseif axisId == 'RX' then
+		btnLow = 'R-left'
+		btnHigh = 'R-right'
+	elseif axisId == 'RY' then
+		btnLow = 'R-up'
+		btnHigh = 'R-down'
+	end
+	local downHigh, downLow = i1 == 1, i1 == - 1
+	local bs = self.buttonState
+	local downLow0 = bs[ btnLow ] or false
+	local downHigh0 = bs[ btnHigh ] or false
+	if downLow0 ~= downLow then
+		self.buttonState[ btnLow ] = downLow
+		self._mgr:dispatchButtonEvent( self, btnLow, downLow )
+	end
+	if downHigh0 ~= downHigh then
+		self.buttonState[ btnHigh ] = downHigh
+		self._mgr:dispatchButtonEvent( self, btnHigh, downHigh )
+	end
 end
 
 function JoystickState:onAxisMove( axisId, value )
@@ -46,9 +84,13 @@ function JoystickState:onAxisMove( axisId, value )
 	if self.mapping then
 		local ev, cmd, value = self.mapping:mapAxisEvent( axisId, value, prevValue )
 		if ev == 'button' then
+			self.buttonState[ cmd ] = value
 			self._mgr:dispatchButtonEvent( self, cmd, value )
 		elseif ev == 'axis' then
-			self._mgr:dispatchAxisEvent( self, cmd, value )
+			self._mgr:dispatchAxisEvent( self, cmd, value )			
+			if cmd == 'LX' or cmd == 'LY' or cmd == 'RX' or cmd == 'RY' then
+				self:updateAxisArrowButton( cmd, value, prevValue or 0 )
+			end
 		end
 	end
 	self._mgr:dispatchRawAxisEvent( self, axisId, value )

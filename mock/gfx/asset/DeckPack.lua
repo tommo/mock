@@ -38,16 +38,19 @@ function DeckPack:load( path )
 			deck.pack = self
 			deck.name = name
 			deck:load( deckData )
+
 		elseif deckType == 'deck2d.mtileset' then
 			deck = MTileset()
 			deck.pack = self
 			deck.name = name
 			deck:load( deckData )
+
 		elseif deckType == 'deck2d.quads' then
 			deck = QuadsDeck()
 			deck.pack = self
 			deck.name = name
 			deck:load( deckData )
+			
 		end
 		self.items[ name ] = deck
 	end

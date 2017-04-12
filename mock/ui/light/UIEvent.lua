@@ -29,6 +29,14 @@ UIEvent.POINTER_SCROLL = "pointerScroll"
 UIEvent.POINTER_ENTER = "pointerEnter"
 UIEvent.POINTER_EXIT  = "pointerExit"
 
+UIEvent.JOYSTICK_BUTTON_DOWN  = "joystickButtonDown"
+UIEvent.JOYSTICK_BUTTON_UP  = "joystickButtonUp"
+UIEvent.JOYSTICK_AXIS_MOVE  = "joystickAxisMove"
+
+UIEvent.KEY_DOWN  = "keyDown"
+UIEvent.KEY_UP  = "keyUp"
+
+
 UIEvent.RESIZE        = "resize"
 UIEvent.SKIN_CHANGED  = "themeChanged"
 UIEvent.STYLE_CHANGED = "styleChanged"

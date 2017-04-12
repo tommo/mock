@@ -4,26 +4,47 @@ EnumListGrowDirection = _ENUM_V {
 	'+x','+y','-x','-y'
 }
 
---------------------------------------------------------------------
-CLASS: UIListItemDelegate ()
-	:MODEL{}
-
-function UIListItemDelegate:__init()
-
-end
-
-
---------------------------------------------------------------------
-CLASS: UIListItem ()
+-------------------------------------------------------------------
+CLASS: UIListItem ( UIButton )
 	:MODEL{
 	}
 
 function UIListItem:__init()
-	self.delegate = false
+	self.selected = false
 end
 
-function UIListItem:setDelegate( delegate )
-	self.delegate = delegate
+function UIListItem:isSelected()
+	return self.selected
+end
+
+function UIListItem:setSelected( selected )
+	return self:getParentWidget():selectItem( self )
+end
+
+function UIListItem:onPress()
+	self:getParentWidget():setFocus()
+	-- self:getParentWidget():onItemPress( self )
+end
+
+function UIListItem:onRelease()
+	-- self:getParentWidget():onItemRelease( self )
+end
+
+function UIListItem:onClick()
+	self:getParentWidget():selectItem( self )
+end
+
+function UIListItem:onDeselect()
+end
+
+function UIListItem:onSelect()
+end
+
+function UIListItem:updateStyleState()
+	if self.selected then
+		return self:setState( 'selected' )
+	end
+	return UIListItem.__super.updateStyleState( self )
 end
 
 --------------------------------------------------------------------
@@ -46,6 +67,8 @@ function UIListView:__init()
 	self.gridWidth  = 100
 	self.gridHeight = 100
 	self.growDirection = '-y'
+	self.layoutRow = 5
+	self.layoutCol = 5
 end
 
 function UIListView:onLoad()
@@ -68,10 +91,13 @@ function UIListView:selectItem( item )
 	if pitem then
 		pitem.selected = false
 		pitem:onDeselect()
+		pitem:updateStyleState()
 	end
+
 	if item then
 		item.selected = true
 		item:onSelect()
+		item:updateStyleState()
 	end	
 	self:onSelectionChanged( self.selection )
 end
@@ -109,6 +135,7 @@ end
 
 function UIListView:addItem( option )
 	local item = self:createItem( option )
+	self:addInternalChild( item )
 	table.insert( self.items, item )
 	local id = #self.items
 	local x,y = self:calcItemLoc( id )
@@ -117,8 +144,7 @@ function UIListView:addItem( option )
 end
 
 function UIListView:createItem( option )
-	local i = self:addInternalChild( UIListItem() )
-	return i
+	return UIListItem()
 end
 
 function UIListView:getItemId( item )
@@ -129,29 +155,63 @@ function UIListView:getItemId( item )
 end
 
 function UIListView:calcItemLoc( id )
+	local x, y = self:calcGridLoc( id )
+	local gridWidth = self.gridWidth
+	local gridHeight = self.gridHeight
+	return x * gridWidth, y*gridHeight
+end
+
+function UIListView:getItemAtGridLoc( x, y )
+	local id = self:calcGridId( x, y )
+	if not id then return nil end
+	return self.items[ id ]	
+end
+
+function UIListView:calcGridLoc( id )
 	id = id - 1
 	local row = math.max( self.layoutRow, 1 )
 	local col = math.max( self.layoutCol, 1 )
 	local dir = self.growDirection
-	local gridWidth = self.gridWidth
-	local gridHeight = self.gridHeight
 	if dir == '-y' then		
 		local y = math.floor( id/col )
 		local x = id % col
-		return x * gridWidth, - y*gridHeight
+		return x, -y
 	elseif dir == '+y' then
 		local y = math.floor( id/col )
 		local x = id % col
-		return x * gridWidth, y*gridHeight
+		return x, y
 	elseif dir == '-x' then
 		local x = math.floor( id/row )
 		local y = id % row 
-		return -x * gridWidth, y*gridHeight
+		return -x, y
 	elseif dir == '+x' then
 		local x = math.floor( id/row )
 		local y = id % row 
-		return x * gridWidth, y*gridHeight
+		return x, y
 	end
+end
+
+function UIListView:calcGridId( x, y )
+	local row = math.max( self.layoutRow, 1 )
+	local col = math.max( self.layoutCol, 1 )
+	-- if x < 1 or x > col then return false end
+	-- if y < 1 or y > row then return false end
+	local id
+	local dir = self.growDirection
+	if dir == '-y' then
+		y = -y
+		id = y * col + x + 1
+	elseif dir == '+y' then
+		id = y * col + x + 1
+	elseif dir == '-x' then
+		x = -x
+		id = x * row + y + 1
+	elseif dir == '+x' then
+		id = x * row + y + 1
+	end
+	if x < 0 or x >= col then return false end
+	if y < 0 or y >= row then return false end
+	return id
 end
 
 function UIListView:resetLayout()

@@ -27,6 +27,12 @@ module 'mock'
 
 require 'mock.core.keymaps'
 
+
+DefaultInputOption = {
+	allowTouchSimulation = false
+}
+
+--------------------------------------------------------------------
 local _inputDevices = {}
 
 function getInputDevice( name )
@@ -785,6 +791,15 @@ end
 
 function isMetaDown()
 	return _defaultInputDevice:isMetaDown()
+end
+
+function getModifierKeyStates()
+	return {
+		ctrl  = isCtrlDown(),
+		alt   = isAltDown(),
+		meta  = isMetaDown(),
+		shift = isShiftDown()
+	}
 end
 
 function pollKeyHit(key) --get key hit counts since last polling

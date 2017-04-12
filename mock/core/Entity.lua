@@ -892,7 +892,7 @@ function Entity:getTime()
 end
 
 function Entity:setName( name )
-	if self.scene then
+	if not self.FLAG_INTERNAL and self.scene then
 		local prevName = self.name
 		self.scene:changeEntityName( self, prevName, name )
 		self.name = name

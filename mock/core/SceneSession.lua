@@ -5,6 +5,7 @@ CLASS: SceneSession ()
 
 function SceneSession:__init()
 	self.scene = Scene()
+	self.scene.session = self
 	self.initialized = false
 	self.initialScene = false
 	self.name = false
