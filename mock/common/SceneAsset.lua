@@ -863,17 +863,27 @@ function SceneDeserializer:_deserializeEntitiesData( data, objMap, scene )
 	--deserialize proto/prefab linkage
 	if data['prefabId'] then
 		for id, prefabId in pairs( data['prefabId'] ) do
-			local obj = objMap[ id ][ 1 ]
-			obj.__prefabId = prefabId
+			local entry = objMap[ id ]
+			if entry then 
+				local obj = entry[ 1 ]
+				obj.__prefabId = prefabId
+			else
+				_warn( 'prefab instance not found in objMap:' .. id )
+			end
 		end
 	end
 
 	if data['protos'] then
 		for i, info in ipairs( data['protos'] ) do
 			local id = info.id
-			local obj = objMap[ id ][ 1 ]
-			obj.FLAG_PROTO_SOURCE = true
-			obj.PROTO_TIMESTAMP = info.timestamp
+			local entry = objMap[ id ]
+			if entry then 
+				local obj = entry[ 1 ]
+				obj.FLAG_PROTO_SOURCE = true
+				obj.PROTO_TIMESTAMP = info.timestamp
+			else
+				_warn( 'proto instance not found in objMap:' .. id )
+			end
 		end
 	end
 end
