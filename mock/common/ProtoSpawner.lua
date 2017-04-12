@@ -9,8 +9,9 @@ local enumSpawnMethod = _ENUM_V {
 
 CLASS: ProtoSpawner ( Component )
 	:MODEL{
-		Field 'proto'         :asset('proto');
+		Field 'proto'          :asset('proto');
 		Field 'spawnName'      :string();
+		Field 'showIcon'       :boolean();
 		'----';		
 		Field 'copyLoc'        :boolean();
 		Field 'copyRot'        :boolean();
@@ -31,6 +32,7 @@ registerEntityWithComponent( 'ProtoSpawner', ProtoSpawner )
 function ProtoSpawner:__init()
 	self.proto          = false
 	self.autoSpawn      = true
+	self.showIcon				= true
 	self.destroyOnSpawn = true
 	self.spawnAsChild   = false
 	self.copyLoc        = true
@@ -151,6 +153,7 @@ end
 --------------------------------------------------------------------
 --EDITOR Support
 function ProtoSpawner:onBuildGizmo()
+	if not self.showIcon then return end
 	local giz = mock_edit.IconGizmo( 'spawn.png' )
 	return giz
 end
