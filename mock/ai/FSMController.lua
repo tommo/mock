@@ -71,6 +71,7 @@ end
 
 function FSMController:__init()
 	self.stateElapsedTime = 0
+	self.stateElapsedFrames = 0
 	local msgBox = {}
 	self.msgBox = msgBox
 	self.syncEntityState = false
@@ -120,6 +121,7 @@ end
 function FSMController:setState( state )
 	self.state = state
 	self.stateElapsedTime = 0
+	self.stateElapsedFrames = 0
 	if self._entity and self.syncEntityState then
 		self._entity:setState( state )
 	end
@@ -197,6 +199,7 @@ function FSMController:onThreadFSMUpdate()
 	local dt = 0
 	while true do
 		self.stateElapsedTime = self.stateElapsedTime + dt
+		self.stateElapsedFrames = self.stateElapsedFrames + 1
 		if self.varDirty then
 			self:updateExprJump()
 		end
@@ -207,6 +210,10 @@ end
 
 function FSMController:getStateElapsedTime()
 	return self.stateElapsedTime
+end
+
+function FSMController:getStateElapsedFrames()
+	return self.stateElapsedFrames
 end
 
 ----

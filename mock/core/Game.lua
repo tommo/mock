@@ -254,10 +254,10 @@ function Game:initSystem( config, fromEditor )
 	_stat( '...extra init' )
 
 	if fromEditor then
-		collectgarbage( 'setpause',   80  )
+		collectgarbage( 'setpause',   70  )
 		collectgarbage( 'setstepmul', 200 )	
 	else
-		collectgarbage( 'setpause',   80  )
+		collectgarbage( 'setpause',   70  )
 		collectgarbage( 'setstepmul', 200 )	
 	end
 
