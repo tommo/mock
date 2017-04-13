@@ -144,7 +144,7 @@ end
 
 function LocaleConfig:addString( categoryId, id, value )
 	local category = self:affirmCategory( categoryId or 'main' )
-	print( 'adding string', self.id, categoryId, id, value )
+	-- print( 'adding string', self.id, categoryId, id, value )
 	category[ id ] = value
 end
 

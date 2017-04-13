@@ -377,6 +377,10 @@ function Component:getCurrentCoroutine()
 	return MOAICoroutine.currentThread()
 end
 
+function Component:getActionRoot()
+	return self._entity:getActionRoot()
+end
+
 function Component:addCoroutine( func, ... )
 	local coro = self._entity:addCoroutineFor( self, func, ... )
 	return self:_weakHoldCoroutine( coro )

@@ -245,6 +245,15 @@ function UIWidget:getParentWidget()
 	return p
 end
 
+function UIWidget:findParentWidgetOf( widgetType )
+	local p = self.parent
+	if not p then return false end
+	if not p.FLAG_UI_WIDGET then return false end
+	if p:isRootWidget() then return false end
+	if p:isInstance( widgetType ) then return p end
+	return p:findParentWidgetOf( widgetType )
+end
+
 function UIWidget:getChildWidgets()
 	return self.childWidgets
 end
@@ -524,6 +533,7 @@ function UIWidget:setSize( w, h, updateLayout, updateStyle )
 	if updateStyle ~= false then
 		self:invalidateVisual()
 	end
+	self:postEvent( UIEvent( UIEvent.RESIZE, { size = { w, h } } ) )
 end
 
 function UIWidget:getSize()
@@ -711,6 +721,14 @@ end
 function UIWidget:onStateChange( state )
 end
 
+
+--------------------------------------------------------------------
+--audio
+function UIWidget:tryPlaySound( name )
+	local view = self:getParentView()
+	if not view then return false end
+	return view:tryPlaySound( self, name )
+end
 
 --------------------------------------------------------------------
 --extra

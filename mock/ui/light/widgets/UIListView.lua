@@ -17,21 +17,25 @@ function UIListItem:isSelected()
 	return self.selected
 end
 
+function UIListItem:getListView()
+	return self:findParentWidgetOf( UIListView )
+end
+
 function UIListItem:setSelected( selected )
-	return self:getParentWidget():selectItem( self )
+	return self:getListView():selectItem( self )
 end
 
 function UIListItem:onPress()
-	self:getParentWidget():setFocus()
-	-- self:getParentWidget():onItemPress( self )
+	self:getListView():setFocus()
+	-- self:getListView():onItemPress( self )
 end
 
 function UIListItem:onRelease()
-	-- self:getParentWidget():onItemRelease( self )
+	-- self:getListView():onItemRelease( self )
 end
 
 function UIListItem:onClick()
-	self:getParentWidget():selectItem( self )
+	self:getListView():selectItem( self )
 end
 
 function UIListItem:onDeselect()
@@ -48,7 +52,7 @@ function UIListItem:updateStyleState()
 end
 
 --------------------------------------------------------------------
-CLASS: UIListView ( UIScrollArea )
+CLASS: UIListView ( UIFrame )
 	:MODEL{
 		Field 'layoutRow' :int() :label('row');
 		Field 'layoutCol' :int() :label('column');
@@ -69,9 +73,12 @@ function UIListView:__init()
 	self.growDirection = '-y'
 	self.layoutRow = 5
 	self.layoutCol = 5
+	self.frame = UIScrollArea()
 end
 
 function UIListView:onLoad()
+	UIListView.__super.onLoad( self )
+	self:addInternalChild( self.frame )
 end
 
 function UIListView:setGridSize( w, h )
@@ -225,4 +232,9 @@ function UIListView:resetItemLoc()
 end
 
 function UIListView:onSelectionChanged()
+end
+
+function UIListView:setSize( w, h, ... )
+	UIListView.__super.setSize( self, w,h, ... )
+	self.frame:setSize( w, h, ... )
 end

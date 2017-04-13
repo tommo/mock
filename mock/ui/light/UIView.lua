@@ -35,6 +35,7 @@ function UIView:_createEntityProp()
 end
 
 function UIView:onLoad()
+	self.soundSource = self:attachInternal( SoundSource() )
 	self.pointers = {}
 	installInputListener( self, {
 			category = 'ui',
@@ -49,6 +50,10 @@ end
 
 function UIView:onDestroy()
 	uninstallInputListener( self )
+end
+
+function UIView:tryPlaySound( widget, eventName )
+	self.soundSource:playEvent( eventName )
 end
 
 function UIView:scheduleUpdate()

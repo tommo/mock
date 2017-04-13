@@ -16,6 +16,7 @@ local function _actionSeekInstanceVolume( instance, volume, duration, delay, act
 		end
 	end
 	instance:pause( false )
+	print( 'seek sound', volume, duration )
 	if duration and duration > 0 then
 		local elapsed = 0
 		while true do
@@ -28,11 +29,13 @@ local function _actionSeekInstanceVolume( instance, volume, duration, delay, act
 	else
 		instance:setVolume( volume )
 	end
+
 	if actionOnFinish == 'stop' then
 		instance:stop()
 	elseif actionOnFinish == 'pause' then
 		instance:pause()
 	end
+
 end
 
 --------------------------------------------------------------------
@@ -55,9 +58,6 @@ function GlobalSoundPlayerSession:isPlaying()
 	if not instance then return false end
 	return AudioManager.get():isEventInstancePlaying( instance )
 end
-
--- function GlobalSoundPlayerSession:stopSession()
--- end
 
 function GlobalSoundPlayerSession:stop( fadeDuration )
 	self:stopMainCoroutine()
@@ -88,6 +88,7 @@ function GlobalSoundPlayerSession:addMainCoroutine( func, ... )
 	self:stopMainCoroutine()
 	local coro = self:addCoroutine( func, ... )
 	self.mainCoro = coro
+	coro:attach( game:getActionRoot() )
 	return coro
 end
 
@@ -113,7 +114,10 @@ end
 function GlobalSoundPlayerSession:seekVolume( vol, duration, delay, actionOnFinish )
 	local v0 = self.volume
 	local instance = self.soundInstance
-	if not instance then return nil end
+	if not instance then 
+		_warn( 'no sound instance' )
+		return nil
+	end
 	local coro = self:addMainCoroutine( _actionSeekInstanceVolume, instance, vol, duration, delay, actionOnFinish )
 	self.volume = vol
 	return coro
@@ -132,7 +136,6 @@ end
 
 function GlobalSoundPlayerSession:pause( fadeDuration )
 	self:stopMainCoroutine()
-	print( 'pause', self.name, fadeDuration )
 	if self.soundInstance then
 		if fadeDuration and fadeDuration > 0 then
 			local coro = self:addMainCoroutine( _actionSeekInstanceVolume, self.soundInstance, 0, fadeDuration, false , 'pause')
@@ -145,7 +148,6 @@ end
 
 function GlobalSoundPlayerSession:resume( fadeDuration, delay )
 	self:stopMainCoroutine()
-	print( 'resume', self.name, fadeDuration )
 	if self.soundInstance then
 		if fadeDuration and fadeDuration > 0 then
 			self.soundInstance:setVolume( 0 )
@@ -154,6 +156,7 @@ function GlobalSoundPlayerSession:resume( fadeDuration, delay )
 			self.soundInstance:pause( false )
 			self.soundInstance:setVolume( self.volume )
 		end
+	else
 	end
 end
 
