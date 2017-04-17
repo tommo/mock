@@ -139,6 +139,10 @@ function AnimatorClipTreeState:getVar( id )
 	return self.animator:getVar( id )
 end
 
+function AnimatorClipTreeState:clear()
+	
+end
+
 -- function AnimatorClipTreeState:isPlaying()
 -- end
 
@@ -317,6 +321,10 @@ function AnimatorClipTreeTrack:apply( state, playContext, t, t0 )
 		treeState:evaluateTree()		
 	end
 	return treeState:apply( t )
+end
+
+function AnimatorClipTreeTrack:clear( state, playContext )
+	playContext.treeState:clear()
 end
 
 --------------------------------------------------------------------

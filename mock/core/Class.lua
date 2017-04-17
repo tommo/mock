@@ -52,12 +52,20 @@ function setTracingObjectAllocation( tracing )
 	tracingObjectAllocation = tracing ~= false
 end
 
+function isTracingObjectAllocation()
+	return tracingObjectAllocation
+end
+
 function getTracingObjectTable()
 	return tracingObjectTable
 end
 
 function getTracingObjectCount()
 	return table.len( tracingObjectTable )
+end
+
+function clearTracingTable()
+	tracingObjectTable = setmetatable( {}, { __mode = 'kv', __no_traverse = true } )
 end
 
 function countTracingObject( filter, ignoreMockObject )

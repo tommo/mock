@@ -755,6 +755,9 @@ end
 function AnimatorTrack:reset( state, context )
 end
 
+function AnimatorTrack:clear( state, context )
+end
+
 function AnimatorTrack:apply2( state, context, t0, t1 )
 end
 

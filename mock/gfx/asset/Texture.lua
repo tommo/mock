@@ -140,14 +140,15 @@ function Texture:updateConfigData( data )
 		self.modifyState = 'all'
 	end
 	if groupName ~= self.parent:getName() then
-		local group =  textureLibrary:getGroup( groupName )
+		local group =  groupName and textureLibrary:getGroup( groupName )
 		if group then
 			group:addTexture( self )
 			self.modifyState = 'all'
 		else
-			_error( 'unkown texture group', groupName )
+			_error( 'unknown texture group', groupName, self.path )
 		end
 	end
+	
 	if scale ~= self.scale then
 		self.scale = scale
 		self.modifyState = 'all'

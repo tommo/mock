@@ -156,6 +156,7 @@ local function MSpriteLoader( node )
 			offsetYCurve    = offsetYCurve,
 			indexCurve      = indexCurve,
 			length          = ftime,
+			frameCount      = count,
 			name            = name,
 		} 
 		animations[ name ] = clipData

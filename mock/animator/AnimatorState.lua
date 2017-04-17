@@ -34,7 +34,6 @@ function AnimatorState:__init()
 	-- self.anim = newAnim()
 	self.anim = MOAIAnim.new()
 	self.anim.source = self
-	self.trackContexts = {}
 	self.updateListenerTracks = {}
 	self.attrLinks = {}
 	self.attrLinkCount = 0
@@ -198,14 +197,13 @@ function AnimatorState:start()
 end
 
 function AnimatorState:stop()
-	self.stopping = true
 	if self.stopping then return end
+	self.stopping = true
 	self.anim:stop()
 	self.elapsedTimer:stop()
 	if self.animator then
 		self.animator:onStateStop( self )
 	end
-	return self.anim
 end
 
 function AnimatorState:reset()
@@ -219,6 +217,7 @@ function AnimatorState:clear()
 	anim.source = false
 	anim:setListener( MOAIAnim.EVENT_TIMER_KEYFRAME, nil )
 	anim:setListener( MOAIAnim.EVENT_NODE_POST_UPDATE, nil )
+	self:clearContext()
 	self.anim = false
 	-- insert( animPool, anim )
 end
@@ -309,6 +308,14 @@ function AnimatorState:resetContext()
 		local track = entry[1]
 		local context = entry[2]
 		track:reset( self, context )
+	end
+end
+
+function AnimatorState:clearContext()
+	for i, entry in ipairs( self.updateListenerTracks ) do
+		local track = entry[1]
+		local context = entry[2]
+		track:clear( self, context )
 	end
 end
 

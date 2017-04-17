@@ -245,7 +245,7 @@ function MSprite:getClipLength( name )
 	else
 		clip = self.currentClip
 	end
-	return clip.length
+	return clip and clip.length
 end
 
 function MSprite:getClipFrameCount( name )
@@ -255,7 +255,8 @@ function MSprite:getClipFrameCount( name )
 	else
 		clip = self.currentClip
 	end
-	if clip then return clip.length end
+	
+	if clip then return clip.frameCount end
 end
 
 function MSprite:setFrame( frame )
@@ -318,7 +319,7 @@ function MSprite:createAnimState( clipName, mode )
 	local animState    = MOAIAnim.new()
 	 
 	if self.listenerOnStop then
-		animState:setListener(MOAITimer.EVENT_TIMER_END_SPAN, listener)
+		animState:setListener( MOAITimer.EVENT_TIMER_END_SPAN, self.listenerOnStop )
 	end
 	local indexCurve   = clip.indexCurve
 	-- local offsetXCurve = clip.offsetXCurve

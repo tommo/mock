@@ -185,7 +185,8 @@ function MSpriteAnimatorTrack:onStateLoad( state )
 	state:addUpdateListenerTrack( self, playContext )
 end
 
-
+function MSpriteAnimatorTrack:clear( state, playContext )
+end
 
 --------------------------------------------------------------------
 registerCustomAnimatorTrackType( MSprite, 'clips', MSpriteAnimatorTrack )

@@ -104,10 +104,27 @@ function Layer:setParallax( x, y, z )
 	self.parallax = { x or 1, y or 1, z or 1 }
 end
 
+
+local function _initAsQuadTree( partition, w, h, levels )
+	partition:reserveLevels( #levels )
+	for i, grid in ipairs( levels )  do
+		local gw, gh = math.ceil( w / grid ), math.ceil( h / grid )
+		partition:reserveLevels( i, gird, gw, gh )
+	end
+end
+
 function Layer:makeMoaiLayer( partition )
 	local layer     = MOAILayer.new()
 	-- local partition = partition or MOAIPartition.new()
 	if partition then
+		layer:setPartition( partition )
+	else
+		local partition = MOAIPartition.new()
+		_initAsQuadTree( 
+			partition,
+			10000, 10000, 
+			{	512, 256, 128, 96, 32 }
+		)
 		layer:setPartition( partition )
 	end
 	layer.name     = self.name
