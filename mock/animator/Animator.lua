@@ -142,6 +142,11 @@ function Animator:getActiveState()
 	return self.activeState
 end
 
+function Animator:getActiveClipName()
+	local state = self.activeState
+	return state and state:getClipName()
+end
+
 function Animator:onStateStart( state )
 end
 

@@ -24,6 +24,7 @@ require 'mock.ui.light.UIView'
 --------------------------------------------------------------------
 require 'mock.ui.light.UIBoxLayout'
 require 'mock.ui.light.UIGridLayout'
+require 'mock.ui.light.UIFormLayout'
 
 --------------------------------------------------------------------
 require 'mock.ui.light.UIWidgetGroup'

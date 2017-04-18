@@ -118,6 +118,26 @@ function FSMController:getState()
 	return self.state
 end
 
+function FSMController:inState(...)
+	local state = self:getState()
+	for i = 1, select( '#', ... ) do
+		local s = select( i , ... )
+		if s == state then return s end
+	end
+	return false
+end
+
+local stringfind=string.find
+local function  _isStartWith(a,b,b1,...)
+	if stringfind(a,b)==1 then return true end --a:startWith(b)
+	if b1 then return _isStartWith(a,b1,...) end
+	return false
+end
+
+function FSMController:inStateGroup( s1, ... )
+	return _isStartWith( self:getState(), s1, ... )
+end
+
 function FSMController:setState( state )
 	self.state = state
 	self.stateElapsedTime = 0
@@ -134,6 +154,10 @@ end
 
 function FSMController:forceState( state, msg, args )
 	self.forceJumping = { state, msg or '__forced', args or {} }
+end
+
+function FSMController:forceRefreshState()
+	return self:forceState( self:getState() )
 end
 
 function FSMController:clearMsgBox()

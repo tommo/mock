@@ -106,6 +106,9 @@ function signalProto:disconnectAll()
 	return signalDisconnectAll( self )
 end
 
+function signalProto:emit( ... )
+	return signalEmit( self, ... )
+end
 
 --------------------------------------------------------------------
 --GLOBAL SIGALS

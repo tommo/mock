@@ -25,16 +25,8 @@ function UIListItem:setSelected( selected )
 	return self:getListView():selectItem( self )
 end
 
-function UIListItem:onPress()
+function UIListItem:onPressed()
 	self:getListView():setFocus()
-	-- self:getListView():onItemPress( self )
-end
-
-function UIListItem:onRelease()
-	-- self:getListView():onItemRelease( self )
-end
-
-function UIListItem:onClick()
 	self:getListView():selectItem( self )
 end
 
@@ -60,7 +52,7 @@ CLASS: UIListView ( UIFrame )
 		Field 'growDirection'	 :enum( EnumListGrowDirection );
 	}
 	:SIGNAL{
-		selection_changed = '';
+		selection_changed = 'onSelectionChanged';
 	}
 
 registerEntity( 'UIListView', UIListView )
@@ -106,7 +98,7 @@ function UIListView:selectItem( item )
 		item:onSelect()
 		item:updateStyleState()
 	end	
-	self:onSelectionChanged( self.selection )
+	return self.selection_changed:emit( self.selection )
 end
 
 function UIListView:getSelection()
@@ -125,11 +117,15 @@ function UIListView:getItemCount()
 	return #self.items
 end
 
+function UIListView:getItem( idx )
+	return self.items[ idx ]
+end
+
 function UIListView:removeItem( item )
 	for i, it in ipairs( self.items ) do
 		if it == item then
 			table.remove( self.items, i )
-			item:destroy()
+			item:destroyAllNow()
 		end
 	end
 	self:resetItemLoc()
@@ -142,11 +138,12 @@ end
 
 function UIListView:addItem( option )
 	local item = self:createItem( option )
-	self:addInternalChild( item )
+	self.frame:addInternalChild( item )
 	table.insert( self.items, item )
 	local id = #self.items
 	local x,y = self:calcItemLoc( id )
 	item:setLoc( x, y, 1 )
+	print( 'item', id, x,y )
 	return item
 end
 
@@ -237,4 +234,18 @@ end
 function UIListView:setSize( w, h, ... )
 	UIListView.__super.setSize( self, w,h, ... )
 	self.frame:setSize( w, h, ... )
+end
+
+function UIListView:procEvent( ev )
+	local etype = ev.type
+	if etype == UIEvent.FOCUS_IN then
+		if not self.selection then
+			local first = self:getItem( 1 )
+			if first then
+				self:selectItem( first )
+			end
+		end
+	elseif etype == UIEvent.FOCUS_OUT then
+	end
+	return UIListView.__super.procEvent( self, ev )
 end

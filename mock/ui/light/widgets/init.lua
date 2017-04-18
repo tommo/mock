@@ -1,10 +1,13 @@
 --------------------------------------------------------------------
 ---widgets
 require 'mock.ui.light.widgets.UILabel'
+require 'mock.ui.light.widgets.UITextArea'
 
 --------------------------------------------------------------------
 require 'mock.ui.light.widgets.UIButton'
 require 'mock.ui.light.widgets.UISimpleButton'
+require 'mock.ui.light.widgets.UIToggleButton'
+
 require 'mock.ui.light.widgets.UICheckBox'
 
 --------------------------------------------------------------------

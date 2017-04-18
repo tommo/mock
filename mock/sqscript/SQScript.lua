@@ -159,6 +159,10 @@ function SQNode:getFirstChild()
 	return self.children[1]
 end
 
+function SQNode:getChildrenCount()
+	return #self.children
+end
+
 function SQNode:getParent()
 	return self.parentNode
 end
@@ -382,7 +386,6 @@ end
 function SQNodeGroup:canInsert()
 	return true
 end
-
 
 function SQNodeGroup:getRichText()
 	return string.format(

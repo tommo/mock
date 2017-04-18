@@ -37,6 +37,7 @@ function UIWidgetBase:__init()
 	self.localStyleSheetPath = false
 	self.localStyleSheet = false
 	self.inheritedStyleSheet = false
+	self.inputEnabled = true
 	self.zorder = 0
 end
 
@@ -145,6 +146,19 @@ function UIWidgetBase:setZOrder( z )
 	end
 end
 
+--------------------------------------------------------------------
+function UIWidgetBase:isInputEnabled()
+	return self.inputEnabled
+end
+
+function UIWidgetBase:setInputEnabled( enabled )
+	self.inputEnabled = enabled ~= false
+end
+
+function UIWidgetBase:isInteractive()
+	return self:isVisible() and self:isActive() and self.inputEnabled
+end
+
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -184,7 +198,6 @@ function UIWidget:__init()
 	self.layout = false
 	self.localStyleSheetPath    = false
 
-	self.inputEnabled = true
 	self.eventFilters = {}
 
 	self.layoutDisabled = false
@@ -297,6 +310,7 @@ function UIWidget:setRenderer( r )
 end
 
 function UIWidget:onLoad()
+	self:setState( 'normal' )
 end
 
 function UIWidget:destroyNow()
@@ -337,7 +351,7 @@ end
 function UIWidget:sendEvent( ev )
 	local needProc = true
 	for i, filter in ipairs( self.eventFilters ) do 
-		if filter( ev ) == false then 
+		if filter( self, ev ) == false then 
 			needProc = false
 			break
 		end
@@ -488,6 +502,10 @@ end
 
 function UIWidget:invalidateStyle()
 	self.styleAcc:markDirty()
+	--invalidate children
+	for i, child in ipairs( self.childWidgets ) do
+		child:invalidateStyle()
+	end
 end
 
 function UIWidget:updateVisual()
@@ -545,6 +563,9 @@ function UIWidget:setRect( x, y, w, h )
 	self.y = y
 	self.w = w
 	self.h = h
+	self:invalidateLayout()
+	self:invalidateVisual()
+	self:postEvent( UIEvent( UIEvent.RESIZE, { size = { w, h } } ) )
 end
 
 function UIWidget:getLocalRect()
@@ -695,18 +716,18 @@ function UIWidget:getMinHeight()
 	local w, h = self:getMinSize()
 	return h
 end
---------------------------------------------------------------------
-function UIWidget:setInputEnabled( enabled )
-	self.inputEnabled = enabled ~= false
-end
 
 --------------------------------------------------------------------
 function UIWidget:updateStyleState()
-	
+	self:setState( 'normal' )
 end
 
 function UIWidget:onSetActive( active )
-	self:setState( active and 'normal' or 'disabled' )	
+	if active then
+		self:updateStyleState()
+	else
+		self:setState( 'disabled' )	
+	end
 end
 
 function UIWidget:setState( state )
@@ -714,6 +735,7 @@ function UIWidget:setState( state )
 	if state ~= ps then
 		--change state
 		self.styleAcc:setState( state )
+		self:invalidateStyle()
 	end
 	return UIWidget.__super.setState( self, state )
 end

@@ -41,12 +41,15 @@ function UIWidgetElementText:onUpdateStyle( widget, style )
 	local fontSize = style:get( self:makeStyleName( 'font_size' ), 12 )
 	local color    = { style:getColor( self:makeStyleName( 'color' ), { 1,1,1,1 } ) }
 	local styleSheet = makeStyleSheetFromFont( font, fontSize )
+	local lineSpacing = style:get( self:makeStyleName( 'line_spacing' ), 2 )
+
 	self:setOffset( style:getVec2( self:makeStyleName( 'offset' ), { 0, 0 } ) )
 	local label = self.label
 	label:setAlignment( align )
 	label:setAlignmentV( alignV )
 	label:setStyleSheet( AdHocAsset( styleSheet ) )
 	label:setColor( unpack( color ) )
+	label:setLineSpacing( lineSpacing )
 
 end
 

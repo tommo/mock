@@ -5,12 +5,14 @@ CLASS: UIButton ( UIWidget )
 		Field 'text' :string() :getset( 'Text' );
 	}
 	:SIGNAL{
-		clicked = '';
+		pressed  = 'onPressed';
+		released = 'onReleased';
+		clicked  = 'onClicked';
 	}
 
 function UIButton:__init()
-	self.hovered = false
-	self.pressed = false
+	self._hoverd = false
+	self._pressed = false
 	self.text = 'Button'
 	self.layoutPolicy = { 'expand', 'expand' }
 end
@@ -35,15 +37,15 @@ function UIButton:getContentData( key, role )
 end
 
 function UIButton:updateStyleState()
-	if self.pressed then
+	if self._pressed then
 		return self:setState( 'press' )
 	end
 
-	if self.hovered then
+	if self._hoverd then
 		return self:setState( 'hover' )
 	end
 
-	return self:setState( 'normal' )
+	return UIButton.__super.updateStyleState( self )
 end
 
 
@@ -51,29 +53,30 @@ function UIButton:procEvent( ev )
 	local t = ev.type
 	local d = ev.data
 	if t == UIEvent.POINTER_ENTER then
-		self.hovered = true
+		self._hoverd = true
 		self:updateStyleState()
 
 	elseif t == UIEvent.POINTER_EXIT then
-		self.hovered = false
+		self._hoverd = false
 		self:updateStyleState()
 
 	elseif t == UIEvent.POINTER_DOWN then
-		self.pressed = true
+		self._pressed = true
 		self:updateStyleState()
-		return self:onPress()
+		self.pressed:emit()
+		return
 
 	elseif t == UIEvent.POINTER_UP then
-		if self.pressed then
-			self.pressed = false
+		if self._pressed then
+			self._pressed = false
 			self:updateStyleState()
 			local px,py,pz = self:getWorldLoc()
 			if self:inside( d.x, d.y, pz, self:getTouchPadding() ) then
-				self:onClick()
-				self.clicked()
+				self.clicked:emit()
 			end
 		end
-		return self:onRelease()
+		self.released:emit()
+		return
 
 	end
 end
@@ -82,12 +85,13 @@ function UIButton:getLabelRect()
 	return self:getContentRect()
 end
 
-function UIButton:onPress()
+----
+function UIButton:onPressed()
 end
 
-function UIButton:onRelease()
+function UIButton:onReleased()
 end
 
-function UIButton:onClick()
+function UIButton:onClicked()
 end
 

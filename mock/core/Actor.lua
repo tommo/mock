@@ -44,7 +44,7 @@ CLASS: Actor ()
 
 
 function Actor:__init()
-	self.state  = 'normal'
+	self.state  = ''
 	self.msgListeners = {}
 	self.coroutines = false
 end

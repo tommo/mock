@@ -167,7 +167,7 @@ local function _findTopWidget( parent, x, y, padding )
 	local count = #children
 	for k = count , 1, -1 do
 		local child = children[ k ]
-		if child:isVisible() and child:isActive() and child.inputEnabled then 
+		if child:isInteractive() then
 			local px,py,pz = child:getWorldLoc()
 			local pad = padding or child:getTouchPadding()
 			local inside = child:inside( x, y, pz, pad )
@@ -246,6 +246,7 @@ end
 --INPUT handling
 
 function UIView:onKeyEvent( key, down )
+	if not self:isInteractive() then return end
 	local focused = self:getFocusedWidget()
 	if not focused then return end
 	if down then
@@ -258,6 +259,7 @@ function UIView:onKeyEvent( key, down )
 end
 
 function UIView:onJoyAxisMove( joy, axis, value )
+	if not self:isInteractive() then return end
 	local focused = self:getFocusedWidget()
 	if not focused then return end
 	local ev = UIEvent( UIEvent.JOYSTICK_AXIS_MOVE, { axis = axis, value = value } )
@@ -265,6 +267,7 @@ function UIView:onJoyAxisMove( joy, axis, value )
 end
 
 function UIView:onJoyButtonEvent( joy, btn, down )
+	if not self:isInteractive() then return end
 	local focused = self:getFocusedWidget()
 	if not focused then return end
 	if down then
@@ -277,6 +280,7 @@ function UIView:onJoyButtonEvent( joy, btn, down )
 end
 
 function UIView:onMouseEvent( ev, x, y, btn )
+	if not self:isInteractive() then return end
 	local pointer = self:getMousePointer()
 	if ev == 'move' then
 		x, y = self:wndToWorld( x, y )
@@ -297,6 +301,7 @@ function UIView:onMouseEvent( ev, x, y, btn )
 end
 
 function UIView:onTouchEvent( ev, touch, x, y )
+	if not self:isInteractive() then return end
 	x, y = self:wndToWorld( x, y )
 	local pointer = self:getPointer( touch, true )
 	if ev == 'down' then

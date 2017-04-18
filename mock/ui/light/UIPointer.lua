@@ -7,11 +7,17 @@ function UIPointer:__init( view )
 	self.activeWidget = false
 	self.hoverWidget  = false
 	self.touch        = false
-	self.grabOwner    = false     
+	self.grabOwner    = false
+	self.x = 0
+	self.y = 0     
 end
 
 function UIPointer:getTouch()
 	return self.touch
+end
+
+function UIPointer:getLoc()
+	return self.x, self.y
 end
 
 function UIPointer:updateHover( view, x, y )
@@ -38,11 +44,18 @@ function UIPointer:updateHover( view, x, y )
 end
 
 function UIPointer:onMove( view, x, y )
+	local x0, y0 = self:getLoc()
+	self.x = x
+	self.y = y
+	local dx = x - x0
+	local dy = y - y0
+	self.dx = dx
+	self.dy = dy
 	local activeWidget = self.activeWidget
 	if activeWidget then
 		local ev = UIEvent(
 			UIEvent.POINTER_MOVE, 
-			{ x = x, y = y, pointer = self }
+			{ x = x, y = y, dx = dx, dy = dy, pointer = self }
 		)
 		return view:postEvent( activeWidget, ev )
 	end
@@ -50,7 +63,7 @@ function UIPointer:onMove( view, x, y )
 	if hover then
 		local ev = UIEvent(
 			UIEvent.POINTER_MOVE, 
-			{ x = x, y = y, pointer = self }
+			{ x = x, y = y, dx = dx, dy = dy, pointer = self }
 		)
 		return view:postEvent( hover, ev )
 	end

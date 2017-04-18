@@ -43,18 +43,20 @@ local function parseAnimatorFSMState( raw )
 	content = raw:trim()
 	--try  kv param
 	do
-		local name, argstring = content:match('@([%w-_:%.]+)%s*%(%s*(.*)s*%)%s*')
+		local name, optional, argstring = content:match('.*@([%w-_:%.]+)(%??)%s*%(%s*(.*)s*%)%s*')
 		if name then
+			optional = optional == '?'
 			local args = parseArguments( argstring )
-			_stateParsingCache[ raw ] = { name, args or _noargs }
-			return name, args
+			_stateParsingCache[ raw ] = { name, args or _noargs, optional }
+			return name, args, optional
 		end
 	end
 	--test name
 	do
-		local name = content:match('@([%w-_:%.]+)')
-		_stateParsingCache[ raw ] = { name, _noargs }
-		return name, _noargs
+		local name, optional = content:match('.*@([%w-_:%.]+)(%??)')
+		optional = optional == '?'
+		_stateParsingCache[ raw ] = { name, _noargs, optional }
+		return name, _noargs, optional
 	end
 end
 
@@ -81,9 +83,9 @@ function AnimatorFSM:updateScheme()
 	local scheme = self.scheme
 	if not scheme then return end
 	for name, stateBody in pairs( scheme ) do
-		if name ~= 0 then
+		if name ~= 0 and ( name:find( '@' ) ) then
 			local stepName = stateBody.stepName
-			self[stepName] = function( controller, dt )
+			self[ stepName ] = function( controller, dt )
 				local animState = controller.currentAnimState
 				if not animState then return true end
 				return not animState:isBusy()
@@ -94,18 +96,27 @@ end
 
 function AnimatorFSM:setState( state )
 	AnimatorFSM.__super.setState( self, state )
-	
 	local animator = self.animator
 	if not animator then return end
+
+	self.currentAnimState = false
 	if state == 'start' or state == 'stop' then return end
-	
+	if state:endwith( '.start' ) or state:endwith( '.stop' ) then return end
+
 	animator:stop()
-	local name, args = parseAnimatorFSMState( state )
+	local name, args, optional = parseAnimatorFSMState( state )
+	print( 'fsm switch', state, name, optional )
 	if name then
-		local state = animator:loadClip( name )
-		if not state then
+		local hasClip = animator:hasClip( name )
+		if not hasClip then
+			if not optional then
+				_error( '(FSM) no anim clip found', name, self:getEntityName() )
+				self:getFSMUpdateThread():stop()
+			end
 			return
 		end
+		local state = animator:loadClip( name, true ) --make state active
+		print( 'playing anim', name  )
 		local range0 = args['start']
 		local range1 = args['stop']
 		state:setRange( range0, range1 )
