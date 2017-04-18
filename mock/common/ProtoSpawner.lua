@@ -133,6 +133,7 @@ function ProtoSpawner:spawnOne( ox, oy, oz )
 end
 
 function ProtoSpawner:spawn()
+	if not self.proto then return end
 	local result = { self:onSpawn() }
 	self:postSpawn()
 	return unpack( result )
