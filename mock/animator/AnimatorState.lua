@@ -197,6 +197,7 @@ function AnimatorState:start()
 end
 
 function AnimatorState:stop()
+	if not self.anim then return end --cleared
 	if self.stopping then return end
 	self.stopping = true
 	self.anim:stop()
