@@ -105,7 +105,7 @@ function AnimatorFSM:setState( state )
 
 	animator:stop()
 	local name, args, optional = parseAnimatorFSMState( state )
-	print( 'fsm switch', state, name, optional )
+	-- print( 'fsm switch', state, name, optional )
 	if name then
 		local hasClip = animator:hasClip( name )
 		if not hasClip then
@@ -116,7 +116,7 @@ function AnimatorFSM:setState( state )
 			return
 		end
 		local state = animator:loadClip( name, true ) --make state active
-		print( 'playing anim', name  )
+		-- print( 'playing anim', name  )
 		local range0 = args['start']
 		local range1 = args['stop']
 		state:setRange( range0, range1 )
