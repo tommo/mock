@@ -158,6 +158,12 @@ function UIListView:getItemId( item )
 	return nil
 end
 
+function UIListView:getItemGridLoc( item )
+	local id = self:getItemId( item )
+	if not id then return nil end
+	return self:calcGridLoc( id )
+end
+
 function UIListView:calcItemLoc( id )
 	local x, y = self:calcGridLoc( id )
 	local gridWidth = self.gridWidth

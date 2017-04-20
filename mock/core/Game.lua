@@ -125,6 +125,9 @@ function Game:__init() --INITIALIZATION
 	self.started              = false
 	self.currentRenderContext = 'game'    -- for editor integration
 
+	self.prevUpdateTime = 0
+	self.prevClock = 0
+
 	self.version = ""
 	self.editorMode = false
 	self.namedSceneMap = {}
@@ -268,12 +271,12 @@ function Game:initSystem( config, fromEditor )
 			+ MOAISim.LOOP_FLAGS_MULTISTEP
 			+ MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
-			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
+			+ MOAISim.SIM_LOOP_ALLOW_BOOST
 			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
-			+ MOAISim.SIM_LOOP_NO_DEFICIT
-			+ MOAISim.SIM_LOOP_NO_SURPLUS
+			-- + MOAISim.SIM_LOOP_NO_DEFICIT
+			-- + MOAISim.SIM_LOOP_NO_SURPLUS
 		)
-	MOAISim.setLongDelayThreshold( 100 )
+	MOAISim.setLongDelayThreshold( 30 )
 	-- MOAISim.setBoostThreshold( 0 )	
 	-- MOAISim.setStepMultiplier( 2 )	
 end
@@ -801,8 +804,12 @@ function Game:newSubClock()
 	end)
 end
 
+local clock = os.clock
 function Game:onRootUpdate( delta )
 	self.time = self.time + delta
+	local t = clock()
+	self.prevUpdateTime = self.prevClock and ( t - self.prevClock ) or 0
+	self.prevClock = t
 	self.frame = self.frame + 1
 	emitSignal( 'game.update', delta )
 	for i, manager in ipairs( self.globalManagers ) do

@@ -10,10 +10,12 @@ CLASS: GeometryComponent( DrawScript )
 	:MODEL{
 		Field 'index' :no_edit();
 		-- Field 'blend'  :enum( EnumBlendMode ) :getset('Blend');		
+		Field 'penWidth';
 	}
 
 function GeometryComponent:__init()
 	self.color = {1,1,1,1}
+	self.penWidth = 1
 end
 
 -- function GeometryComponent:applyColor()
@@ -65,6 +67,7 @@ function GeometryRect:onDraw()
 	if self.fill then
 		draw.fillRect( -w/2,-h/2, w/2,h/2 )
 	else
+		gfx.setPenWidth( self.penWidth )
 		draw.drawRect( -w/2,-h/2, w/2,h/2 )
 	end
 end
@@ -108,6 +111,7 @@ function GeometryCircle:onDraw()
 	if self.fill then
 		draw.fillCircle( 0,0, self.radius )
 	else
+		gfx.setPenWidth( self.penWidth )
 		draw.drawCircle( 0,0, self.radius )
 	end
 end
@@ -130,6 +134,7 @@ function GeometryRay:__init()
 end
 
 function GeometryRay:onDraw()
+	gfx.setPenWidth( self.penWidth )
 	local l = self.length
 	draw.fillRect( -1,-1, 1,1 )
 	draw.drawLine( 0, 0, l, 0 )
@@ -168,6 +173,7 @@ end
 
 function GeometryBoxOutline:onDraw()
 	local x,y,z = self.sizeX/2, self.sizeY/2, self.sizeZ/2
+	gfx.setPenWidth( self.penWidth )
 	draw.drawBoxOutline( -x, -y, -z, x, y, z )
 end
 
@@ -242,6 +248,7 @@ end
 
 
 function GeometryLineStrip:onDraw()
+	gfx.setPenWidth( self.penWidth )
 	draw.drawLine( unpack( self.outputVerts ) )
 end
 

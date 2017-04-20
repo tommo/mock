@@ -123,7 +123,7 @@ function Layer:makeMoaiLayer( partition )
 		_initAsQuadTree( 
 			partition,
 			10000, 10000, 
-			{	512, 256, 128, 96, 32 }
+			{ 512, 256, 128, 64 }
 		)
 		layer:setPartition( partition )
 	end

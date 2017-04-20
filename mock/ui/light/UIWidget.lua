@@ -166,11 +166,12 @@ CLASS: UIWidget ( UIWidgetBase )
 	:MODEL{
 		--- hide common entity properties
 			Field '__gizmoIcon' :no_edit();
-			Field 'rot'   :no_edit();
+			-- Field 'rot'   :no_edit();
 			Field 'scl'   :no_edit();
-			Field 'piv'   :no_edit();
+			-- Field 'piv'   :no_edit();
 			Field 'layer' :no_edit();
 		--------
+		'----';
 		Field 'loc'  :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Loc'  ) :label( 'Loc'  );
 		Field 'size' :type( 'vec2' ) :meta{ decimals = 0 } :getset( 'Size' ) :label( 'Size' );
 		Field 'ZOrder' :int()  :getset( 'ZOrder' ) :label( 'Z-Order' );
@@ -237,7 +238,7 @@ function UIWidget:_detachChildEntity( entity )
 end
 
 function UIWidget:setZOrder( z )
-	UIWidget.__super.setZOrder( self, z )
+	UIWidget.__super.setZOrder( self, z * 0.001 )
 	return self:invalidateLayout()
 end
 

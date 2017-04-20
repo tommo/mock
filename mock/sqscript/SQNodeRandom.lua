@@ -12,9 +12,25 @@ function SQNodeRandomBranch:__init()
 	self.weight = 1
 end
 
-function SQNodeRandomBranch:exit( state, env )
-	state:setJumpTarget( self.parentNode:getNextSibling() )
-	return 'jump'
+function SQNodeRandomBranch:load( data )
+	self.weight = tonumber( data.args[ 1 ] ) or 1
+end
+
+function SQNodeRandomBranch:build()
+	local parent = self.parentNode
+	if parent:isInstance( SQNodeRandom ) then
+		self.parentRandomNode = parent
+	else
+		self.parentRandomNode = false
+	end
+end
+
+function SQNodeRandomBranch:enter( state, env )
+	local randomNode = self.parentRandomNode
+	if not randomNode then return false end
+	local parentEnv = state:getNodeEnvTable( randomNode )
+	if parentEnv[ 'selected' ] == self then return true end
+	return false
 end
 
 function SQNodeRandomBranch:getRichText()
@@ -52,12 +68,8 @@ end
 
 function SQNodeRandom:enter( state, env )
 	local jumpTo = probselect( self.branchProbList )
-	if jumpTo then
-		state:setJumpTarget( jumpTo )
-		return 'jump'
-	else
-		return false
-	end
+	env[ 'selected' ] = jumpTo
+	return true
 end
 
 function SQNodeRandom:build()
