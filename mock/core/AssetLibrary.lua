@@ -254,6 +254,27 @@ function AssetNode:enumChildren( targetType, deepSearch )
 	return collected
 end
 
+
+local function _findChildAsset( node, name, targetType, deep )
+	for childName, child in pairs( node.children ) do
+		if childName == name then
+			local t = child:getType()
+			if ( not targetType ) or t:match( targetType ) then
+				return child
+			end
+		end
+		if deep then
+			local result = _findChildAsset( child, name, targetType, deep )
+			if result then return result end
+		end
+	end
+end
+
+function AssetNode:findChild( name, targetType, deep )
+	local result = _findChildAsset( self, name, targetType, deep )
+	return result
+end
+
 function AssetNode:getObjectFile( name )
 	local objectFiles = self.objectFiles
 	if not objectFiles then return false end

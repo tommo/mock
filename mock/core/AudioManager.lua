@@ -8,14 +8,14 @@ DefaultAudioOption = {
 CLASS: AudioManager ()
 	:MODEL{}
 
-local _singleton = false
+local _audioManagerSingleton = false
 function AudioManager.get()
-	return _singleton
+	return _audioManagerSingleton
 end
 
 function AudioManager:__init()
-	assert( not _singleton, 'duplicated AudioManager registration' )
-	_singleton = self	
+	assert( not _audioManagerSingleton, 'duplicated AudioManager registration' )
+	_audioManagerSingleton = self	
 end
 
 function AudioManager:init( option )
@@ -119,3 +119,8 @@ function AudioManager:getEventInstanceParameter( eventInstance, id )
 	_error( 'need implementation' )
 end
 
+
+--------------------------------------------------------------------
+function getAudioManager()
+	return AudioManager.get()
+end
