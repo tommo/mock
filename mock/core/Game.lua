@@ -233,6 +233,12 @@ function Game:initSystem( config, fromEditor )
 		end
 	)
 	self.actionRoot = MOAISim.getActionMgr():getRoot()
+	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_PRE_UPDATE, function()
+		return self:preRootUpdate()
+	end )
+	self.actionRoot:setListener( MOAIAction.EVENT_ACTION_POST_UPDATE, function()
+		return self:postRootUpdate()
+	end )
 	self:setThrottle( 1 )
 
 	-------Setup Callbacks
@@ -794,6 +800,22 @@ function Game:getTime()
 	return self.time
 end
 
+function Game:getRenderDuration()
+	if MOCKHelper then
+		return MOCKHelper.getRenderDuration()
+	else
+		return -1
+	end
+end
+
+function Game:getSimDuration()
+	if MOCKHelper then
+		return MOCKHelper.getSimDuration()
+	else
+		return -1
+	end
+end
+
 function Game:getFrame()
 	return self.frame
 end
@@ -804,12 +826,20 @@ function Game:newSubClock()
 	end)
 end
 
-local clock = os.clock
+local clock = MOAISim.getDeviceTime
+function Game:preRootUpdate()
+	local t = clock()
+	self.prevClock = t
+	self._preUpdateClock = clock()
+end
+
+function Game:postRootUpdate()
+	local t1 = clock()
+	self.prevUpdateTime = t1 - self._preUpdateClock
+end
+
 function Game:onRootUpdate( delta )
 	self.time = self.time + delta
-	local t = clock()
-	self.prevUpdateTime = self.prevClock and ( t - self.prevClock ) or 0
-	self.prevClock = t
 	self.frame = self.frame + 1
 	emitSignal( 'game.update', delta )
 	for i, manager in ipairs( self.globalManagers ) do
