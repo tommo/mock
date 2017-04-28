@@ -412,6 +412,12 @@ function UIWidget:setFocus( reason )
 	return view:setFocusedWidget( self, reason )
 end
 
+function UIWidget:blurFocus( reason )
+	if not self:hasFocus() then return end
+	local view = self._parentView
+	return view:setFocusedWidget( false, reason )
+end
+
 function UIWidget:setFocusPolicy( policy )
 	self.focusPolicy = policy or 'normal'
 end

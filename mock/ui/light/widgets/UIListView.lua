@@ -11,6 +11,7 @@ CLASS: UIListItem ( UIButton )
 
 function UIListItem:__init()
 	self.selected = false
+	self.selectable = true
 end
 
 function UIListItem:isSelected()
@@ -44,15 +45,16 @@ function UIListItem:updateStyleState()
 end
 
 --------------------------------------------------------------------
-CLASS: UIListView ( UIFrame )
+CLASS: UIListView ( UIWidget )
 	:MODEL{
 		Field 'layoutRow' :int() :label('row');
 		Field 'layoutCol' :int() :label('column');
 		Field 'gridSize' :type( 'vec2' ) :getset( 'GridSize' );
-		Field 'growDirection'	 :enum( EnumListGrowDirection );
+		Field 'growDirection'	 :enum( EnumListGrowDirection ) :onset( 'resetLayout' );
 	}
 	:SIGNAL{
 		selection_changed = 'onSelectionChanged';
+		item_activated = 'onItemActivated';
 	}
 
 registerEntity( 'UIListView', UIListView )
@@ -86,6 +88,17 @@ end
 function UIListView:selectItem( item )
 	local pitem = self.selection
 	if pitem == item then return end
+
+	if item then
+		if not item.selectable then
+			_warn( 'item not selectable' )
+			return false
+		end
+		if item:getListView() ~= self then
+			_warn( 'item doesnt belong to the list' )
+			return false
+		end	
+	end
 	self.selection = item
 	if pitem then
 		pitem.selected = false
@@ -98,11 +111,22 @@ function UIListView:selectItem( item )
 		item:onSelect()
 		item:updateStyleState()
 	end	
-	return self.selection_changed:emit( self.selection )
+	self.selection_changed:emit( self.selection )
+	return
 end
 
 function UIListView:getSelection()
 	return self.selection
+end
+
+function UIListView:activateItem( item )
+	if self.selection ~= item then
+		if self:selectItem( item ) == false then
+			return false
+		end
+	end
+	assert( self.selection == item )
+	self.item_activated:emit( self.selection )
 end
 
 function UIListView:clear()
@@ -122,10 +146,14 @@ function UIListView:getItem( idx )
 end
 
 function UIListView:removeItem( item )
+	if self.selection == item then
+		self:selectItem( false )
+	end
 	for i, it in ipairs( self.items ) do
 		if it == item then
 			table.remove( self.items, i )
 			item:destroyAllNow()
+			break
 		end
 	end
 	self:resetItemLoc()
@@ -143,12 +171,17 @@ function UIListView:addItem( option )
 	local id = #self.items
 	local x,y = self:calcItemLoc( id )
 	item:setLoc( x, y, 1 )
-	print( 'item', id, x,y )
 	return item
 end
 
 function UIListView:createItem( option )
 	return UIListItem()
+end
+
+function UIListView:createEmptyItem()
+	local item = UIListItem()
+	item.selectable = false
+	return item
 end
 
 function UIListView:getItemId( item )
@@ -211,13 +244,17 @@ function UIListView:calcGridId( x, y )
 	if dir == '-y' then
 		y = -y
 		id = y * col + x + 1
+
 	elseif dir == '+y' then
 		id = y * col + x + 1
+
 	elseif dir == '-x' then
 		x = -x
 		id = x * row + y + 1
+
 	elseif dir == '+x' then
 		id = x * row + y + 1
+
 	end
 	if x < 0 or x >= col then return false end
 	if y < 0 or y >= row then return false end
@@ -225,6 +262,16 @@ function UIListView:calcGridId( x, y )
 end
 
 function UIListView:resetLayout()
+	local w, h = self:getSize()
+	local gridWidth = self.gridWidth
+	local gridHeight = self.gridHeight
+	if self.growDirection == '-y' then
+		self.frame.innerTransform:setPiv( 0, -h )
+	elseif self.growDirection == '+y' then
+		self.frame.innerTransform:setPiv( 0, -gridHeight )
+	elseif self.growDirection == '-x' then
+		self.frame.innerTransform:setPiv( -w, 0 )
+	end
 	self:resetItemLoc()
 end
 
@@ -235,6 +282,9 @@ function UIListView:resetItemLoc()
 end
 
 function UIListView:onSelectionChanged()
+end
+
+function UIListView:onItemActivated( item )
 end
 
 function UIListView:setSize( w, h, ... )

@@ -124,8 +124,8 @@ function Camera:onDetach( entity )
 	for i, pass in ipairs( self.passes ) do
 		pass:release()
 	end
-	self.renderTarget:clear()
 	self.renderTarget:setParent( nil )
+	self.renderTarget:clear()
 	self.passes = {}
 	self.zoomControlNode.camera = nil
 	self.zoomControlNode = nil

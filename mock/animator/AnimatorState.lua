@@ -37,6 +37,7 @@ function AnimatorState:__init()
 	self.updateListenerTracks = {}
 	self.attrLinks = {}
 	self.attrLinkCount = 0
+	self.parentThrottle = 1
 	self.throttle = 1
 	self.clipSpeed = 1
 	self.actualThrottle = 1
@@ -89,6 +90,11 @@ function AnimatorState:isActive()
 	return self.anim:isActive()
 end
 
+function AnimatorState:setParentThrottle( t )
+	self.parentThrottle = t or 1
+	self:updateThrottle()
+end
+
 function AnimatorState:setThrottle( t )
 	self.throttle = t or 1
 	self:updateThrottle()
@@ -104,10 +110,10 @@ function AnimatorState:setClipSpeed( speed )
 end
 
 function AnimatorState:updateThrottle()
-	local t = self.throttle * self.clipSpeed
+	local t = self.throttle * self.clipSpeed * self.parentThrottle
 	self.actualThrottle = t
-	self.anim:throttle( self.actualThrottle )
-	self.elapsedTimer:throttle( 1/self.actualThrottle )
+	self.anim:throttle( t )
+	self.elapsedTimer:throttle( 1 / t )
 end
 
 function AnimatorState:resetRange()

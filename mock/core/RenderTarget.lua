@@ -42,6 +42,11 @@ function RenderTarget:getRootRenderTarget()
 	return r
 end
 
+function RenderTarget:clear()
+	RenderTarget.__super.clear( self )
+	self.cleared = true
+end
+
 --------------------------------------------------------------------
 CLASS: DeviceRenderTarget ( RenderTarget )
 	:MODEL{}
@@ -103,7 +108,10 @@ function TextureRenderTarget:onUpdateSize()
 	end
 
 	if not needResize then return end 
-
+	if not self.frameBuffer then
+		_error( 'framebuffer not initialized or already cleared', self.__name, self.cleared )
+		return
+	end
 	self.frameBuffer:init( w, h, self.colorFormat, self.depthFormat, self.stencilFormat )
 	self.previousTextureSize = { w, h }
 end

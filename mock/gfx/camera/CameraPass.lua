@@ -59,6 +59,7 @@ end
 
 function CameraPass:onRelease()
 	for key, renderTarget in pairs( self.renderTargets ) do
+		renderTarget:setParent( nil )
 		renderTarget:clear()
 	end
 	self.renderTargets = {}

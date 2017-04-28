@@ -1,6 +1,6 @@
 module 'mock'
 
-CLASS: UIScrollArea ( UIFrame )
+CLASS: UIScrollArea ( UIWidget )
 	:MODEL{
 		Field 'scrollSize' :type('vec2') :getset('ScrollSize');	
 		'----';

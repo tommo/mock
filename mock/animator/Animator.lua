@@ -107,7 +107,7 @@ function Animator:_loadClip( clip, makeActive, _previewing )
 	if not state then
 		state = AnimatorState()
 		state.previewing = _previewing
-		state:setThrottle( self.throttle )
+		state:setParentThrottle( self.throttle )
 		state:loadClip( self, clip )
 	end
 	if makeActive ~= false then 
@@ -230,7 +230,7 @@ end
 function Animator:setThrottle( th )
 	self.throttle = th
 	if self.activeState then
-		self.activeState:setThrottle( th )
+		self.activeState:setParentThrottle( th )
 	end
 end
 

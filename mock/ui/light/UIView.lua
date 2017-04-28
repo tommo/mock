@@ -6,6 +6,10 @@ local insert,remove = table.insert,table.remove
 CLASS: UIView ( UIWidgetBase )
 	:MODEL{
 	}
+	:SIGNAL{
+		focus_in = 'onFocusIn';
+		focus_out = 'onFocusOut';
+	}
 
 mock.registerEntity( 'UIView', UIView )
 
@@ -49,6 +53,7 @@ function UIView:onStart()
 end
 
 function UIView:onDestroy()
+	self.focusManager:deactivate()
 	uninstallInputListener( self )
 end
 
@@ -107,22 +112,22 @@ function UIView:getMousePointer()
 	return self:getPointer( 'mouse', true )
 end
 
+function UIView:setFocus()
+	self.focusManager:activate()
+end
+
+function UIView:onFocusIn()
+end
+
+function UIView:onFocusOut()
+end
+
 function UIView:getFocusedWidget()
-	return self.focusedWidget
+	return self.focusManager:getFocusedWidget()
 end
 
 function UIView:setFocusedWidget( widget, reason )
-	local previous = self.focusedWidget
-	if previous == widget then return true end
-	if previous then
-		self:postEvent( previous, UIEvent( UIEvent.FOCUS_OUT ) )
-	end
-	if widget then
-		local ev = self:postEvent( widget, UIEvent( UIEvent.FOCUS_IN, { reason = reason } ) )
-
-	end
-	self.focusedWidget = widget or false
-	return true
+	return self.focusManager:setFocusedWidget( widget, reason )
 end
 
 function UIView:setModalWidget( w )
