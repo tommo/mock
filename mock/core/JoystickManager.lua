@@ -108,6 +108,21 @@ function JoystickState:getInputDevice()
 	return self._instance:getInputDevice()
 end
 
+function JoystickState:getAxisValue( name )
+	local mapping = self.mapping
+	local id 
+	if mapping and type( name ) == 'string' then
+		id = mapping:unmapAxis( name )
+	else
+		id = name
+	end
+	return self.axisValues[ id ]
+end
+
+function JoystickState:isButtonDown( name )
+	return self.buttonState[ name ]
+end
+
 --------------------------------------------------------------------
 CLASS: JoystickManager ( GlobalManager )
 	:MODEL{}

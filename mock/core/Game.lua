@@ -543,6 +543,13 @@ function Game:loadJSONData( path, dataInfo )
 	end
 end
 
+function Game:getGlobalManager( key )
+	for i, manager in ipairs( self.globalManagers ) do
+		if manager:getKey() == key then return manager end
+	end
+	return nil
+end
+
 --------------------------------------------------------------------
 --------Graphics related
 --------------------------------------------------------------------

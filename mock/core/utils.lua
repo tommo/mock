@@ -47,6 +47,8 @@ end
 --------------------------------------------------------------------
 --------Random number & Probablity helpers
 --------------------------------------------------------------------
+function nilFunc() end
+
 function randi(mi,ma)
 	mi,ma = floor(mi), floor(ma)
 	return floor( mi + random() * ( ma-mi+1) )

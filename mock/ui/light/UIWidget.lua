@@ -543,10 +543,29 @@ function UIWidget:getViewLoc()
 	end
 end
 
-function UIWidget:inside( x, y, z, pad )
-	local x0, y0, z0 = self:getWorldLoc()
-	return self:getProp():inside( x,y,z0, pad )
+
+function UIWidget:getWorldBounds( reason )
+	return self:getProp():getWorldBounds()
 end
+
+function UIWidget:inside( x, y, z, pad )
+	local bx0, by0, bz0, bx1, by1, bz1 = self:getWorldBounds()
+	if pad then
+		return 
+			( x + pad >= bx0 ) and ( x - pad <= bx1 )
+			and 
+			( y + pad >= by0 ) and ( y - pad <= by1 )
+	else
+		return 
+			( x >= bx0 ) and ( x <= bx1 )
+			and 
+			( y >= by0 ) and ( y <= by1 )
+	end
+end
+-- function UIWidget:inside( x, y, z, pad )
+-- 	local x0, y0, z0 = self:getWorldLoc()
+-- 	return self:getProp():inside( x,y,z0, pad )
+-- end
 
 function UIWidget:setSize( w, h, updateLayout, updateStyle )
 	w, h = w or self.w, h or self.h

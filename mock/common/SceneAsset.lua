@@ -1084,14 +1084,16 @@ local function sceneLoader( node, option )
 		end
 	end
 	
-
-	local allowConditional = option and option.allowConditional
+	option = option or {}
 	local scene  = option.scene or Scene()
+	local allowConditional = option.allowConditional
+	local preloadDependency = option.preloadDependency ~= false
 	--configuration
 	scene:init()
 	scene.path = node:getNodePath()
 
 	_Stopwatch.start( 'scene_load_dependency' )
+	if preloadDependency then
 		--entities
 		local dep = data['asset_dependency']
 		if dep then
@@ -1102,6 +1104,7 @@ local function sceneLoader( node, option )
 			end
 		end
 		
+	end
 	_Stopwatch.stop( 'scene_load_dependency' )
 	
 	_Stopwatch.start( 'scene_load_deserialization' )

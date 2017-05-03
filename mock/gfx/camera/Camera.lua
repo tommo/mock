@@ -38,6 +38,8 @@ CLASS: Camera ( Component )
 
 wrapWithMoaiTransformMethods( Camera, '_camera' )
 
+local function nilFunc() end
+
 local function _cameraZoomControlNodeCallback( node )
 	return node.camera:updateZoom()
 end
@@ -65,7 +67,6 @@ function Camera:__init( option )
 	self.zoomControlNode:reserveAttrs( 1 )
 	self.zoomControlNode.camera = self
 	self:setZoom( 1 )
-	self.zoomControlNode:setCallback( _cameraZoomControlNodeCallback )
 
 	--layer control
 	self.mainCamera   = false
@@ -109,6 +110,7 @@ function Camera:_initDefault()
 end
 
 function Camera:onAttach( entity )
+	self.zoomControlNode:setCallback( _cameraZoomControlNodeCallback )
 	self:updateRenderTarget()
 	self.scene = entity.scene
 	entity:_attachTransform( self._camera, 'render' )
@@ -127,6 +129,7 @@ function Camera:onDetach( entity )
 	self.renderTarget:setParent( nil )
 	self.renderTarget:clear()
 	self.passes = {}
+	self.zoomControlNode:setCallback( nilFunc )
 	self.zoomControlNode.camera = nil
 	self.zoomControlNode = nil
 	self.dummyLayer = nil

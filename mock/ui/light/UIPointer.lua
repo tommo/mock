@@ -10,6 +10,7 @@ function UIPointer:__init( view )
 	self.grabOwner    = false
 	self.x = 0
 	self.y = 0     
+	self.padding = 4
 end
 
 function UIPointer:getTouch()
@@ -23,7 +24,7 @@ end
 function UIPointer:updateHover( view, x, y )
 	--find hover
 	local hoverWidget0  = self.hoverWidget
-	local hoverWidget1 = view:findTopWidget( x, y )
+	local hoverWidget1 = view:findTopWidget( x, y, self.padding )
 	if hoverWidget0 == hoverWidget1 then return hoverWidget0 end
 	self.hoverWidget = hoverWidget1 or false
 	if hoverWidget0 then

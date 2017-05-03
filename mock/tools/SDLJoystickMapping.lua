@@ -36,9 +36,29 @@ CLASS: SDLJoystickMapping ()
 
 function SDLJoystickMapping:__init( data )
 	self.data = data
-	self.buttonToCommand = data[ 'button_map' ]
-	self.axisToCommand   = data[ 'axis_map' ]
-	self.hatToCommand    = data[ 'hat_map' ]
+	self.buttonToCommand = data[ 'button_map' ] or {}
+	self.axisToCommand   = data[ 'axis_map' ] or {}
+	self.hatToCommand    = data[ 'hat_map' ] or {}
+
+	local commandToAxis = {}
+	for k, v in pairs( self.axisToCommand ) do
+		commandToAxis[ v ] = k
+	end
+
+	local commandToButton = {}
+	for k, v in pairs( self.buttonToCommand ) do
+		commandToButton[ v ] = k
+	end
+
+	local commandToHat = {}
+	for k, v in pairs( self.hatToCommand ) do
+		commandToHat[ v ] = k
+	end
+
+	self.commandToAxis   = commandToAxis
+	self.commandToButton = commandToButton
+	self.commandToHat    = commandToHat
+
 end
 
 function SDLJoystickMapping:mapButtonEvent( btnId, down )
@@ -62,6 +82,18 @@ end
 
 function SDLJoystickMapping:mapHatEvent( hatId, value, prevValue )
 	--TODO
+end
+
+function SDLJoystickMapping:unmapAxis( cmd )
+	return self.commandToAxis[ cmd ]
+end
+
+function SDLJoystickMapping:unmapButton( cmd )
+	return self.commandToButton[ cmd ]
+end
+
+function SDLJoystickMapping:unmapHat( cmd )
+	return self.commandToHat[ cmd ]
 end
 
 
