@@ -234,10 +234,6 @@ function AnimatorState:resetAndPlay( mode )
 	return self:play( mode )
 end
 
-function AnimatorState:isDone()
-	return self.anim:isDone()
-end 
-
 function AnimatorState:isPaused()
 	return self.anim:isPaused()
 end 

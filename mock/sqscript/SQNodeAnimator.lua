@@ -114,6 +114,7 @@ function SQNodeAnimator:step( state, env, dt )
 		local animState = env.animState
 		if animState:isBusy() then return false end
 		if animState:isDone() then return true end
+		if not animState:isActive() then return true end
 	else
 		return true
 	end
