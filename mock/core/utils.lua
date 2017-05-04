@@ -30,7 +30,8 @@ local floor        = math.floor
 local tonumber     = tonumber
 local tostring     = tostring
 local next         = next
-local _print       =  print
+local _print       = print
+
 
 function printf(patt,...)
 	return print(string.format(patt,...))
@@ -491,6 +492,45 @@ function reflection(ix, iy, nx, ny)
 	local rx = ix - 2 * nx * dp
 	local ry = iy - 2 * ny * dp
 	return rx, ry
+end
+
+local huge = math.huge
+function calcBoundRect( verts )
+	local bx0 = huge
+	local by0 = huge
+	local bx1 = -huge
+	local by1 = -huge
+
+	local count = #verts
+	for id = 1, count, 2 do
+		local x, y = verts[ id ], verts[ id + 1 ]
+		bx0 = min( x, bx0 )
+		bx1 = max( x, bx1 )
+		by0 = min( y, by0 )
+		by1 = max( y, by1 )
+	end
+	return bx0, by0, bx1, by1
+end
+
+function calcBoundBox( verts )
+	local bx0 = huge
+	local by0 = huge
+	local bz0 = huge
+	local bx1 = -huge
+	local by1 = -huge
+	local bz1 = -huge
+
+	local count = #verts
+	for id = 1, count, 2 do
+		local x, y = verts[ id ], verts[ id + 1 ]
+		bx0 = min( x, bx0 )
+		bx1 = max( x, bx1 )
+		by0 = min( y, by0 )
+		by1 = max( y, by1 )
+		bz0 = min( z, bz0 )
+		bz1 = max( z, bz1 )
+	end
+	return bx0, by0, bz0, bx1, by1, bz1
 end
 
 --------------------------------------------------------------------
