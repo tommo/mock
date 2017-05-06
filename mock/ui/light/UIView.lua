@@ -267,7 +267,7 @@ function UIView:onJoyAxisMove( joy, axis, value )
 	if not self:isInteractive() then return end
 	local focused = self:getFocusedWidget()
 	if not focused then return end
-	local ev = UIEvent( UIEvent.JOYSTICK_AXIS_MOVE, { axis = axis, value = value } )
+	local ev = UIEvent( UIEvent.JOYSTICK_AXIS_MOVE, { axis = axis, value = value, joystick = joy } )
 	return self:postEvent( focused, ev )
 end
 
@@ -276,10 +276,10 @@ function UIView:onJoyButtonEvent( joy, btn, down )
 	local focused = self:getFocusedWidget()
 	if not focused then return end
 	if down then
-		local ev = UIEvent( UIEvent.JOYSTICK_BUTTON_DOWN, { button = btn } )
+		local ev = UIEvent( UIEvent.JOYSTICK_BUTTON_DOWN, { button = btn, joystick = joy } )
 		return self:postEvent( focused, ev )
 	else
-		local ev = UIEvent( UIEvent.JOYSTICK_BUTTON_UP, { button = btn } )
+		local ev = UIEvent( UIEvent.JOYSTICK_BUTTON_UP, { button = btn, joystick = joy } )
 		return self:postEvent( focused, ev )
 	end
 end

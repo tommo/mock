@@ -139,7 +139,7 @@ end
 
 function UIWidgetBase:setZOrder( z )
 	self.zorder = z
-	self:setLocZ( z )
+	self:setLocZ( z * 0.0001 )
 	local p = self.parent
 	if p and p.FLAG_UI_WIDGET then
 		return p:sortChildren()
@@ -238,7 +238,7 @@ function UIWidget:_detachChildEntity( entity )
 end
 
 function UIWidget:setZOrder( z )
-	UIWidget.__super.setZOrder( self, z * 0.001 )
+	UIWidget.__super.setZOrder( self, z ) 
 	return self:invalidateLayout()
 end
 
@@ -550,6 +550,7 @@ end
 
 function UIWidget:inside( x, y, z, pad )
 	local bx0, by0, bz0, bx1, by1, bz1 = self:getWorldBounds()
+	if not bx0 then return false end
 	if pad then
 		return 
 			( x + pad >= bx0 ) and ( x - pad <= bx1 )
