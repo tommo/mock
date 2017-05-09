@@ -34,15 +34,40 @@ local scriptTail = [[
 function BehaviourScript:__init()
 	self.comment = ''
 	self.script = defaultScript
+	self.loadedScript = false
+end
+
+function BehaviourScript:onAttach( ent )
+	BehaviourScript.__super.onAttach( self, ent )
+	self:updateScript( ent )
 end
 
 function BehaviourScript:onStart( ent )
-	self:loadScript( ent )
+	self:updateScript( ent )
 	BehaviourScript.__super.onStart( self, ent )
+	local delegate = self.delegate
+	if delegate then
+		local onStart = delegate.onStart
+		if onStart then
+			onStart( ent )
+		end
+		self.onThread = delegate.onThread
+		if delegate.onUpdate then
+			ent.scene:addUpdateListener( self )
+		end
+	end
 end
 
-function BehaviourScript:loadScript( ent )
+function BehaviourScript:updateScript( ent )
+	if self.loadedScript == self.script then return end
+	self.loadedScript = self.script
+
 	self.delegate = false
+	if self.msgListener then 
+		ent:removeMsgListener( self.msgListener )
+		self.msgListener = false
+	end
+
 	local finalScript = scriptHeader .. self.script .. scriptTail
 	local loader, err = loadstring( finalScript, 'Script@'..ent:getName() )
 	if not loader then return _error( err ) end
@@ -55,32 +80,19 @@ function BehaviourScript:loadScript( ent )
 		tracebackMsg = debug.traceback(2)
 	end
 	local succ = xpcall( function() loader( self, ent ) end, _onError )
+
+	if delegate.onMsg then
+		self.msgListener = delegate.onMsg
+		ent:addMsgListener( self.msgListener )
+	end
+
 	if succ then
 		self.delegate = delegate
 	else
 		return _error( 'failed loading behaviour script' )
 	end
-
-	local onStart = delegate.onStart
-	if onStart then
-		onStart( ent )
-	end
-
-	self.onThread = delegate.onThread
-
-	if delegate.onMsg then
-		-- self.msgListener = function( msg, ... )
-		-- 	print( 'inside onMsg of', ent:getName(), msg )
-		-- 	return delegate.onMsg( msg, ... )
-		-- end
-		self.msgListener = delegate.onMsg
-		ent:addMsgListener( self.msgListener )
-	end
-	if delegate.onUpdate then
-		ent.scene:addUpdateListener( self )
-	end
-	
 end
+
 
 function BehaviourScript:onUpdate( dt )
 	return self.delegate.onUpdate( dt )
@@ -93,6 +105,7 @@ function BehaviourScript:onDetach( ent )
 	end
 	if self.msgListener then
 		ent:removeMsgListener( self.msgListener )
+		self.msgListener = false
 	end
 	ent.scene:removeUpdateListener( self )
 	BehaviourScript.__super.onDetach( self, ent )

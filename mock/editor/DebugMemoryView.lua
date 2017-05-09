@@ -81,6 +81,7 @@ function DebugMemoryView:subOverview( gui, scn )
 	local memUsage = MOAISim.getMemoryUsage()
 	gui.Text( string.format( 'Total Memory:%dk',    memUsage.total/1000 ) )
 	gui.Text( string.format( 'Texture Memory:%dk',  memUsage.texture/1000 ) )
+	gui.Text( string.format( 'Total-Texture:%dk',   (memUsage.total - memUsage.texture)/1000 ) )
 end
 
 function DebugMemoryView:subTrace( gui, scn )
