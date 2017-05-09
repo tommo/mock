@@ -36,6 +36,30 @@ function ScriptedBehaviour:updateComponentScript()
 	if prevInstance and dataInstance then
 		_cloneObject( prevInstance, dataInstance )
 	end
+	self:updateMsgListener()
+end
+
+function ScriptedBehaviour:updateMsgListener()
+	local ent = self:getEntity()
+	if not ent then return end
+	if self.msgListener then
+		ent:removeMsgListener( self.msgListener )
+		self.msgListener = false
+	end
+
+	local delegate = self.delegate
+	if delegate then
+		local onMsg = delegate.onMsg
+		if onMsg then
+			self.msgListener = onMsg
+			ent:addMsgListener( self.msgListener )
+		end
+	end
+end
+
+function ScriptedBehaviour:onAttach( ent )
+	ScriptedBehaviour.__super.onAttach( self, ent )
+	self:updateMsgListener()
 end
 
 function ScriptedBehaviour:onStart( ent )
@@ -50,13 +74,6 @@ function ScriptedBehaviour:onStart( ent )
 		if onStart then	onStart()	end
 
 		self.onThread = delegate.onThread
-
-		local onMsg = delegate.onMsg
-		if onMsg then
-			self.msgListener = onMsg
-			ent:addMsgListener( self.msgListener )
-		end
-
 		if delegate.onUpdate then
 			ent.scene:addUpdateListener( self )
 		end
