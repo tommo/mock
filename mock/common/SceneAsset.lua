@@ -1035,10 +1035,16 @@ function loadSceneDataFromPath( path, option )
 		local files = MOAIFileSystem.listFiles( path )
 		local rootGroupDataList = {}
 		local assetDependency = {}
+		local ignoreGroupFitler = option.ignoreGroupFilter
+
 		for i, filename in ipairs( files ) do
 			if filename:endwith( _SCENE_GROUP_EXTENSION ) then
 				local subName = basename_noext( filename )
-				if matchSceneGroupFilter( subName ) then
+				local accepted = true
+				if not ignoreGroupFilter then
+					accepted = matchSceneGroupFilter( subName )
+				end
+				if accepted then
 					local subData = loadAssetDataTable( path .. '/' .. filename )
 					rootGroupDataList[ subName ] = subData
 					local dep = subData[ 'asset_dependency' ]

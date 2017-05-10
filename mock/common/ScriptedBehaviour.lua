@@ -49,6 +49,7 @@ function ScriptedBehaviour:updateMsgListener()
 
 	local delegate = self.delegate
 	if delegate then
+		delegate.entity = self:getEntity()
 		local onMsg = delegate.onMsg
 		if onMsg then
 			self.msgListener = onMsg

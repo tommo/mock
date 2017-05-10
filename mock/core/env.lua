@@ -46,7 +46,9 @@ end
 function saveGameConfig( data, filename )
 	if not data then return false end
 	local path = getGameConfigPath( filename )
-	_info( 'savomg game config', path )
+	local dir = dirname( path )
+	_info( 'saving game config', path )
+	MOAIFileSystem.affirmPath( dir )
 	saveJSONFile( data, path )
 end
 

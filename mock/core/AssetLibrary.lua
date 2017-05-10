@@ -60,7 +60,7 @@ end
 function _assetCollectionPreGC()
 	_doAssetCollection()
 	MOAISim.setListener( MOAISim.EVENT_PRE_GC, nil ) --stop
-			reportLoadedMoaiTextures()
+			-- reportLoadedMoaiTextures()
 			-- reportAssetInCache()
 			-- reportHistogram()
 			-- reportTracingObject()
