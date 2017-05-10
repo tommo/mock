@@ -44,7 +44,6 @@ end
 
 function BehaviourScript:onStart( ent )
 	self:updateScript( ent )
-	BehaviourScript.__super.onStart( self, ent )
 	local delegate = self.delegate
 	if delegate then
 		local onStart = delegate.onStart
@@ -56,6 +55,7 @@ function BehaviourScript:onStart( ent )
 			ent.scene:addUpdateListener( self )
 		end
 	end
+	BehaviourScript.__super.onStart( self, ent )
 end
 
 function BehaviourScript:updateScript( ent )
