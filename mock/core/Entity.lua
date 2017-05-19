@@ -941,6 +941,24 @@ function Entity:getFullName()
 	return output
 end
 
+function Entity:getRootGroup()
+	local g = self:getEntityGroup()
+	while g do
+		if g:isRootGroup() then return g end
+		g = g.parent
+	end
+	return nil
+end
+
+function Entity:getRootGroupName()
+	local r = self:getRootGroup()
+	if r then
+		return r:getName()
+	else
+		return nil
+	end
+end
+
 function Entity:getLayer()
 	if not self.layer then return nil end
 	if type( self.layer ) == 'string' then return self.layer end

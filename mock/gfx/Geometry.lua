@@ -270,7 +270,6 @@ function GeometryPolygon:__init()
 	self.looped = true
 	self.fill = true
 	local mesh = MOAIMesh.new()
-	mesh:setVertexBuffer ( vtxBuffer, vtxFormat )
 	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
 	mesh:setShader ( MOAIShaderMgr.getShader ( MOAIShaderMgr.LINE_SHADER_3D ))
 	self.meshDeck = mesh

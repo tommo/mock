@@ -940,6 +940,7 @@ function makeEntityCopyData( ent )
 		end
 	end
 	data['guid'] = newGuids
+	
 	return {
 		guid = newGuids,
 		data = encodeJSON( data ),

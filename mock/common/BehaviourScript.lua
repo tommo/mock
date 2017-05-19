@@ -89,6 +89,8 @@ function BehaviourScript:updateScript( ent )
 	if succ then
 		self.delegate = delegate
 	else
+		print( errMsg )
+		print( tracebackMsg )
 		return _error( 'failed loading behaviour script' )
 	end
 end

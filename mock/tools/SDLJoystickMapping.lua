@@ -98,6 +98,32 @@ end
 
 
 --------------------------------------------------------------------
+CLASS: SDLXInputJoystickMapping ( SDLJoystickMapping )
+	:MODEL{}
+
+function SDLXInputJoystickMapping:__init()
+	self.axisToCommand[ '@LB' ] = 'LB'
+	self.axisToCommand[ '@RB' ] = 'RB'
+	self.prevLB = 0
+	self.prevRB = 0
+end
+
+function SDLXInputJoystickMapping:mapAxisEvent( axisId, value, prevValue )
+	if axisId == 2 then
+		if value > 0 then --RB
+			SDLXInputJoystickMapping.__super.mapAxisEvent( self, '@LB', value, self.prevRB )
+			self.prevRB = value
+		elseif value <= 0 then
+			value = -value
+			SDLXInputJoystickMapping.__super.mapAxisEvent( self, '@RB', value, self.prevLB )
+			self.prevLB = value
+		end
+	end
+	return SDLXInputJoystickMapping.__super.mapAxisEvent( self, axisId, value, prevValue )
+end
+
+
+--------------------------------------------------------------------
 local mappingTable = {}
 
 local function parseLine( line )
@@ -146,7 +172,12 @@ local function parseLine( line )
 	result[ 'hat_map'    ] = hatsToCommand
 	result[ 'axis_map'   ] = axisToCommand
 
-	local mapping = SDLJoystickMapping( result )
+	local mapping 
+	if name == 'XInput' then
+		mapping = SDLXInputJoystickMapping( result )
+	else
+		mapping = SDLJoystickMapping( result )
+	end
 	mappingTable[ GUID ] = mapping
 	return mapping
 end
@@ -332,5 +363,6 @@ addSDLJoystickMapping[[
 ]]
 
 addSDLJoystickMapping[[
-4d000000000000000000000000000000,XInput, platform: Windows10,a:b0,b:b1,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftx:a0,lefty:a1
+4d000000000000000000000000000000,XInput, platform: Windows10,a:b0,b:b1,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftx:a0,lefty:a1,lefttrigger:a2,righttrigger:a2
+4d6963726f736f66742050432d6a6f79,XInput, platform: Windows10,a:b0,b:b1,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftx:a0,lefty:a1,lefttrigger:a2,righttrigger:a2
 ]]

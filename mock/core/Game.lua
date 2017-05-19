@@ -270,19 +270,21 @@ function Game:initSystem( config, fromEditor )
 		collectgarbage( 'setstepmul', 200 )	
 	end
 
+	MOAISim.setGCStep( 10 )
 	MOAISim.setStep( 1/60 )
 	MOAISim.clearLoopFlags()
+	-- MOAISim.setCpuBudget( 5 )
 	MOAISim.setLoopFlags( 
 			0
 			+ MOAISim.LOOP_FLAGS_MULTISTEP
-			+ MOAISim.LOOP_FLAGS_DEFAULT
+			-- + MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
-			+ MOAISim.SIM_LOOP_ALLOW_BOOST
+			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
 			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
-			-- + MOAISim.SIM_LOOP_NO_SURPLUS
+			+ MOAISim.SIM_LOOP_NO_SURPLUS
 		)
-	MOAISim.setLongDelayThreshold( 30 )
+	-- MOAISim.setLongDelayThreshold( 30 )
 	-- MOAISim.setBoostThreshold( 0 )	
 	-- MOAISim.setStepMultiplier( 2 )	
 end
@@ -579,7 +581,7 @@ function Game:initGraphics( option, fromEditor )
 
 	self.width   = gfxOption['width']  or w
 	self.height  = gfxOption['height'] or h
-	self.fullscreen = gfxOption['fullscreen'] or false	
+	self.initialFullscreen = gfxOption['fullscreen'] or false	
 
 	self.viewportMode = gfxOption['viewport_mode'] or 'fit'
 
@@ -591,6 +593,9 @@ function Game:initGraphics( option, fromEditor )
 	if not fromEditor then
 		--FIXME: crash here if no canvas shown up yet
 		MOAISim.openWindow( self.title, w, h  )
+		if initialFullscreen then
+			self:enterFullscreenMode()
+		end
 	end
 
 	self.graphicsInitialized = true

@@ -1,5 +1,10 @@
 module 'mock'
 
+EnumParticleDrawOrder = _ENUM{
+	{ 'reversed', MOAIParticleSystem.ORDER_REVERSE },
+	{ 'normal',   MOAIParticleSystem.ORDER_NORMAL },
+}
+
 --------------------------------------------------------------------
 local function _unpack(m)
 	local tt=type(m)
@@ -28,6 +33,8 @@ EffectNodeParticleSystem :MODEL{
 	'----';
 	Field 'syncTransform' :boolean();
 	'----';
+	Field 'drawOrder'      :enum( EnumParticleDrawOrder );
+	'----';
 	Field 'scl' :type( 'vec3') :getset( 'Scl' );
 }
 
@@ -37,6 +44,7 @@ function EffectNodeParticleSystem:__init()
 	self.blend = 'add'
 	self.deck  = false
 	self.syncTransform = false
+	self.drawOrder = MOAIParticleSystem.ORDER_REVERSE
 	self.scl = { 1,1,1 }
 end
 
@@ -96,7 +104,7 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	system:reserveStates    ( self.stateCount )
 	system:reserveSprites   ( self.spriteLimit )
 	system:reserveParticles ( self.particleLimit, self.regCount )
-	system:setDrawOrder( MOAIParticleSystem.ORDER_REVERSE )
+	system:setDrawOrder( self.drawOrder or MOAIParticleSystem.ORDER_REVERSE )
 
 	system.config = self
 

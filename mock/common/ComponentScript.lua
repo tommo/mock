@@ -17,8 +17,8 @@ function ComponentScript:load( source, path )
 	local name = path and '@'..path or 'script'
 	local loaderFunc, err = loadstring( source, name )
 	if not loaderFunc then
-		print( err )
 		_warn( 'failed loading component script' )
+		_log( '[ERROR:Lua]', err )
 		return false
 	end
 	self.loaderFunc = loaderFunc
