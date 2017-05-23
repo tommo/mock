@@ -147,6 +147,7 @@ function Game:__init() --INITIALIZATION
 	self.sceneSessions  = {}
 	self.sceneSessionMap = {}
 
+	self.fullscreen = false
 end
 
 local defaultGameConfig={

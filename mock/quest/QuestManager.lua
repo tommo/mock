@@ -284,6 +284,12 @@ function QuestManager:saveState()
 	return sessionStates
 end
 
+function QuestManager:resetAllSessions()
+	for i, session in ipairs( self.sessions ) do
+		session:reset()
+	end
+end
+
 function QuestManager:loadState( data )
 	for i, sdata in ipairs( data ) do
 		local name = sdata[ 'name' ]

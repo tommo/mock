@@ -122,7 +122,7 @@ function Animator:loadClip( name, makeActive, _previewing )
 	makeActive = makeActive ~= false
 	if self.activeStateLocked and makeActive then
 		_warn( singletraceback(3) )
-		_warn( 'attempt to change clip of locked animator' )
+		_warn( 'attempt to change clip of locked animator', name, self:getEntityName() )
 		return false
 	end
 

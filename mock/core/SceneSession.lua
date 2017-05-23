@@ -28,6 +28,7 @@ function SceneSession:openSceneByPath( scnPath, additive, arguments, autostart )
 		self.initialScene = scnPath
 	end
 	local scene = self.scene
+	scene.assetPath = scnPath
 	autostart = autostart ~= false
 	
 	local fromEditor = arguments and arguments[ 'fromEditor' ] or false
@@ -48,7 +49,6 @@ function SceneSession:openSceneByPath( scnPath, additive, arguments, autostart )
 		end
 	end
 
-	scene.assetPath = scnPath
 	--todo: previous scene
 	scene.arguments = args and table.simplecopy( args ) or {}
 

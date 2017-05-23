@@ -141,7 +141,7 @@ function Stat:setChangeSignalList( t )
 end
 
 function Stat:serialize()
-	return self.values
+	return MOAIJsonParser.decode( MOAIJsonParser.encode( self.values ) )
 end
 
 function Stat:deserialize( values )

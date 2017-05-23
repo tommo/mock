@@ -15,42 +15,51 @@ function translate( categoryId, stringId, ... )
 	return _LocaleManager:translate( categoryId, stringId, ... )
 end
 
+function getLocaleId()
+	return _LocaleManager:getLocaleId()
+end
+
 --------------------------------------------------------------------
 CLASS: LocaleManager ( GlobalManager )
 	:MODEL{}
 
 function LocaleManager:__init()
 	_LocaleManager = self
-	self.locales = {}
+	self.localeConfigMap = {}
 	self.defaultLocaleId = 'en'
-	self.activeLocale = false
+	self.activeLocaleId = 'en'
+	self.activeLocaleConfig = false
 end
 
 function LocaleManager:translate( categoryId, stringId, ... )
-	local locale = self.activeLocale
-	if not locale then
-		_warn( 'no active locale' )
+	local localeConfig = self.activeLocaleConfig
+	if not localeConfig then
+		_warn( 'no active localeConfig' )
 		return stringId
 	end
-	return locale:translate( categoryId, stringId, ... )
+	return localeConfig:translate( categoryId, stringId, ... )
 end
 
-function LocaleManager:getLocale( id, fallback )
-	local locale = self.locales[ id ]
-	if not locale and fallback then
-		locale = self.locales[ fallback ]
+function LocaleManager:getActiveLocale()
+	return self.activeLocaleId
+end
+
+function LocaleManager:getLocaleConfig( id, fallback )
+	local localeConfig = self.localeConfigMap[ id ]
+	if not localeConfig and fallback then
+		localeConfig = self.localeConfigMap[ fallback ]
 	end
-	return locale
+	return localeConfig
 end
 
 function LocaleManager:affirmLocale( id )
-	local locale = self.locales[ id ]
-	if not locale then
-		locale = LocaleConfig()
-		locale.id = id
-		self.locales[ id ] = locale
+	local localeConfig = self.localeConfigMap[ id ]
+	if not localeConfig then
+		localeConfig = LocaleConfig()
+		localeConfig.id = id
+		self.localeConfigMap[ id ] = localeConfig
 	end
-	return locale
+	return localeConfig
 end
 
 local locales = {
@@ -85,8 +94,8 @@ function LocaleManager:loadStringMap( categoryId, path )
 					if v:trim() == '' then v = nil end
 					local localeName = v and matchLocaleName( k )
 					if localeName then
-						local locale = self:affirmLocale( localeName )
-						locale:addString( categoryId, id, v )
+						local localeConfig = self:affirmLocale( localeName )
+						localeConfig:addString( categoryId, id, v )
 					end
 				end
 			end
@@ -100,12 +109,13 @@ function LocaleManager:loadStringMap( categoryId, path )
 end
 
 function LocaleManager:setActiveLocale( id )
-	local locale = self:getLocale( id )
-	if not locale then
-		_error( 'no locale found', id )
+	self.activeLocaleId = id
+	local localeConfig = self:getLocaleConfig( id )
+	if not localeConfig then
+		_error( 'no localeConfig found', id )
 		return false
 	end
-	self.activeLocale = locale
+	self.activeLocaleConfig = localeConfig
 	emitGlobalSignal( 'locale.change', id )
 	return true
 end
