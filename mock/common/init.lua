@@ -62,3 +62,6 @@ require 'mock.common.ShakeController'
 --------------------------------------------------------------------
 --Script
 require 'mock.common.ScriptedBehaviour'
+
+--------------------------------------------------------------------
+require 'mock.common.LocalePackAsset'

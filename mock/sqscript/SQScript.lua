@@ -356,6 +356,10 @@ function SQNode:acceptSubNode( name )
 	return true
 end
 
+function SQNode:translate( source, ... )
+	return self:getScript():translate( source, ... )
+end
+
 function SQNode:_log( ... )
 	local prefix = self:getPosText()
 	print( string.format( '[LOG:sq]\t> %s', prefix ), ... )
@@ -725,6 +729,15 @@ function SQScript:build()
 	return true
 end
 
+function SQScript:translate( source, ... )
+	local localeManager = getLocaleManager()
+	local translation = localeManager:getAssetTranslation( self:getSourcePath() )
+	if translation then
+		local output = translation.translate( source, ... )
+		return output
+	end
+	return source
+end
 
 --------------------------------------------------------------------
 CLASS: SQRoutineState ()

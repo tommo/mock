@@ -1189,5 +1189,15 @@ function Game:showCursor( reason )
 	MOAISim.showCursor()
 end
 
-game = Game()
+local _game = Game()
+_M.game = _game
 
+--------------------------------------------------------------------
+--short cuts
+function getGlobalObject( key )
+	return _game:getGlobalObject( key )
+end
+
+function getGlobalManager( key )
+	return _game:getGlobalManager( key )
+end

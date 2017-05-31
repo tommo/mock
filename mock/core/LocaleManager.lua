@@ -11,6 +11,10 @@ function getLocaleManager()
 	return _LocaleManager
 end
 
+function getDefaultSourceLocale()
+	return _LocaleManager:getSourceLocale()
+end
+
 function translate( categoryId, stringId, ... )
 	return _LocaleManager:translate( categoryId, stringId, ... )
 end
@@ -19,16 +23,134 @@ function getLocaleId()
 	return _LocaleManager:getLocaleId()
 end
 
+
+local locales = {
+	'en',
+	'cn',
+	'jp',
+	'fr',
+	'it'
+}
+
+local function matchLocaleName( s )
+	for i, k in ipairs( locales ) do
+		if k == s then
+			return k
+		end
+	end
+	return nil
+end
+
+
+---------------------------------------------------------------------
+CLASS: LocalePackEntry ()
+	:MODEL{}
+
+function LocalePackEntry:__init()
+	self.path = ''
+	self.active = false
+	self.locales = {}
+	self.pack = false
+end
+
+function LocalePackEntry:getPath()
+	return self.path
+end
+
+function LocalePackEntry:isActive()
+	return self.active
+end
+
+function LocalePackEntry:udpate()
+end
+
+function LocalePackEntry:toData()
+	return {
+		name    = self.name,
+		path    = self.path,
+		locales = self.locales,
+		active  = self.active
+	}
+end
+
+function LocalePackEntry:fromData( data )
+	self.name    = data[ 'name' ]
+	self.path    = data[ 'path' ]
+	self.locales = data[ 'locales' ]
+	self.active  = data[ 'active' ]
+end
+
+function LocalePackEntry:getPack()
+	local pack = mock.loadAsset( self.path )
+	return pack
+end
+
+
+local LOCALE_CONFIG_NAME  = 'locale_config.json'
 --------------------------------------------------------------------
 CLASS: LocaleManager ( GlobalManager )
 	:MODEL{}
 
 function LocaleManager:__init()
 	_LocaleManager = self
+	self.locales = {}
 	self.localeConfigMap = {}
+	self.localePackEntries = {}
+	self.sourceLocale = 'zh-CN'
 	self.defaultLocaleId = 'en'
 	self.activeLocaleId = 'en'
 	self.activeLocaleConfig = false
+
+	self.assetTranslationIndex = {}
+end
+
+function LocaleManager:postInit()
+	self:loadConfig()
+end
+
+function LocaleManager:affirmAssetLocaleIndex()
+	if self.assetTranslationIndex then return self.assetTranslationIndex end
+	local index = {}
+	for i, entry in ipairs( self.localePackEntries ) do
+		local pack = loadAsset( entry.path ) --config only
+		for _, item in ipairs( pack.items ) do
+			index[ item.path ] = pack
+		end
+	end
+	self.assetTranslationIndex = index
+	return index
+end
+
+function LocaleManager:loadConfig()
+	local data = mock.loadGameConfig( LOCALE_CONFIG_NAME )
+	if not data then return false end
+	local localePackEntries = {}
+	for i, packData in ipairs( data[ 'packs' ] or {} ) do
+		local entry = LocalePackEntry()
+		entry:fromData( packData )
+		table.insert( localePackEntries, entry )
+	end
+	
+	self.localePackEntries = localePackEntries
+	self.locales = data[ 'locales' ] or {}
+	self.sourceLocale = data[ 'source_locale' ] or 'en'
+	self.assetTranslationIndex = false
+	
+end
+
+
+function LocaleManager:saveConfig()
+	local data = {}
+	local packDatas = {}
+	for i, entry in ipairs( self.localePackEntries ) do
+		table.insert( packDatas, entry:toData() )
+	end
+	data[ 'packs' ] = packDatas
+	data[ 'locales' ] = self.locales
+	data[ 'source_locale' ] = self.sourceLocale
+	mock.saveGameConfig( data, LOCALE_CONFIG_NAME )
+	--
+	return nil
 end
 
 function LocaleManager:translate( categoryId, stringId, ... )
@@ -38,6 +160,10 @@ function LocaleManager:translate( categoryId, stringId, ... )
 		return stringId
 	end
 	return localeConfig:translate( categoryId, stringId, ... )
+end
+
+function LocaleManager:getSourceLocale()
+	return self.sourceLocale or false
 end
 
 function LocaleManager:getActiveLocale()
@@ -60,23 +186,6 @@ function LocaleManager:affirmLocale( id )
 		self.localeConfigMap[ id ] = localeConfig
 	end
 	return localeConfig
-end
-
-local locales = {
-	'en',
-	'cn',
-	'jp',
-	'fr',
-	'it'
-}
-
-local function matchLocaleName( s )
-	for i, k in ipairs( locales ) do
-		if k == s then
-			return k
-		end
-	end
-	return nil
 end
 
 function LocaleManager:loadStringMap( categoryId, path )
@@ -118,6 +227,56 @@ function LocaleManager:setActiveLocale( id )
 	self.activeLocaleConfig = localeConfig
 	emitGlobalSignal( 'locale.change', id )
 	return true
+end
+
+function LocaleManager:hasLocalePack( packPath )
+	for i, entry in ipairs( self.localePackEntries ) do
+		if entry.path == packPath then return true end
+	end
+	return false
+end
+
+function LocaleManager:findLocalePackEntry( packPath )
+	for i, entry in ipairs( self.localePackEntries ) do
+		if entry.path == packPath then return entry end
+	end
+	return nil
+end
+
+function LocaleManager:registerLocalePack( packPath )
+	local entry = self:findLocalePackEntry( packPath )
+	if entry then
+		_error( 'duplicated locale pack', packPath )
+		return nil
+	else
+		local entry = LocalePackEntry()
+		entry.path = packPath
+		table.insert( self.localePackEntries, entry )
+		self.assetTranslationIndex = false
+		return entry
+	end
+end
+
+function LocaleManager:unregisterLocalePack( packPath )
+	local entry = self:findLocalePackEntry( packPath )
+	if not entry then return false end
+	local idx = table.index( self.localePackEntries, entry )
+	if idx then 
+		table.remove( self.localePackEntries, idx )
+		self.assetTranslationIndex = false
+		return true
+	end
+	return false
+end
+
+
+function LocaleManager:getAssetTranslation( assetPath )
+	local index = self:affirmAssetLocaleIndex()
+	if not index then return false end
+	local pack = index[ assetPath ]
+	if not pack then return nil end	
+	local translation = pack:getAssetTranslation( self:getActiveLocale(), assetPath )
+	return translation
 end
 
 --------------------------------------------------------------------

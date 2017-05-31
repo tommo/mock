@@ -33,7 +33,7 @@ end
 --------------------------------------------------------------------
 local _retainedAssetTable = {}
 function retainAsset( assetPath ) --keep asset during one collection cycle
-	local node = getAssetNode( assetPath )
+	local node = _getAssetNode( assetPath )
 	if not node then return _warn( 'no asset to hold', assetPath ) end
 	_retainedAssetTable[ node ] = true
 	setmetatable( node.cached, __ASSET_CACHE_LOCKED_MT )
@@ -108,6 +108,10 @@ end
 --asset index library
 local AssetLibrary = {}
 local AssetSearchCache = {}
+
+local function _getAssetNode( path )
+	return AssetLibrary[ path ]
+end
 
 --asset loaders
 local AssetLoaderConfigs = setmetatable( {}, { __no_traverse = true } )
@@ -394,7 +398,7 @@ function unregisterAssetNode( path )
 end
 
 function getAssetNode( path )
-	return AssetLibrary[ path ]
+	return _getAssetNode( path )
 end
 
 function checkAsset( path )
@@ -412,7 +416,7 @@ function matchAssetType( path, pattern, plain )
 end
 
 function getAssetType( path )
-	local node = getAssetNode( path )
+	local node = _getAssetNode( path )
 	return node and node:getType()
 end
 
@@ -432,7 +436,7 @@ end
 --------------------------------------------------------------------
 --put preloaded asset into AssetNode of according path
 function preloadIntoAssetNode( path, asset )
-	local node = getAssetNode( path )
+	local node = _getAssetNode( path )
 	if node then
 		node.cached.asset = asset 
 		return asset
@@ -440,11 +444,10 @@ function preloadIntoAssetNode( path, asset )
 	return false
 end
 
+
 --------------------------------------------------------------------
-
-
 function findAssetNode( path, assetType )
-	local tag = path..'@'..( assetType or '' )	
+	local tag = path..'|'..( assetType or '' )	
 	local result = AssetSearchCache[ tag ]
 	if result == nil then
 		for k, node in pairs( AssetLibrary ) do
@@ -506,12 +509,12 @@ function isAssetLoading( path )
 end
 
 function hasAsset( path )
-	local node = getAssetNode( path )
+	local node = _getAssetNode( path )
 	return node and true or false 
 end
 
 function canPreload( path ) --TODO:use a generic method for arbitary asset types
-	local node = getAssetNode( path )
+	local node = _getAssetNode( path )
 	if not node then return false end
 	if node.type == 'scene' then return false end
 	return true
@@ -538,7 +541,7 @@ function loadAsset( path, option, warning )
 	if not path   then return nil end
 	option = option or {}
 	local policy   = option.policy or 'auto'
-	local node     = getAssetNode( path )
+	local node     = _getAssetNode( path )
 	if not node then 
 		if warning ~= false then
 			_warn ( 'no asset found', path or '???' )
@@ -609,7 +612,7 @@ function getCachedAsset( path )
 	if not path   then return nil end
 	option = option or {}
 	policy   = option.policy or 'auto'
-	local node   = getAssetNode( path )
+	local node   = _getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )
 		return nil
@@ -620,7 +623,7 @@ end
 
 --------------------------------------------------------------------
 function releaseAsset( path )
-	local node = getAssetNode( path )
+	local node = _getAssetNode( path )
 	if node then
 		local atype  = node.type
 		local assetLoaderConfig =  AssetLoaderConfigs[ atype ]
@@ -680,7 +683,7 @@ end
 
 --------------------------------------------------------------------
 function loadAssetFolder( path )
-	local node = getAssetNode( path )
+	local node = _getAssetNode( path )
 	if not ( node and node:getAssetType() == 'folder' ) then 
 		return _warn( 'folder path expected:', path )
 	end
