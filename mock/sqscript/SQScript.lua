@@ -357,7 +357,12 @@ function SQNode:acceptSubNode( name )
 end
 
 function SQNode:translate( source, ... )
-	return self:getScript():translate( source, ... )
+	local output = self:getScript():translate( source, ... )
+	if not output then
+		self:_warn( 'no translation' )
+		return source
+	end
+	return output
 end
 
 function SQNode:_log( ... )
@@ -735,6 +740,8 @@ function SQScript:translate( source, ... )
 	if translation then
 		local output = translation.translate( source, ... )
 		return output
+	else
+		-- _warn( 'no translation for asset:', self.sourcePath )
 	end
 	return source
 end

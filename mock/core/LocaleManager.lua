@@ -27,6 +27,7 @@ end
 local locales = {
 	'en',
 	'cn',
+	'ja',
 	'jp',
 	'fr',
 	'it'

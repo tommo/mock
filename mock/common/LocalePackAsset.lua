@@ -118,6 +118,7 @@ function LocalePack:loadTranslationPack( locale )
 				for k, v in pairs( translationData ) do
 					local i18n = I18N() --i18n object
 					i18n.load{ [locale] = v }
+					i18n.setLocale( locale )
 					translationPack[ k ] = i18n
 				end
 			end
