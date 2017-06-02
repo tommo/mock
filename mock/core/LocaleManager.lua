@@ -23,6 +23,22 @@ function getLocaleId()
 	return _LocaleManager:getLocaleId()
 end
 
+function getAssetTranslation( path )
+	return _LocaleManager:getAssetTranslation( path )
+end
+
+function translateForAsset( assetPath, source, ... )
+	local translation = getAssetTranslation( assetPath )
+	if translation then
+		local output = translation.translate( source, ... )
+		return output
+	else
+		return nil
+	end
+	return nil
+end
+
+
 
 local locales = {
 	'en',

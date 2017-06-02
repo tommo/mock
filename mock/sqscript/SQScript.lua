@@ -735,15 +735,8 @@ function SQScript:build()
 end
 
 function SQScript:translate( source, ... )
-	local localeManager = getLocaleManager()
-	local translation = localeManager:getAssetTranslation( self:getSourcePath() )
-	if translation then
-		local output = translation.translate( source, ... )
-		return output
-	else
-		-- _warn( 'no translation for asset:', self.sourcePath )
-	end
-	return source
+	local result = translateForAsset( self:getSourcePath(), source, ... )
+	return result or source
 end
 
 --------------------------------------------------------------------
