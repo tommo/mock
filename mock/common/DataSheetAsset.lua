@@ -35,6 +35,8 @@ CLASS: DataSheetListAccessor ( DataSheetAccessor )
 
 function DataSheetListAccessor:__init()
 	self._idMap = false
+	self._idKey = false
+	self:_affirmIdMap()
 end
 
 function DataSheetListAccessor:_affirmIdMap()
@@ -44,6 +46,7 @@ function DataSheetListAccessor:_affirmIdMap()
 		self._idMap = map
 		local keys = self._meta[ 'keys' ]
 		if table.index( keys, 'id' ) then
+			self._idKey = 'id'
 			for i, row in self:rows() do
 				local id = row[ 'id' ]
 				if id then
@@ -76,7 +79,6 @@ function DataSheetListAccessor:getByIndex( idx, key, default )
 	return v
 end
 
-
 function DataSheetListAccessor:getById( id, key, default )
 	local row = self:getRowById( id )
 	local v = row and row[ key ]
@@ -84,16 +86,28 @@ function DataSheetListAccessor:getById( id, key, default )
 	return v
 end
 
-function DataSheetListAccessor:getByIndexTranslated( idx, key, default )
-	local v = self:getByIndex( idx, key, default )
-	if not v then return v end
-	return self:translate( v )
+function DataSheetListAccessor:_getByRowTranslated( row, key )
+	local idKey = self._idKey
+	if idKey then
+		local idbase = row[ idKey ]
+		local iid = string.format( '%s::%s', key, idbase )
+		return self:translate( iid ) or row[ key ]
+	else
+		local v = row[ key ]
+		return v and self:translate( v )
+	end
 end
 
-function DataSheetListAccessor:getByIdTranslated( id, key, default )
-	local v = self:getById( id, key, default )
-	if not v then return v end
-	return self:translate( v )
+function DataSheetListAccessor:getByIndexTranslated( idx, key )
+	local row = self:getRow( idx )
+	if not row then return nil end
+	return self:_getByRowTranslated( row, key )
+end
+
+function DataSheetListAccessor:getByIdTranslated( id, key )
+	local row = self:getRowById( id )
+	if not row then return nil end
+	return self:_getByRowTranslated( row, key )
 end
 
 function DataSheetListAccessor:findRow( key, value )

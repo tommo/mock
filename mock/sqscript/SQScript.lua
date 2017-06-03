@@ -1121,6 +1121,7 @@ function SQState:initEvalEnv( actor )
 			return v
 		end
 	end
+	env['_'] = env --local variable namespance
 	self.evalEnv = env
 end
 
