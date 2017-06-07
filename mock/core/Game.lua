@@ -143,7 +143,7 @@ function Game:__init() --INITIALIZATION
 
 	self.showCursorReasons = {}
 
-	self.properties     = {}
+	self.userObjects     = {}
 	self.sceneSessions  = {}
 	self.sceneSessionMap = {}
 
@@ -271,19 +271,19 @@ function Game:initSystem( config, fromEditor )
 		collectgarbage( 'setstepmul', 200 )	
 	end
 
-	MOAISim.setGCStep( 10 )
+	MOAISim.setGCStep( 3 )
 	MOAISim.setStep( 1/60 )
+	MOAISim.setCpuBudget( 1 )
 	MOAISim.clearLoopFlags()
-	-- MOAISim.setCpuBudget( 5 )
 	MOAISim.setLoopFlags( 
 			0
-			+ MOAISim.LOOP_FLAGS_MULTISTEP
+			-- + MOAISim.LOOP_FLAGS_MULTISTEP
 			-- + MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
 			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
-			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
+			+ MOAISim.SIM_LOOP_ALLOW_SOAK
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
-			+ MOAISim.SIM_LOOP_NO_SURPLUS
+			-- + MOAISim.SIM_LOOP_NO_SURPLUS
 		)
 	-- MOAISim.setLongDelayThreshold( 30 )
 	-- MOAISim.setBoostThreshold( 0 )	
@@ -939,7 +939,6 @@ end
 
 
 
-
 --------------------------------------------------------------------
 ---------Global object( config? )
 --------------------------------------------------------------------
@@ -968,6 +967,7 @@ function Game:findColor( paletteId, itemId )
 	if not pal then return nil end
 	return pal:getColor( itemId )
 end
+
 
 --------------------------------------------------------------------
 ---------Data settings
@@ -1060,14 +1060,14 @@ end
 
 
 --------------------------------------------------------------------
-function Game:getProperty( key, default )
-	local v = self.properties[ key ]
+function Game:getUserObject( key, default )
+	local v = self.userObjects[ key ]
 	if v == nil then return default end
 	return v
 end
 
-function Game:setProperty( key , v )
-	self.properties[ key ] = v
+function Game:setUserObject( key , v )
+	self.userObjects[ key ] = v
 end
 
 -------------------------

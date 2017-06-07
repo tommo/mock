@@ -53,6 +53,7 @@ local symbolToPuctuation = {
 	{ '！',  ',,' };
 	{ '？',  ',,' };
 	{ '、',  ',' };
+	{ ' +', ' '}
 }
 
 local function _insertText( text, collection )

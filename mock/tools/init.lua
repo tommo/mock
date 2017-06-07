@@ -49,6 +49,7 @@ require 'mock.tools.NamedColors'
 --------------------------------------------------------------------
 --TOOLS
 require 'mock.tools.SimpleAnimationPreset'
+require 'mock.tools.SimpleShakeAnimationPreset'
 require 'mock.tools.PlaceHolder'
 -- require 'mock.tools.TouchButton'
 -- require 'mock.tools.FakeInput'

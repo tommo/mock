@@ -330,12 +330,12 @@ local function _getEventInstanceParameterIndex( eventInstance, key )
 end
 
 function FMODStudioAudioManager:getEventInstaceParameter( eventInstance, key )
-	local index = _getEventInstanceParameterIndex( key )
+	local index = _getEventInstanceParameterIndex( eventInstance, key )
 	return eventInstance:getParameterValueByIndex( index )
 end
 
 function FMODStudioAudioManager:setEventInstanceParameter( eventInstance, key, value )
-	local index = _getEventInstanceParameterIndex( eventInstance )
+	local index = _getEventInstanceParameterIndex( eventInstance, key )
 	if index then
 		return eventInstance:setParameterValueByIndex( index, value )
 	end
