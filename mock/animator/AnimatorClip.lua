@@ -1248,7 +1248,7 @@ end
 
 function AnimatorClipGroup:getChildNodes()
 	local list = {}
-	return table.mergearray( self.childGroups, self.childClips )
+	return table.join( self.childGroups, self.childClips )
 end
 
 function AnimatorClipGroup:_postLoad()

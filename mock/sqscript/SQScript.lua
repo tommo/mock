@@ -99,36 +99,44 @@ end
 
 function SQNode:hasTag( t )
 	if not self.tags then return false end
-	for i, tag in ipairs( self.tags ) do
-		if tag == t then return tag end
-	end
-	return false
+	return self.tags[ t ] ~= nil
+end
+
+function SQNode:getTagStringValue( t )
+	local v = self:getTag( t )
+	return type( v ) == 'string' and v or nil
+end
+
+function SQNode:getTag( t )
+	if not self.tags then return nil end
+	return self.tags[ t ]
 end
 
 local match = string.match
 function SQNode:matchTag( pattern )
 	if not self.tags then return false end
-	for i, tag in ipairs( self.tags ) do
-		if match( pattern, t ) then return tag end
+	for name, value in pairs( self.tags ) do
+		if match( name, pattern ) then return name, value end
 	end
-	return false
+	return nil
 end
 
 function SQNode:findFirstTag( targets )
 	if not self.tags then return false end
 	for i, target in ipairs( targets ) do
-		if self:hasTag( target ) then return target end
+		local value = self:getTag( target )
+		if value ~= nil then return target, value end
 	end
-	return false
+	return nil
 end
 
 function SQNode:matchFirstTag( targets )
 	if not self.tags then return false end
 	for i, target in ipairs( targets ) do
-		local tag = self:matchTag( target ) 
-		if tag then return tag end
+		local value = self:matchTag( target )
+		if value ~= nil then return target, value end
 	end
-	return false
+	return nil
 end
 
 function SQNode:checkBlockTag( defaultBlocking )
@@ -588,11 +596,11 @@ end
 --------------------------------------------------------------------
 CLASS: SQNodeTag ( SQNode )
 function SQNodeTag:__init()
-	self.tagNames = {}
+	self.tagItems = {}
 end
 
 function SQNodeTag:applyNodeContext( buildContext )
-	-- buildContext.tags = table.merge( buildContext.tags or {}, self.tagNames )
+	-- buildContext.tags = table.join( buildContext.tags or {}, self.tagNames )
 end
 
 function SQNodeTag:isExecutable()
@@ -600,7 +608,17 @@ function SQNodeTag:isExecutable()
 end
 
 function SQNodeTag:load( data )
-	self.tagNames = data.tags or {}
+	local tagItems = {}
+	for i, entry in ipairs( data.tags or {} ) do
+		local tt = type( entry )
+		if tt == 'table' then
+			local k, v = unpack( entry )
+			tagItems[ k ] = v or true
+		elseif tt == 'string' then
+			tagItems[ entry ] = true
+		end
+	end
+	self.tagItems = tagItems
 end
 
 
@@ -1303,10 +1321,9 @@ local function loadSQNode( data, parentNode, tags )
 	local tags = false
 	for i, childData in ipairs( data.children ) do
 		local childNode = loadSQNode( childData, node, tags )
-		
 		local t = childData.type
 		if t == 'tag' then
-			tags = table.merge( tags or {}, childNode.tagNames )
+			tags = table.merge( tags or {}, childNode.tagItems )
 		else
 			tags = false
 		end

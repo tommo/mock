@@ -133,6 +133,96 @@ end
 --------------------------------------------------------------------
 ----------Table Helpers
 --------------------------------------------------------------------
+
+function vextend(t,data)
+	return setmetatable(data or {},{__index=t})
+end
+
+table.vextend=vextend
+
+function table.extract( t, ... )
+	local res = {}
+	local keys = {}
+	for i, key in ipairs( keys ) do
+		res[ i ] = t[ key ]
+	end
+	return unpack( res )
+end
+
+function table.extend(t,t1)
+	for k,v in pairs(t1) do
+		t[k]=v
+	end
+	return t
+end
+
+local next=next
+function table.len(t)
+	local v=0
+	for k in pairs(t) do
+		v=v+1
+	end
+	return v
+end
+
+function table.sub(t,s,e)
+	local t1={}
+	local l=#t
+	for i=s, e do
+		if i>l then break end
+		t1[i-s+1]= t[i]
+	end
+
+	return t1
+end
+
+function table.sum(t)
+	local s=0
+	for k,v in ipairs(t) do
+		s=s+v
+	end
+	return s
+end
+
+local weakMT={ __mode = 'kv' }
+function table.weak( n )
+	return setmetatable( n or {}, weakMT)
+end
+
+local weakKMT={ __mode = 'k' }
+function table.weak_k( n )
+	return setmetatable( n or {}, weakKMT)
+end
+
+local weakVMT={ __mode = 'v' }
+function table.weak_v( n )
+	return setmetatable( n or {}, weakVMT)
+end
+
+function table.index( t, v )
+	for k, v1 in pairs( t ) do
+		if v1==v then return k end
+	end
+	return nil
+end
+
+function table.match( t, func )	
+	for k, v in pairs( t ) do
+		if func( k,v ) then return k, v end
+	end
+	return nil
+end
+
+function table.get( t, k, default )
+	local v = t[ k ]
+	if v == nil then return default end
+	return v
+end
+
+function table.haskey( t, k )
+	return t[ k ] ~= nil
+end
+
 function table.randremove(t)
 	local n=#t
 	if n>0 then
@@ -206,17 +296,23 @@ function table.split(t,s)
 	return t1,t2
 end
 
-function table.mergearray( a1, a2 )
-	local result = {}
-	for i, v in ipairs( a1 ) do
-		result[ i ] = v
-	end
-	local off = #a1
-	for i, v in ipairs( a2 ) do
-		result[ i + off ] = v
-	end
+function table.merge( a, b )
+	local result = table.simplecopy( a )
+	table.extend( result, b )
 	return result
 end
+
+-- function table.mergearray( a1, a2 )
+-- 	local result = {}
+-- 	for i, v in ipairs( a1 ) do
+-- 		result[ i ] = v
+-- 	end
+-- 	local off = #a1
+-- 	for i, v in ipairs( a2 ) do
+-- 		result[ i + off ] = v
+-- 	end
+-- 	return result
+-- end
 
 function table.keys( t )
 	local keys = {}
@@ -253,6 +349,39 @@ function table.affirm( t, k, default )
 	t[ k ] = default
 	return default
 end
+
+function table.sub( t, a, b )
+	b = b or -1
+	local l = #t
+	a = a > 0 and a or ( l + a + 1 )
+	b = b > 0 and b or ( l + b + 1 )
+	local t1 = {}
+	for i = a, b do
+		t1[ i - a + 1 ] = t[ i ]
+	end
+	return t1
+end
+
+function table.join( t1, t2 )
+	local result = {}
+	local n1 = #t1
+	local n2 = #t2
+	for i = 1, n1 do
+		result[ i ] = t1[i]
+	end
+	for i = 1, n2 do
+		result[ i + n1 ] = t2[i]
+	end
+	return result
+end
+
+local function _table_append( t, a, b, ... )
+	tinsert( t, a )
+	if b == nil then return end
+	return _table_append( t, b, ... )
+end
+table.append = _table_append
+
 
 --------------------------------------------------------------------
 ----MATH & Geometry
@@ -628,98 +757,6 @@ function isNonEmptyString( s )
 	local tt = type( s )
 	if tt == 'string' then return #s > 0 end
 	return false
-end
-
---------------------------------------------------------------------
--------Table Helpers
---------------------------------------------------------------------
-function vextend(t,data)
-	return setmetatable(data or {},{__index=t})
-end
-
-table.vextend=vextend
-
-function table.extract( t, ... )
-	local res = {}
-	local keys = {}
-	for i, key in ipairs( keys ) do
-		res[ i ] = t[ key ]
-	end
-	return unpack( res )
-end
-
-function table.extend(t,t1)
-	for k,v in pairs(t1) do
-		t[k]=v
-	end
-	return t
-end
-
-local next=next
-function table.len(t)
-	local v=0
-	for k in pairs(t) do
-		v=v+1
-	end
-	return v
-end
-
-function table.sub(t,s,e)
-	local t1={}
-	local l=#t
-	for i=s, e do
-		if i>l then break end
-		t1[i-s+1]= t[i]
-	end
-
-	return t1
-end
-
-function table.sum(t)
-	local s=0
-	for k,v in ipairs(t) do
-		s=s+v
-	end
-	return s
-end
-
-local weakMT={ __mode = 'kv' }
-function table.weak( n )
-	return setmetatable( n or {}, weakMT)
-end
-
-local weakKMT={ __mode = 'k' }
-function table.weak_k( n )
-	return setmetatable( n or {}, weakKMT)
-end
-
-local weakVMT={ __mode = 'v' }
-function table.weak_v( n )
-	return setmetatable( n or {}, weakVMT)
-end
-
-function table.index( t, v )
-	for k, v1 in pairs( t ) do
-		if v1==v then return k end
-	end
-	return nil
-end
-
-function table.match( t, func )	
-	for k, v in pairs( t ) do
-		if func( k,v ) then return k, v end
-	end
-	return nil
-end
-
-function table.get( t, k, default )
-	local v = t[ k ]
-	if v == nil then return default end
-	return v
-end
-
-function table.haskey( t, k )
-	return t[ k ] ~= nil
 end
 
 
@@ -1407,38 +1444,6 @@ function dirname(p)
 	local dname, bname = splitpath( p )
 	return dname
 end
-
-function table.sub( t, a, b )
-	b = b or -1
-	local l = #t
-	a = a > 0 and a or ( l + a + 1 )
-	b = b > 0 and b or ( l + b + 1 )
-	local t1 = {}
-	for i = a, b do
-		t1[ i - a + 1 ] = t[ i ]
-	end
-	return t1
-end
-
-function table.merge( t1, t2 )
-	local result = {}
-	local n1 = #t1
-	local n2 = #t2
-	for i = 1, n1 do
-		result[ i ] = t1[i]
-	end
-	for i = 1, n2 do
-		result[ i + n1 ] = t2[i]
-	end
-	return result
-end
-
-local function _table_append( t, a, b, ... )
-	tinsert( t, a )
-	if b == nil then return end
-	return _table_append( t, b, ... )
-end
-table.append = _table_append
 
 -------others------
 
