@@ -271,7 +271,7 @@ function Game:initSystem( config, fromEditor )
 		collectgarbage( 'setstepmul', 200 )	
 	end
 
-	MOAISim.setGCStep( 3 )
+	MOAISim.setGCStep( 2 )
 	MOAISim.setStep( 1/60 )
 	MOAISim.setCpuBudget( 1 )
 	MOAISim.clearLoopFlags()

@@ -1,5 +1,6 @@
 module 'mock'
 
+
 local function buildLUTShader()
 	local vsh = [[
 		attribute vec4 position;
@@ -103,11 +104,18 @@ end
 --------------------------------------------------------------------
 CLASS: CameraImageEffectColorGrading ( CameraImageEffect )
 	:MODEL{
-		Field 'LUT'  :asset( 'texture;color_grading' ) :getset( 'LUT' );
-		Field 'LUT2' :asset( 'texture;color_grading' ) :getset( 'LUT2' );
+		Field 'LUT'  :asset( 'texture;color_grading;lut_texture' ) :getset( 'LUT' );
+		Field 'LUT2' :asset( 'texture;color_grading;lut_texture' ) :getset( 'LUT2' );
 		Field 'mix'  :onset( 'updateMix' ) :range(0,1) :meta{ step = 0.1 } :widget('slider');
 		Field 'intensity' :onset( 'updateIntensity' ) :meta{ step = 0.1 };
 }
+
+local _ColorGradings = {}
+function refreshColorGradingTextures()
+	for g in pairs( _ColorGradings ) do
+		g:updateTex()
+	end
+end
 
 function CameraImageEffectColorGrading:__init()
 	self.intensity = 1
@@ -120,6 +128,16 @@ function CameraImageEffectColorGrading:__init()
 	self.mix   = 0
 	self.tex = MOAIMultiTexture.new()
 	self.tex:reserve( 3 )
+end
+
+function CameraImageEffectColorGrading:onAttach( ent )
+	CameraImageEffectColorGrading.__super.onAttach( self, ent )
+	_ColorGradings[ self ] = true
+end
+
+function CameraImageEffectColorGrading:onDetach( ent )
+	CameraImageEffectColorGrading.__super.onDetach( self, ent )
+	_ColorGradings[ self ] = nil
 end
 
 function CameraImageEffectColorGrading:onBuild( prop, texture, layer, passId )
@@ -136,6 +154,8 @@ function CameraImageEffectColorGrading:setLUT( path )
 	local atype = getAssetType( path )
 	if atype == 'color_grading' then
 		self.lutTex1 = mock.loadAsset( path ):getTexture()
+	elseif atype == 'lut_texture' then
+		self.lutTex1 = mock.loadAsset( path )
 	elseif atype == 'texture' then
 		local t = mock.loadAsset( path )
 		self.lutTex1 = t and t:getMoaiTexture()
@@ -152,6 +172,8 @@ function CameraImageEffectColorGrading:setLUT2( path )
 	local atype = getAssetType( path )
 	if atype == 'color_grading' then
 		self.lutTex2 = mock.loadAsset( path ):getTexture()
+	elseif atype == 'lut_texture' then
+		self.lutTex2 = mock.loadAsset( path )
 	elseif atype == 'texture' then
 		local t = mock.loadAsset( path )
 		self.lutTex2 = t and t:getMoaiTexture()

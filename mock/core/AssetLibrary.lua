@@ -261,7 +261,7 @@ end
 
 local function _findChildAsset( node, name, targetType, deep )
 	for childName, child in pairs( node.children ) do
-		if childName == name then
+		if childName == name or child:getPath():endwith( name ) then
 			local t = child:getType()
 			if ( not targetType ) or t:match( targetType ) then
 				return child
@@ -490,6 +490,18 @@ function findAsset( path, assetType )
 	return node and node.path or nil
 end
 
+function findChildAsset( parentPath, name, assetType, deep )
+	deep = deep ~= false
+	local parentNode = getAssetNode( parentPath )
+	if not parentNode then
+		_error( 'no parent asset:', parentPath )
+		return
+	end
+	local node = parentNode:findChild( name, assetType, deep )
+	return node and node.path or nil	
+end
+
+
 function findAndLoadAsset( path, assetType )
 	local node = findAssetNode( path, assetType )
 	if node then
@@ -611,7 +623,6 @@ function getCachedAsset( path )
 	if path == '' then return nil end
 	if not path   then return nil end
 	option = option or {}
-	policy   = option.policy or 'auto'
 	local node   = _getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )
