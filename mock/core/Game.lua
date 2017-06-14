@@ -272,22 +272,27 @@ function Game:initSystem( config, fromEditor )
 	end
 
 	MOAISim.setGCStep( 2 )
-	MOAISim.setStep( 1/60 )
-	MOAISim.setCpuBudget( 1 )
 	MOAISim.clearLoopFlags()
+	MOAISim.setStep( 1/60 )
+	MOAISim.setCpuBudget( 2 )
 	MOAISim.setLoopFlags( 
 			0
 			-- + MOAISim.LOOP_FLAGS_MULTISTEP
-			-- + MOAISim.LOOP_FLAGS_DEFAULT
+			+ MOAISim.LOOP_FLAGS_DEFAULT
 			-- + MOAISim.LOOP_FLAGS_SOAK
+			-- + MOAISim.SIM_LOOP_ALLOW_SPIN
 			-- + MOAISim.SIM_LOOP_ALLOW_BOOST
-			+ MOAISim.SIM_LOOP_ALLOW_SOAK
+			-- + MOAISim.SIM_LOOP_ALLOW_SOAK
 			-- + MOAISim.SIM_LOOP_NO_DEFICIT
 			-- + MOAISim.SIM_LOOP_NO_SURPLUS
 		)
-	-- MOAISim.setLongDelayThreshold( 30 )
-	-- MOAISim.setBoostThreshold( 0 )	
-	-- MOAISim.setStepMultiplier( 2 )	
+	MOAISim.setLongDelayThreshold( 10 )
+	MOAISim.setBoostThreshold( 2 )	
+	MOAISim.setStepMultiplier( 1 )	
+end
+
+function Game:resetSimTime()
+	MOAISim.setLoopFlags( MOAISim.SIM_LOOP_RESET_CLOCK )
 end
 
 function Game:initSubSystems( config, fromEditor )

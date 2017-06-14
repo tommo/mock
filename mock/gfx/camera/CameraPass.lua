@@ -220,7 +220,7 @@ function CameraPass:getRenderTarget( name )
 end
 
 function CameraPass:getRenderTargetTexture( name )
-	local target = self.renderTargets[ name ]
+	local target = self.renderTargets and self.renderTargets[ name ]
 	return target and target:getFrameBuffer()
 end
 
