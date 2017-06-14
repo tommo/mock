@@ -43,7 +43,6 @@ local function _reallocObjectGUID( obj, replaceMap )
 	local id1
 	if not id0 then
 		id1 = generateGUID()
-		replaceMap[ id0 ] = id1
 	else
 		local base, ns = id0:match( '(.*:)(%w+)$' )
 		if not ns then
