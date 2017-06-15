@@ -57,6 +57,7 @@ require 'mock.common.ScreenAnchor'
 --------------------------------------------------------------------
 --ETC
 require 'mock.common.ControlVariable'
+require 'mock.common.LinePath2D'
 require 'mock.common.Path'
 require 'mock.common.ShakeController'
 

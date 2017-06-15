@@ -1,5 +1,7 @@
 module 'mock'
 
+--TODO
+
 --------------------------------------------------------------------
 CLASS: PathVert ()
 
@@ -90,8 +92,8 @@ end
 CLASS: Path (mock.Component)
 	:MODEL{}
 
-mock.registerComponent( 'Path', Path )
-mock.registerEntityWithComponent( 'Path', Path )
+-- mock.registerComponent( 'Path', Path )
+-- mock.registerEntityWithComponent( 'Path', Path )
 
 function Path:__init()
 	self.pathData = PathData()

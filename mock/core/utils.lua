@@ -343,6 +343,29 @@ function table.reversed( t )
 	return t1
 end
 
+function table.reversed2( t )
+	local t1 = {}
+	local count = #t/2
+	for i = 0, count - 1 do
+		local j = count - i - 1
+		t1[ i * 2 + 1 ] = t[ j * 2 + 1 ]
+		t1[ i * 2 + 2 ] = t[ j * 2 + 2 ]
+	end
+	return t1
+end
+
+function table.reversed3( t )
+	local t1 = {}
+	local count = #t/3
+	for i = 0, count - 1 do
+		local j = count - i - 1
+		t1[ i * 3 + 1 ] = t[ j * 3 + 1 ]
+		t1[ i * 3 + 2 ] = t[ j * 3 + 2 ]
+		t1[ i * 3 + 3 ] = t[ j * 3 + 3 ]
+	end
+	return t1
+end
+
 function table.affirm( t, k, default )
 	local v = t[ k ]
 	if v then return v end
@@ -705,6 +728,40 @@ function projectPointToLine( ax, ay, bx, by, px, py )
 
 	return dx, dy 
 end
+
+
+function intersectLines( ax0, ay0, ax1, ay1, bx0, by0, bx1, by1 )
+	-- Denominator for ua and ub are the same, so store this calculation
+	local d = (by1 - by0) * (ax1 - ax0) - (bx1 - bx0) * (ay1 - ax0)
+
+	-- Make sure there is not a division by zero - this also indicates that the lines are parallel.
+	-- If n_a and n_b were both equal to zero the lines would be on top of each
+	-- other (coincidental).  This check is not done because it is not
+	-- necessary for this implementation (the parallel check accounts for this).
+	if (d == 0) then
+		return false
+	end
+
+	-- n_a and n_b are calculated as seperate values for readability
+	local n_a = (bx1 - bx0) * (ax0 - by0) - (by1 - by0) * (ax0 - bx0)
+	local n_b = (ax1 - ax0) * (ax0 - by0) - (ay1 - ax0) * (ax0 - bx0)
+
+	-- Calculate the intermediate fractional point that the lines potentially intersect.
+	local ua = n_a / d
+	local ub = n_b / d
+
+	-- The fractional point will be between 0 and 1 inclusive if the lines
+	-- intersect.  If the fractional calculation is larger than 1 or smaller
+	-- than 0 the lines would need to be longer to intersect.
+	if (ua >= 0 and ua <= 1 and ub >= 0 and ub <= 1) then
+		local x = ax0 + (ua * (ax1 - ax0))
+		local y = ax0 + (ua * (ay1 - ax0))
+		return true, x, y
+	end
+
+	return false
+end
+
 
 local sin=math.sin
 function wave(freq,min,max,off,timeoff)
