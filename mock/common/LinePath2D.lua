@@ -48,7 +48,9 @@ function LinePath2D:getStartPoint( world )
 	local verts = self.verts
 	local x, y = verts[ 1 ], verts[ 2 ]
 	if world then
-		x, y, z = self:getEntity():modelToWorld( x, y, 0 )
+		local ent = self:getEntity()
+		ent:forceUpdate()
+		x, y, z = ent:modelToWorld( x, y, 0 )
 	end
 	return x, y, 0
 end
@@ -58,7 +60,9 @@ function LinePath2D:getEndPoint( world )
 	local count = #verts
 	local x, y = verts[ count-1 ], verts[ count ]
 	if world then
-		x, y, z = self:getEntity():modelToWorld( x, y, 0 )
+		local ent = self:getEntity()
+		ent:forceUpdate()
+		x, y, z = ent:modelToWorld( x, y, 0 )
 	end
 	return x, y, 0
 end
@@ -124,6 +128,7 @@ function LinePath2D:makeSubPath( x0, y0, x1, y1 )
 	local verts = self.verts
 	local vcount = #verts/2
 	local ent = self:getEntity()
+	ent:forceUpdate()
 
 	local l = 0
 	local _x, _y = px0, py0
@@ -191,16 +196,17 @@ end
 
 function LinePath2D:projectPoint( x, y )
 	local ent = self:getEntity()
+	ent:forceUpdate()
 	x, y = ent:worldToModel( x, y )
 	local verts = self.verts
 	local vcount = #verts / 2
 	local dstMin = math.huge
 	local mx, my
 	local va, vb
-	if not self.looped then vcount = vcount - 1 end
-	for v0 = 1, vcount do
+	local tail = self.looped and vcount or vcount - 1
+	for v0 = 1, tail do
 		local i = ( v0 - 1 ) * 2
-		local v1 = v0 == vcount and 1 or ( v0 + 1 )
+		local v1 = ( v0 == vcount ) and 1 or ( v0 + 1 )
 		local j = ( v1 - 1 ) * 2
 		local x1,y1 = verts[ i + 1 ], verts[ i + 2 ]
 		local x2,y2 = verts[ j + 1 ], verts[ j + 2 ]
