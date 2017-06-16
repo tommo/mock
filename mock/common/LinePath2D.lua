@@ -80,6 +80,21 @@ function LinePath2D:updateVerts()
 		table.insert( outputVerts, outputVerts[ 1 ] )
 		table.insert( outputVerts, outputVerts[ 2 ] )
 	end
+	local length = 0
+	local length2 = 0
+	local x0,y0 
+	for i = 1, #outputVerts, 2 do
+		local x, y = outputVerts[ i ], outputVerts[ i+1 ]
+		if i > 1 then
+			local l2 = distanceSqrd( x0,y0, x,y )
+			local l = math.sqrt( l2 )
+			length = length + l
+			length2 = length2 + l2
+		end
+		x0,y0 = x, y
+	end
+	self.totalLength = length
+	self.totalLength2 = length2
 	self.outputVerts = outputVerts
 end
 
@@ -102,11 +117,16 @@ local insert = table.insert
 function LinePath2D:makeSubPath( x0, y0, x1, y1 )
 	local px0, py0, va0, vb0 = self:projectPoint( x0, y0 )
 	local px1, py1, va1, vb1 = self:projectPoint( x1, y1 )
+	local looped = self.looped
 	local output = {}
 	insert( output, px0 )
 	insert( output, py0 )
 	local verts = self.verts
+	local vcount = #verts/2
 	local ent = self:getEntity()
+
+	local l = 0
+	local _x, _y = px0, py0
 	if va0 > va1 then
 		for i = va0, vb1, -1 do
 			local k = ( i - 1 ) * 2
@@ -114,18 +134,58 @@ function LinePath2D:makeSubPath( x0, y0, x1, y1 )
 			x, y = ent:modelToWorld( x, y )
 			insert( output, x )
 			insert( output, y )
+			l = l + distance( x, y, _x, _y)
+			_x, _y = x, y
 		end
 	elseif va0 < va1 then
-		for i = va1, vb0, 1 do
+		for i = vb0, va1, 1 do
 			local k = ( i - 1 ) * 2
 			local x, y = verts[ k + 1 ], verts[ k + 2 ]
 			x, y = ent:modelToWorld( x, y )
 			insert( output, x )
 			insert( output, y )
+			l = l + distance( x, y, _x, _y)
+			_x, _y = x, y
 		end
 	end
 	insert( output, px1 )
 	insert( output, py1 )
+	l = l + distance( px1, py1, _x, _y)
+	if looped and l > self.totalLength/2 then --make reversed path
+		output = {}
+		insert( output, px0 )
+		insert( output, py0 )		
+		print( va0, va1 )
+		if va0 > va1 then -- dir+
+			if vb0 == 1 then vb0 = vcount + 1 end
+			local va1 = va1 + vcount
+			local vb1 = vb1 + vcount
+			print( vcount, vb0, va1, 1 )
+			for i = vb0, va1, 1 do
+				i = ( ( i - 1 ) % vcount ) + 1
+				local k = ( i - 1 ) * 2
+				local x, y = verts[ k + 1 ], verts[ k + 2 ]
+				x, y = ent:modelToWorld( x, y )
+				insert( output, x )
+				insert( output, y )
+			end
+		elseif va0 < va1 then
+			local va0 = va0 + vcount
+			local vb0 = vb0 + vcount
+			if vb1 == 1 then vb1 = vcount + 1 end
+			print( vcount, va0, vb1, -1 )
+			for i = va0, vb1, -1 do
+				i = ( ( i - 1 ) % vcount ) + 1
+				local k = ( i - 1 ) * 2
+				local x, y = verts[ k + 1 ], verts[ k + 2 ]
+				x, y = ent:modelToWorld( x, y )
+				insert( output, x )
+				insert( output, y )
+			end
+		end
+		insert( output, px1 )
+		insert( output, py1 )
+	end
 	return output
 end
 
@@ -137,7 +197,7 @@ function LinePath2D:projectPoint( x, y )
 	local dstMin = math.huge
 	local mx, my
 	local va, vb
-	if not looped then vcount = vcount - 1 end
+	if not self.looped then vcount = vcount - 1 end
 	for v0 = 1, vcount do
 		local i = ( v0 - 1 ) * 2
 		local v1 = v0 == vcount and 1 or ( v0 + 1 )

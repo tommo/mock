@@ -8,6 +8,7 @@ require 'mock.sqscript.SQNodeCoroutine'
 require 'mock.sqscript.SQNodeMsgCallback'
 require 'mock.sqscript.SQNodeLog'
 require 'mock.sqscript.SQNodeLoop'
+require 'mock.sqscript.SQNodeQueue'
 
 require 'mock.sqscript.SQNodeWait'
 
@@ -38,3 +39,5 @@ require 'mock.sqscript.SQNodeScene'
 --------------------------------------------------------------------
 require 'mock.sqscript.SQQuestSupport'
 require 'mock.sqscript.SQNodeQuest'
+
+

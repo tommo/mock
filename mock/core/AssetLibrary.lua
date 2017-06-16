@@ -169,6 +169,7 @@ function loadAssetLibrary( indexPath, searchPatches )
 	emitSignal( 'asset_library.loaded' )
 	_Stopwatch.stop( 'load_asset_library' )
 	_log( _Stopwatch.report( 'load_asset_library' ) )
+	return true
 end
 
 local function _extendDeep( t0, t1 )

@@ -387,7 +387,9 @@ function Game:initAsset( config, fromEditor )
 
 	--assetlibrary
 	_stat( '...loading asset library' )
-	loadAssetLibrary( self.assetLibraryIndex, not fromEditor )
+	if not loadAssetLibrary( self.assetLibraryIndex, not fromEditor ) then
+		error( 'failed loading asset library' )
+	end
 	loadTextureLibrary( self.textureLibraryIndex )
 	getTextureLibrary():clearEmptyNodes()
 	

@@ -775,7 +775,7 @@ function SQRoutineState:__init( entryNode, routine )
 	self.currentQueue = {}
 	self.index = 1
 	self.nodeEnvMap = {}
-
+	self.globalNodeEnvMap = {}
 	self.msgListeners = {}
 
 	self.subRoutineStates = {}
@@ -867,6 +867,11 @@ end
 function SQRoutineState:getNodeEnvTable( node )
 	return self.nodeEnvMap[ node ]
 end
+
+function SQRoutineState:getGlobalNodeEnvTable( node )
+	return self.globalState:getGlobalNodeEnvTable( node )
+end
+	
 
 -- function SQRoutineState:registerMsgCallbacks()
 -- 	local msgListeners = table.weak_k()
@@ -1101,6 +1106,7 @@ function SQState:__init()
 	self.coroutines = {}
 	self.signalCounters = {}
 	self.env = {}
+	self.globalNodeEnvMap = {}
 	self.evalEnv = false
 end
 
@@ -1237,6 +1243,15 @@ function SQState:startAllRoutines()
 		end
 	end
 	return true
+end
+
+function SQState:getGlobalNodeEnvTable()
+	local env = self.globalNodeEnvMap[ node ]
+	if not env then
+		env = {}
+		self.globalNodeEnvMap[ node ] = env
+	end
+	return env
 end
 
 --------------------------------------------------------------------
