@@ -46,6 +46,10 @@ CLASS: PartialTransformLink ()
 		Field 'sclX' :boolean();
 		Field 'sclY' :boolean();
 		Field 'sclZ' :boolean();
+		'----';
+		Field 'pivX' :boolean();
+		Field 'pivY' :boolean();
+		Field 'pivZ' :boolean();
 	}
 mock.registerComponent( 'PartialTransformLink', PartialTransformLink ) 
 
@@ -61,6 +65,9 @@ function PartialTransformLink:__init()
 	self.sclX = false
 	self.sclY = false
 	self.sclZ = false
+	self.pivX = false
+	self.pivY = false
+	self.pivZ = false
 end
 
 function PartialTransformLink:onStart()
@@ -111,6 +118,17 @@ function PartialTransformLink:applyLink()
 		end
 		if self.sclZ then
 			pt:setAttrLink( MOAIProp.ATTR_Z_SCL, ps, MOAIProp.ATTR_Z_SCL )
+		end
+
+		if self.pivX then
+			print( 'setting piv')
+			pt:setAttrLink( MOAIProp.ATTR_X_PIV, ps, MOAIProp.ATTR_X_PIV )
+		end
+		if self.pivY then
+			pt:setAttrLink( MOAIProp.ATTR_Y_PIV, ps, MOAIProp.ATTR_Y_PIV )
+		end
+		if self.pivZ then
+			pt:setAttrLink( MOAIProp.ATTR_Z_PIV, ps, MOAIProp.ATTR_Z_PIV )
 		end
 	end		
 end

@@ -125,6 +125,7 @@ end
 
 function BaseClass:DEPRECATED( msg )
 	self.__deprecated = { msg = msg }
+	return self
 end
 
 function BaseClass:MEMBER( t )
