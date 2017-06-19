@@ -6,3 +6,4 @@ require 'mock.editor.DebugSceneGraphView'
 require 'mock.editor.DebugMemoryView'
 
 
+require 'mock.editor.GIISync'

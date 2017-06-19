@@ -30,6 +30,7 @@ function Scene:__init( option )
 	self.layersByName    = {}
 	self.entities        = {}
 	self.entitiesByName  = {}
+	self._GUIDCache      = {}
 	self.entityCount     = 0
 
 	self.pendingStart    = {}
@@ -735,6 +736,19 @@ function Scene:findEntityCom( entName, comId )
 	return nil
 end
 
+function Scene:findEntityByGUID( guid )
+	local cache = self._GUIDCache
+	local v = cache[ guid ]
+	if v ~= nil then return v end
+	for ent in pairs( self.entities ) do
+		if ent.__guid == guid then
+			cache[ guid ] = ent
+			return ent
+		end
+	end
+	cache[ guid ] = false
+	return false
+end
 
 local function collectEntity( e, typeId, collection )
 	if isEditorEntity( e ) then return end
@@ -799,6 +813,7 @@ end
 
 function Scene:clear( keepEditorEntity )
 	_stat( 'clearing scene' )
+	self._GUIDCache = {}
 	local entityListener = self.entityListener
 	if entityListener then
 		self.entityListener = false

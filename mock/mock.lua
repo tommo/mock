@@ -27,12 +27,6 @@ luaExtName = luaExtName or '.lua'
 --------------------------------------------------------------------
 module( 'mock',  package.seeall )
 
--- package.path = './?'..luaExtName
-function packagePath(p)
-	package.path = package.path..';'..p..'/?'..luaExtName
-	package.path = package.path..';'..p..'/?/init'..luaExtName
-end
-
 -- print( 'LUA Version:', _VERSION )
 
 -- setmetatable( _G, { 
@@ -113,8 +107,7 @@ function mock.injectGlobalSymbols( env )
 		'SingleEntity',
 		'Scene',
 		'game',
-		'_DebugDraw',
-		'packagePath',
+		'_DebugDraw'
 	}	
 	env = env or _G
 	for i, k in ipairs( globalSymbols ) do

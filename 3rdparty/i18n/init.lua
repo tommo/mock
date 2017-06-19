@@ -1,9 +1,9 @@
 module ( 'i18n', package.seeall )
 
-require 'mock.3rdparty.i18n.plural'
-require 'mock.3rdparty.i18n.interpolate'
-require 'mock.3rdparty.i18n.variants'
-require 'mock.3rdparty.i18n.version'
+require 'i18n.plural'
+require 'i18n.interpolate'
+require 'i18n.variants'
+require 'i18n.version'
 
 function new_i18n()
   local i18n = {}
