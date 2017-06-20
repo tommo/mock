@@ -35,17 +35,29 @@ CLASS: SQNodeQueue ( SQNodeGroup )
 function SQNodeQueue:__init()
 	self.entries = {}
 	self.name = 'QueueGroup'
+	self.wrapping = false
 end
 
 function SQNodeQueue:getRichText()
 	return string.format( '<cmd>QUEUE</cmd> [ <group>%s</group> ]', self.name )
 end
 
+function SQNodeQueue:load( data )
+	local args = data.args
+	self.wrapping = self:hasTag( 'wrap' )
+end
+
 function SQNodeQueue:enter( state, env )
 	local env2 = state:getGlobalNodeEnvTable( self )
 	local idx = env2[ 'current' ] or 0
 	local jumpTo = self.entries[ idx + 1 ]
-	env2[ 'current' ] = ( idx + 1 ) % #self.entries
+	local nextIdx
+	if self.wrapping then
+		nextIdx = ( idx + 1 ) % #self.entries
+	else
+		nextIdx = math.min( idx + 1, #self.entries - 1 )
+	end
+	env2[ 'current' ] = nextIdx
 	env[ 'selected' ] = jumpTo
 	return true
 end
