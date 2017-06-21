@@ -741,7 +741,7 @@ function SceneDeserializer:deserializeMultipleScene( data, scene )
 			)
 		end
 
-		local objMap = self:_prepareEntitiesObjMap( groupData, objMap )
+		local objMap = self:_prepareEntitiesObjMap( groupData, nil )
 		for k, obj in pairs( objMap ) do
 			if not k:startwith( '!' ) then
 				globalMap[ k ] = obj
@@ -1036,7 +1036,7 @@ function loadSceneDataFromPath( path, option )
 		local files = MOAIFileSystem.listFiles( path )
 		local rootGroupDataList = {}
 		local assetDependency = {}
-		local ignoreGroupFitler = option.ignoreGroupFilter
+		local ignoreGroupFilter = option.ignoreGroupFilter
 
 		for i, filename in ipairs( files ) do
 			if filename:endwith( _SCENE_GROUP_EXTENSION ) then

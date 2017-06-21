@@ -27,16 +27,19 @@ luaExtName = luaExtName or '.lua'
 --------------------------------------------------------------------
 module( 'mock',  package.seeall )
 
--- print( 'LUA Version:', _VERSION )
-
--- setmetatable( _G, { 
--- 	__index = function(t, k)
--- 		if k:find( 'MOAI' ) then return end
--- 		print('getting empty global:', k )
--- 		print(debug.traceback())
--- 		return nil
--- 	end
--- })
+local _WARNED = {}
+setmetatable( _G, { 
+	__index = function(t, k)
+		if t == _G then
+			if k == 'mock_edit' then return end
+			if k:find( 'MOAI' ) then return end
+			if _WARNED[ k ] then return nil end
+			_WARNED[ k ] = true
+			_error( 'undefined global:', k )
+		end
+		return nil
+	end
+})
 
 require 'mock.core'
 --------------------------------------------------------------------
@@ -89,6 +92,9 @@ require 'mock.ui'
 
 ----Effects
 require 'mock.effect'
+
+----Extra
+require 'mock.extra'
 
 ---------------------------------------------------------------------
 ----Editor

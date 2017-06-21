@@ -47,13 +47,6 @@ require 'mock.common.MsgRedirector'
 require 'mock.common.MsgBroadcast'
 require 'mock.common.MsgTarget'
 
-
---------------------------------------------------------------------
----LAYOUT
-require 'mock.common.Layout'
-require 'mock.common.ScreenAnchor'
-
-
 --------------------------------------------------------------------
 --ETC
 require 'mock.common.ControlVariable'

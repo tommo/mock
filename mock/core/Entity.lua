@@ -285,7 +285,7 @@ function Entity:destroyNow()
 	scene.entityCount = scene.entityCount - 1
 	
 	--callback
-	if entityListener then entityListener( 'remove', self, scene, layer ) end
+	if entityListener then entityListener( 'remove', self, scene ) end
 
 	self.scene      = false
 	self.components = false	

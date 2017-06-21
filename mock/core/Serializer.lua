@@ -554,7 +554,7 @@ function serializeToFile( obj, path, compact )
 	else
 		_error( 'can not write to file', path )
 	end
-	return data
+	return true
 end
 
 function deserializeFromFile( obj, path, objMap )

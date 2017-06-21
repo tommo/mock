@@ -109,7 +109,7 @@ local function _initAsQuadTree( partition, w, h, levels )
 	partition:reserveLevels( #levels )
 	for i, grid in ipairs( levels )  do
 		local gw, gh = math.ceil( w / grid ), math.ceil( h / grid )
-		partition:reserveLevels( i, gird, gw, gh )
+		partition:reserveLevels( i, grid, gw, gh )
 	end
 end
 

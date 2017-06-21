@@ -165,7 +165,6 @@ local function MSpriteLoader( node )
 	local sprite = {
 		frameDeck       = deck,
 		animations      = animations,
-		texture         = tex,
 		features        = features,
 		featureNames    = featureNames,
 		indexToMetaData = indexToMetaData

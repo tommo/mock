@@ -74,8 +74,14 @@ function ComponentScript:buildInstance( obj, env )
 	if not dataClass then return false end
 
 	local dataInstance = dataClass()
-	
-	local delegate = setmetatable( env or {}, { __index = _G } )
+	local delegate = setmetatable( env or {
+			onStart  = false,
+			onThread = false,
+			onMsg    = false,
+			onUpdate = false,
+			onAttach = false,
+			onDetach = false
+		}, { __index = _G } )
 	delegate._M = delegate
 	delegate.MODEL = function( t ) end --do nothing
 	
@@ -102,7 +108,7 @@ function ComponentScript:buildInstance( obj, env )
 		_warn( 'failed build component script instance' )
 		return false
 	end
-	local __init = delegate.__init
+	local __init = rawget( delegate, '__init' )
 	if __init then
 		__init()
 	end

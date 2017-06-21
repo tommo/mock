@@ -775,12 +775,15 @@ function SQRoutineState:__init( entryNode, routine )
 	self.currentQueue = {}
 	self.index = 1
 	self.nodeEnvMap = {}
-	self.globalNodeEnvMap = {}
 	self.msgListeners = {}
 
 	self.subRoutineStates = {}
 	self.FFTargets = {}
 	return self:reset()
+end
+
+function SQRoutineState:getGlobalState()
+	return self.globalState
 end
 
 function SQRoutineState:getActor()
@@ -1245,7 +1248,7 @@ function SQState:startAllRoutines()
 	return true
 end
 
-function SQState:getGlobalNodeEnvTable()
+function SQState:getGlobalNodeEnvTable( node )
 	local env = self.globalNodeEnvMap[ node ]
 	if not env then
 		env = {}

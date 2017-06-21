@@ -37,6 +37,12 @@ function printf(patt,...)
 	return print(string.format(patt,...))
 end
 
+function getG( key, default )
+	local v = rawget( _G, key )
+	if v == nil then return default end
+	return v
+end
+
 --------------------------------------------------------------------
 -----!!!!! ENABLE this to find forgotten log location !!!!
 --------------------------------------------------------------------

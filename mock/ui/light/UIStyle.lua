@@ -222,6 +222,10 @@ function UIStyleSheet:load( src )
 		end
 	end
 
+	local function _findAsset(...)
+		--TODO
+	end
+	
 	local items, imports, assets = _loadUIStyleSheetSource( src, _findAsset )
 	if not items then
 		self.items = {}

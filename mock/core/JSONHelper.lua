@@ -42,7 +42,7 @@ function tryLoadJSONFile( path, clearNulls )
 	return nil
 end
 
-function saveJSONFile( data, path )
+function saveJSONFile( data, path, dataInfo )
 	local output = encodeJSON( data )
 	local file = io.open( path, 'w' )
 	if file then

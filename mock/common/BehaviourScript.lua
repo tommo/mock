@@ -71,7 +71,14 @@ function BehaviourScript:updateScript( ent )
 	local finalScript = scriptHeader .. self.script .. scriptTail
 	local loader, err = loadstring( finalScript, 'Script@'..ent:getName() )
 	if not loader then return _error( err ) end
-	local delegate = setmetatable( {}, { __index = _G } )
+	local delegate = setmetatable( {
+			onStart  = false,
+			onThread = false,
+			onMsg    = false,
+			onUpdate = false,
+			onAttach = false,
+			onDetach = false
+		}, { __index = _G } )
 	setfenv( loader, delegate )
 	
 	local errMsg, tracebackMsg

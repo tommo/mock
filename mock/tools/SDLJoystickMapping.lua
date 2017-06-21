@@ -169,7 +169,7 @@ local function parseLine( line )
 	result[ 'GUID' ] = GUID
 	result[ 'NAME' ] = name
 	result[ 'button_map' ] = buttonToCommand
-	result[ 'hat_map'    ] = hatsToCommand
+	result[ 'hat_map'    ] = hatToCommand
 	result[ 'axis_map'   ] = axisToCommand
 
 	local mapping 

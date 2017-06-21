@@ -637,12 +637,13 @@ end
 function releaseAsset( path )
 	local node = _getAssetNode( path )
 	if node then
+		local cached = node.cached
 		local atype  = node.type
 		local assetLoaderConfig =  AssetLoaderConfigs[ atype ]
 		local unloader = assetLoaderConfig and assetLoaderConfig.unloader
 		local newCacheTable = makeAssetCacheTable()
 		if unloader then
-			unloader( node, asset, newCacheTable )
+			unloader( node, cached and cached.asset, newCacheTable )
 		end
 		node.cached = newCacheTable
 		_stat( 'released node asset', path, node )

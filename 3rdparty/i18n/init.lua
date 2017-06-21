@@ -17,7 +17,7 @@ function new_i18n()
   local interpolate = interpolate
   local plural      = new_plural()
   local variants    = new_variants()
-  local version     = version
+  local version     = '0.9.1'
 
   i18n.plural, i18n.interpolate, i18n.variants, i18n.version, i18n._VERSION = plural, interpolate, variants, version, version
 

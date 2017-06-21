@@ -117,6 +117,8 @@ end
 function _error( ... )
 	if _logLevel >= MOAILogMgr.LOG_ERROR then
 		--print( debug.traceback( 2 ) )
+		MOAILog( singletraceback( 3 ) )
+		MOAILog('\n')
 		MOAILog('[ERROR:Lua]\t')
 		return _log( ... )
 	end
@@ -154,4 +156,4 @@ function reportHistogram()
 	f:close()
 end
 
-setLogLevel( _G.MOCK_LOG_LEVEL or 'warning' )
+setLogLevel( getG( 'MOCK_LOG_LEVEL', 'warning' ) )

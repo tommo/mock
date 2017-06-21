@@ -272,7 +272,7 @@ local function FMODStudioProjectLoader( node )
 	return proj
 end
 
-local function FMODStudioProjectUnLoader( node, asset )
+local function FMODStudioProjectUnloader( node, asset )
 	local path = node:getPath()
 	local proj = loadedFMODStudioProjects[ path ]
 	if proj then

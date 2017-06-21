@@ -601,7 +601,7 @@ function Game:initGraphics( option, fromEditor )
 	if not fromEditor then
 		--FIXME: crash here if no canvas shown up yet
 		MOAISim.openWindow( self.title, w, h  )
-		if initialFullscreen then
+		if self.initialFullscreen then
 			self:enterFullscreenMode()
 		end
 	end

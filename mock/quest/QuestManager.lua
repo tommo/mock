@@ -355,7 +355,7 @@ function QuestManager:getQuestNode( fullname, defaultSessionName )
 		end
 		return false
 	end
-	node = session:getNode( nodeName )
+	local node = session:getNode( nodeName )
 	return session, node
 end
 
