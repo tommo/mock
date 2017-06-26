@@ -21,10 +21,11 @@ function CodeTileset:__init()
 	self.idToTile   = {}
 	self.nameToId   = {}
 	self.idToName   = {}
-
+	self.debugVisible = false
 end
 
 function CodeTileset:loadData( data )
+	self.debugVisible = data[ 'debug_visible' ] or false
 	self.defaultTileData = data[ 'default' ] or DefaultCodeTileData
 	local tiles = data[ 'tiles' ] or {}
 	local id = 1
