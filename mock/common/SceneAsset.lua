@@ -80,7 +80,8 @@ local function collectOverrideObjectData( objMap, obj, collected, collectedExtra
 		end
 	end
 
-	local partialData = _serializeObject( obj, objMap, true, fieldList )
+	local partialData = _serializeObject( obj, objMap, false, fieldList )
+	-- local partialData = _serializeObject( obj, objMap, true, fieldList )
 	local body = partialData['body']
 	if fields and next( fields ) then
 		for i, k in ipairs( fieldList ) do
@@ -97,7 +98,7 @@ end
 local function collectOverrideEntityData( objMap, entity, collected, collectedExtra )
 	collectOverrideObjectData( objMap, entity, collected, collectedExtra )
 	if entity.components then
-		for MOAIFMODStudioMgr, com in ipairs( entity:getSortedComponentList() ) do
+		for _, com in ipairs( entity:getSortedComponentList() ) do
 			collectOverrideObjectData( objMap, com, collected, collectedExtra )
 		end
 	end
@@ -974,11 +975,19 @@ function makeEntityGroupPasteData( copyData, idGenerator )
 end
 
 function makeComponentCopyData( com )
-	--TODO
+	local data = mock.serialize( com )
+	return data
 end
 
 function makeComponentPasteData( copyData, idGenerator )
-	--TODO
+	local guids   = copyData['guid']
+	local json   = copyData[ 'data' ]
+	for guid in pairs( guids ) do
+		local newId = idGenerator()
+		json = json:gsub( guid, newId )
+	end
+	local entityData = decodeJSON( json )
+	return entityData
 end
 
 

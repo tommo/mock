@@ -1033,7 +1033,6 @@ function SQRoutineState:exitGroup()
 	if res == 'jump' then
 		return self:doJump()
 	elseif res == 'loop' then
-		--Loop
 		self.index = 0
 	elseif res == 'end' then
 		self:setLocalRunning( false )

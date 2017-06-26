@@ -190,6 +190,10 @@ function table.sum(t)
 	return s
 end
 
+function table.swap( t, k1, k2 )
+	t[ k2 ], t[ k1 ] = t[ k1 ], t[ k2 ]
+end
+
 local weakMT={ __mode = 'kv' }
 function table.weak( n )
 	return setmetatable( n or {}, weakMT)

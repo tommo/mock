@@ -1,5 +1,6 @@
 module 'mock'
 
+local DEFAULT_TOUCH_PADDING = 10
 local insert, remove = table.insert, table.remove
 
 --------------------------------------------------------------------

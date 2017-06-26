@@ -213,19 +213,19 @@ function installInputListener( owner, option )
 
 	--MOTION Callbakcs
 	
-	owner.__inputListenerData = {
+	rawset( owner, '__inputListenerData', {
 		mouseCallback    = mouseCallback,
 		keyboardCallback = keyboardCallback,
 		touchCallback    = touchCallback,
 		joystickCallback = joystickCallback,
 		inputDevice      = inputDevice,
 		category         = category
-	}
+	} )
 
 end
 
 function uninstallInputListener( owner )
-	local data = owner.__inputListenerData
+	local data = rawget( owner, '__inputListenerData' )
 	if not data then return end	
 	local inputDevice = data.inputDevice
 	if data.mouseCallback then

@@ -310,9 +310,10 @@ function Entity:attach( com )
 	end
 	self._componentInfo = nil
 	self._comCache = false
+	local maxId = self._maxComponentID + 1
+	self._maxComponentID = maxId
+	com._componentID = maxId
 	self.components[ com ] = com:getClass()
-	com._componentID = self._maxComponentID
-	self._maxComponentID = self._maxComponentID + 1
 	if self.scene then
 		com._entity = self		
 		local onAttach = com.onAttach

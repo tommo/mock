@@ -61,7 +61,7 @@ CLASS: SQNodeLoopInfinite ( SQNodeLoopBase )
 	}
 
 function SQNodeLoopInfinite:checkLoopDone( state, env )
-	return true
+	return false
 end
 
 function SQNodeLoopInfinite:getRichText()

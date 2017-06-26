@@ -28,6 +28,8 @@ local getmetatable  = getmetatable
 
 local rawget, rawset = rawget, rawset
 local insert = table.insert
+local type = type
+local next = next
 --------------------------------------------------------------------
 -- CLASS
 --------------------------------------------------------------------
