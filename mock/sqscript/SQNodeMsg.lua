@@ -47,8 +47,8 @@ end
 function SQNodeChildMsg:load( data )
 	local args = data.args
 	self.target = args[1]
-	self.msg = args[2] or false
-	self.data = args[3] or ''
+	self.msg    = args[2] or false
+	self.data   = args[3] or ''
 end
 
 function SQNodeChildMsg:enter( state, env )

@@ -36,21 +36,31 @@ end
 
 
 --------------------------------------------------------------------
-CLASS: SQNodeWaitCoroutines ( SQNode )
+CLASS: SQNodeCoroutineWaitAll ( SQNode )
 	:MODEL{}
 
 
-function SQNodeWaitCoroutines:step( state, env, dt )
+function SQNodeCoroutineWaitAll:step( state, env, dt )
 	if state:isSubRoutineRunning() then return false end
 	return true
 end
 
-function SQNodeWaitCoroutines:getRichText()
+function SQNodeCoroutineWaitAll:getRichText()
 	return string.format( '<cmd>WAIT_COROUTINES</cmd>' )
 end
 
+--------------------------------------------------------------------
+CLASS: SQNodeCoroutinePause ( SQNode )
+	:MODEL{}
+
+function SQNodeCoroutinePause:enter()
+	
+end
 
 --------------------------------------------------------------------
 registerSQNode( 'coroutine',    SQNodeCoroutine )
-registerSQNode( 'wait_coroutines',    SQNodeWaitCoroutines )
+registerSQNode( 'coroutine_wait_all',    SQNodeCoroutineWaitAll )
+
+--legacy alias
+registerSQNode( 'wait_coroutines',    SQNodeCoroutineWaitAll )
 

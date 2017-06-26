@@ -282,6 +282,10 @@ function SQNode:exit( state, env )
 	return true
 end
 
+function SQNode:pause( state, env, paused )
+	return true
+end
+
 function SQNode:getContext()
 	return self.context
 end
@@ -375,15 +379,15 @@ end
 
 function SQNode:_log( ... )
 	local prefix = self:getPosText()
-	print( string.format( '[LOG:sq]\t> %s', prefix ), ... )
+	_log( string.format( '[LOG:sq]\t> %s', prefix ), ... )
 end
 
 function SQNode:_warn( ... )
-	return print( string.format( '[WARN:sq]%s\t>', self:getPosText() ), ... )
+	return _log( string.format( '[WARN:sq]%s\t>', self:getPosText() ), ... )
 end
 
 function SQNode:_error( ... )
-	return print( string.format( '[ERROR:sq]%s\t>', self:getPosText() ), ... )
+	return _log( string.format( '[ERROR:sq]%s\t>', self:getPosText() ), ... )
 end
 
 --------------------------------------------------------------------
@@ -563,6 +567,43 @@ end
 
 
 --------------------------------------------------------------------
+CLASS: SQNodePause ( SQNode )
+function SQNodePause:__init()
+	self.paused = true
+end
+
+function SQNodePause:load( data )
+	self.target = data.args[ 1 ]
+end
+
+function SQNodePause:enter( state )
+	local target = self.target
+	local targetState
+	if target then
+		if target == '.parent' then
+			targetState = state.parentState
+		elseif target == '.root' then
+			targetState = state:getRootState()
+		else
+			targetState = state:findInAllSubRoutineState( target )
+		end
+	else
+		targetState = state
+	end
+	if targetState then
+		targetState:pause( self.paused )
+	else
+		self:_error( 'target state not found' )
+	end
+end
+
+--------------------------------------------------------------------
+CLASS: SQNodeResume ( SQNodePause )
+function SQNodeResume:__init()
+	self.paused = false
+end
+
+--------------------------------------------------------------------
 CLASS: SQNodeRoot( SQNodeGroup )
 
 
@@ -642,7 +683,6 @@ function SQRoutine:__init()
 	self.comment = ''
 
 	self.labelNodes = {}
-	self.msgCallbackNodes = {}
 end
 
 function SQRoutine:getScript()
@@ -763,8 +803,10 @@ CLASS: SQRoutineState ()
 function SQRoutineState:__init( entryNode, routine )
 	self.routine = entryNode:getRoutine()
 	self.globalState = false
-
+	self.id = entryNode.id or false
 	self.localRunning = false
+	self.localPaused  = false
+	self.paused       = false
 	self.started = false
 	self.jumpTarget = false
 
@@ -830,6 +872,36 @@ function SQRoutineState:stop()
 	self:unregisterMsgCallbacks()
 end
 
+function SQRoutineState:pause( paused )
+	self.localPaused = paused ~= false
+	self:updatePauseState()
+end
+
+function SQRoutineState:calcPaused()
+	if self.localPaused then return true end
+	local parent = self.parentState
+	while parent do
+		if parent.localPaused then return true end
+		parent = parent.parentState
+	end
+	return false
+end
+
+function SQRoutineState:updatePauseState()
+	local p0 = self.paused
+	local p1 = self:calcPaused()
+	if p1 == p0 then return end
+	self.paused = p1
+	for i, subState in ipairs( self.subRoutineStates ) do
+		subState:updatePauseState()
+	end
+	if self.currentNode then
+		self.currentNode:pause( 
+			self, self.currentNodeEnv, self.paused
+		)
+	end
+end
+
 function SQRoutineState:isRunning()
 	if self.localRunning then return true end
 	if self:isSubRoutineRunning() then return true end
@@ -875,25 +947,6 @@ function SQRoutineState:getGlobalNodeEnvTable( node )
 	return self.globalState:getGlobalNodeEnvTable( node )
 end
 	
-
--- function SQRoutineState:registerMsgCallbacks()
--- 	local msgListeners = table.weak_k()
--- 	-- for i, entryNode in ipairs( )
--- 	for i, callbackNode in ipairs( self.routine.msgCallbackNodes ) do
--- 		for j, target in ipairs( callbackNode:getContextEntities( self ) ) do
--- 			local msg1 = callbackNode.msg
--- 			local listener = function( msg, data, src )
--- 				if msg == msg1 then
--- 					return self:startSubRoutine( callbackNode )
--- 				end
--- 			end
--- 			target:addMsgListener( listener )
--- 			msgListeners[ target ] = listener
--- 		end
--- 	end
--- 	self.msgListeners = msgListeners
--- end
-
 function SQRoutineState:registerMsgCallback( msg, node )
 	local msgListeners = self.msgListeners
 	for j, target in ipairs( node:getContextEntities( self ) ) do
@@ -915,13 +968,28 @@ function SQRoutineState:unregisterMsgCallbacks()
 	end
 end
 
-function SQRoutineState:startMsgCallback( msg )
-	local queue = self.routine:findMsgCallback( msg )
-	if queue then
-		for i, entryNode in ipairs( queue ) do
-			self:startSubRoutine( entryNode )
-		end
+function SQRoutineState:getRootState()
+	local s = self
+	while true do
+		local p = s.parentState
+		if not p then return s end
+		s = p
 	end
+end
+
+function SQRoutineState:findInAllSubRoutineState( name )
+	return self:getRootState():findSubRoutineState( name )
+end
+
+function SQRoutineState:findSubRoutineState( name )
+	for i, state in ipairs( self.subRoutineStates ) do
+		if state.id == name then return state end
+	end
+	for i, state in ipairs( self.subRoutineStates ) do
+		local result = state:findSubRoutineState( name )
+		if result then return result end
+	end
+	return false
 end
 
 function SQRoutineState:startSubRoutine( entryNode )
@@ -954,9 +1022,11 @@ end
 
 
 function SQRoutineState:update( dt )
+	if self.paused then return end
 	for i, subState in ipairs( self.subRoutineStates ) do
 		subState:update( dt )
 	end
+	if self.paused then return end
 	if self.localRunning then
 		self:updateNode( dt )
 	end
@@ -1370,6 +1440,8 @@ registerSQNode( 'do',    SQNodeGroup )
 registerSQNode( 'end',   SQNodeEnd   )
 registerSQNode( 'goto',  SQNodeGoto  )
 registerSQNode( 'skip',  SQNodeSkip  )
+registerSQNode( 'pause',  SQNodePause  )
+registerSQNode( 'resume',  SQNodeResume  )
 
 registerSQNode( 'FF',  SQNodeFastForward  )
 

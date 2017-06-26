@@ -24,31 +24,31 @@ function SQNodeLoopBase:getIcon()
 end
 
 --------------------------------------------------------------------
-CLASS: SQNodeLoopCounted ( SQNodeLoopBase )
+CLASS: SQNodeLoopForCount ( SQNodeLoopBase )
 	:MODEL{
 		Field 'count' :int() :range(0);
 	}
 
-function SQNodeLoopCounted:__init()
+function SQNodeLoopForCount:__init()
 	self.count = 0
 end
 
-function SQNodeLoopCounted:setLoopCount( count )
+function SQNodeLoopForCount:setLoopCount( count )
 	self.count = count or 0
 end
 
-function SQNodeLoopCounted:enter( state, env )
+function SQNodeLoopForCount:enter( state, env )
 	env.count = 0
 end
 
-function SQNodeLoopCounted:checkLoopDone( state, env )
+function SQNodeLoopForCount:checkLoopDone( state, env )
 	local count = (env.count or 0) + 1
 	if count > self.count then return true end
 	env.count = count
 	return false
 end
 
-function SQNodeLoopCounted:getRichText()
+function SQNodeLoopForCount:getRichText()
 	return string.format(
 		'[ <cmd>LOOP</cmd> <number>%d</number> times ]',
 		self.count
@@ -56,21 +56,21 @@ function SQNodeLoopCounted:getRichText()
 end
 
 --------------------------------------------------------------------
-CLASS: SQNodeLoopInfinite ( SQNodeLoopBase )
+CLASS: SQNodeLoopForever ( SQNodeLoopBase )
 	:MODEL{
 	}
 
-function SQNodeLoopInfinite:checkLoopDone( state, env )
+function SQNodeLoopForever:checkLoopDone( state, env )
 	return false
 end
 
-function SQNodeLoopInfinite:getRichText()
+function SQNodeLoopForever:getRichText()
 	return string.format(
-		'[ <cmd>LOOP_INIFINITE</cmd> ]'
+		'[ <cmd>LOOP_FOREVER</cmd> ]'
 	)
 end
 
 
 --------------------------------------------------------------------
-registerSQNode( 'loop_counted', SQNodeLoopCounted )
-registerSQNode( 'loop_infinite', SQNodeLoopInfinite )
+registerSQNode( 'loop_for', SQNodeLoopForCount )
+registerSQNode( 'loop_forever', SQNodeLoopForever )
