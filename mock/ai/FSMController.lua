@@ -129,6 +129,7 @@ end
 
 local stringfind=string.find
 local function  _isStartWith(a,b,b1,...)
+	if not a then return false end
 	if stringfind(a,b)==1 then return true end --a:startWith(b)
 	if b1 then return _isStartWith(a,b1,...) end
 	return false
