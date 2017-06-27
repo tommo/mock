@@ -137,13 +137,15 @@ function CodeTileMapLayer:onInit( initFromEditor )
 
 	self.mapGrid = CodeTileGrid()
 	self.mapGrid:setTileset( tileset )
-	
+		
 	local w, h   = self:getSize()
 	local tw, th = self:getTileSize()
 	self.mapGrid:setSize( w, h, tw, th, 0, 0, tw, th )
 	
-	self.debugDrawProp = self:createRenderProp()
 	self.prop = self:createRenderProp()
+	self.prop:setVisible( tileset and tileset.debugVisible )
+
+	self.debugDrawProp = self:createRenderProp() --for tilemapeditor
 end
 
 function CodeTileMapLayer:createRenderProp()
