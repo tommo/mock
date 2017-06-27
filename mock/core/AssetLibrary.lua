@@ -623,7 +623,6 @@ end
 function getCachedAsset( path )
 	if path == '' then return nil end
 	if not path   then return nil end
-	option = option or {}
 	local node   = _getAssetNode( path )
 	if not node then 
 		_warn ( 'no asset found', path or '???' )
