@@ -513,15 +513,14 @@ end
 --- Check if the entity has given component type
 -- @p Class  component type to be looked for
 -- @ret boolean result
-function Entity:hasComponentOf( clas )
-	if self:getComponent( clas ) then return true end
-	return false
+function Entity:hasComponent( id )
+	return self:com( id ) and true or false
 end
 
---- Check if the entity has given component object
+--- Check if the entity owns given component object
 -- @p Class  component object to be looked for
 -- @ret boolean result
-function Entity:hasComponent( com )
+function Entity:isOwnerOf( com )
 	local components = self.components
 	if not components then return nil end
 	return components[ com ] and true or false

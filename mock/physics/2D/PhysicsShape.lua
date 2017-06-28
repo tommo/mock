@@ -70,11 +70,78 @@ function PhysicsShape:getBodyTag()
 	return self.parentBody:getTag()
 end
 
+function PhysicsShape:affirmMaterial()
+	local material = self.material
+	if not material then 
+		material = self:getDefaultMaterial():clone()
+		self.material = material
+	end
+	return material
+end
+
 function PhysicsShape:isSensor()
 	if self.material then
 		return self.material.isSensor
 	end
 	return false
+end
+
+function PhysicsShape:setSensor( sensor )
+	local shape = self.shape
+	if not shape then return end
+	local material = self:affirmMaterial()
+	material.isSensor = sensor or false
+	shape:setSensor( sensor or false )
+	self.parentBody:updateMass()
+end
+
+
+function PhysicsShape:getDensity()
+	if self.material then
+		return self.material.density
+	end
+	return false
+end
+
+function PhysicsShape:setDensity( density )
+	local shape = self.shape
+	if not shape then return end
+	local material = self:affirmMaterial()
+	material.density = density or 1
+	shape:setDensity( density )
+	self.parentBody:updateMass()
+end
+
+
+function PhysicsShape:getFriction()
+	if self.material then
+		return self.material.friction
+	end
+	return false
+end
+
+function PhysicsShape:setFriction( friction )
+	local shape = self.shape
+	if not shape then return end
+	local material = self:affirmMaterial()
+	material.friction = friction or 1
+	shape:setFriction( friction )
+end
+
+
+function PhysicsShape:getRestitution()
+	if self.material then
+		return self.material.restitution
+	end
+	return false
+end
+
+function PhysicsShape:setRestitution( restitution )
+	local shape = self.shape
+	if not shape then return end
+	local material = self:affirmMaterial()
+	material.restitution = restitution or 1
+	shape:setRestitution( restitution )
 end
 
 function PhysicsShape:getMaterial()
@@ -111,13 +178,9 @@ function PhysicsShape:getDefaultMaterial()
 end
 
 function PhysicsShape:updateMaterial()
-	local material, shape = self.material, self.shape
+	local shape = self.shape
 	if not shape then return end
-	if not material then 
-		material = self:getDefaultMaterial():clone()
-		self.material = material
-	end
-	
+	local material = self:affirmMaterial()
 	shape:setDensity      ( material.density )
 	shape:setFriction     ( material.friction )
 	shape:setRestitution  ( material.restitution )
@@ -132,24 +195,37 @@ function PhysicsShape:updateMaterial()
 	shape.materialTag = material.tag
 end
 
-function PhysicsShape:setFilter(categoryBits, maskBits, group)
+function PhysicsShape:getFilter()
+	local material = self:affirmMaterial()
+	return material.categoryBits, material.maskBits, material.group
+end
 
-	local material, shape = self.material, self.shape
+function PhysicsShape:setFilter( categoryBits, maskBits, group )
+	local shape = self.shape
 	if not shape then return end
-	if not material then 
-		material = getDefaultPhysicsMaterial() 
-		self.material = material
-	end
-
+	local material = self:affirmMaterial()
+	
+	shape:setSensor       ( material.isSensor )
 	shape:setFilter(
 		categoryBits or material.categoryBits or 1,
 		maskBits or material.maskBits or 0xffff,
 		group or material.group or 0 )
-	-- update material as well
-	-- TODO: remove this
+
+	-- update owned copy of material as well
 	material.categoryBits = categoryBits
 	material.maskBits     = maskBits
 	material.group        = group
+end
+
+function PhysicsShape:resetFilter()
+	local sourceMaterial = self.sourceMaterial
+	if sourceMaterial then
+		self:setFilter( 
+			sourceMaterial.categoryBits or 1, 
+			sourceMaterial.maskBits or 0xffff,
+			sourceMaterial.group or 0
+		)
+	end
 end
 
 function PhysicsShape:onAttach( entity )
@@ -254,13 +330,3 @@ function PhysicsShape:getGlobalVerts( steps )
 	end
 	return globalVerts
 end
-
-_wrapMethods( PhysicsShape, 'shape', {
-	'getFilter',
-	'setDensity',
-	'setFriction',
-	'setRestitution',
-	'setSensor',
-	})
-
-
