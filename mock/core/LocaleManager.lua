@@ -130,8 +130,12 @@ function LocaleManager:affirmAssetLocaleIndex()
 	local index = {}
 	for i, entry in ipairs( self.localePackEntries ) do
 		local pack = loadAsset( entry.path ) --config only
-		for _, item in ipairs( pack.items ) do
-			index[ item.path ] = pack
+		if pack then
+			for _, item in ipairs( pack.items ) do
+				index[ item.path ] = pack
+			end
+		else
+			_warn( 'locale pack not load (missing)', entry.path )
 		end
 	end
 	self.assetTranslationIndex = index
