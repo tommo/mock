@@ -136,7 +136,7 @@ local function buildFSMScheme( scheme )
 						for i, s in ipairs( trackedStates ) do 
 							_log( i, s )
 						end
-						if debugstop then
+						if getG( 'debugstop' ) then
 							debugStop()
 						end
 						-- game:debugStop()

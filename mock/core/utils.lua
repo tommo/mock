@@ -555,8 +555,10 @@ function normalize(x,y)
 	return x/l, y/l
 end
 
-function length(x,y)
-	return sqrt(x*x+y*y)
+function length(x,y,z)
+	y = y or 0
+	z = z or 0
+	return sqrt(x*x+y*y+z*z)
 end
 
 function lengthSqrd(x,y)
