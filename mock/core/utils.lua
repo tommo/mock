@@ -871,12 +871,12 @@ end
 
 function string.split( s, sep, plain )
 	local result = {}
-	local i = 1
+	local i = 0
 	for p in string.gsplit( s, sep, plain ) do
-		result[ i ] = p
 		i = i + 1
+		result[ i ] = p
 	end
-	return result
+	return result, i
 end
 
 --------------------------------------------------------------------

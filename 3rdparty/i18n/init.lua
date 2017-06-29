@@ -5,9 +5,9 @@ require 'i18n.interpolate'
 require 'i18n.variants'
 require 'i18n.version'
 
+local sep = '\0'
 function new_i18n()
   local i18n = {}
-
   local store
   local locale
   local pluralizeFunction
@@ -22,14 +22,14 @@ function new_i18n()
   i18n.plural, i18n.interpolate, i18n.variants, i18n.version, i18n._VERSION = plural, interpolate, variants, version, version
 
   -- private stuff
-
   local function dotSplit(str)
-    local fields, length = {},0
-      str:gsub("[^%.]+", function(c)
-      length = length + 1
-      fields[length] = c
-    end)
-    return fields, length
+    local fields = {}
+    local i = 0
+    for p in string.gsplit( str, sep, true ) do
+      i = i + 1
+      fields[ i ] = p
+    end
+    return fields, i
   end
 
   local function isPluralTable(t)
@@ -92,7 +92,7 @@ function new_i18n()
   local function recursiveLoad(currentContext, data)
     local composedKey
     for k,v in pairs(data) do
-      composedKey = (currentContext and (currentContext .. '.') or "") .. tostring(k)
+      composedKey = (currentContext and (currentContext .. sep) or "") .. tostring(k)
       assertPresent('load', composedKey, k)
       assertPresentOrTable('load', composedKey, v)
       if type(v) == 'string' then
@@ -104,7 +104,7 @@ function new_i18n()
   end
 
   local function localizedTranslate(key, locale, data)
-    local path, length = dotSplit(locale .. "." .. key)
+    local path, length = dotSplit(locale .. sep .. key)
     local node = store
 
     for i=1, length do
@@ -131,6 +131,7 @@ function new_i18n()
     end
 
     local lastKey = path[length]
+    if type( node ) == 'string' then print( key, node ) end
     node[lastKey] = value
   end
 

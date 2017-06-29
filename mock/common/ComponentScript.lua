@@ -48,7 +48,7 @@ function ComponentScript:buildClass()
 	end
 	local succ = xpcall( 
 		function()
-			loaderFunc( self, ent )
+			loaderFunc( self, self._entity )
 		end,
 		_onError
 	)
@@ -97,7 +97,7 @@ function ComponentScript:buildInstance( obj, env )
 	end
 	local succ = xpcall( 
 		function()
-			loaderFunc( self, ent )
+			loaderFunc( self, self._entity )
 		end,
 		_onError
 	)
