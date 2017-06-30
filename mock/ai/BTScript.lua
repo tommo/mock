@@ -202,7 +202,7 @@ function ParseContextProto:parseDecoratorFor( content, pos, type, symbol )
 				args[ i ] = tonumber( v )
 			end
 			local minCount = args[ 1 ] or 1
-			local maxCount = args[ 2 ] or 1
+			local maxCount = args[ 2 ] or minCount
 			self:setArguments( { min = minCount, max = maxCount } )
 			return e + 1
 		else
@@ -387,12 +387,12 @@ function ParseContextProto:parseLine( lineNo, l )
 		pos = self:parse_decorator_ok( l, pos )
 		pos = self:parse_decorator_fail( l, pos )
 		pos = self:parse_decorator_ignore( l, pos )
+		pos = self:parse_decorator_forever( l, pos )
 		pos = self:parse_decorator_for( l, pos )
 		pos = self:parse_decorator_weight( l, pos )
 		pos = self:parse_decorator_prob( l, pos )
 		pos = self:parse_decorator_while( l, pos )
 		pos = self:parse_decorator_repeat( l, pos )
-		pos = self:parse_decorator_forever( l, pos )
 		pos = self:parse_commented( l, pos )
 		pos = self:parse_spaces( l, pos )
 		if pos0 == pos then 

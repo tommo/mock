@@ -83,7 +83,6 @@ end
 function isProtoInstanceOverrided( obj, fid )
 	local protoInstance = findProtoInstance( obj )
 	if not protoInstance then return false end
-	overrided = overrided ~= false
 	local overridedFields = obj.__overrided_fields
 	return overridedFields and overridedFields[ fid ] and true or false
 end

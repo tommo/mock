@@ -1158,6 +1158,7 @@ end
 function BTDecoratorRepeatFor:execute( context )
 	local nodeContext = context._nodeContext
 	local count = randi( self.minCount, self.maxCount )
+	print( 'repeat count', count )
 	local env = nodeContext[ self ]
 	if not env then 
 		env = { count = count, executed = 0 }
