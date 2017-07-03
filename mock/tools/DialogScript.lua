@@ -24,14 +24,6 @@ local function _parseCmdSpan( text )
 	}
 end
 
-local function _insertPunctuation( symbol, cmd, text, i, collection )
-	local p, p1 = text:find( symbol, i )
-	if not p then	return false end
-	-- insert( collection, { tag = 'text', text = text:sub( i, p1 ) } )
-	-- insert( collection, { tag = 'cmd',  cmd = cmd, args = {} } )
-	return p, p1, cmd
-end
-
 local symbolToPuctuation = {
 	{ '%.%d+', false };
 	{ ',',   ','  };
@@ -61,24 +53,32 @@ local function _insertText( text, collection )
 	text = text:gsub( '……', '...' )
 	text = text:gsub( '…', '...' )
 	--
+	local count = #collection
+	local prevSpan = count >0 and collection[ count ]
+	local ignorePuctuation = false
+	if prevSpan and prevSpan.tag == 'cmd' and prevSpan.cmd == 'choice' then
+		ignorePuctuation = true
+	end
 	local i = 1
 	while true do
 		local found = false
 		local fp0, fp1, fcmd
-		for _, entry in ipairs( symbolToPuctuation ) do
-			local symbol, cmd = unpack( entry )
-			local p, p1 = text:find( symbol, i )
-			if p1 then
-				if not found then
-					found = true
-					fp0 = p
-					fp1 = p1
-					fcmd = cmd
-				else
-					if p < fp0 then
+		if not ignorePuctuation then
+			for _, entry in ipairs( symbolToPuctuation ) do
+				local symbol, cmd = unpack( entry )
+				local p, p1 = text:find( symbol, i )
+				if p1 then
+					if not found then
+						found = true
 						fp0 = p
 						fp1 = p1
 						fcmd = cmd
+					else
+						if p < fp0 then
+							fp0 = p
+							fp1 = p1
+							fcmd = cmd
+						end
 					end
 				end
 			end
