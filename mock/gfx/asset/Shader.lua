@@ -103,12 +103,16 @@ function ShaderProgram:build( force )
 
 	if self.vsh == '__default_vsh__' then
 		vshSource = _DEFAULT_VSH
+	elseif type( self.vsh ) == 'table' then
+		vshSource = self.vsh.data
 	else
 		vshSource = mock.loadAsset( self.vsh )
 	end
 
 	if self.fsh == '__default_fsh__' then
 		fshSource = _DEFAULT_FSH
+	elseif type( self.fsh ) == 'table' then
+		fshSource = self.fsh.data
 	else
 		fshSource = mock.loadAsset( self.fsh )
 	end
@@ -301,6 +305,10 @@ function Shader:release()
 end
 
 function Shader:setProgram( prog )
+	if prog == self.prog then return end
+	if self.prog then
+		self.prog:releaseShader( self._id )
+	end
 	self.prog = prog
 	self.shader:setProgram( prog:getMoaiShaderProgram() )
 end
@@ -433,16 +441,29 @@ end
 
 function ShaderConfig:loadSingleShader( data )
 	self.shaderType = 'single'
+	
 	local prog = ShaderProgram()
+	
 	prog.vsh = data['vsh'] or '__default_vsh__'
 	prog.fsh = data['fsh'] or '__default_fsh__'
+	prog.gsh = data['gsh'] or false
+	prog.tsh = data['tsh'] or false
+
 	prog.uniforms   = data['uniforms'] or {}
 	prog.globals    = data['globals'] or {}
 	prog.attributes = data['attributes'] or false
+
 	prog:build()
+
 	prog.config = self
 	loadedShaderPrograms[ self ] = prog
 	self.program = prog
+	
+	--update shaders
+	for _, shader in pairs( self.shaders ) do
+		shader:setProgram( prog )
+	end
+
 end
 
 function ShaderConfig:loadConfig( data )
@@ -496,7 +517,9 @@ end
 
 function ShaderConfig:affirmShader( id )
 	local shader = self:getShader( id )
-	if not shader then shader = self:buildShader( id ) end
+	if not shader then 
+		shader = self:buildShader( id )
+	end
 	return shader
 end
 

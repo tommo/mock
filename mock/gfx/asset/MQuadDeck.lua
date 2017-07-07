@@ -88,6 +88,7 @@ function MQuadDeck:load( deckData )
 		insertVert( verts, vts, uvs, 2 )
 	end
 	self.verts = verts
+	self.vertCount = #verts
 end
 
 function MQuadDeck:getBounds()

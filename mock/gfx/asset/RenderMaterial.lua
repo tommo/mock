@@ -5,7 +5,7 @@ CLASS: RenderMaterial ()
 		Field 'tag'              :string();
 		'----';
 		Field 'blend'            :enum( EnumBlendMode );
-		Field 'shader'           :asset( 'shader' );
+		Field 'shader'           :asset( 'shader;shader_script' );
 		'----';
 		Field 'depthMask'        :boolean();
 		Field 'depthTest'        :enum( EnumDepthTestMode ) ;

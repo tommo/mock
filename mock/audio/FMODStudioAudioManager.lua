@@ -145,12 +145,22 @@ function FMODStudioAudioManager:getBus( path )
 end
 
 function FMODStudioAudioManager:getCategoryVolume( category )
+	if category == 'master' then
+		if self.system.getMasterVolume then
+			return self.system:getMasterVolume()
+		end
+	end
 	local bus = self:getBus( category )
 	if not bus then return false end
 	return bus:getFaderLevel()
 end
 
 function FMODStudioAudioManager:setCategoryVolume( category, volume )
+	if category == 'master' then
+		if self.system.setMasterVolume then
+			return self.system:setMasterVolume( volume )
+		end
+	end
 	local bus = self:getBus( category )
 	if not bus then return false end
 	return bus:setFaderLevel( volume or 1 )
