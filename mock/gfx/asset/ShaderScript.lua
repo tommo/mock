@@ -214,6 +214,9 @@ function _loadShaderScript( src, filename )
 				shaderConfigData.uniforms = uniforms 
 				shaderConfigData.globals = globals
 
+			elseif k == 'context' then
+				shaderConfigData.context = v
+
 			elseif k == 'program_tessellation' then
 				processSource( shaderConfigData, 'tsh', v )
 

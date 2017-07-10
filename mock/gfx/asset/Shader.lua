@@ -370,6 +370,8 @@ function MultiShader:getSingleSubShader( pass )
 	local shader = self:getSubShader( pass )
 	if shader:isInstance( MultiShader ) then
 		return shader:getDefaultShader()
+	elseif shader:isInstance( Shader ) then
+		return shader
 	end
 	return false
 end

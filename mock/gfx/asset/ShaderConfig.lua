@@ -34,6 +34,7 @@ function ShaderConfig:__init()
 	self.path = false
 	self.shaders = table.weak_k()
 	self.dependentConfigs = table.weak_k()
+	self.context = {}
 end
 
 function ShaderConfig:getPath()
@@ -48,13 +49,14 @@ function ShaderConfig:loadConfig( data, path )
 	self.maxPass     = data[ 'maxPass' ]
 	self.passes      = data[ 'passes' ]
 	self.shaderDatas = data[ 'shaders' ]
+	self.baseContext = data[ 'context' ]
 	return true
 end
 
 function ShaderConfig:buildShader( id, context )
 	id = id or 'default'
 	local shader0 = self.shaders[ id ]
-	context = context or ( shader0 and shader0.context )
+	context = context or {}
 	local builder = ShaderBuilder( self, context )
 	local shader = builder:buildMasterShader( self, shader0 )
 	shader.context = context
@@ -88,7 +90,7 @@ end
 
 function ShaderConfig:rebuildShaders()
 	for id, shader0 in pairs( self.shaders ) do
-		self:buildShader( id )
+		self:buildShader( id, shader0.context )
 	end
 end
 
@@ -134,20 +136,23 @@ local function processContext( context )
 	return nil
 end
 
-function ShaderBuilder:__init( masterConfig, context )
-	self.context = processContext( context ) or {}
+function ShaderBuilder:__init( masterConfig, instanceContext )
+	self.instanceContext = processContext( instanceContext ) or {}
 	self.masterConfig = masterConfig
 end
 
-function ShaderBuilder:buildMasterShader( config, shader0 )
+function ShaderBuilder:buildMasterShader( config, shader0, baseContext )
 	local entryShader = shader0 or MultiShader()
 	assert( entryShader:isInstance( MultiShader ) )
+
 	entryShader:init( config.maxPass )
 	entryShader.maseterConfig = self.masterConfig
 	
 	if self.masterConfig ~= config then
 		config.dependentConfigs[ self.masterConfig ] = true
 	end
+
+	local envContext = table.merge( baseContext or {}, config.context )
 
 	for id, passEntry in pairs( config.passes ) do
 		local subShader = false
@@ -156,7 +161,7 @@ function ShaderBuilder:buildMasterShader( config, shader0 )
 			--load referenced shader
 			local shaderConfig = loadAsset( passEntry.path )
 			if shaderConfig then
-				subShader = self:buildMasterShader( shaderConfig )
+				subShader = self:buildMasterShader( shaderConfig, nil, envContext )
 			end
 
 		elseif shaderType == 'ref' then
@@ -164,11 +169,11 @@ function ShaderBuilder:buildMasterShader( config, shader0 )
 			if not shaderData then
 				_warn( 'no shader config found', passEntry.name )
 			else
-				subShader = self:buildSingleShader( shaderData )
+				subShader = self:buildSingleShader( shaderData, envContext )
 			end
 
 		elseif shaderType == 'config' then
-			subShader = self:buildSingleShader( passEntry.data )
+			subShader = self:buildSingleShader( passEntry.data, envContext )
 
 		else
 			error( 'unknown sub shader type' .. tostring( shaderType ) )
@@ -189,8 +194,10 @@ function ShaderBuilder:buildMasterShader( config, shader0 )
 	return entryShader
 end
 
-function ShaderBuilder:buildSingleShader( data )
-	local context = self.context or {}
+function ShaderBuilder:buildSingleShader( data, envContext )
+	local context = table.merge( envContext or {}, data.context or {} )
+	context = table.merge( context, self.instanceContext )
+	
 	local prog = ShaderProgram()
 	prog.vsh, prog.vshPath = self:processSource( data['vsh'] or '__DEFAULT_VSH', context )
 	prog.fsh, prog.fshPath = self:processSource( data['fsh'] or '__DEFAULT_FSH', context )
