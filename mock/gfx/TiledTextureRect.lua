@@ -2,8 +2,6 @@ module 'mock'
 
 CLASS: TiledTextureRect ( GraphicsPropComponent )
 	:MODEL{
-		Field 'shader' :asset( 'shader' ) :no_edit();
-
 		Field 'texture'  :asset('texture;framebuffer') :getset( 'Texture' );
 		Field 'size'     :type('vec2') :getset('Size');
 		Field 'tileSize' :type('vec2') :getset('TileSize');

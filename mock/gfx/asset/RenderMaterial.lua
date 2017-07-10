@@ -6,6 +6,7 @@ CLASS: RenderMaterial ()
 		'----';
 		Field 'blend'            :enum( EnumBlendMode );
 		Field 'shader'           :asset( 'shader;shader_script' );
+		Field 'shaderContext'     :string();
 		'----';
 		Field 'depthMask'        :boolean();
 		Field 'depthTest'        :enum( EnumDepthTestMode ) ;
@@ -45,6 +46,7 @@ function RenderMaterial:__init()
 	self.tag       = ''
 	self.blend     = 'alpha'
 	self.shader    = false
+	self.shaderContext = ''
 	
 	--
 	self.billboard = BILLBOARD_NONE
@@ -116,22 +118,28 @@ function RenderMaterial:applyPriority( prop )
 	prop:setPriority( self.priority )
 end
 
-function RenderMaterial:applyShader( prop, defaultShader )
+function RenderMaterial:affirmShader()
+	local shader = self.builtShader
+	if shader then return shader end
+	if shader == false then return false end
+	shader = false
+
 	local shaderPath = self.shader
 	if shaderPath then
-		local shader = mock.loadAsset( shaderPath )
-		if shader then
-			local moaiShader = shader:getMoaiShader()
-			return prop:setShader( moaiShader )
-		end
+		shader = buildMasterShader( shaderPath, self, self.shaderContext )
 	end
+	self.builtShader = shader
+	return shader
+end
 
-	if defaultShader then 
-		return prop:setShader( defaultShader )
+function RenderMaterial:applyShader( prop )
+	local shader = self:affirmShader()
+	if shader then
+		local moaiShader = shader:getMoaiShader()
+		return prop:setShader( moaiShader )
+	else
+		return prop:setShader( nil )
 	end
-
-	return prop:setShader( nil )
-
 end
 
 function RenderMaterial:setColorMask( r, g, b, a )

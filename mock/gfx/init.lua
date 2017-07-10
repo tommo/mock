@@ -16,6 +16,7 @@ require 'mock.gfx.asset.RenderMaterial'
 
 --GRAPHICS ADV
 require 'mock.gfx.asset.RenderTargetTexture'
+require 'mock.gfx.asset.ShaderConfig'
 require 'mock.gfx.asset.Shader'
 require 'mock.gfx.asset.ShaderScript'
 require 'mock.gfx.asset.CodeTileset'

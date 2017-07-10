@@ -915,39 +915,48 @@ function string.count( s, pattern )
 end
 
 --------------------------------------------------------------------
-function preprocess( src, env, chunkname )
+function loadpreprocess( src, chunkname )
 	local line = 0
-	local output = 'local _LINE_ = ...'
+	local chunkSrc = 'local _LINE_ = ...'
 	for l in src:gsplit( '\n' ) do
 		local code = l:match( '^%s*$(.*)')
 		line = line + 1
 		if code then
-			output = output .. code .. '\n'
+			chunkSrc = chunkSrc .. code .. '\n'
 		else
-			output = output .. string.format( '_LINE_( %d, %q )\n', line, l )
+			chunkSrc = chunkSrc .. string.format( '_LINE_( %d, %q )\n', line, l )
 		end
 	end
-	local currentLine = 1
-	local result = ''
-	local function _addLine( lineId, text )
-		result = result .. string.rep( '\n', lineId - currentLine )
-		result = result .. text
-		currentLine = lineId
+	
+	local chunk, loadErr = loadstring( chunkSrc, chunkname or '<preprocess>' )
+	
+	if not chunk then
+		return false, 'parsing error:' .. loadErr
 	end
-	local err
-	local func, loadErr = loadstring( output, chunkname or '<preprocess>' )
-	if func then
-		setfenv( func, env or {} )
-		local ok, evalErr = pcall( func, _addLine )
-		if ok then
-			return result
-		else
-			err = 'preprocessor error:'.. evalErr
+	
+	local templateFunc = function( env )
+		local currentLine = 1
+		local result = ''
+		local function _addLine( lineId, text )
+			result = result .. string.rep( '\n', lineId - currentLine )
+			result = result .. text
+			currentLine = lineId
 		end
-	else
-		err = 'parsing error:' .. loadErr
+		setfenv( chunk, env or {} )
+		local ok, evalErr = pcall( chunk, _addLine )
+		if not ok then
+			return false, 'preprocessing error:' .. evalErr
+		end
+		return result
 	end
-	return false, err
+
+	return templateFunc
+end
+
+function preprocess( src, env, chunkname )
+	local templateFunc, err = loadpreprocess( src, chunkname )
+	if not templateFunc then return false, err end
+	return templateFunc( env )
 end
 
 --------------------------------------------------------------------
