@@ -15,7 +15,6 @@ backtick_references = false
 
 file = { 
 	'.',
-	exclude = { '3rdparty'}
 }
 dir = '../out'
 readme = 'README.md'

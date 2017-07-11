@@ -16,39 +16,27 @@ function LUTGeneratorCameraPass:onBuild()
 	)
 	prop:setScl( 1, -1, 1 )
 	self:pushRenderLayer( layer )
+	self:pushCallback( function()
+		print( 'draw!' )
+	end)
 end
 
 
 --------------------------------------------------------------------
-CLASS: LUTGeneratorCamera ( Camera )
+CLASS: LUTGeneratorCamera ( TextureTargetCamera )
 	:MODEL{}
 
 function LUTGeneratorCamera:__init( size )
-	self.LUTSize = 32
-	self.targetTexture = RenderTargetTexture()
+	size = size or 32
+	self.LUTSize = size
+	self:setTargetSize( size*size, size )
 end
 
 function LUTGeneratorCamera:setLUTSize( size )
 	self.LUTSize = size
-end
-
-function LUTGeneratorCamera:getMoaiFrameBuffer()
-	return self.targetTexture:getMoaiFrameBuffer()
+	self:setTargetSize( size * size, size )
 end
 
 function LUTGeneratorCamera:loadPasses()
-	local size = self.LUTSize
-	self.targetTexture:init( size*size, size, 'linear', MOAITexture.GL_RGBA16F )
-	self:setOutputRenderTarget( self.targetTexture:getRenderTarget() )
 	self:addPass( LUTGeneratorCameraPass() )
-end
-
-function LUTGeneratorCamera:manualRender()
-	local renderCommandTable = self:buildRenderCommandTable()
-	MOAINodeMgr.update()
-	MOAIRenderMgr.renderTable( renderCommandTable )
-end
-
-function LUTGeneratorCamera:getTexture()
-	return self.targetTexture
 end

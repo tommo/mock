@@ -100,7 +100,7 @@ function ColorGradingConfig:build( forced )
 	effect:updateIntensity()
 	camera:addImageEffect( effect, false )
 
-	camera:loadPasses()
+	camera:reloadPasses()
 	camera:manualRender()
 
 	local image   = MOAIImage.new()

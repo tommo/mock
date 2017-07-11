@@ -28,7 +28,6 @@ function SQNodeAnimator:enter( state, env )
 	if cmd == 'play' then
 		if not self.argClipName then return false end
 		local animState = animator:playClip( self.argClipName, self.argMode )
-		-- print( 'play animation', animator:getEntityName(), self.argClipName, self.argMode )
 		if not animState then 
 			self:_warn( 'no animator clip found:', animator:getEntity():getName(), self.argClipName )
 			return false
@@ -36,6 +35,11 @@ function SQNodeAnimator:enter( state, env )
 		local duration = self.argDuration
 		if duration > 0 then
 			animState:setDuration( duration )
+		else
+			duration = animState.clipLength
+		end
+		if self.argMode == MOAITimer.REVERSE then
+			animState.anim:setTime( duration )
 		end
 		env.animState = animState
 		return true 
@@ -112,9 +116,18 @@ end
 function SQNodeAnimator:step( state, env, dt )
 	if self.blocking then
 		local animState = env.animState
-		if animState:isBusy() then return false end
-		if animState:isDone() then return true end
-		if not animState:isActive() then return true end
+		if animState:isBusy() then
+			return false
+		end
+
+		if animState:isDone() then
+			return true
+		end
+
+		if not animState:isActive() then
+			return true
+		end
+
 	else
 		return true
 	end
@@ -141,8 +154,8 @@ function SQNodeAnimator:load( data )
 	if cmd == 'play' then
 		--
 		self.argClipName = args[2] or false
-		self.argDuration = tonumber( args[3] ) or 0
-		self.argMode = NameToAnimMode[ args[4] or 'normal' ] or 0
+		self.argMode = NameToAnimMode[ args[3] or 'normal' ] or 0
+		self.argDuration = tonumber( args[4] ) or 0
 		self.blocking = self:checkBlockTag( true )
 
 	elseif cmd == 'load' then
