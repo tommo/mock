@@ -162,13 +162,14 @@ function grabNextFrame( filepath, frameBuffer )
 		end)
 end
 
-function grabCurrentFrame( filepath, frameBuffer )
+function grabCurrentFrameToFile( filepath, frameBuffer )
 	local image = MOAIImage.new()
 	frameBuffer = frameBuffer or MOAIGfxDevice.getFrameBuffer()
 	frameBuffer:grabCurrentFrame( image )	
 	postProcessFramebufferAlpha( image )
 	image:writePNG(filepath)
 	io.write('saved:   ',filepath,'\n')
+	return image
 end
 
 -------replace system os.clock
