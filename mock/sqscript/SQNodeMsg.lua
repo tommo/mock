@@ -9,13 +9,13 @@ CLASS: SQNodeMsg ( SQNode )
 
 function SQNodeMsg:__init()
 	self.msg  = ''
-	self.data = ''
+	self.data = nil
 end
 
 function SQNodeMsg:load( data )
 	local args = data.args
 	self.msg = args[1] or false
-	self.data = args[2] or ''
+	self.data = args[2] or nil
 end
 
 function SQNodeMsg:enter( state, env )
@@ -41,14 +41,14 @@ CLASS: SQNodeChildMsg ( SQNode )
 function SQNodeChildMsg:__init()
 	self.target  = ''
 	self.msg  = ''
-	self.data = ''
+	self.data = nil
 end
 
 function SQNodeChildMsg:load( data )
 	local args = data.args
 	self.target = args[1]
 	self.msg    = args[2] or false
-	self.data   = args[3] or ''
+	self.data   = args[3] or nil
 end
 
 function SQNodeChildMsg:enter( state, env )
