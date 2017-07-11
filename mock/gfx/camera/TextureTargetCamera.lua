@@ -4,8 +4,8 @@ module 'mock'
 CLASS: TextureTargetCamera ( Camera )
 	:MODEL{}
 
-function TextureTargetCamera:__init( w, h )
-	self.targetSize = { w or 128, h or 128 }
+function TextureTargetCamera:__init()
+	self.targetSize = { 64, 64 }
 	self.targetFormat = MOAITexture.GL_RGBA8
 	-- self.targetDepthFormat = MOAITexture.GL_RGBA8
 	self.useDepthBuffer = true

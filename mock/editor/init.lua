@@ -7,3 +7,6 @@ require 'mock.editor.DebugMemoryView'
 
 
 require 'mock.editor.GIISync'
+
+--------------------------------------------------------------------
+require 'mock.editor.PaintCanvas'

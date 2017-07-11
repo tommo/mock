@@ -345,8 +345,8 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 	return layer
 end
 
-function CameraPass:buildSimpleOrthoRenderLayer()
-	local w, h = 1, 1
+function CameraPass:buildSimpleOrthoRenderLayer( w, h )
+	w, h =  w or 1, h or 1
 	local viewport = Viewport()
 	viewport:setMode( 'relative' )
 	viewport:setFixedScale( w, h )
