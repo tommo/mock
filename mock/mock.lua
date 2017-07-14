@@ -59,19 +59,19 @@ require 'mock.common.shape'
 --------------------------------------------------------------------
 --PACKAGES
 --------------------------------------------------------------------
-------Animator
+------Animator?
 require 'mock.animator'
 
-------Animator
+------Graphics
 require 'mock.gfx'
 
-------Animator
+------Phyics
 require 'mock.physics'
 
-------Animator
+------Audio
 require 'mock.audio'
 
-----UNSORTED
+----Entity
 require 'mock.entity'
 
 ------GUI system
