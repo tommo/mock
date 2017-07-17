@@ -239,6 +239,11 @@ function TileMapLayer:getTileSize()
 	return self.parentMap:getTileSize()
 end
 
+function TileMapLayer:getTilesetSize()
+	if not self.tileset then return false end
+	return self.tileset:getSize()
+end
+
 function TileMapLayer:getCellSize()
 	return self:getTileSize()
 end
