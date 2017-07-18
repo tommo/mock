@@ -120,6 +120,45 @@ function MSprite:getFeatureNames()
 	return {}
 end
 
+local tremove = table.remove
+local tinsert = table.insert
+local tindex  = table.index
+function MSprite:changeFeatures( features )
+	local hiddenFeatures = self.hiddenFeatures
+	for f, v in pairs( features ) do
+		if v then --remove hidden
+			local idx = tindex( hiddenFeatures, f )
+			if idx then tremove( hiddenFeatures, idx ) end
+		else --add hidden
+			local idx = tindex( hiddenFeatures, f )
+			if not idx then
+				tinsert( hiddenFeatures, f )
+			end
+		end
+	end
+	self:updateFeatures()
+end
+
+function MSprite:addHiddenFeatures( hiddenFeatures )
+	local features = self.hiddenFeatures
+	local tindex = table.index
+	for i, n in ipairs( hiddenFeatures ) do
+		if not tindex( features, n ) then
+			tinsert( features, n )
+		end
+	end
+end
+
+function MSprite:removeHiddenFeatures( hiddenFeatures )
+	local features = self.hiddenFeatures
+	for i, n in ipairs( hiddenFeatures ) do
+		local idx = tindex( features, n )
+		if idx then
+			tremove( features, idx )
+		end
+	end
+end
+
 function MSprite:setHiddenFeatures( hiddenFeatures )
 	self.hiddenFeatures = hiddenFeatures or {}
 	--update hiddenFeatures

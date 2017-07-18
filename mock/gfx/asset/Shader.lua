@@ -1,29 +1,5 @@
 module 'mock'
 
-
-local _DEFAULT_VSH = [[
-	vec4 position;
-	vec2 uv;
-	vec4 color;
-
-	varying MEDP vec2 uvVarying;
-	void main () {
-		gl_Position = position;
-		uvVarying = uv;
-	}
-]]
-
-
-local _DEFAULT_FSH = [[
-	varying MEDP vec2 uvVarying;
-	uniform sampler2D sampler;
-
-	void main () {
-		gl_FragColor = texture2D ( sampler, uvVarying );
-	}
-]]
-
-
 --------------------------------------------------------------------
 function buildShaderProgramFromString( vsh, fsh, variables )
 	local prog = ShaderProgram()
@@ -31,35 +7,13 @@ function buildShaderProgramFromString( vsh, fsh, variables )
 		prog.uniforms = variables.uniforms or {}
 		prog.globals  = variables.globals or {}
 	end
-	prog:buildFromSource( vsh, fsh )
+	prog.vsh = vsh
+	prog.fsh = fsh
+	prog:build()
 	return prog
 end
 
-local loadedShaderPrograms = table.weak_k{}
-
-function releaseShaderProgram( vshPath, fshPath )
-	local term = (vshPath or '') .. '|' .. (fshPath or '')
-	local torelease = {}
-	for key, prog in pairs( loadedShaderPrograms ) do
-		if key:find( term ) then 
-			torelease[ key ] = true
-		end
-	end
-
-	for key in pairs( torelease ) do
-		local prog = loadedShaderPrograms[ key ]
-		loadedShaderPrograms[ key ] = nil
-		--TODO: release shaders?
-	end
-end
-
-function getShaderPrograms()
-	return loadedShaderPrograms
-end
-
-function getLoadedShaderProgram( path )
-	return loadedShaderPrograms[ path ]
-end
+--------------------------------------------------------------------
 
 
 --------------------------------------------------------------------
@@ -76,6 +30,13 @@ CLASS: Shader ()
 --------------------------------------------------------------------
 --class shader program
 --------------------------------------------------------------------
+local loadedShaderPrograms = table.weak_k{}
+
+function getLoadedShaderPrograms()
+	return loadedShaderPrograms
+end
+
+
 function ShaderProgram:__init()
 	self.prog =  MOAIShaderProgram.new()
 	self.uniformTable = {}
@@ -83,13 +44,19 @@ function ShaderProgram:__init()
 
 	self.vsh = false
 	self.fsh = false
-	
-	self.vshSrc = false
-	self.fshSrc = false
+	self.gsh = false
+	self.tsh = false
+
+	self.vshPath = false
+	self.fshPath = false
+	self.gshPath = false
+	self.tshPath = false
 
 	self.uniforms   = {}
 	self.attributes = false
 	self.shaders    = table.weak_k()
+
+	self.masterConfig = false
 end
 
 function ShaderProgram:getMoaiShaderProgram()
@@ -98,46 +65,35 @@ end
 
 function ShaderProgram:build( force )
 	if self.built and not force then return end
-	local vshSource
-	local fshSource
+	loadedShaderPrograms[ self ] = true
 
-	if self.vsh == '__default_vsh__' then
-		vshSource = _DEFAULT_VSH
-	else
-		vshSource = mock.loadAsset( self.vsh )
-	end
-
-	if self.fsh == '__default_fsh__' then
-		fshSource = _DEFAULT_FSH
-	else
-		fshSource = mock.loadAsset( self.fsh )
-	end
-	
-	return self:buildFromSource( vshSource, fshSource )
-end
-
-function ShaderProgram:buildFromSource( vshSource, fshSource )
 	local prog  = self.prog
 
-	self.vshSource = vshSource
-	self.fshSource = fshSource
+	local vshSource = self.vsh
+	local fshSource = self.fsh
+	
+	local attributes = self.attributes or {'position', 'uv', 'color'}
+	local uniforms   = self.uniforms
+	local globals    = self.globals
 
 	prog:purge()
+	assert( 
+		type( vshSource ) == 'string' and type( fshSource ) == 'string',
+		'invalid shader source type'
+	)
 	prog:load( vshSource, fshSource )
+
 	prog._source = self
 
 	--setup variables
-	local attrs = self.attributes or {'position', 'uv', 'color'}
-	if attrs then
-		for i, a in ipairs(attrs) do
-			assert( type(a)=='string' )
-			prog:setVertexAttribute( i, a )
-		end
+	for i, a in ipairs(attributes) do
+		assert( type(a)=='string' )
+		prog:setVertexAttribute( i, a )
 	end
+	
 	local uniformTable = {}
-
-	local globals  = self.globals
-	local uniforms = self.uniforms
+	self.uniformTable = uniformTable
+	
 	local gcount = ( globals and #globals or 0 ) 
 	local ucount = ( uniforms and #uniforms or 0 )
 
@@ -228,8 +184,13 @@ function ShaderProgram:buildFromSource( vshSource, fshSource )
 		end
 	
 	end
-	self.uniformTable = uniformTable
+
 	self.built = true
+	self:refreshShaders()
+
+end
+
+function ShaderProgram:refreshShaders()
 	for key, shader in pairs( self.shaders ) do
 		shader:setProgram( self )
 	end
@@ -301,6 +262,10 @@ function Shader:release()
 end
 
 function Shader:setProgram( prog )
+	if prog == self.prog then return end
+	if self.prog then
+		self.prog:releaseShader( self._id )
+	end
 	self.prog = prog
 	self.shader:setProgram( prog:getMoaiShaderProgram() )
 end
@@ -383,9 +348,9 @@ end
 function MultiShader:setSubShader( pass, shader )
 	self.subShaders[ pass ] = shader
 	self.shader:setSubShader( pass + 1, shader:getMoaiShader() )
-	if pass == 0 then
-		self:setDefaultShader( shader )
-	end
+	-- if pass == 0 then
+	-- 	self:setDefaultShader( shader )
+	-- end
 end
 
 function MultiShader:getSubShader( pass )
@@ -397,155 +362,16 @@ function MultiShader:setDefaultShader( shader )
 	self.shader:setDefaultShader( shader:getMoaiShader() )
 end
 
-
---------------------------------------------------------------------
---SINGLE SHADER
---------------------------------------------------------------------
---------------------------------------------------------------------
-CLASS: ShaderConfig ()
-
-function ShaderConfig:__init()
-	self.shaderType = 'single'
-	self.subShaders = {}
-	self.program = false
-	self.shaders = table.weak_k()
-	self.shared  = true
+function MultiShader:getDefaultShader()
+	return self.defautlSubShader
 end
 
-function ShaderConfig:loadMultiShader( data )
-	self.shaderType = 'multi'
-	local passCount = 0
-	local maxPass = 0
-	for i, subData in ipairs( data['shaders' ] ) do
-		local pass = subData['pass'] or 0
-		local shared = subData['shared'] ~= false
-		if pass > maxPass then maxPass = pass end
-		if self.subShaders[ pass ] then
-			_warn( 'duplicated shader pass' )
-		else
-		end
-		local path = subData[ 'path' ]
-		local childShaderConfig = loadShaderConfig( path )
-		self.subShaders[ pass ] = assert( childShaderConfig )
+function MultiShader:getSingleSubShader( pass )
+	local shader = self:getSubShader( pass )
+	if shader:isInstance( MultiShader ) then
+		return shader:getDefaultShader()
+	elseif shader:isInstance( Shader ) then
+		return shader
 	end
-	self.maxPass = maxPass
+	return false
 end
-
-function ShaderConfig:loadSingleShader( data )
-	self.shaderType = 'single'
-	local prog = ShaderProgram()
-	prog.vsh = data['vsh'] or '__default_vsh__'
-	prog.fsh = data['fsh'] or '__default_fsh__'
-	prog.uniforms   = data['uniforms'] or {}
-	prog.globals    = data['globals'] or {}
-	prog.attributes = data['attributes'] or false
-	prog:build()
-	prog.config = self
-	loadedShaderPrograms[ self ] = prog
-	self.program = prog
-end
-
-function ShaderConfig:loadConfig( data )
-	if data['shaders'] then
-		self:loadMultiShader( data )		
-		return true
-	else --single shader config
-		self:loadSingleShader( data )
-		return true
-	end
-end
-
-function ShaderConfig:build( force )
-	if self.built then return end
-	if self.program then
-		self.program:build( force )
-	end
-	for pass, subConfig in pairs( self.subShaders ) do
-		subConfig:build( force )
-	end
-	self.built = true
-end
-
-function ShaderConfig:buildMultiShader( id )
-	local shader = MultiShader()
-	shader:init( self.maxPass )
-	for pass, subConfig in pairs( self.subShaders ) do
-		local subShader = subConfig:affirmShader( id )
-		shader:setSubShader( pass, subShader )
-	end
-	return shader
-end
-
-function ShaderConfig:buildShader( id )
-	self:build()
-	local shader
-	if self.shaderType == 'multi' then --build multiple shader
-		shader = self:buildMultiShader( id )
-	else
-		shader = self.program:buildShader( id )
-	end
-	shader._id = id
-	shader.config = self
-	self.shaders[ id ] = shader
-	return shader
-end
-
-function ShaderConfig:getShader( id )
-	return self.shaders[ id ]
-end
-
-function ShaderConfig:affirmShader( id )
-	local shader = self:getShader( id )
-	if not shader then shader = self:buildShader( id ) end
-	return shader
-end
-
-function ShaderConfig:releaseShader( id )
-	local shader = self.shaders[ id ]
-	if not shader then
-		-- _warn( 'no shader found', id )
-		return false
-	end
-	for pass, subConfig in pairs( self.subShaders ) do
-		subConfig:releaseShader( id )
-	end
-	self.shaders[ id ] = nil
-end
-
-
---------------------------------------------------------------------
---------------------------------------------------------------------
-
-local function shaderLoader( node )
-	local data = loadAssetDataTable( node:getObjectFile('def') )
-	if not data then return false end
-	local config = ShaderConfig()
-	config:loadConfig( data )
-	node.cached.config = config
-	return config:affirmShader( 'default' )	
-end
-
-local function shaderSourceLoader( node )
-	local data = loadTextData( node:getObjectFile('src') )
-	return data
-end
-
-function buildShader( shaderPath, id )
-	local shader = loadAsset( shaderPath )
-	if id then
-		if shader then
-			return shader.config:affirmShader( id )
-		end
-	end
-	return shader
-end
-
-function loadShaderConfig( path )
-	local shader = loadAsset( path )
-	return shader.config
-end
-
-registerAssetLoader ( 'shader', shaderLoader   )
-registerAssetLoader ( 'vsh', shaderSourceLoader )
-registerAssetLoader ( 'fsh', shaderSourceLoader )
-

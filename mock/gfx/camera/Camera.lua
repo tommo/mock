@@ -87,7 +87,7 @@ function Camera:__init( option )
 	self.hasImageEffect = false
 
 	self:_initDefault()
-	self._renderCommandTable = {}
+	self._renderCommandTable = false
 end
 
 function Camera:_initDefault()
@@ -536,8 +536,10 @@ function Camera:_updateRenderCommandTable( t )
 		self._renderCommandTable = t
 	end
 	local active = self._active
-	for i, command in ipairs( self._renderCommandTable ) do
-		command:setEnabled( active )
+	if self._renderCommandTable then
+		for i, command in ipairs( self._renderCommandTable ) do
+			command:setEnabled( active )
+		end
 	end
 end
 
@@ -633,11 +635,17 @@ end
 function Camera:grabCurrentFrame( output )
 	local tt = type( output )
 	if tt == 'string' then
-		--TODO
-		grabCurrentFrame( output, self:getOutputRenderTarget():getFrameBuffer() )
+		return grabCurrentFrameToFile( output, self:getOutputRenderTarget():getFrameBuffer() )
+
 	elseif tt == 'userdata' then
-		--TODO
 		self:getOutputRenderTarget():getFrameBuffer():grabCurrentFrame( output )
+		return output
+
+	elseif tt == 'nil' then
+		local img = MOAIImage.new()
+		self:getOutputRenderTarget():getFrameBuffer():grabCurrentFrame( img )
+		return img
+
 	end
 end
 

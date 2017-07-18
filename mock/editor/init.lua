@@ -7,3 +7,4 @@ require 'mock.editor.DebugMemoryView'
 
 
 require 'mock.editor.GIISync'
+

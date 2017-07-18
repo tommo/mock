@@ -78,10 +78,14 @@ function DebugMemoryView:subOverview( gui, scn )
 	--common
 	gui.Text( string.format( 'Scene Objects: %d',  scn.entityCount ) )
 	gui.Text( string.format(  'MOAI Objects: %d',   MOAISim.getLuaObjectCount() ) )
-	local memUsage = MOAISim.getMemoryUsage()
-	gui.Text( string.format( 'Total Memory:%dk',    memUsage.total/1000 ) )
-	gui.Text( string.format( 'Texture Memory:%dk',  memUsage.texture/1000 ) )
-	gui.Text( string.format( 'Total-Texture:%dk',   (memUsage.total - memUsage.texture)/1000 ) )
+
+	local memUsage = MOAISim.getMemoryUsage( 'k' )
+	gui.Text( string.format( 'Total Memory:%dk',    memUsage.total ) )
+	gui.Text( string.format( 'Lua Memory:%dk',  memUsage.lua ) )
+	gui.Text( string.format( 'Texture Memory:%dk',  memUsage.texture ) )
+	gui.Text( string.format( 'lua_gc:%dk',    memUsage._luagc_count ) )
+	gui.Text( string.format( '_sys_vs:%dk',    memUsage._sys_vs ) )
+	gui.Text( string.format( '_sys_rss:%dk',    memUsage._sys_rss ) )
 end
 
 function DebugMemoryView:subTrace( gui, scn )

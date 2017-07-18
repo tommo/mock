@@ -245,3 +245,7 @@ function CodeTileMapLayer:getTileSize()
 	local tw, th = self.parentMap:getTileSize()
 	return tw/div, th/div
 end
+
+function CodeTileMapLayer:getTilesetSize()
+	return self:getTileSize()
+end

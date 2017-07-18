@@ -888,6 +888,86 @@ function string.split( s, sep, plain )
 	return result, i
 end
 
+function string.startwith(s,s1)
+	local ss = string.sub(s,1,#s1)
+	return ss==s1
+end
+
+function string.endwith(s,s1)
+	local l  = #s1
+	local ss = string.sub(s,-l,-1)
+	return ss==s1
+end
+
+function string.findlast( s, pattern )
+	local fp0, fp1
+	while true do
+		local p0, p1 = string.find( s, pattern, fp1 and ( fp1 + 1 ) or nil )
+		if not p0 then break end
+		fp0 = p0
+		fp1 = p1
+	end
+	return fp0, fp1
+end
+
+function string.count( s, pattern )
+	local fp0, fp1
+	local count = 0
+	while true do
+		local p0, p1 = string.find( s, pattern, fp1 and ( fp1 + 1 ) or nil )
+		if not p0 then break end
+		fp0 = p0
+		fp1 = p1
+		count = count + 1
+	end
+	return count
+end
+
+--------------------------------------------------------------------
+function loadpreprocess( src, chunkname )
+	local line = 0
+	local chunkSrc = 'local _LINE_ = ...'
+	for l in src:gsplit( '\n' ) do
+		local code = l:match( '^%s*$(.*)')
+		line = line + 1
+		if code then
+			chunkSrc = chunkSrc .. code .. '\n'
+		else
+			chunkSrc = chunkSrc .. string.format( '_LINE_( %d, %q )\n', line, l )
+		end
+	end
+	
+	local chunk, loadErr = loadstring( chunkSrc, chunkname or '<preprocess>' )
+	
+	if not chunk then
+		return false, 'parsing error:' .. loadErr
+	end
+	
+	local templateFunc = function( env )
+		local currentLine = 1
+		local result = ''
+		local function _addLine( lineId, text )
+			result = result .. string.rep( '\n', lineId - currentLine )
+			result = result .. text
+			currentLine = lineId
+		end
+		setfenv( chunk, env or {} )
+		local ok, evalErr = pcall( chunk, _addLine )
+		if not ok then
+			return false, 'preprocessing error:' .. evalErr
+		end
+		return result
+	end
+
+	return templateFunc
+end
+
+function preprocess( src, env, chunkname )
+	local templateFunc, err = loadpreprocess( src, chunkname )
+	if not templateFunc then return false, err end
+	return templateFunc( env )
+end
+
 --------------------------------------------------------------------
 local autotableMT={
 	__index=function(t,k)
@@ -1180,29 +1260,7 @@ function tickerd(m,i)
 end
 
 
-----String Helpers
 
-function string.startwith(s,s1)
-	local ss = string.sub(s,1,#s1)
-	return ss==s1
-end
-
-function string.endwith(s,s1)
-	local l  = #s1
-	local ss = string.sub(s,-l,-1)
-	return ss==s1
-end
-
-function string.findlast( s, pattern )
-	local fp0, fp1
-	while true do
-		local p0, p1 = string.find( s, pattern, fp1 and ( fp1 + 1 ) or nil )
-		if not p0 then break end
-		fp0 = p0
-		fp1 = p1
-	end
-	return fp0, fp1
-end
 
 --------------------------------------------------------------------
 -------Debug Helper?

@@ -16,7 +16,9 @@ require 'mock.gfx.asset.RenderMaterial'
 
 --GRAPHICS ADV
 require 'mock.gfx.asset.RenderTargetTexture'
+require 'mock.gfx.asset.ShaderConfig'
 require 'mock.gfx.asset.Shader'
+require 'mock.gfx.asset.ShaderScript'
 require 'mock.gfx.asset.CodeTileset'
 require 'mock.gfx.asset.NamedTileset'
 require 'mock.gfx.asset.DeckPack'
@@ -98,3 +100,8 @@ require 'mock.gfx.SpineSpriteSimple'
 --------------------------------------------------------------------
 ---Camera Fx
 require 'mock.gfx.camerafx'
+
+
+--------------------------------------------------------------------
+--PaintCanvas
+require 'mock.gfx.paintcanvas'

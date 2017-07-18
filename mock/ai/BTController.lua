@@ -172,7 +172,7 @@ function BTContext:requestAction( actionNode )
 		action = actionClas()	
 	end
 	if not action then
-		_warn( 'invalid action class:'..name )
+		_error( 'undefined BT Action class:'..name )
 		action = DUMMYAction
 	end
 	self._activeActions[ actionNode ] = action

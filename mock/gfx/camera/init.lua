@@ -24,4 +24,4 @@ require 'mock.gfx.camera.CameraImageEffectHue'
 --------------------------------------------------------------------
 --ETC
 require 'mock.gfx.camera.StereoCamera'
-require 'mock.gfx.camera.OffLineCamera'
+require 'mock.gfx.camera.TextureTargetCamera'

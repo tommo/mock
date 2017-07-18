@@ -137,38 +137,26 @@ end
 
 LOG = MOAILogMgr.log
 
-local function postProcessFramebufferAlpha( image )
-	local w,h = image:getSize()
-	local setRGBA = image.setRGBA
-	local getRGBA = image.getRGBA
-	io.write('postprocessing...')
-	for y=1,h do
-		for x=1,w do
-			local r,g,b,a=getRGBA(image,x,y)
-			if a<1 then	setRGBA(image,x,y,r,g,b,1) end
-		end
-	end
-end
-
-function grabNextFrame( filepath, frameBuffer )
+function grabNextFrame( filepath, frameBuffer, format )
+	format = format or MOAIImage.COLOR_FMT_RGB_888
 	local image = MOAIImage.new()
 	frameBuffer = frameBuffer or MOAIGfxDevice.getFrameBuffer()
 	frameBuffer:grabNextFrame(
 		image,
 		function()
-			postProcessFramebufferAlpha( image )
-			image:writePNG(filepath)
+			image:convert( format ):writePNG(filepath)
 			io.write('saved:   ',filepath,'\n')
 		end)
 end
 
-function grabCurrentFrame( filepath, frameBuffer )
+function grabCurrentFrameToFile( filepath, frameBuffer, format )
+	format = format or MOAIImage.COLOR_FMT_RGB_888
 	local image = MOAIImage.new()
 	frameBuffer = frameBuffer or MOAIGfxDevice.getFrameBuffer()
 	frameBuffer:grabCurrentFrame( image )	
-	postProcessFramebufferAlpha( image )
-	image:writePNG(filepath)
+	image:convert( format ):writePNG(filepath)
 	io.write('saved:   ',filepath,'\n')
+	return image
 end
 
 -------replace system os.clock
@@ -262,6 +250,28 @@ function loadMOAIGridTiles( grid, dataString )
 	reader64:close()
 	stream:close()
 
+end
+
+
+function saveImageBase64( img )
+	local stream = MOAIMemStream.new()
+	stream:open()
+	local writer64 = MOAIStreamAdapter.new()
+	local writerDeflate = MOAIStreamAdapter.new ()
+	writer64:openBase64Writer ( stream )
+	img:write( writer64 )
+	stream:seek( 0 )
+	local encoded = stream:read()
+	stream:close()
+	return encoded
+end
+
+function loadImageBase64( img, dataString, transform )
+	local buffer = MOAIDataBuffer.new()
+	buffer:base64Decode( dataString )
+	local img = img or MOAIImage.new ()
+	img:loadFromBuffer( buffer, transform )
+	return img
 end
 
 
