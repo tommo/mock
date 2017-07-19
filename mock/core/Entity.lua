@@ -906,6 +906,14 @@ function Entity:getName()
 	return self.name
 end
 
+function Entity:getEntity()
+	return self
+end
+
+function Entity:getEntityName()
+	return self:getName()
+end
+
 function Entity:getScene()
 	return self.scene
 end

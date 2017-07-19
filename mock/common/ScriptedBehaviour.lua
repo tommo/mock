@@ -125,4 +125,7 @@ function ScriptedBehaviour:__clone( src, objMap )
 	return _cloneObject( src, dataInstance, objMap )	
 end
 
+function ScriptedBehaviour:getData()
+	return self.dataInstance
+end
 

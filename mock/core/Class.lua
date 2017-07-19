@@ -873,6 +873,10 @@ function Field:label( l )
 	return self
 end
 
+function Field:desc( desc )
+	return self:meta{ description = desc }
+end
+
 function Field:meta( meta )
 	assert( type(meta) == 'table', 'metadata should be table' )
 	local meta0 = self.__meta or {} --copy into old meta
