@@ -476,6 +476,15 @@ function lerp( v1, v2, k )
 	return v1 * ( 1 - k ) + v2 * k
 end
 
+function moveTowards(f, t, max)
+	local delta = t - f
+	local d = math.abs(delta)
+	d = d < max and d or max
+
+	delta = delta > 0 and d or -d
+	return f + delta
+end
+
 local lerp=lerp
 function rangeMap( v, s0,e0, s1,e1 )
 	local r1 = e0 - s0
