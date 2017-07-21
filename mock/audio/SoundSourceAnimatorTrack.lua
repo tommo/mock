@@ -4,7 +4,7 @@ module 'mock'
 --------------------------------------------------------------------
 CLASS: SoundSourceAnimatorKey ( AnimatorEventKey )
 	:MODEL{
-		Field 'clip' :asset('fmod_event') :set( 'setClip' );
+		Field 'clip' :asset( getSupportedSoundAssetTypes() ) :set( 'setClip' );
 	}
 
 function SoundSourceAnimatorKey:__init()
@@ -44,7 +44,7 @@ function SoundSourceAnimatorTrack:createKey( pos, context )
 	key:setPos( pos )
 	self:addKey( key )
 	local target = context.target --SoundSource
-	key.clip     = target:getDefaultClip()
+	key.clip     = target:getDefaultEvent()
 	return key
 end
 
