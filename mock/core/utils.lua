@@ -851,7 +851,6 @@ function stringSet(t, v)
 	return res
 end
 
-
 local match = string.match
 function string.trim(s)
   return match(s,'^()%s*$') and '' or match(s,'^%s*(.*%S)')
@@ -921,6 +920,34 @@ function string.count( s, pattern )
 		count = count + 1
 	end
 	return count
+end
+
+local _vectorTemplateCache = {}
+local function _makeVectorTemplate( element, count )
+	local t = _vectorTemplateCache[ element ]
+	local template = t and t[ count ]
+	if template then return template end
+	local inner = ''
+	for i = 1, count do
+		inner = inner .. element
+		if i < count then
+			inner = inner .. ', '
+		end
+	end
+	local template = string.format( '( %s )', inner )
+	if not t then
+		t = {}
+		_vectorTemplateCache[ element ] = t
+	end
+	t[ count ] = template
+	return template
+end
+
+function string.formatvector( element, ... )
+	-- body
+	local count = select( '#', ... )
+	local template = _makeVectorTemplate( element, count )
+	return string.format( template, ... )
 end
 
 --------------------------------------------------------------------

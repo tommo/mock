@@ -1,5 +1,7 @@
 module 'mock'
 
+local min, max, clamp = math.min, math.max, math.clamp
+
 --------------------------------------------------------------------
 CLASS: ShakeController ( Behaviour )
 	:MODEL{}
@@ -16,6 +18,18 @@ function ShakeController:pushShakeSource( src )
 		self.threadShaking = self:addCoroutine( 'actionShaking' )
 	end
 	return src
+end
+
+function ShakeController:findShakeSource( name )
+	for src in pairs( self.shakeSources ) do
+		if src.name == name then return src end
+	end
+end
+
+function ShakeController:stopShakeSource( name )
+	for src in pairs( self.shakeSources ) do
+		if src.name == name then src:stop() end
+	end
 end
 
 function ShakeController:pushShakeSourceX( scale, duration )
@@ -94,11 +108,25 @@ function ShakeSource:__init()
 	self.time  = 0
 	self.noise = 0.2
 	self.duration = 1
+	self.strength = 1
 	self.active = true
+	self.name = false
+end
+
+function ShakeSource:setName( n )
+	self.name = n
 end
 
 function ShakeSource:stop()
 	self.active = false
+end
+
+function ShakeSource:setConstant()
+	self.duration = -1
+end
+
+function ShakeSource:isConstant()
+	return self.duration <= 0
 end
 
 function ShakeSource:getDuration()
@@ -109,6 +137,22 @@ function ShakeSource:setDuration( d )
 	self.duration = d
 end
 
+function ShakeSource:resetTime()
+	self.time = 0
+end
+
+function ShakeSource:calcStrength()
+	if self.duration <= 0 then
+		return 1
+	else
+		return clamp( 1 - self.time/self.duration, 0, 1 )
+	end
+end
+
+function ShakeSource:getStrength()
+	return self.strength
+end
+
 function ShakeSource:setNoise( noise )
 	self.noise = noise
 end
@@ -116,16 +160,24 @@ end
 function ShakeSource:update( dt )
 	if not self.active then return false end
 	self.time = self.time + dt
-	if self.time > self.duration then
-		return false
-	end
+	self.strength = ( self:calcStrength() or 1 ) * ( 1 + noise( self.noise ) )
+	if self:isDone() then return false end
 	return self:onUpdate( self.time )
 end
 
+function ShakeSource:isDone()
+	local duration = self.duration
+	if duration <= 0 then return false end
+	if not self.active then return true end
+	return self.time >= duration
+end
+
 function ShakeSource:onUpdate( t )
+	return nil
 end
 
 
+--------------------------------------------------------------------
 --------------------------------------------------------------------
 CLASS: ShakeSourceX ( ShakeSource )
 	:MODEL{}
@@ -140,9 +192,9 @@ function ShakeSourceX:setScale( scale )
 end
 
 function ShakeSourceX:onUpdate( t )
-	local k = 1 - t/self.duration
+	local strength = self:getStrength()
 	self.negative = not self.negative
-	local dx = self.scale * k * ( 1 + noise( self.noise ) )
+	local dx = self.scale * strength
 	if self.negative then
 		dx = - dx
 	end
@@ -164,9 +216,9 @@ function ShakeSourceY:setScale( scale )
 end
 
 function ShakeSourceY:onUpdate( t )
-	local k = 1 - t/self.duration
+	local strength = self:getStrength()
 	self.negative = not self.negative
-	local dy = self.scale * k * ( 1 + noise( self.noise ) )
+	local dy = self.scale * strength
 	if self.negative then
 		dy = - dy
 	end
@@ -188,14 +240,14 @@ function ShakeSourceXY:setScale( scale )
 end
 
 function ShakeSourceXY:onUpdate( t )
-	local k = 1 - t/self.duration
+	local strength = self:getStrength()
 	self.nx = not self.nx
 	self.ny = not self.ny
-	local dx = self.scale * k * ( 1 + noise( self.noise ) )
+	local dx = self.scale * strength
 	if self.nx then
 		dx = - dx
 	end
-	local dy = self.scale * k * ( 1 + noise( self.noise ) )
+	local dy = self.scale * strength
 	if self.ny then
 		dy = - dy
 	end
@@ -217,12 +269,12 @@ function ShakeSourceXYRot:setScale( scale )
 end
 
 function ShakeSourceXYRot:onUpdate( t )
-	local k = 1 - t/self.duration
+	local strength = self:getStrength()
 	self.dir = self.dir + rand( 90, 180 )
 	local nx, ny = math.cosd( self.dir ), math.sind( self.dir )
 	
-	local dx = self.scale * k * ( 1 + noise( self.noise ) ) * nx
-	local dy = self.scale * k * ( 1 + noise( self.noise ) ) * ny
+	local dx = self.scale * strength * nx
+	local dy = self.scale * strength * ny
 	return dx, dy
 end
 
@@ -241,11 +293,11 @@ function ShakeSourceDirectional:setScale( x, y, z )
 end
 
 function ShakeSourceDirectional:onUpdate( t )
-	local k = ( 1 - t/self.duration ) * ( 1 + noise( self.noise ) )
+	local strength = self:getStrength()
 	self.negative = not self.negative
-	local dx = self.sx * k
-	local dy = self.sy * k
-	local dz = self.sz * k
+	local dx = self.sx * strength
+	local dy = self.sy * strength
+	local dz = self.sz * strength
 	if self.negative then
 		dx = -dx * 0.5
 		dy = -dy * 0.5

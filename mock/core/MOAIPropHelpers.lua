@@ -522,7 +522,6 @@ function wrapWithMoaiTransformMethods( clas, propName )
 			'setShearByY',
 			'setShearByZ',
 
-
 		})
 
 	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_X_LOC, 'LocX' )
@@ -540,6 +539,41 @@ function wrapWithMoaiTransformMethods( clas, propName )
 	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_X_PIV, 'PivX' )
 	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Y_PIV, 'PivY' )
 	_wrapAttrGetSetSeekMove( clas, propName, MOAIProp.ATTR_Z_PIV, 'PivZ' )
+
+	function clas:getLocXY() return self:getLocX(), self:getLocY() end
+	function clas:getLocXZ() return self:getLocX(), self:getLocZ() end
+	function clas:getLocYZ() return self:getLocY(), self:getLocZ() end
+	function clas:setLocXY( x, y ) self:setLocX( x ) self:setLocY( y ) end
+	function clas:setLocXZ( x, z ) self:setLocX( x ) self:setLocZ( z ) end
+	function clas:setLocYZ( y, z ) self:setLocY( y ) self:setLocZ( z ) end
+
+	function clas:getXY() return self:getLocXY() end
+	function clas:getXZ() return self:getLocXZ() end
+	function clas:getYZ() return self:getLocYZ() end
+	function clas:setXY( x, y ) return self:setLocXY( x, y ) end
+	function clas:setXZ( x, z ) return self:setLocXZ( x, z ) end
+	function clas:setYZ( y, z ) return self:setLocYZ( y, z ) end
+
+	function clas:getRotXY() return self:getRotX(), self:getRotY() end
+	function clas:getRotXZ() return self:getRotX(), self:getRotZ() end
+	function clas:getRotYZ() return self:getRotY(), self:getRotZ() end
+	function clas:setRotXY( x, y ) self:setRotX( x ) self:setRotY( y ) end
+	function clas:setRotXZ( x, z ) self:setRotX( x ) self:setRotZ( z ) end
+	function clas:setRotYZ( y, z ) self:setRotY( y ) self:setRotZ( z ) end
+
+	function clas:getSclXY() return self:getSclX(), self:getSclY() end
+	function clas:getSclXZ() return self:getSclX(), self:getSclZ() end
+	function clas:getSclYZ() return self:getSclY(), self:getSclZ() end
+	function clas:setSclXY( x, y ) self:setSclX( x ) self:setSclY( y ) end
+	function clas:setSclXZ( x, z ) self:setSclX( x ) self:setSclZ( z ) end
+	function clas:setSclYZ( y, z ) self:setSclY( y ) self:setSclZ( z ) end
+
+	function clas:getPivXY() return self:getPivX(), self:getPivY() end
+	function clas:getPivXZ() return self:getPivX(), self:getPivZ() end
+	function clas:getPivYZ() return self:getPivY(), self:getPivZ() end
+	function clas:setPivXY( x, y ) self:setPivX( x ) self:setPivY( y ) end
+	function clas:setPivXZ( x, z ) self:setPivX( x ) self:setPivZ( z ) end
+	function clas:setPivYZ( y, z ) self:setPivY( y ) self:setPivZ( z ) end
 
 	return clas
 end

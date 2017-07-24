@@ -116,7 +116,13 @@ function _wrapAttrMover(class,fieldname,attr,methodname)
 end
 
 
+
 function _wrapAttrGetSet( class, fieldname, attr, propertyName)
+	_wrapAttrGetter( class, fieldname, attr, 'get'..propertyName )
+	_wrapAttrSetter( class, fieldname, attr, 'set'..propertyName )
+end
+
+function _wrapAttrGetSet2( class, fieldname, attr, propertyName)
 	_wrapAttrGetter( class, fieldname, attr, 'get'..propertyName )
 	_wrapAttrSetter( class, fieldname, attr, 'set'..propertyName )
 end
