@@ -11,7 +11,7 @@ CLASS: RenderComponent( Component )
 --------------------------------------------------------------------
 local DEPTH_TEST_DISABLE = MOAIProp.DEPTH_TEST_DISABLE
 function RenderComponent:__init()
-	self.materialPath     = false
+	self.materialPath     = 'config/material/MapEntityDull.material'
 	self.material         = false
 
 	self.blend            = 'normal'
