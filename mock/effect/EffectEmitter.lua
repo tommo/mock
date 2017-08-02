@@ -100,7 +100,7 @@ function EffectEmitter:start( waitStart )
 	return state
 end
 
-function EffectEmitter:stop()
+function EffectEmitter:stop( actionOnStop )
 	if not self.playing then return end
 	self.playing = false
 	-- local state = self.effectConfig
@@ -109,7 +109,7 @@ function EffectEmitter:stop()
 		state:stop()
 	end
 	self.activeStates = {}
-	local actionOnStop = self.actionOnStop
+	local actionOnStop = actionOnStop or self.actionOnStop
 	if actionOnStop == 'default' then
 		actionOnStop = self.effectConfig:getRootNode().actionOnStop
 	end
