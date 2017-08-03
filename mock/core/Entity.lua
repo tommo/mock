@@ -1141,8 +1141,10 @@ function Entity:start()
 	-- end
 
 	for i, com in ipairs( self:getSortedComponentList() ) do
-		local onStart = com.onStart
-		if onStart then onStart( com, self ) end
+		if com._entity then
+			local onStart = com.onStart
+			if onStart then onStart( com, self ) end
+		end
 	end
 
 	for child in pairs( self.children ) do
