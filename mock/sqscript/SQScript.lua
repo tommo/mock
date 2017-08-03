@@ -1431,7 +1431,7 @@ function loadSQScript( node )
 	routine.autoStart = true
 	loadSQNode( data, routine.rootNode )
 	script:build()
-	return script
+	return script, false --no cache
 end
 
 --------------------------------------------------------------------
