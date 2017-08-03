@@ -479,7 +479,7 @@ function EffectNodeParticleEmitter:setActive( state, active )
 	local em = state[ self ]
 	if not em then return end
 	if active then
-		em:start()
+		state:attachAction( em )
 	else
 		em:stop()
 	end

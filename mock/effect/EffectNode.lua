@@ -323,7 +323,7 @@ function EffectState:__init( emitter, config )
 	else
 		self.duration = duration
 	end
-	self.timer = MOAITimer.new()
+	self.timer = MOAIManualTimer.new()
 	self.timer:setMode( MOAITimer.CONTINUE )
 end
 
@@ -452,6 +452,11 @@ end
 function EffectState:removeUpdatingListener( node )
 	self._updateListeners[ node ] = nil
 	self._delayedUpdateListeners[ node ] = nil
+end
+
+function EffectState:forceUpdateTimer( dt )
+	self.timer:doStep( dt )
+	self.timer:forceUpdate()
 end
 
 function EffectState:update( dt )
