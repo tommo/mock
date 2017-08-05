@@ -1,8 +1,13 @@
 module 'mock'
 
+local queryHandlers = {}
+function registerSyncQueryHandler( handler )
+	table.insert( queryHandlers, handler )
+end
+
+--------------------------------------------------------------------
 local PORT = 201103
 local BroadcastPORT = 200637
-
 
 local SYNC_FIELDS = {
 	'loc',
@@ -37,7 +42,6 @@ function GIISyncHost:initRPC()
 	)
 	RPCTell:setArgs( 'pss' )
 	self.host:registerRPC( RPCTell )
-	print( 'register rpc' )
 	self.RPCTell = RPCTell
 end
 
@@ -68,12 +72,11 @@ function GIISyncEditorHost:removeConnectedGame( peer )
 end
 
 function GIISyncEditorHost:onInit()
-	-- gii.connectPythonSignal( 'entity.modified', 
-	-- 	function( entity )
-	-- 		return self:onEntityModified( entity )
-	-- 	end
-	-- )
-	-- self.broadcastServer:init( BroadcastPORT, 'GiiSync' )
+	gii.connectPythonSignal( 'entity.modified', 
+		function( entity )
+			return self:onEntityModified( entity )
+		end
+	)
 	self.host:setListener( MOCKNetworkHost.EVENT_CONNECTION_ACCEPTED, 
 		function( host, client )
 			_log( 'connected to gii' )
@@ -102,13 +105,14 @@ function GIISyncEditorHost:onEntityModified( entity )
 	end
 end
 
-function GIISyncEditorHost:queryGame( key, callback )
+function GIISyncEditorHost:queryGame( key, context, callback )
 	local qid = self.queryId + 1
 	self.queryId = qid
 	local query = {
 		queryId = qid,
 		key = key,
 		callback = callback,
+		context = context,
 		time = os.clock()
 	}
 	self.queries[ qid ] = query
@@ -171,7 +175,7 @@ function GIISyncGameHost:onRemoteMsg( peer, msg, data )
 		end
 
 	elseif msg == 'query.start' then
-		local result = self:onQuery( data )
+		local result = self:procQuery( data )
 		local queryId = data[ 'queryId' ]
 		local output = {
 			queryId = queryId,
@@ -196,14 +200,29 @@ function GIISyncGameHost:tellServer( msg, data )
 	return self:tellPeer( self.serverPeer, msg, data )
 end
 
-function GIISyncGameHost:onQuery( data )
+function GIISyncGameHost:procQuery( data )
 	local key = data.key
-	if key == 'scene.info' then
-		local info = {
-			path = game:getMainScene():getPath(),
-		}
-		return info
+	local context = data.context
+	local tt = type( key )
+	local result = {}
+	if tt == 'table' then
+		for i, k in ipairs( key ) do
+			result[ k ] = self:procQueryKey( k, context )
+		end
+	elseif tt == 'string' then
+		result[ key ] = self:procQueryKey( key, context )
+	else
+		_warn( 'invalid query', tt )
 	end
+	return result
+end
+
+function GIISyncGameHost:procQueryKey( key, context )
+	for i, handler in ipairs( queryHandlers ) do
+		local output = handler( key, context )
+		if output then return output end
+	end
+	return nil
 end
 
 --------------------------------------------------------------------
@@ -243,4 +262,13 @@ function getGiiSyncHost()
 	return sync:getHost()
 end
 
-
+--------------------------------------------------------------------
+registerSyncQueryHandler( function( key )
+		if key == 'scene.info' then
+			local info = {
+				path = game:getMainScene():getPath(),
+			}
+			return info
+		end
+	end
+)

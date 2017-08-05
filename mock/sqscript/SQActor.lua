@@ -25,6 +25,14 @@ function getSQContextProviders()
 	return SQContextProviders
 end
 
+function getSQActorsInScene( scene )
+	local actorRegistry = scene:getUserObject( 'SQActors' )
+	if not actorRegistry then
+		actorRegistry = setmetatable( {}, { __no_traverse = true } )
+		scene:setUserObject( 'SQActors', actorRegistry )
+	end
+	return actorRegistry
+end
 
 --------------------------------------------------------------------
 CLASS: SQActor ( Behaviour )
@@ -50,20 +58,19 @@ end
 function SQActor:onAttach( ent )
 	SQActor.__super.onAttach( self, ent )
 	local scene = ent:getScene()
-	local actorRegistry = scene:getUserObject( 'SQActors' )
-	if not actorRegistry then
-		actorRegistry = setmetatable( {}, { __no_traverse = true } )
-		scene:setUserObject( 'SQActors', actorRegistry )
-	end
+	local actorRegistry = getSQActorsInScene( scene )
 	actorRegistry[ self ] = true
 	self:loadScript()
 end
 
 function SQActor:onDetach( ent )
 	SQActor.__super.onDetach( self, ent )
-	local scene = ent:getScene()
-	local actorRegistry = scene:getUserObject( 'SQActors' )
+	local actorRegistry = getSQActorsInScene( ent:getScene() )
 	actorRegistry[ self ] = nil
+end
+
+function SQActor:getState()
+	return self.activeState
 end
 
 function SQActor:findActorByName( name )

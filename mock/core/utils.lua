@@ -950,6 +950,18 @@ function string.formatvector( element, ... )
 	return string.format( template, ... )
 end
 
+function string.join( t, sep )
+	local result = nil
+	for i, s in ipairs( t ) do
+		if result then
+			result = result .. sep ..s
+		else
+			result = s
+		end
+	end
+	return result
+end
+
 --------------------------------------------------------------------
 function loadpreprocess( src, chunkname )
 	local line = 0

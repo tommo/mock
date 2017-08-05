@@ -97,6 +97,11 @@ function SQNode:getFirstContext()
 	end
 end
 
+function SQNode:getContextString()
+	if not self.context then return nil end
+	return string.join( self.context, ',' )
+end
+
 function SQNode:hasTag( t )
 	if not self.tags then return false end
 	return self.tags[ t ] ~= nil
@@ -604,8 +609,44 @@ function SQNodeResume:__init()
 end
 
 --------------------------------------------------------------------
-CLASS: SQNodeRoot( SQNodeGroup )
+CLASS: SQNodeCheckpoint ( SQNodeGroup )
+	:MODEL{}
 
+function SQNodeCheckpoint:__init()
+	self.name = false
+end
+
+function SQNodeCheckpoint:load( data )
+	local function parseGroupNames( s )
+		if not s then return nil end
+		local parts, c = s:split( ',', true )
+		return parts
+	end
+	self.name = data.args[1]
+	--load requires
+	self.groupsOn   = parseGroupNames( self:getTagStringValue( 'group_on' ) )
+	self.groupsOff  = parseGroupNames( self:getTagStringValue( 'group_off' ) )
+	self.groupsOnly = parseGroupNames( self:getTagStringValue( 'group_only' ) )
+	self:getScript():registerCheckpoint( self )
+end
+
+function SQNodeCheckpoint:enter( state, env ) --programatic entry only
+	-- return false
+	if state.entryNode == self then
+		state.entryNode = false
+		return true
+	else
+		return false
+	end
+end
+
+function SQNodeCheckpoint:getRepr()
+	return string.format( '%s (%s)', self.name, self:getContextString() or '' )
+end
+
+
+--------------------------------------------------------------------
+CLASS: SQNodeRoot( SQNodeGroup )
 
 
 --------------------------------------------------------------------
@@ -748,6 +789,7 @@ SQScript :MODEL{
 }
 
 function SQScript:__init()
+	self.checkpoints = {}
 	self.routines = {}
 	self.comment = ''
 	self.sourcePath = '<unknown>'
@@ -797,10 +839,18 @@ function SQScript:translate( source, ... )
 	return result or source
 end
 
+function SQScript:registerCheckpoint( node )
+	self.checkpoints[ node ] = true
+end
+
+function SQScript:getCheckpoints()
+	return self.checkpoints
+end
+
 --------------------------------------------------------------------
 CLASS: SQRoutineState ()
  
-function SQRoutineState:__init( entryNode, routine )
+function SQRoutineState:__init( entryNode, enterEntryNode )
 	self.routine = entryNode:getRoutine()
 	self.globalState = false
 	self.id = entryNode.id or false
@@ -821,7 +871,7 @@ function SQRoutineState:__init( entryNode, routine )
 
 	self.subRoutineStates = {}
 	self.FFTargets = {}
-	return self:reset()
+	return self:reset( enterEntryNode )
 end
 
 function SQRoutineState:getGlobalState()
@@ -915,7 +965,7 @@ function SQRoutineState:isSubRoutineRunning()
 	return false
 end
 
-function SQRoutineState:reset()
+function SQRoutineState:reset( enterEntryNode )
 	self.started = false
 	
 	self.localRunning = false
@@ -923,14 +973,21 @@ function SQRoutineState:reset()
 
 	self.subRoutineStates = {}
 	self.nodeEnvMap = {}
-	self.currentNodeEnv = false
 
-	local env = {}
 	local entry = self.entryNode
-	self.currentNode = entry
-	self.currentQueue = {}
+	local env = {}
 	self.currentNodeEnv = env
 	self.nodeEnvMap[ entry ] = env
+
+	if enterEntryNode then
+		self.index = 0
+		self.currentNode = false
+		self.currentQueue = { entry }
+	else
+		self.index = 1
+		self.currentNode = entry
+		self.currentQueue = {}
+	end
 
 end
 
@@ -1089,7 +1146,13 @@ end
 
 function SQRoutineState:exitGroup()
 	--exit group node
-	local groupNode = self.currentNode.parentNode
+	local groupNode
+	if self.index == 0 and self.currentNode:isGroup() then
+		groupNode = self.currentNode
+	else
+		groupNode = self.currentNode.parentNode
+	end
+
 	if not groupNode then
 		self.FFTargets = {}
 		stopSQFastForward( self )
@@ -1250,16 +1313,19 @@ function SQState:loadScript( script )
 	script:build()
 	self.script = script
 	for i, routine in ipairs( script.routines ) do
-		local entryNode    = routine:getRootNode()
-		local routineState = SQRoutineState( entryNode )
-		routineState.routine = routine
-		routineState.globalState = self
-		routineState.parentState = false
-		insert( self.routineStates, routineState )
+		local routineState = self:addRoutineState( routine:getRootNode() )
 		if routine.autoStart then
 			routineState:start()
 		end
 	end
+end
+
+function SQState:addRoutineState( entryNode, enterEntryNode )
+	local routineState = SQRoutineState( entryNode, enterEntryNode )
+	routineState.globalState = self
+	routineState.parentState = false
+	insert( self.routineStates, routineState )
+	return routineState
 end
 
 function SQState:update( dt )
@@ -1435,13 +1501,15 @@ function loadSQScript( node )
 end
 
 --------------------------------------------------------------------
-registerSQNode( 'group', SQNodeGroup )
-registerSQNode( 'do',    SQNodeGroup )
-registerSQNode( 'end',   SQNodeEnd   )
-registerSQNode( 'goto',  SQNodeGoto  )
-registerSQNode( 'skip',  SQNodeSkip  )
-registerSQNode( 'pause',  SQNodePause  )
+registerSQNode( 'group',   SQNodeGroup   )
+registerSQNode( 'do',      SQNodeGroup   )
+registerSQNode( 'end',     SQNodeEnd     )
+registerSQNode( 'goto',    SQNodeGoto    )
+registerSQNode( 'skip',    SQNodeSkip    )
+registerSQNode( 'pause',   SQNodePause   )
 registerSQNode( 'resume',  SQNodeResume  )
+
+registerSQNode( 'checkpoint',  SQNodeCheckpoint  )
 
 registerSQNode( 'FF',  SQNodeFastForward  )
 

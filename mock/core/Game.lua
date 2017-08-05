@@ -81,6 +81,7 @@ registerGlobalSignals{
 	'app.start',
 	'app.resume',
 	'app.end',
+	'app.focus_change',
 
 	'game.init',
 	'game.start',
@@ -96,10 +97,12 @@ registerGlobalSignals{
 
 	'mainscene.schedule_open',
 	'mainscene.open',
+	'mainscene.start',
 	'mainscene.close',
 
 	'scene.schedule_open',
 	'scene.open',
+	'scene.start',
 	'scene.close',	
 
 	'scene.init',
@@ -123,6 +126,7 @@ function Game:__init() --INITIALIZATION
 	self.initialized          = false
 	self.graphicsInitialized  = false
 	self.started              = false
+	self.focused              = false
 	self.currentRenderContext = 'game'    -- for editor integration
 
 	self.prevUpdateTime = 0
@@ -254,6 +258,20 @@ function Game:initSystem( config, fromEditor )
 			function(resume) return emitSignal( resume and 'app.resume' or 'app.start' ) end 
 			)
 	end
+
+	MOAISim.setListener(
+		MOAISim.EVENT_FOCUS_GET, 
+		function()
+			self:onFocusChanged( true )
+		end
+	)
+
+	MOAISim.setListener(
+		MOAISim.EVENT_FOCUS_LOST, 
+		function()
+			self:onFocusChanged( false )
+		end
+	)
 
 	MOAIGfxDevice.setListener (
 		MOAIGfxDevice.EVENT_RESIZE,
@@ -598,6 +616,7 @@ function Game:initGraphics( option, fromEditor )
 	self.mainRenderTarget:setFixedScale( self.width, self.height )
 
 	_stat( 'opening window', self.title, w, h )
+	self.focused = true
 	if not fromEditor then
 		--FIXME: crash here if no canvas shown up yet
 		MOAISim.openWindow( self.title, w, h  )
@@ -673,6 +692,12 @@ function Game:onResize( w, h )
 		return
 	end	
 	self:setDeviceSize( w, h )
+end
+
+function Game:onFocusChanged( focused )
+	self.focused = focused or false
+	emitSignal( 'app.focus_change', self.focused )
+	print( 'focus changed', focused )
 end
 
 --------------------------------------------------------------------

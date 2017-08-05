@@ -80,6 +80,10 @@ function SceneSession:openSceneByPath( scnPath, additive, arguments, autostart )
 	if autostart then
 		scn:start()
 	end
+	emitGlobalSignal( 'scene.start', scn, arguments )
+	if self.main then
+		emitGlobalSignal( 'mainscene.start', scn, arguments )
+	end
 	return scn
 end
 
