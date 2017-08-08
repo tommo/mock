@@ -447,6 +447,15 @@ function InputDevice:isMetaDown()
 	return self:isKeyDown( 'lmeta' ) or self:isKeyDown( 'rmeta' )
 end
 
+function InputDevice:getModifierKeyStates()
+	return {
+		ctrl  = self:isCtrlDown(),
+		alt   = self:isAltDown(),
+		meta  = self:isMetaDown(),
+		shift = self:isShiftDown()
+	}
+end
+
 function InputDevice:pollKeyHit(key) --get key hit counts since last polling
 	local keyStates = self.keyStates
 
@@ -794,12 +803,7 @@ function isMetaDown()
 end
 
 function getModifierKeyStates()
-	return {
-		ctrl  = isCtrlDown(),
-		alt   = isAltDown(),
-		meta  = isMetaDown(),
-		shift = isShiftDown()
-	}
+	return _defaultInputDevice:getModifierKeyStates()
 end
 
 function pollKeyHit(key) --get key hit counts since last polling

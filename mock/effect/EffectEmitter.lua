@@ -163,7 +163,42 @@ end
 
 --------------------------------------------------------------------
 --EDITOR Support
-function EffectEmitter:onBuildGizmo()
-	local giz = mock_edit.IconGizmo( 'effect.png' )
-	return giz
+if mock_edit then
+	function EffectEmitter:onBuildGizmo()
+		local giz = mock_edit.IconGizmo( 'effect.png' )
+		return giz
+	end
+
+	function EffectEmitter:onBuildPreviewer()
+		return EffectEmitterPreviewer( self )
+	end
+
+	--------------------------------------------------------------------
+	CLASS: EffectEmitterPreviewer ( mock_edit.ComponentPreviewer )
+		:MODEL{}
+
+	function EffectEmitterPreviewer:__init( emitter )
+		self.targetEmitter = emitter
+	end
+
+	function EffectEmitterPreviewer:onStart()
+		self.targetState = self.targetEmitter:start()
+	end
+
+	function EffectEmitterPreviewer:onUpdate( dt )
+		-- self.targetState:update( dt )
+	end
+
+	function EffectEmitterPreviewer:onDestroy()
+		if self.targetState then
+			self.targetEmitter:stop( 'skip' )
+			self.targetState = false
+		end
+	end
+
+	function EffectEmitterPreviewer:onReset()
+		self:onDestroy()
+		self:onStart()
+	end
+
 end

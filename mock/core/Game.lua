@@ -453,6 +453,7 @@ function Game:initCommonData( config, fromEditor )
 	--ask other systems to initialize
 	emitSignal( 'game.init', config )
 
+
 	--load scenes
 	if config['scenes'] then
 		for alias, scnPath in pairs( config['scenes'] ) do
@@ -473,6 +474,11 @@ function Game:initCommonData( config, fromEditor )
 
 	for i, manager in ipairs( self.globalManagers ) do
 		manager:postInit( self )
+	end
+
+	if getG( 'MOCK_ON_GAME_INIT' ) then
+		local func = getG( 'MOCK_ON_GAME_INIT' )
+		func()
 	end
 
 end
@@ -697,7 +703,6 @@ end
 function Game:onFocusChanged( focused )
 	self.focused = focused or false
 	emitSignal( 'app.focus_change', self.focused )
-	print( 'focus changed', focused )
 end
 
 --------------------------------------------------------------------
@@ -954,6 +959,11 @@ function Game:start()
 		emitSignal( 'game.start', self )
 	end
 	_stat( 'game started' )
+
+	if getG( 'MOCK_ON_GAME_START' ) then
+		local func = getG( 'MOCK_ON_GAME_START' )
+		func()
+	end
 end
 
 function Game:isPaused()

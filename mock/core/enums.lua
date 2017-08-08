@@ -184,6 +184,34 @@ EnumTextAlignmentV = _ENUM_V{
 	'baseline',
 }
 
+
+--------------------------------------------------------------------
+EnumAlignmentH = _ENUM_V{
+	'left',
+	'center',
+	'right',
+}
+
+--------------------------------------------------------------------
+EnumAlignmentV = _ENUM_V{
+	'top',
+	'center',
+	'bottom'
+}
+
+--------------------------------------------------------------------
+EnumOrigin = _ENUM_V{
+	'top_left',
+	'top_center',
+	'top_right',
+	'middle_left',
+	'middle_center',
+	'middle_right',
+	'bottom_left',
+	'bottom_center',
+	'bottom_right',
+}
+
 -- EnumTextWordBreak = _ENUM_V{
 -- 	'break-char',
 -- 	'break-none'

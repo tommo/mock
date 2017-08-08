@@ -402,5 +402,51 @@ function isQuestPlayed ( name )
 	return not getQuestManger():checkQuestNodeState( name, nil )
 end
 
+local function getQuestNodeAndState( name )
+	local mgr = getQuestManger()
+	local session, node = mgr:getQuestNode( name )
+	if not ( node and session ) then
+		_warn( 'no node/session found in quest session', name )
+		return false
+	end
+	local questState = session:getState()
+	local nodeState = questState:getNodeState( node.fullname )
+	return node, nodeState, questState
+end
+
+function finishQuestNode( name )
+	local node, nodeState, questState = getQuestNodeAndState( name )
+	if not node then return false end
+	if nodeState ~= 'active' then
+		_warn( 'quest node is not active' )
+	end
+	node:finish( questState )
+	getQuestManger():forceUpdate()
+end
+
+function abortQuestNode( name )
+	local node, nodeState, questState = getQuestNodeAndState( name )
+	if not node then return false end
+	if nodeState ~= 'active' then
+		_warn( 'quest node is not active' )
+	end
+	node:abort( questState )
+	getQuestManger():forceUpdate()
+end
+
+function resetQuestNode( name )
+	local node, nodeState, questState = getQuestNodeAndState( name )
+	if not node then return false end
+	node:reset( questState )
+	getQuestManger():forceUpdate()
+end
+
+function startQuestNode( name )
+	local node, nodeState, questState = getQuestNodeAndState( name )
+	if not node then return false end
+	node:start( questState )
+	getQuestManger():forceUpdate()
+end
+
 --------------------------------------------------------------------
 _questManger = QuestManager()

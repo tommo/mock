@@ -594,6 +594,60 @@ function rect(x,y,w,h)
 	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	
 end
 
+function splitOriginName( origin )
+	if origin == 'top_left' then
+		return 'top', 'left'
+	elseif origin == 'teop_center' then
+		return 'top', 'center'
+	elseif origin == 'top_right' then
+		return 'top', 'right'
+	elseif origin == 'middle_left' then
+		return 'middle', 'left'
+	elseif origin == 'middle_center' then
+		return 'middle', 'center'
+	elseif origin == 'center' then
+		return 'middle', 'center'
+	elseif origin == 'middle_right' then
+		return 'middle', 'right'
+	elseif origin == 'bottom_left' then
+		return 'bottom', 'left'
+	elseif origin == 'bottom_center' then
+		return 'bottom', 'center'
+	elseif origin == 'bottom_right' then
+		return 'bottom', 'right'
+	end
+end
+
+function rectOrigin( origin, x0,y0,w,h )
+	local x1, y1 = x0 + w, y0 + h
+	-- if y0>y1 then y0,y1 = y1,y0 end
+	-- if x0>x1 then x0,x1 = x1,x0 end
+	local xc = (x0+x1)/2
+	local yc = (y0+y1)/2
+	if origin=='center' then 
+		return xc, yc
+	elseif origin=='middle_center' then 
+		return xc, yc
+	elseif origin=='top_left' then
+		return x0, y1
+	elseif origin=='top_right' then
+		return x1, y1
+	elseif origin=='top_center' then
+		return xc, y1
+	elseif origin=='bottom_left' then
+		return x0, y0	
+	elseif origin=='bottom_right' then
+		return x1, y0
+	elseif origin=='bottom_center' then
+		return xc, y0
+	elseif origin=='middle_left' then
+		return x0, yc
+	elseif origin=='middle_right' then
+		return x1, yc
+	end
+	return xc,0
+end
+
 function rectCenter(x,y,w,h)
 	x,y,x1,y1=x-w/2,y-h/2,x+w/2,y+h/2
 	return min(x,x1),min(y,y1),max(x,x1),max(y,y1)	

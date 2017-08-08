@@ -64,25 +64,26 @@ local function _getOrigin( origin, x0,y0,x1,y1 )
 	local yc = (y0+y1)/2
 	if origin=='center' then 
 		return xc, yc
-	elseif origin=='top-left' then
+	elseif origin=='top_left' then
 		return x0, y1
-	elseif origin=='top-right' then
+	elseif origin=='top_right' then
 		return x1, y1
-	elseif origin=='top-center' then
+	elseif origin=='top_center' then
 		return xc, y1
-	elseif origin=='bottom-left' then
+	elseif origin=='bottom_left' then
 		return x0, y0	
-	elseif origin=='bottom-right' then
+	elseif origin=='bottom_right' then
 		return x1, y0
-	elseif origin=='bottom-center' then
+	elseif origin=='bottom_center' then
 		return xc, y0
-	elseif origin=='middle-left' then
+	elseif origin=='middle_left' then
 		return x0, yc
-	elseif origin=='middle-right' then
+	elseif origin=='middle_right' then
 		return x1, yc
 	end
 	return xc,0
 end
+
 ---------------------------------------------------------------------
 CLASS: LayoutItem ( mock.Component )
 	:MODEL{
