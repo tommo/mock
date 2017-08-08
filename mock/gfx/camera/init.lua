@@ -19,6 +19,7 @@ require 'mock.gfx.camera.CameraImageEffectBloom'
 require 'mock.gfx.camera.CameraImageEffectRadialBlur'
 require 'mock.gfx.camera.CameraImageEffectMosaic'
 require 'mock.gfx.camera.CameraImageEffectYUVOffset'
+require 'mock.gfx.camera.CameraImageEffectNoise'
 require 'mock.gfx.camera.CameraImageEffectHue'
 
 --------------------------------------------------------------------

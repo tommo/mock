@@ -61,6 +61,7 @@ require 'mock.common.shape'
 --------------------------------------------------------------------
 ------Animator?
 require 'mock.animator'
+require 'mock.snapshot'
 
 ------Graphics
 require 'mock.gfx'

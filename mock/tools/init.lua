@@ -58,3 +58,5 @@ require 'mock.tools.DialogScript'
 
 --------------------------------------------------------------------
 require 'mock.tools.I18N'
+
+require 'mock.tools.FieldAnimation'
