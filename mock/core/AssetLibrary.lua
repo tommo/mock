@@ -223,6 +223,27 @@ function AssetNode:getType()
 	return self.type
 end
 
+function AssetNode:getTagCache()
+	local cache = self.tagCache
+	if not self.tagCache then
+		cache = {}
+		self.tagCache = cache
+		local p = self
+		while p do
+			for i, t in ipairs( p.tags ) do
+				cache[ t ] = true
+			end
+			p = p.parent
+		end
+	end
+	return cache
+end
+
+function AssetNode:hasTag( tag )
+	local cache = self:getTagCache()
+	return cache and cache[ tag ] or false
+end
+
 function AssetNode:getSiblingPath( name )
 	local parent = self.parent
 	if parent=='' then return name end
@@ -364,6 +385,7 @@ function registerAssetNode( path, data )
 	node.parent      = ppath
 	node.cached = makeAssetCacheTable()
 	node.cached.asset = data['type'] == 'folder' and true or false
+	node.tags        = data['tags']
 
 	updateAssetNode( node, data )
 	AssetLibrary[ path ] = node
@@ -447,17 +469,21 @@ end
 
 
 --------------------------------------------------------------------
-function findAssetNode( path, assetType )
+function findAssetNode( path, assetType, allowDeprecated )
 	local tag = path..'|'..( assetType or '' )	
 	local result = AssetSearchCache[ tag ]
 	if result == nil then
 		for k, node in pairs( AssetLibrary ) do
 			local typeMatched = false
-			if not assetType then
-				typeMatched = true
+			if node:hasTag( 'deprecated' ) and ( not allowDeprecated ) then
+				typeMatched = false
 			else
-				if string.match( node:getType(), assetType ) then
+				if not assetType then
 					typeMatched = true
+				else
+					if string.match( node:getType(), assetType ) then
+						typeMatched = true
+					end
 				end
 			end
 			if typeMatched then
