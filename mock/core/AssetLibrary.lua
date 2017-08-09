@@ -233,7 +233,7 @@ function AssetNode:getTagCache()
 			for i, t in ipairs( p.tags ) do
 				cache[ t ] = true
 			end
-			p = p.parent
+			p = p:getParentNode()
 		end
 	end
 	return cache
@@ -385,7 +385,7 @@ function registerAssetNode( path, data )
 	node.parent      = ppath
 	node.cached = makeAssetCacheTable()
 	node.cached.asset = data['type'] == 'folder' and true or false
-	node.tags        = data['tags']
+	node.tags         = data['tags']
 
 	updateAssetNode( node, data )
 	AssetLibrary[ path ] = node
@@ -469,15 +469,17 @@ end
 
 
 --------------------------------------------------------------------
-function findAssetNode( path, assetType, allowDeprecated )
+function findAssetNode( path, assetType )
 	local tag = path..'|'..( assetType or '' )	
 	local result = AssetSearchCache[ tag ]
 	if result == nil then
 		for k, node in pairs( AssetLibrary ) do
 			local typeMatched = false
-			if node:hasTag( 'deprecated' ) and ( not allowDeprecated ) then
+			local deprecated = node:hasTag( 'deprecated' )
+			if deprecated then
 				typeMatched = false
 			else
+				if node.path==path then print( 'hello!' ) end
 				if not assetType then
 					typeMatched = true
 				else
@@ -486,6 +488,7 @@ function findAssetNode( path, assetType, allowDeprecated )
 					end
 				end
 			end
+
 			if typeMatched then
 				if k == path then
 					result = node
