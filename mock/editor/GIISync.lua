@@ -72,11 +72,11 @@ function GIISyncEditorHost:removeConnectedGame( peer )
 end
 
 function GIISyncEditorHost:onInit()
-	gii.connectPythonSignal( 'entity.modified', 
-		function( entity )
-			return self:onEntityModified( entity )
-		end
-	)
+	-- gii.connectPythonSignal( 'entity.modified', 
+	-- 	function( entity )
+	-- 		return self:onEntityModified( entity )
+	-- 	end
+	-- )
 	self.host:setListener( MOCKNetworkHost.EVENT_CONNECTION_ACCEPTED, 
 		function( host, client )
 			_log( 'connected to gii' )
@@ -95,6 +95,7 @@ end
 
 
 function GIISyncEditorHost:onEntityModified( entity )
+	if not entity then return end
 	local objData = _serializeObject( entity, nil, nil, SYNC_FIELDS )
 	local data = {
 		id = entity.__guid,

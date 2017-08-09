@@ -433,20 +433,70 @@ function MSprite:isPlaying()
 	return self.animState:isBusy()
 end
 
-
-function MSprite:drawBounds()
-	GIIHelper.setVertexTransform( self.prop )
-	local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
-	MOAIDraw.drawRect( x1,y1,x2,y2 )
-end
-
-function MSprite:getPickingProp()
-	return self.prop
-end
-
 function MSprite:setListenerOnStop( listener )
 	self.listenerOnStop = listener or false
 	if self.animState then
 		self.animState:setListener(MOAITimer.EVENT_TIMER_END_SPAN, listener)
 	end
+end
+
+--------------------------------------------------------------------
+--Editor support
+
+
+if mock_edit then
+	function MSprite:drawBounds()
+		GIIHelper.setVertexTransform( self.prop )
+		local x1,y1,z1, x2,y2,z2 = self.prop:getBounds()
+		MOAIDraw.drawRect( x1,y1,x2,y2 )
+	end
+
+	function MSprite:getPickingProp()
+		return self.prop
+	end
+
+	function MSprite:onBuildPreviewer()
+		if self.autoPlay then
+			return MSpritePreviewer( self )
+		end
+	end
+
+	--------------------------------------------------------------------
+	CLASS: MSpritePreviewer ( ComponentPreviewer )
+		:MODEL{}
+
+	function MSpritePreviewer:__init( sprite )
+		self.targetSprite = sprite
+	end
+
+	function MSpritePreviewer:onStart()
+		self.previewState = self.targetSprite:start()
+		local sprite = self.targetSprite
+		local clipName, mode = sprite.default, sprite.autoPlayMode
+		local animState, clip = self.targetSprite:createAnimState( clipName, mode )
+		if animState then
+			animState:throttle( sprite.playSpeed )
+			self.previewState = animState
+			self.previewState:start()
+			return true
+		end
+		return false
+	end
+
+	function MSpritePreviewer:onUpdate( dt )
+		-- self.previewState:update( dt )
+	end
+
+	function MSpritePreviewer:onDestroy()
+		if self.previewState then
+			self.previewState:stop()
+			self.previewState = false
+		end
+	end
+
+	function MSpritePreviewer:onReset()
+		self:onDestroy()
+		self:onStart()
+	end
+
 end

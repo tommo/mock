@@ -174,7 +174,7 @@ if mock_edit then
 	end
 
 	--------------------------------------------------------------------
-	CLASS: EffectEmitterPreviewer ( mock_edit.ComponentPreviewer )
+	CLASS: EffectEmitterPreviewer ( ComponentPreviewer )
 		:MODEL{}
 
 	function EffectEmitterPreviewer:__init( emitter )
