@@ -230,8 +230,11 @@ function AssetNode:getTagCache()
 		self.tagCache = cache
 		local p = self
 		while p do
-			for i, t in ipairs( p.tags ) do
-				cache[ t ] = true
+			local tags = p.tags
+			if tags then
+				for i, t in ipairs( tags ) do
+					cache[ t ] = true
+				end
 			end
 			p = p:getParentNode()
 		end

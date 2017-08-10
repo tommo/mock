@@ -90,7 +90,7 @@ end
 
 function ShaderConfig:rebuildShaders()
 	for id, shader0 in pairs( self.shaders ) do
-		self:buildShader( id, shader0.context )
+		self:buildShader( id, shader0.context, true )
 	end
 end
 

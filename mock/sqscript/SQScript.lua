@@ -388,11 +388,11 @@ function SQNode:_log( ... )
 end
 
 function SQNode:_warn( ... )
-	return _log( string.format( '[WARN:sq]%s\t>', self:getPosText() ), ... )
+	return _log( string.format( '[WARN:sq] %s\t>', self:getPosText() ), ... )
 end
 
 function SQNode:_error( ... )
-	return _log( string.format( '[ERROR:sq]%s\t>', self:getPosText() ), ... )
+	return _log( string.format( '[ERROR:sq] %s\t>', self:getPosText() ), ... )
 end
 
 --------------------------------------------------------------------
@@ -627,6 +627,10 @@ function SQNodeCheckpoint:load( data )
 	self.groupsOn   = parseGroupNames( self:getTagStringValue( 'group_on' ) )
 	self.groupsOff  = parseGroupNames( self:getTagStringValue( 'group_off' ) )
 	self.groupsOnly = parseGroupNames( self:getTagStringValue( 'group_only' ) )
+	if not self.name then
+		self:_warn( 'checkpoint name expected!' )
+		return false
+	end
 	self:getScript():registerCheckpoint( self )
 end
 
