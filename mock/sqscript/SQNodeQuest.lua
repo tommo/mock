@@ -62,6 +62,12 @@ function SQNodeQuest:enter( state, env )
 		if nodeState then
 			self:_warn( 'quest node is started or stopped already' )
 		end
+		local p = node
+		while true do
+			p = p:getParent()
+			if not p then break end
+			p:start( questState )
+		end
 		node:start( questState )
 
 	else --unknown command

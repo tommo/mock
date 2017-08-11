@@ -444,6 +444,12 @@ end
 function startQuestNode( name )
 	local node, nodeState, questState = getQuestNodeAndState( name )
 	if not node then return false end
+	local p = node
+	while true do
+		p = p:getParent()
+		if not p then break end
+		p:start( questState )
+	end
 	node:start( questState )
 	getQuestManger():forceUpdate()
 end

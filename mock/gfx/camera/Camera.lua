@@ -47,7 +47,7 @@ end
 function Camera:__init( option )
 	option = option or {}
 	self.clearBuffer = true
-	self.clearColor = { .10, .10, .11, 1 }
+	self.clearColor = { 0,0,0,1 }
 
 	local cam = MOAICamera.new()
 	self._camera  = cam

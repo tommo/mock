@@ -63,7 +63,7 @@ function SceneSession:openSceneByPath( scnPath, additive, arguments, autostart )
 		}
 	)
 	if not node then 
-		return _error('scene not found', id, scnPath )
+		return _error('scene not found', scnPath )
 	end
 	if node.type ~= 'scene' then
 		return _error('invalid type of entry scene:', tostring( node.type ), scnPath )
