@@ -447,9 +447,10 @@ function TextureGroup:removeTexture( t )
 			table.remove( self.textures, i )
 			t.parent = false
 			self:setModifyState( 'atlas' )
-			return
+			return t
 		end
 	end
+	return false
 end
 
 function TextureGroup:findTexture( path )
@@ -464,9 +465,7 @@ end
 function TextureGroup:findAndRemoveTexture( path )
 	for i, t in ipairs( self.textures ) do
 		if t.path == path then
-			table.remove( self.textures, i )
-			t.parent = false
-			return t
+			return self:removeTexture( t )
 		end
 	end
 	return false
