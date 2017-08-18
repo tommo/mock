@@ -46,6 +46,7 @@ require 'mock.common.MsgEmitter'
 require 'mock.common.MsgRedirector'
 require 'mock.common.MsgBroadcast'
 require 'mock.common.MsgTarget'
+require 'mock.common.MsgCapture'
 
 --------------------------------------------------------------------
 --ETC

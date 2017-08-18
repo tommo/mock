@@ -448,7 +448,7 @@ function startQuestNode( name )
 	while true do
 		p = p:getParent()
 		if not p then break end
-		p:start( questState )
+		p:start( questState, nil, true ) --skipSubNode
 	end
 	node:start( questState )
 	getQuestManger():forceUpdate()

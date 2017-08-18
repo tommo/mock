@@ -66,7 +66,7 @@ function SQNodeQuest:enter( state, env )
 		while true do
 			p = p:getParent()
 			if not p then break end
-			p:start( questState )
+			p:start( questState, nil, true ) --skip child node
 		end
 		node:start( questState )
 

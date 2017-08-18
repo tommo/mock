@@ -167,16 +167,10 @@ function PathGraph:unregister()
 	_pathFinderManager:unregisterGraph( self.graphID, self )
 end
 
-function PathGraph:createPathFinderRequest( 
-		owner, 
-		x0, y0, z0,
-		x1, y1, z1,
-		context
-	)
+function PathGraph:createPathFinderRequest( owner, x0, y0, z0, x1, y1, z1, context )
 	local request = PathFinderRequest( self, owner, context )
 	if not request:init( x0,y0,z0, x1,y1,z1 ) then return false end
 	_pathFinderManager:addRequest( request )
-
 	return request
 end
 

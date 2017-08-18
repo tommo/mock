@@ -208,16 +208,18 @@ function QuestNode:abort( questState, from )
 	end
 end
 
-function QuestNode:start( questState, from )
+function QuestNode:start( questState, from, skipSubNode )
 	local state0 = questState:getNodeState( self.fullname ) or false
 	if state0 then return false end --visited
 	if self.name == 'start' or self.name == 'stop' then
 		return self:finish( questState, from )
 	end
 	questState:setNodeState( self.fullname, 'active' )
-	local subNode = self:getChild( 'start' )
-	if subNode then
-		subNode:start( questState, from )
+	if not skipSubNode then
+		local subNode = self:getChild( 'start' )
+		if subNode then
+			subNode:start( questState, from )
+		end
 	end
 end
 

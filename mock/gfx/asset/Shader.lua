@@ -72,7 +72,7 @@ function ShaderProgram:build( force )
 	local vshSource = self.vsh
 	local fshSource = self.fsh
 	
-	local attributes = self.attributes or {'position', 'uv', 'color'}
+	local attributes = self.attributes or {'position',  'uv', 'color'}
 	local uniforms   = self.uniforms
 	local globals    = self.globals
 
