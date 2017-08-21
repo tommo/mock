@@ -8,3 +8,5 @@ require 'mock.editor.DebugMemoryView'
 
 require 'mock.editor.GIISync'
 
+require 'mock.editor.CommentItem'
+require 'mock.editor.CommentItemText'
