@@ -110,6 +110,7 @@ local function MSpriteLoader( node )
 	local indexToMetaData = {}
 
 	for id, animation in pairs( data.anims ) do
+		local remapper = MOAIDeckRemapper.new()
 		local name = animation.name
 		local sequence = animation.seq
 		local srcType  = animation.src_type or 'ase'
@@ -122,6 +123,7 @@ local function MSpriteLoader( node )
 		indexCurve   : reserveKeys( count + 1 )
 		offsetXCurve : reserveKeys( count + 1 )
 		offsetYCurve : reserveKeys( count + 1 )
+		remapper     : reserve( count + 1 )
 
 		--TODO: support flags? or just forbid it!!!!
 		local offsetEaseType = EaseLinear
@@ -141,6 +143,7 @@ local function MSpriteLoader( node )
 			offsetXCurve:setKey( fid, ftime, ox, offsetEaseType )
 			offsetYCurve:setKey( fid, ftime, -oy, offsetEaseType )
 			indexCurve  :setKey( fid, ftime, index, EaseFlat )
+			remapper    :setRemap( fid, index )
 
 			ftime = ftime + delay  --will use anim:setSpeed to fit real playback FPS
 
@@ -158,6 +161,7 @@ local function MSpriteLoader( node )
 			length          = ftime,
 			frameCount      = count,
 			name            = name,
+			remapper        = remapper,
 		} 
 		animations[ name ] = clipData
 	end

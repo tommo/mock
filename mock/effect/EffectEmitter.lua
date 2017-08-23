@@ -13,6 +13,8 @@ CLASS: EffectEmitter ( Component )
 		Field 'autoPlay'      :boolean();
 		Field 'actionOnStop'  :enum( EnumActionOnStop );
 		Field 'delay'					:number();
+		'----';
+		Field 'transformRole' :string();
 	}
 	:META{
 		category = 'FX'
@@ -33,6 +35,7 @@ function EffectEmitter:__init()
 	self.mirrorY    = false
 	self.actionOnStop = 'default'
 	self.delay = 0
+	self.transformRole = 'render'
 end
 
 function EffectEmitter:setEffect( e )
@@ -46,7 +49,7 @@ function EffectEmitter:setEffect( e )
 end
 
 function EffectEmitter:onAttach( entity )
-	entity:_attachProp( self.prop )
+	entity:_attachProp( self.prop, self.transformRole or 'render' )
 end
 
 function EffectEmitter:onDetach( entity )

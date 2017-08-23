@@ -370,7 +370,6 @@ function MSprite:createAnimState( clipName, mode )
 	animState:setMode( mode or clip.mode or MOAITimer.NORMAL )
 	animState.length = clip.length
 	animState.clip   = clip
-
 	return animState, clip
 end
 

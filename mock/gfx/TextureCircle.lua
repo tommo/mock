@@ -66,7 +66,7 @@ end
 --------------------------------------------------------------------
 CLASS: TextureCircle ( GraphicsPropComponent )
 	:MODEL{
-		Field 'texture' :asset('texture;framebuffer') :getset( 'Texture' );
+		Field 'texture' :asset('texture;framebuffer;render_target') :getset( 'Texture' );
 		Field 'radius'  :onset('update');
 		Field 'spans'   :int() :onset('update');
 		'----';
