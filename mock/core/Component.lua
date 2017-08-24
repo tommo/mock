@@ -80,6 +80,7 @@ end
 -- @p[opt=false] bool deep should do deep-search
 -- @ret Entity result of search
 function Component:findChild( name, deep )
+	if not self._entity then return end
 	return self._entity:findChild( name, deep )
 end
 
