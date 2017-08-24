@@ -561,6 +561,7 @@ end
 
 function normalize(x,y)
 	local l = sqrt(x*x+y*y)
+	if l == 0 then return 0, 0 end
 	return x/l, y/l
 end
 
