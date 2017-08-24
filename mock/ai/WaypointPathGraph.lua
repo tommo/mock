@@ -267,7 +267,7 @@ function WaypointPathGraph:findNearestWaypoint( x, y, z, maxDistance, checkingCa
 	for i, p in ipairs( self.waypoints ) do
 		local x0, y0, z0 = p:getWorldLoc()
 		local distance = distance3Sqrd( x0,y0,z0, x,y,z )
-		print( 'check',i,distance, x0,y0,z0 )
+		-- print( 'check',i,distance, x0,y0,z0 )
 		if ( ( not maxDistance ) or ( maxDistance > distance ) )
 			and ( ( not candidate ) or ( distance < minDistance ) )
 			and ( ( not checkingCallback ) or ( checkingCallback( p ) ) )
@@ -319,6 +319,6 @@ end
 
 function WaypointPathGraph:getNodeId( x, y, z, owner, context )
 	local wp = self:findNearestWaypoint( x,y,z )
-	print( x,y,z, wp:getWorldLoc() )
+	-- print( x,y,z, wp:getWorldLoc() )
 	return wp and wp.nodeId or false
 end
