@@ -266,14 +266,17 @@ function CameraPass:buildDebugDrawLayer()
 	layer:setOverlayTable( overlayTable )
 	layer:setUnderlayTable( underlayTable )
 	layer:setPartition( self.camera.scene:getDebugPropPartition() )
+	
 	--physics
 	local world = self.camera.scene:getBox2DWorld()
 	table.insert( underlayTable, world )
+	
 	--debugdraw queue
 	local debugDrawQueue = self.camera.scene:getDebugDrawQueue()
-	table.insert( overlayTable, debugDrawQueue:getMoaiProp() )
+	table.insert( underlayTable, debugDrawQueue:getMoaiProp() )
 	table.insert( self.debugLayers, layer )
 	layer:setVisible( false )
+
 	return layer
 end
 

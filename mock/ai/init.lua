@@ -17,9 +17,8 @@ require 'mock.ai.SteerController'
 --------------------------------------------------------------------
 ---- PATH finder
 require 'mock.ai.PathFinder'
-require 'mock.ai.WaypointGraph'
-require 'mock.ai.WaypointPathFinder'
 
 --------------------------------------------------------------------
 --NavMesh
 require 'mock.ai.PathGraphNavMesh2D'
+require 'mock.ai.WaypointPathGraph'

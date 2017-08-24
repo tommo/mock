@@ -111,6 +111,8 @@ function PathFinderManager:unregisterGraph( id, graph )
 	if graph == graph0 then
 		self.graphRegistry[ id ] = nil
 		return true
+	else
+		_warn( 'unregistering unmatched path graph:', id )
 	end
 	return false
 end
@@ -311,6 +313,7 @@ function PathFinder:__init()
 	self.targetGraph   = false
 	self.currentRequests = {}
 	self.checkingCallback = false
+	self.options = {}
 end
 
 function PathFinder:onDetach( ent )
@@ -354,7 +357,24 @@ function PathFinder:getOptions()
 end
 
 function PathFinder:setOptions( options )
-	self.options = options
+	local opt = self.options
+	for k, v in pairs( options ) do
+		opt[ k ] = v
+	end
+end
+
+function PathFinder:clearOptions()
+	self.options = {}
+end
+
+function PathFinder:getOption( k, default )
+	local v = self.options[ k ]
+	if v == nil then return default end
+	return v
+end
+
+function PathFinder:setOption( k, v )
+	self.options[ k ] = v
 end
 
 function PathFinder:requestPath( x0, y0, z0, x1, y1, z1, context, keepPrevRequests )
