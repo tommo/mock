@@ -322,3 +322,10 @@ function WaypointPathGraph:getNodeId( x, y, z, owner, context )
 	-- print( x,y,z, wp:getWorldLoc() )
 	return wp and wp.nodeId or false
 end
+
+
+--------------------------------------------------------------------
+CLASS: WaypointPathFinder ( Component )
+:MODEL{}
+:DEPRECATED()
+
