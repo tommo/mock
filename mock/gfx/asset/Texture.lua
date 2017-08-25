@@ -197,7 +197,7 @@ function Texture:getScale()
 end
 
 --------------------------------------------------------------------
-CLASS: TextureInstance ()
+CLASS: TextureInstance ( TextureInstanceBase )
 	:MODEL{}
 
 function TextureInstance:__init( src )
@@ -228,10 +228,6 @@ function TextureInstance:getMoaiTexture()
 	return self._texture
 end
 
-function TextureInstance:getMoaiTextureUV()
-	return self._texture, { self:getUVRect() }
-end
-
 function TextureInstance:getSize()
 	return self._src:getSize()
 end
@@ -260,6 +256,9 @@ function TextureInstance:getPrebuiltAtlas()
 	return self._prebuiltAtlas
 end
 
+function TextureInstance:isPacked()
+	return self.packed
+end
 
 --------------------------------------------------------------------
 --Texture Group
@@ -545,6 +544,7 @@ function TextureGroup:loadTexture( instance )
 	end
 	local node = getAssetNode( instance:getPath() )
 	if self:isAtlas() then
+		instance.packed = true
 		if not self:isAtlasLoaded() then
 			self:loadAtlas()
 		end
@@ -558,6 +558,7 @@ function TextureGroup:loadTexture( instance )
 		end
 		instance._texture = tex
 	else
+		instance.packed = false
 		local pixmapPath = node:getObjectFile( 'pixmap' )
 		local tex = self:_loadSingleTexture( pixmapPath, instance:getPath() )
 		if tex then
@@ -952,3 +953,6 @@ end
 
 registerAssetLoader( 'texture',         loadTexture, unloadTexture )
 registerAssetLoader( 'prebuilt_atlas',  loadTexture, unloadTexture )
+
+
+addSupportedTextureAssetType( 'texture' )

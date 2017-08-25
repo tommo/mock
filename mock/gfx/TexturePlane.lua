@@ -2,7 +2,7 @@ module 'mock'
 
 CLASS: TexturePlane ( GraphicsPropComponent )
 	:MODEL{
-		Field 'texture' :asset_pre('texture;render_target') :getset( 'Texture' );
+		Field 'texture' :asset_pre(getSupportedTextureAssetTypes()) :getset( 'Texture' );
 		Field 'size'    :type('vec2') :getset('Size');
 		'----';
 		Field 'resetSize' :action( 'resetSize' );

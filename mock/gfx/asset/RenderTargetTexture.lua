@@ -1,5 +1,5 @@
 module 'mock'
-CLASS: RenderTargetTexture ( Texture )
+CLASS: RenderTargetTexture ( TextureInstanceBase )
 	:MODEL{
 		Field 'width'  :int();
 		Field 'height' :int();
@@ -27,6 +27,7 @@ function RenderTargetTexture:__init()
 	self.filter = 'linear'
 	self.type   = 'framebuffer'
 	self.colorFormat = false
+	self.inited = false
 end
 
 function RenderTargetTexture:init( w, h, filter, colorFormat, depth, stencil )
@@ -37,6 +38,7 @@ function RenderTargetTexture:init( w, h, filter, colorFormat, depth, stencil )
 	self.colorFormat = colorFormat
 	self.depth = depth or false
 	self.stencil = stencil or false
+	self.inited = true
 	self:update()
 	return true
 end
@@ -85,3 +87,4 @@ function RenderTargetTextureLoader( node )
 end
 
 registerAssetLoader( 'render_target',   RenderTargetTextureLoader )
+addSupportedTextureAssetType( 'render_target' )

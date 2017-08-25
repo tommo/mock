@@ -250,6 +250,12 @@ function Camera:updateRenderLayers()
 	return getCameraManager():update()
 end
 
+function Camera:updateLayerVisible()
+	for i, pass in ipairs( self.passes ) do
+		pass:updateAllGroupVisible()
+	end
+end
+
 local function _prioritySortFunc( a, b )	
 	local pa = a.priority or 0
 	local pb = b.priority or 0

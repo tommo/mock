@@ -22,13 +22,34 @@ function CameraPass:setGroupActive( id, active )
 	self.groupStates[ id ] = active ~= false
 	local group = self.groups[ id ]
 	if not group then return end
-	for layer in pairs( group ) do
-		layer:setVisible( active )
-	end
+	self:updateGroupVisible( id )
 end
 
 function CameraPass:isGroupActive( id )
 	return self.groupStates[ id ] ~= false
+end
+
+function CameraPass:updateGroupVisible( id )
+	local group = self.groups[ id ]
+	local groupVis = self.groupStates[ id ] ~= false
+	local isEditorCamera = self.camera.FLAG_EDITOR_OBJECT
+	for layer in pairs( group ) do
+		local visible = groupVis
+		if isEditorCamera then
+			local src = layer.sceneLayer and layer.sceneLayer.source
+			if src then
+				local editorVisible = src.editorVisible and src.editorSolo ~= 'hidden'
+				visible = visible and editorVisible or false
+			end
+		end
+		layer:setVisible( visible )
+	end
+end
+
+function CameraPass:updateAllGroupVisible()
+	for id, group in pairs( self.groups ) do
+		self:updateGroupVisible( id )
+	end
 end
 
 function CameraPass:init( camera )
@@ -312,6 +333,7 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 	layer.name     = sceneLayer.name
 	layer.priority = -1
 	layer.source   = source
+	layer.sceneLayer = sceneLayer
 
 	layer:showDebugLines( false )
 	layer:setPartition ( sceneLayer:getPartition() )
@@ -338,12 +360,6 @@ function CameraPass:buildSceneLayerRenderLayer( sceneLayer, option )
 
 	inheritVisible( layer, sceneLayer )
 	layer._mock_camera = camera
-
-	if camera.FLAG_EDITOR_OBJECT then		
-		local src = sceneLayer.source
-		local visible = src.editorVisible and src.editorSolo~='hidden'
-		if not visible then layer:setVisible( false ) end
-	end
 
 	return layer
 end

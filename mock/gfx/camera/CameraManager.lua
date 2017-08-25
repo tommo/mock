@@ -37,6 +37,12 @@ function CameraManager:getCameraList()
 	return list
 end
 
+function CameraManager:updateLayerVisible()
+	for cam in pairs( self.cameras ) do
+		cam:updateLayerVisible()
+	end
+end
+
 function CameraManager:update()
 	local contextMap = {}
 
@@ -97,8 +103,8 @@ function CameraManager:onLayerUpdate( layer, var )
 			cam:reorderRenderLayers()
 		end
 		self:update()
-	elseif var == 'editor_visible' then
-		self:update()
+	elseif var == 'editor_visible' or var == 'visible' then
+		self:updateLayerVisible()
 	end
 end
 

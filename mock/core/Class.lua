@@ -832,6 +832,10 @@ function Field:asset_pre( assetType )
 	return self:asset( assetType ):meta{ preload = true }
 end
 
+function Field:asset_array_pre( assetType )
+	return self:asset_array( assetType ):meta{ preload = true }
+end
+
 --type shortcut
 function Field:number()
 	return self:type('number')

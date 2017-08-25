@@ -46,7 +46,6 @@ function Deck2D:getTextureInstance()
 	return self.texture
 end
 
-
 function Deck2D:getTextureData()
 	if self.texture then
 		return self.texture:getMoaiTextureUV()

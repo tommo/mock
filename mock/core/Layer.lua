@@ -52,9 +52,6 @@ end
 function Layer:setVisible( visible )
 	emitSignal( 'layer.update', self, 'visible' )
 	self.visible = visible
-	for l in pairs( self.moaiLayers ) do
-		l:setVisible( visible )
-	end
 end
 
 function Layer:isVisible()

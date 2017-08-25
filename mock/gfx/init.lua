@@ -5,9 +5,11 @@ require 'mock.gfx.asset.ParticleProcs'
 
 
 --GRAPHICS
+require 'mock.gfx.asset.TextureBase'
 require 'mock.gfx.asset.ThreadTextureLoadTask'
 require 'mock.gfx.asset.PrebuiltAtlas'
 require 'mock.gfx.asset.Texture'
+require 'mock.gfx.asset.MultiTexture'
 require 'mock.gfx.asset.Deck2D'
 require 'mock.gfx.asset.DefaultFont'
 require 'mock.gfx.asset.Font'
