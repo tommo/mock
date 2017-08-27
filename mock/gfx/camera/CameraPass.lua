@@ -34,15 +34,17 @@ function CameraPass:updateGroupVisible( id )
 	local groupVis = self.groupStates[ id ] ~= false
 	local isEditorCamera = self.camera.FLAG_EDITOR_OBJECT
 	for layer in pairs( group ) do
-		local visible = groupVis
-		if isEditorCamera then
-			local src = layer.sceneLayer and layer.sceneLayer.source
-			if src then
-				local editorVisible = src.editorVisible and src.editorSolo ~= 'hidden'
-				visible = visible and editorVisible or false
+		if not layer.FLAG_DEBUG_LAYER then
+			local visible = groupVis
+			if isEditorCamera then
+				local src = layer.sceneLayer and layer.sceneLayer.source
+				if src then
+					local editorVisible = src.editorVisible and src.editorSolo ~= 'hidden'
+					visible = visible and editorVisible or false
+				end
 			end
+			layer:setVisible( visible )
 		end
-		layer:setVisible( visible )
 	end
 end
 
@@ -296,6 +298,7 @@ function CameraPass:buildDebugDrawLayer()
 	local debugDrawQueue = self.camera.scene:getDebugDrawQueue()
 	table.insert( underlayTable, debugDrawQueue:getMoaiProp() )
 	table.insert( self.debugLayers, layer )
+	layer.FLAG_DEBUG_LAYER = true
 	layer:setVisible( false )
 
 	return layer

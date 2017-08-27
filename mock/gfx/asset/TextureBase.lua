@@ -40,3 +40,7 @@ end
 function TextureInstanceBase:getUVRect()
 	return 0,0,1,1
 end
+
+function TextureInstanceBase:isPacked()
+	return false
+end
