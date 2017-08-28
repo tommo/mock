@@ -69,6 +69,7 @@ function Viewport:__init( mode )
 	self._viewport.source      = self
 	self.zoomSize        = { 1, 1 }
 
+	self.margin = {0,0,0,0}
 end
 
 function Viewport:setMode( mode )

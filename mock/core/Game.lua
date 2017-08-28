@@ -591,6 +591,7 @@ function Game:initGraphics( option, fromEditor )
 	assert( not self.graphicsInitialized )
 	_stat( 'init graphics' )
 
+
 	self.graphicsOption = option['graphics'] or {}
 	
 	local gfxOption = self.graphicsOption
@@ -617,6 +618,9 @@ function Game:initGraphics( option, fromEditor )
 
 	self.viewportMode = gfxOption['viewport_mode'] or 'fit'
 
+	self.reservedTextureBase = gfxOption['reserved_textures'] or 8
+	MOAIGfxDevice.reserveTexture( self.reservedTextureBase )
+
 	self.mainRenderTarget:setAspectRatio( self.width/self.height )
 	self.mainRenderTarget:setKeepAspect( true )
 	self.mainRenderTarget:setFixedScale( self.width, self.height )
@@ -639,10 +643,6 @@ function Game:initGraphics( option, fromEditor )
 	end
 
 	self:showCursor()
-
-	-- MOAIGfxResourceMgr.setResourceLoadingPolicy( 
-	-- 	MOAIGfxResourceMgr.LOADING_POLICY_CPU_GPU_ASAP
-	-- )
 end
 
 function Game:initDebugUI()
