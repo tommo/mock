@@ -247,7 +247,7 @@ end
 
 function Camera:updateRenderLayers()
 	self._renderCommandTable = false
-	return getCameraManager():update()
+	getCameraManager():update()
 end
 
 function Camera:updateLayerVisible()

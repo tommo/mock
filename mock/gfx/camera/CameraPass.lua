@@ -38,7 +38,7 @@ function CameraPass:updateGroupVisible( id )
 			local visible = groupVis
 			if isEditorCamera then
 				local src = layer.sceneLayer and layer.sceneLayer.source
-				if src then
+				if src and layer.name ~= '_GII_EDITOR_LAYER' then
 					local editorVisible = src.editorVisible and src.editorSolo ~= 'hidden'
 					visible = visible and editorVisible or false
 				end

@@ -94,7 +94,7 @@ function CameraManager:update()
 			renderData.renderTableMap
 		)
 	end
-
+	self:updateLayerVisible()
 end
 
 function CameraManager:onLayerUpdate( layer, var )
