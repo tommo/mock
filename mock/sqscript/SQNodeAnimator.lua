@@ -59,7 +59,7 @@ function SQNodeAnimator:enter( state, env )
 		return false
 
 	elseif cmd == 'pause' then
-		animator:pause( paused )
+		animator:pause()
 		return false
 
 	elseif cmd == 'resume' then

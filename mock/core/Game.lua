@@ -134,6 +134,7 @@ function Game:__init() --INITIALIZATION
 
 	self.version = ""
 	self.editorMode = false
+	self.developerMode = false
 	self.namedSceneMap = {}
 	self.layers        = {}
 	self.configObjects = {}
@@ -187,6 +188,7 @@ function Game:init( config, fromEditor, extra )
 	_stat( '...init game' )
 	
 	self.editorMode  = fromEditor and true or false
+	self.developerMode = fromEditor and true or false
 	self.initOption  = config
 
 	--META
@@ -1191,6 +1193,11 @@ end
 
 function Game:getCurrentRenderContext()
 	return self.currentRenderContext or 'game'
+end
+
+
+function Game:isDeveloperMode()
+	return self.developerMode
 end
 
 function Game:isEditorMode()

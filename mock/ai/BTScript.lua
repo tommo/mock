@@ -492,9 +492,8 @@ end
 
 local function BTScriptLoader( node )
 	local path = node:getObjectFile('def')
-	return loadBTScriptFromFile( path )
+	return loadBTScriptFromFile( path ), false --no cache( for debugging )
 end
 
 --------------------------------------------------------------------
 registerAssetLoader ( 'bt_script', BTScriptLoader )
-

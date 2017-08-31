@@ -1009,7 +1009,7 @@ function string.join( t, sep )
 	local result = nil
 	for i, s in ipairs( t ) do
 		if result then
-			result = result .. sep ..s
+			result = result .. sep .. s
 		else
 			result = s
 		end
