@@ -12,6 +12,8 @@ local remove, insert = table.remove, table.insert
 local ipairs, pairs = ipairs, pairs
 
 module 'mock'
+
+local TRACE_BT = true
 --------------------------------------------------------------------
 local function _randInteger( k ) 
 	 return math.floor( math.random() * k ) + 1
@@ -109,6 +111,7 @@ function BTContext:__init( owner )
 	self._params        = {}
 	self._owner         = owner or false
 	self._nodeContext   = {}
+	self._stopped       = false
 end
 
 function BTContext:getOwner()
@@ -218,17 +221,15 @@ function BTContext:updateRunningNodes( dt )
 	local _runningQueue = self._runningQueue
 	local count = #_runningQueue
 	if count == 0 then return false end
-
 	for i = 1, count do 
 		--only execute currently available nodes, new nodes left to next update
 		local node = _runningQueue[ i ]
 		if node then --might have already removed
-			if node:update( self, dt ) == 'complete' then return 'complete' end
+			if node:update( self, dt, false ) == 'complete' then return 'complete' end
 		end
 	end
 
 	--shrink running queue?
-
 	if self._runningQueueNeedShrink then
 		local newQueue = {}
 		-- local j = 1
@@ -237,6 +238,7 @@ function BTContext:updateRunningNodes( dt )
 			-- if node then newQueue[ j ] = node ; j = j + 1 end
 		end
 		self._runningQueue = newQueue
+		self._runningQueueNeedShrink = false
 	end
 
 	return true
@@ -277,10 +279,9 @@ function BTContext:removeRunningNode( nodeToRemove )
 		if node == nodeToRemove then
 			_runningQueue[ i ] = false
 			return node:stop( self )
-			-- _activeActions[ nodeToRemove ] = nil
 		end
 	end
-	_warn( 'bt node not removed', nodeToRemove:getClassName(), nodeToRemove.name )
+	_error( 'bt node not removed', nodeToRemove:getClassName(), nodeToRemove.actionName )
 end
 
 function BTContext:clearRunningNode()
@@ -385,6 +386,10 @@ function BTNode:__init()
 	self.depth = 0 --depth in tree
 end
 
+function BTNode:pre_execute( context )
+	if context._stopped then return false end
+end
+
 function BTNode:execute( context )
 	error('not implemented execute in :'..self:getType())
 end
@@ -445,6 +450,7 @@ function BTActionNode:getType()
 end
 
 function BTActionNode:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local act = context:requestAction( self )
 	local start = act.start
 	if start then 
@@ -509,6 +515,7 @@ function BTLoggingNode:getType()
 end
 
 function BTLoggingNode:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	_log( self.logText )
 	return self:returnUpLevel( 'ignore', context )
 end
@@ -526,6 +533,7 @@ function BTMsgSendingNode:getType()
 end
 
 function BTMsgSendingNode:execute( context )
+if self:pre_execute( context ) == false then return false end
 	--TODO: arguments
 	context:getControllerEntity():tell( self.msg, self, self )
 	return self:returnUpLevel( 'ignore', context )
@@ -556,6 +564,7 @@ function BTCondition:addNode( node )
 end
 
 function BTCondition:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local res = context:getCondition( self.conditionName )
 	if res then
 		local target = self.targetNode
@@ -590,6 +599,7 @@ function BTConditionNot:getType()
 end
 
 function BTConditionNot:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local res = context:getCondition( self.conditionName )
 	if not res then
 		local target = self.targetNode
@@ -667,6 +677,7 @@ function BTPrioritySelector:getType()
 end
 
 function BTPrioritySelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 	local index = nodeContext[ self ] or 1
 	local child = self.children[ index ]
@@ -707,6 +718,7 @@ function BTSequenceSelector:getType()
 end
 
 function BTSequenceSelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 	local index = nodeContext[ self ] or 1
 	local child = self.children[ index ]
@@ -756,6 +768,7 @@ function BTRandomSelector:postLoad()
 end
 
 function BTRandomSelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	if not self.probList then
 		_warn( 'emtpy random node' )
 		return self:returnUpLevel( 'ignore', context )
@@ -780,6 +793,7 @@ function BTShuffledSequenceSelector:getType()
 end
 
 function BTShuffledSequenceSelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 	local executeList = nodeContext[ self ]
 	if not executeList then
@@ -815,6 +829,7 @@ function BTConcurrentAndSelector:getType()
 end
 
 function BTConcurrentAndSelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 
 	local env = nodeContext[ self ]
@@ -887,6 +902,7 @@ end
 
 
 function BTConcurrentOrSelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 	local env = nodeContext[ self ]
 	if not env then 
@@ -960,6 +976,7 @@ end
 
 
 function BTConcurrentEitherSelector:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 
 	local env = nodeContext[ self ]
@@ -1040,6 +1057,7 @@ function BTDecorator:addNode( node )
 end
 
 function BTDecorator:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	return self.targetNode:execute( context )
 end
 
@@ -1072,6 +1090,7 @@ function BTDecoratorAlwaysOK:getType()
 end
 
 function BTDecoratorAlwaysOK:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	if self.targetNode then
 		return self.targetNode:execute( context )
 	else
@@ -1090,6 +1109,7 @@ function BTDecoratorAlwaysFail:getType()
 end
 
 function BTDecoratorAlwaysFail:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	if self.targetNode then
 		return self.targetNode:execute( context )
 	else
@@ -1108,6 +1128,7 @@ function BTDecoratorAlwaysIgnore:getType()
 end
 
 function BTDecoratorAlwaysIgnore:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	if self.targetNode then
 		return self.targetNode:execute( context )
 	else
@@ -1156,6 +1177,7 @@ function BTDecoratorRepeatFor:getType()
 end
 
 function BTDecoratorRepeatFor:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	local nodeContext = context._nodeContext
 	local count = randi( self.minCount, self.maxCount )
 	print( 'repeat count', count )
@@ -1240,6 +1262,7 @@ function BTDecoratorWeight:setValue( v )
 end
 
 function BTDecoratorWeight:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	if self.targetNode then
 		return self.targetNode:execute( context )
 	else
@@ -1258,6 +1281,7 @@ function BTDecoratorProb:setValue( v )
 end
 
 function BTDecoratorProb:execute( context )
+	if self:pre_execute( context ) == false then return false end
 	if prob( self.probWeight * 100 ) then
 		return self.targetNode:execute( context )
 	else
@@ -1314,6 +1338,8 @@ function BTController:__init()
 	self.context    = BTContext( self )
 	self.tree       = false
 	self.resetting  = false
+	self.running    = true
+
 
 	--use different countdown start value to make the update sparse
 	startCountDown = startCountDown + 1
@@ -1398,10 +1424,13 @@ end
 function BTController:stop()
 	self.context:resetRunningState()
 	self.resetting = false
+	self.context._stopped = true
 	BTController.__super.stop( self )
 end
 
 function BTController:start()
 	self:scheduleUpdate()
+	self.running = true
+	self.context._stopped = false
 	BTController.__super.start( self )
 end

@@ -1017,6 +1017,10 @@ function string.join( t, sep )
 	return result
 end
 
+function string.fromlines( ... )
+	return string.join( {...}, '\n' )
+end
+
 --------------------------------------------------------------------
 function loadpreprocess( src, chunkname )
 	local line = 0
