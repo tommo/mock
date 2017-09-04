@@ -303,11 +303,12 @@ end
 -- @ret Component the component attached ( same as the input )
 
 function Entity:attach( com )
-	if not self.components then 
+	local components = self.components
+	if not components then 
 		_error('attempt to attach component to a dead entity')
 		return com
 	end
-	if self.components[ com ] then
+	if components[ com ] then
 		_log( self.name, tostring( self.__guid ), com:getClassName() )
 		error( 'component already attached!!!!' )
 	end
@@ -316,11 +317,19 @@ function Entity:attach( com )
 	local maxId = self._maxComponentID + 1
 	self._maxComponentID = maxId
 	com._componentID = maxId
-	self.components[ com ] = com:getClass()
+	components[ com ] = com:getClass()
 	if self.scene then
 		com._entity = self		
 		local onAttach = com.onAttach
 		if onAttach then onAttach( com, self ) end
+		for otherCom in pairs( self.components ) do
+			if otherCom ~= com then
+				local onOtherAttach = com.onOtherAttach
+				if onOtherAttach then
+					onOtherAttach( otherCom, self, com )
+				end
+			end
+		end
 		local entityListener = self.scene.entityListener
 		if entityListener then
 			entityListener( 'attach', self, com )
@@ -368,6 +377,14 @@ function Entity:detach( com, reason, _skipDisconnection )
 			self:disconnectAllForObject( com )
 		end
 		if onDetach then onDetach( com, self, reason ) end
+		for otherCom in pairs( components ) do
+			if otherCom ~= com then
+				local onOtherDetach = com.onOtherDetach
+				if onOtherDetach then
+					onOtherDetach( otherCom, self, com )
+				end
+			end
+		end
 	end
 	com._entity = nil
 	return com
