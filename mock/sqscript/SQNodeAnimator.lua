@@ -36,6 +36,7 @@ function SQNodeAnimator:enter( state, env )
 		if duration > 0 then
 			animState:setDuration( duration )
 		else
+			animState:setDuration( 0 )
 			duration = animState.clipLength
 		end
 		if self.argMode == MOAITimer.REVERSE then

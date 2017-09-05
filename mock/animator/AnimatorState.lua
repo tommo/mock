@@ -393,6 +393,7 @@ function AnimatorState:updateDuration()
 		self.elapsedTimer:setSpan( duration )
 		self.elapsedTimer:pause( false )
 	else
+		self.elapsedTimer:setSpan( 0 )
 		self.elapsedTimer:pause( true )
 	end
 end

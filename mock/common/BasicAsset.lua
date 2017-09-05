@@ -19,6 +19,12 @@ function loadTextData( filename )
 	local text = fp:read( '*a' )
 	return text
 end
+
+function saveTextData( txt, filename )
+	local fp = io.open( filename, 'w' )
+	fp:write( txt )
+	fp:close()
+end
 ---------------------basic loaders
 local basicLoaders = {}
 function basicLoaders.text( node )

@@ -31,6 +31,8 @@ EffectNodeParticleSystem :MODEL{
 	Field 'particleLimit'    :int()  :range(0);
 	Field 'spriteLimit'      :int()  :range(0);
 	'----';
+	Field 'color'     :type('color')  :getset('Color') ;
+	'----';
 	Field 'syncTransform' :boolean();
 	'----';
 	Field 'drawOrder'      :enum( EnumParticleDrawOrder );
@@ -46,6 +48,7 @@ function EffectNodeParticleSystem:__init()
 	self.syncTransform = false
 	self.drawOrder = MOAIParticleSystem.ORDER_REVERSE
 	self.scl = { 1,1,1 }
+	self.color = { 1,1,1,1 }
 end
 
 function EffectNodeParticleSystem:getScl()
@@ -55,6 +58,15 @@ end
 function EffectNodeParticleSystem:setScl( sx, sy, sz )
 	self.scl = { sx, sy, sz }
 end
+
+function EffectNodeParticleSystem:getColor()
+	return unpack( self.color )
+end
+
+function EffectNodeParticleSystem:setColor( r,g,b,a )
+	self.color = { r,g,b,a }
+end
+
 
 function EffectNodeParticleSystem:getDefaultName()
 	return 'particle'
@@ -105,6 +117,7 @@ function EffectNodeParticleSystem:buildSystem( system, fxState )
 	system:reserveSprites   ( self.spriteLimit )
 	system:reserveParticles ( self.particleLimit, self.regCount )
 	system:setDrawOrder( self.drawOrder or MOAIParticleSystem.ORDER_REVERSE )
+	system:setColor( unpack( self.color ) )
 
 	system.config = self
 
@@ -161,8 +174,9 @@ end
 local _count = 0
 function EffectNodeParticleSystem:onLoad( fxState )
 	local system, emitters, forces = self:buildSystem( nil, fxState )	
-	fxState:linkVisible  ( system )
-	fxState:linkPartition( system )	
+	fxState:linkVisible   ( system )
+	fxState:linkPartition ( system )
+	fxState:linkColor     ( system )	
 
 	_count = _count + 1
 	if self.syncTransform then --attach system only
