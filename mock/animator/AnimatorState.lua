@@ -215,6 +215,8 @@ end
 
 function AnimatorState:reset()
 	self:resetContext()
+	self.elapsedTimer:setTime( 0 )
+	self.elapsedTimer:attach( self.anim )
 	self:seek( 0 )
 end
 
