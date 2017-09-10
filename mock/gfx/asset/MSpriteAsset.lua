@@ -1,5 +1,18 @@
 module ('mock')
 
+--------------------------------------------------------------------
+CLASS: _DeckContainer ()
+	:MODEL{}
+
+function _DeckContainer:__init( deck )
+	self.deck = deck or false
+end
+
+function _DeckContainer:getMoaiDeck()
+	return self.deck
+end
+
+--------------------------------------------------------------------
 local function MSpriteLoader( node )
 	--[[
 		sprite <package>
@@ -123,7 +136,7 @@ local function MSpriteLoader( node )
 		indexCurve   : reserveKeys( count + 1 )
 		offsetXCurve : reserveKeys( count + 1 )
 		offsetYCurve : reserveKeys( count + 1 )
-		remapper     : reserve( count + 1 )
+		remapper     : reserve( count )
 
 		--TODO: support flags? or just forbid it!!!!
 		local offsetEaseType = EaseLinear
@@ -154,6 +167,11 @@ local function MSpriteLoader( node )
 			end
 
 		end
+
+		local subDeck = MOAIDeckCopy.new()
+		subDeck:setTarget( deck )
+		subDeck:setRemapper( remapper )
+		remapper:setWrapping( true )
 		local clipData = {
 			offsetXCurve    = offsetXCurve,
 			offsetYCurve    = offsetYCurve,
@@ -162,9 +180,12 @@ local function MSpriteLoader( node )
 			frameCount      = count,
 			name            = name,
 			remapper        = remapper,
+			subDeck         = _DeckContainer( subDeck ),
 		} 
+
 		animations[ name ] = clipData
 	end
+
 
 	local sprite = {
 		frameDeck       = deck,
@@ -178,4 +199,16 @@ local function MSpriteLoader( node )
 end
 
 
+local function MSpriteSeqLoader( node )
+	local mspriteData = loadAsset( node.parent )	
+	local name = node:getName()
+
+	local animData = mspriteData.animations[ name ]
+	if animData then
+		return animData.subDeck
+	end
+	return item
+end
+
 registerAssetLoader( 'msprite', MSpriteLoader )
+registerAssetLoader( 'deck2d.msprite_seq', MSpriteSeqLoader )

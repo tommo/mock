@@ -76,12 +76,22 @@ end
 
 --------------------------------------------------------------------
 CLASS: CameraImageEffectYUVOffset ( CameraImageEffect )
-	:MODEL{}
+	:MODEL{
+		Field 'intensity' :getset( 'Intensity' );
+}
+
+function CameraImageEffectYUVOffset:__init()
+	self.intensity = 1
+end
 
 function CameraImageEffectYUVOffset:onBuild( prop, layer )
 	self.shader = assert( buildShader() )
 	prop:setShader( self.shader:getMoaiShader() )
 	self.shader:setAttr( 'intensity', self.intensity or 1 )
+end
+
+function CameraImageEffectYUVOffset:getIntensity()
+	return self.intensity
 end
 
 function CameraImageEffectYUVOffset:setIntensity( intensity )
@@ -90,6 +100,5 @@ function CameraImageEffectYUVOffset:setIntensity( intensity )
 		self.shader:setAttr( 'intensity', self.intensity or 1 )
 	end
 end
-
 
 mock.registerComponent( 'CameraImageEffectYUVOffset', CameraImageEffectYUVOffset )

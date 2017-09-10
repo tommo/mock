@@ -105,33 +105,13 @@ CLASS: ShaderBuilder ()
 	:MODEL{}
 
 
-local function strToValue( v )
-	if v == 'true' then return true end
-	if v == 'false' then return false end
-	local n = tonumber( v )
-	if n then return n end
-	return v
-end
-
 local function processContext( context )
 	local tt = type( context )
 	if tt == 'table' then
 		return table.simplecopy( context )
 
 	elseif tt == 'string' then
-		local output = {}
-		for s in context:gsplit( ',' ) do
-			s = s:trim()
-			local key, value = s:match( '^(%w+)%s*=(.*)')
-			if key then
-				value = strToValue( value )
-			else
-				key = s
-				value = true
-			end
-			output[ key ] = value
-		end
-		return output
+		return parseSimpleValueList( context )
 	end
 	return nil
 end
@@ -153,7 +133,6 @@ function ShaderBuilder:buildMasterShader( config, shader0, baseContext )
 	end
 
 	local envContext = table.merge( baseContext or {}, config.context )
-
 	for id, passEntry in pairs( config.passes ) do
 		local subShader = false
 		local shaderType = passEntry.type
@@ -197,13 +176,13 @@ end
 function ShaderBuilder:buildSingleShader( data, envContext )
 	local context = table.merge( envContext or {}, data.context or {} )
 	context = table.merge( context, self.instanceContext )
-	
 	local prog = ShaderProgram()
 	prog.vsh, prog.vshPath = self:processSource( data['vsh'] or '__DEFAULT_VSH', context )
 	prog.fsh, prog.fshPath = self:processSource( data['fsh'] or '__DEFAULT_FSH', context )
 	prog.gsh, prog.gshPath = self:processSource( data['gsh'] or false, context )
 	prog.tsh, prog.tshPath = self:processSource( data['tsh'] or false, context )
 
+	--DEBUG:OUTPUT processed source
 	-- print( prog.vsh )
 	-- print( prog.fsh )
 	prog.uniforms   = data['uniforms'] or {}
@@ -245,7 +224,7 @@ function ShaderBuilder:processSource( src, context )
 			local template, node = loadAsset( src.path )
 
 			if template then
-				local processed, err = self:_doPreprocessor( template )
+				local processed, err = self:_doPreprocessor( template, context )
 				return processed, src.path
 			else
 				_warn( 'preprocess template not load?', src.path )

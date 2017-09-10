@@ -33,6 +33,34 @@ local next         = next
 local _print       = print
 
 
+--------------------------------------------------------------------
+--type checking
+--------------------------------------------------------------------
+function istype( n, typename )
+	return type( n ) == typename
+end
+
+function isnumber( n )
+	return type( n ) == 'number'
+end
+
+function isstring( n )
+	return type( n ) == 'string'
+end
+
+function istable( n )
+	return type( n ) == 'table'
+end
+
+function isboolean( n )
+	return type( n ) == 'boolean'
+end
+
+function isfunction( n )
+	return type( n ) == 'function'
+end
+
+--------------------------------------------------------------------
 function printf(patt,...)
 	return print(string.format(patt,...))
 end
@@ -1688,3 +1716,27 @@ function wrapDir( angle )
 end
 
 
+
+local function strToValue( v )
+	if v == 'true' then return true end
+	if v == 'false' then return false end
+	local n = tonumber( v )
+	if n then return n end
+	return v
+end
+
+function parseSimpleValueList( data )
+	local output = {}
+	for s in data:gsplit( ',' ) do
+		s = s:trim()
+		local key, value = s:match( '^(%w+)%s*=(.*)')
+		if key then
+			value = strToValue( value )
+		else
+			key = s
+			value = true
+		end
+		output[ key ] = value
+	end
+	return output
+end

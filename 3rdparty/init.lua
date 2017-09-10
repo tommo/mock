@@ -9,4 +9,4 @@ package.path = ''
 --------------------------------------------------------------------
 require 'QuadTree'
 require 'i18n'
-
+require 'utf8'

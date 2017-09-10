@@ -126,7 +126,9 @@ function RenderMaterial:affirmShader()
 
 	local shaderPath = self.shader
 	if shaderPath then
-		shader = buildMasterShader( shaderPath, self, self.shaderContext )
+		local parsedContext = parseSimpleValueList( self.shaderContext )
+		parsedContext[ 'material' ] = self.assetPath
+		shader = buildMasterShader( shaderPath, self, parsedContext )
 	end
 	self.builtShader = shader
 	return shader
@@ -167,6 +169,7 @@ end
 local function loadRenderMaterial( node )
 	local data   = mock.loadAssetDataTable( node:getObjectFile('def') )
 	local config = mock.deserialize( nil, data )	
+	config.assetPath = node:getPath()
 	return config
 end
 
