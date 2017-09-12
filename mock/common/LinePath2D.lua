@@ -118,7 +118,7 @@ function LinePath2D:reverse()
 end
 
 local insert = table.insert
-function LinePath2D:makeSubPath( x0, y0, x1, y1 )
+function LinePath2D:makeSubPath( x0, y0, x1, y1, includeEndPoint )
 	local px0, py0, va0, vb0 = self:projectPoint( x0, y0 )
 	local px1, py1, va1, vb1 = self:projectPoint( x1, y1 )
 	local looped = self.looped
@@ -190,6 +190,10 @@ function LinePath2D:makeSubPath( x0, y0, x1, y1 )
 		end
 		insert( output, px1 )
 		insert( output, py1 )
+	end
+	if includeEndPoint then
+		insert( output, x1 )
+		insert( output, y1 )
 	end
 	return output
 end
