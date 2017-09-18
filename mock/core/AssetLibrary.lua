@@ -4,6 +4,7 @@ registerGlobalSignals{
 	'asset_library.loaded',
 }
 
+local setmetatable = setmetatable
 --------------------------------------------------------------------
 local __ASSET_CACHE_MT = { 
 	-- __mode = 'kv'
@@ -133,19 +134,38 @@ function loadAssetLibrary( indexPath, searchPatches )
 		_stat( 'asset library not specified, skip.' )
 		return
 	end
+
+	local msgpackPath = indexPath .. '.packed'
+
+	local useMsgPack = MOAIFileSystem.checkFileExists( msgpackPath )
+
 	_stat( 'loading library from', indexPath )
 	_Stopwatch.start( 'load_asset_library' )
 	
 	--json assetnode
-	local fp = io.open( indexPath, 'r' )
-	if not fp then 
-		_error( 'can not open asset library index file', indexPath )
-		return
+	local indexData = false
+	if useMsgPack then
+		print( 'use packed asset table' )
+		local fp = io.open( msgpackPath, 'r' )
+		if not fp then 
+			_error( 'can not open asset library index file', msgpackPath )
+			return
+		end
+		local indexString = fp:read( '*a' )
+		fp:close()
+		indexData = MOAIMsgPackParser.decode( indexString )
+	else
+		local fp = io.open( indexPath, 'r' )
+		if not fp then 
+			_error( 'can not open asset library index file', indexPath )
+			return
+		end
+		local indexString = fp:read( '*a' )
+		fp:close()
+		indexData = MOAIJsonParser.decode( indexString )
 	end
-	local indexString = fp:read( '*a' )
-	fp:close()
-	local data = MOAIJsonParser.decode( indexString )
-	if not data then
+
+	if not indexData then
 		_error( 'can not parse asset library index file', indexPath )
 		return
 	end
@@ -155,8 +175,10 @@ function loadAssetLibrary( indexPath, searchPatches )
 	_Stopwatch.start( 'load_asset_library' )
 	AssetLibrary = {}
 	AssetSearchCache = {}
-	for path, value in pairs( data ) do
+	local count = 0
+	for path, value in pairs( indexData ) do
 		--we don't need all the information from python
+		count = count + 1
 		registerAssetNode( path, value )		
 	end
 	AssetLibraryIndex = indexPath
@@ -169,6 +191,7 @@ function loadAssetLibrary( indexPath, searchPatches )
 	emitSignal( 'asset_library.loaded' )
 	_Stopwatch.stop( 'load_asset_library' )
 	_log( _Stopwatch.report( 'load_asset_library' ) )
+	_log( 'asset registered', count )
 	return true
 end
 
@@ -376,7 +399,17 @@ local function _affirmAssetNode( path )
 	return node
 end
 
-function registerAssetNode( path, data )
+
+local function updateAssetNode( node, data ) --dynamic attributes
+	node.deploy      = data['deploy'] == true
+	node.properties  = data['properties']
+	node.objectFiles = data['objectFiles']
+	node.type        = data['type']
+	node.fileTime    = data['fileTime']
+	node.dependency  = data['dependency']
+end
+
+local function registerAssetNode( path, data )
 	local ppath, name = splitPath( path )
 	ppath = ppath:trim()
 	if ppath == '' then ppath = false end
@@ -400,14 +433,6 @@ function registerAssetNode( path, data )
 	return node
 end
 
-function updateAssetNode( node, data ) --dynamic attributes
-	node.deploy      = data['deploy'] == true
-	node.properties  = data['properties']
-	node.objectFiles = data['objectFiles']
-	node.type        = data['type']
-	node.fileTime    = data['fileTime']
-	node.dependency  = data['dependency']
-end
 
 function unregisterAssetNode( path )
 	local node = AssetLibrary[ path ]
@@ -737,3 +762,6 @@ end
 function isAssetThreadTaskBusy()
 	return isTextureThreadTaskBusy() --TODO: other thread?
 end
+
+_M.registerAssetNode = registerAssetNode
+_M.updateAssetNode = updateAssetNode

@@ -107,3 +107,7 @@ require 'mock.gfx.camerafx'
 --------------------------------------------------------------------
 --PaintCanvas
 require 'mock.gfx.paintcanvas'
+
+--------------------------------------------------------------------
+--Movie
+require 'mock.gfx.movie'
