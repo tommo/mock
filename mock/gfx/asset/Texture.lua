@@ -951,6 +951,12 @@ local function unloadTexture( node, textureInstance )
 end
 
 
+local function loadTexturePack( node ) --nothing
+	return {}
+end
+
+
+registerAssetLoader( 'texture_pack',    loadTexturePack )
 registerAssetLoader( 'texture',         loadTexture, unloadTexture )
 registerAssetLoader( 'prebuilt_atlas',  loadTexture, unloadTexture )
 

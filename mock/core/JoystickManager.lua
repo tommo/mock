@@ -32,6 +32,7 @@ function JoystickState:setMapping( mapping )
 end
 
 function JoystickState:onButtonEvent( btn, down )
+	-- print( btn, down )
 	if self.mapping then
 		local ev, cmd, value = self.mapping:mapButtonEvent( btn, down )
 		if ev == 'button' then
@@ -79,6 +80,7 @@ function JoystickState:updateAxisArrowButton( axisId, v, pv )
 end
 
 function JoystickState:onAxisMove( axisId, value )
+	-- print( axisId, value )
 	local prevValue = self.axisValues[ axisId ]
 	self.axisValues[ axisId ] = value
 	if self.mapping then
@@ -150,6 +152,7 @@ function JoystickManager:onJoystickAdd( instance )
 	if self.mode == 'SDL' then
 		local mapping = mock.getSDLJoystickMapping( instance:getGUID() )
 		if mapping then
+			_log( 'joystick mapped', mapping.data['NAME'] )
 			joystickState:setMapping( mapping )
 		else
 			_warn( 'no joystick mapping found:', instance:getGUID() )

@@ -906,6 +906,13 @@ function pow2(x)
 	return i
 end
 
+local abs = math.abs
+function powsign( x, y )
+	local v = abs( x )
+	return x > 0 and x ^ y or  - ( x^y )
+end
+
+
 function isInteger(v)
 	return math.floor(v) == v
 end
