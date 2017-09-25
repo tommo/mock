@@ -1,7 +1,9 @@
 module 'mock'
 
---by zipline
+local _icosphere = require 'icosphere'
 
+--------------------------------------------------------------------
+--by zipline
 local vertexFormat = MOAIVertexFormat.new ()
 vertexFormat:declareCoord ( 1, MOAIVertexFormat.GL_FLOAT, 3 )
 vertexFormat:declareUV ( 2, MOAIVertexFormat.GL_FLOAT, 2 )
@@ -167,16 +169,49 @@ local function makeSkewBoxMesh ( xMin, yMin, zMin, xMax, yMax, zMax, texture )
 	return mesh
 end
 
-
 local function makeCubeMesh ( size, texture )
 	size = size * 0.5
 	return makeBoxMesh ( -size, -size, -size, size, size, size, texture )
 end
 
+local function makeICOSphereMesh( radius, subdivision, texture )
+	subdivision = subdivision or 0
+	local verts, indices = _icosphere( subdivision, radius )
+	--no uv support yet
+	local vbo = MOAIGfxBuffer.new ()
+	vbo:setTarget ( MOAIGfxBuffer.VERTEX_BUFFER )
+	local vertCount = #verts
+	vbo:reserve( vertCount * vertexFormat:getVertexSize() )
+	for i, v in ipairs( verts ) do
+		vbo:writeFloat( v[1], v[2], v[3] ) --vertice
+		vbo:writeFloat( 0, 0 ) --UV
+		vbo:writeColor32( 1,1,1 )
+	end
+	local ibo = MOAIGfxBuffer.new()
+	ibo:setTarget ( MOAIGfxBuffer.INDEX_BUFFER )
+	local indiceCount = #indices
+	local SIZE_U16 = 2
+	ibo:reserve( indiceCount * SIZE_U16 )
+	for i, idx in ipairs( indices ) do
+		ibo:writeU16( idx - 1 )
+	end
+
+	local mesh = MOAIMesh.new()
+	mesh:setVertexBuffer( vbo, vertexFormat	)
+	mesh:setIndexBuffer( ibo )
+	mesh:setTotalElements( indiceCount )
+	local bounds = { vbo:computeBounds( vertexFormat ) }
+	mesh:setBounds (  unpack( bounds ) )
+	mesh:setPrimType( MOAIMesh.GL_TRIANGLES )
+	mesh:setShader ( MOAIShaderMgr.getShader ( MOAIShaderMgr.MESH_SHADER ))
+	return mesh
+end
+
 MeshHelper = {
-	makeSkewBox  = makeSkewBoxMesh;
-	makeBox  = makeBoxMesh;
-	makeCube = makeCubeMesh;
+	makeSkewBox       = makeSkewBoxMesh;
+	makeBox           = makeBoxMesh;
+	makeCube          = makeCubeMesh;
+	makeICOSphere     = makeICOSphereMesh;
 }
 
 

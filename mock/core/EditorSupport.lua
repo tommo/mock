@@ -22,3 +22,14 @@ end
 
 function ComponentPreviewer:onReset() --??
 end
+
+
+--------------------------------------------------------------------
+function resetFieldDefaultValue( obj, fid )
+	local model = Model.fromObject( obj )
+	if not model then return false end
+	local field = model:getField( fid )
+	if not field then return false end
+	field:resetDefaultValue( obj )
+	return true
+end

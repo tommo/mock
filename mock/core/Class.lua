@@ -50,6 +50,19 @@ local reservedMembers = {
 	['__model'] = true,
 }
 
+local function getDefaultValueForType( ftype )
+	if ftype == 'number'   then return {0} end
+	if ftype == 'int'      then return {0} end
+	if ftype == 'string'   then return {''} end
+	if ftype == 'boolean'  then return {false} end
+	if ftype == '@asset'   then return {false} end
+	if ftype == 'vec2'     then return {0,0} end
+	if ftype == 'vec3'     then return {0,0,0} end
+	if ftype == 'vec4'     then return {0,0,0,0} end
+	if ftype == 'color'    then return {1,1,1,1} end
+	return nil
+end
+
 function setTracingObjectAllocation( tracing )
 	tracingObjectAllocation = tracing ~= false
 end
@@ -952,6 +965,24 @@ end
 function Field:widget( name )
 	if name then self:meta{ widget = name } end
 	return self
+end
+
+function Field:default( ... )
+	return self:meta{ default_value = {...} }
+end
+
+function Field:resetDefaultValue( obj )
+	local defaultValue = self:getMeta( 'default_value', nil )
+	if defaultValue == nil then
+		local ftype = self:getType()
+		defaultValue = getDefaultValueForType( ftype )
+	end
+	if defaultValue then 
+		self:setValue( obj, unpack( defaultValue ) )
+		return true
+	else
+		return false
+	end
 end
 
 function Field:get( getter )
