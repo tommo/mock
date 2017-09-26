@@ -272,6 +272,7 @@ function GeometryPolygon:__init()
 	local mesh = MOAIMesh.new()
 	mesh:setPrimType ( MOAIMesh.GL_TRIANGLES )
 	mesh:setShader ( MOAIShaderMgr.getShader ( MOAIShaderMgr.LINE_SHADER_3D ))
+	mesh:setTexture( getWhiteTexture() )
 	self.meshDeck = mesh
 end
 

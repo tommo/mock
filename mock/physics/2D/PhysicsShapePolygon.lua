@@ -145,6 +145,6 @@ function PhysicsShapePolygon:createShape( body )
 end
 
 function PhysicsShapePolygon:getLocalVerts( steps )
-	return self.verts
+	return table.reversed2( self.verts )
 end
 

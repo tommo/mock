@@ -1,5 +1,16 @@
 module 'mock'
 
+
+--------------------------------------------------------------------
+function makeSolidTexture( w, h, r,g,b,a )
+	local img = MOAIImage.new()
+	img:init( 1,1 )
+	img:fillRect( 0,0, w, h, r,g,b,a )
+	local texture = MOAITexture.new()
+	texture:load( img )
+	return texture
+end
+
 --------------------------------------------------------------------
 local texturePlaceHolder      = false
 local texturePlaceHolderImage = false
@@ -20,6 +31,31 @@ function getTexturePlaceHolder()
 		texturePlaceHolder:load( getTexturePlaceHolderImage( 32, 32 ) )		
 	end
 	return texturePlaceHolder
+end
+
+local _whiteTexture = false
+local _blackTexture = false
+local _emptyTexture = false
+
+function getWhiteTexture()
+	if not _whiteTexture then
+		_whiteTexture = makeSolidTexture( 1,1,1,1,1,1 )
+	end
+	return _whiteTexture
+end
+
+function getEmptyTexture()
+	if not _emptyTexture then
+		_emptyTexture = makeSolidTexture( 1,1,0,0,0,0 )
+	end
+	return _emptyTexture
+end
+
+function getBlackTexture()
+	if not _blackTexture then
+		_blackTexture = makeSolidTexture( 1,1,0,0,0,1 )
+	end
+	return _blackTexture
 end
 
 --------------------------------------------------------------------
