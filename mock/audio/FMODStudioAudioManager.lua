@@ -100,7 +100,7 @@ function FMODStudioAudioManager:init( option )
 	self.default3DLevel  = option[ '3DLevel' ] or 1
 
 	system:setNumListeners( 1 )
-	self:getListener( 1 ):setLoc( 1000000, 1000000, 1000000 )
+	self:getListener( 1 ):setLoc( 100000, 100000, 100000 )
 	self:clearCaches()
 	return true
 end

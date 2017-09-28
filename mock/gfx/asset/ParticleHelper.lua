@@ -154,6 +154,8 @@ local function solve(script,v,reg)
 		script:wrap(reg.idx, solve(script,v.a),solve(script,v.b),solve(script,v.c))
 	elseif vid=='clamp' then
 		script:clamp(reg.idx, solve(script,v.a),solve(script,v.b),solve(script,v.c))
+	elseif vid=='randSign' then
+		script:randSign(reg.idx)
 	elseif vid=='time' then
 		script:time(reg.idx)
 	elseif vid=='age' then
@@ -170,6 +172,8 @@ local function solve(script,v,reg)
 		script:cos(reg.idx,solve(script,v.a))
 	elseif vid=='tan' then
 		script:tan(reg.idx,solve(script,v.a))
+	elseif vid=='pow' then
+		script:pow(reg.idx, solve(script,v.a),solve(script,v.b) )
 	-- elseif vid=='atan2rot' then
 	-- 	script:atan2rot(reg.idx,solve(script,v.a),solve(script,v.b))
 	else
@@ -256,6 +260,10 @@ local builtinSymbol={
 		return newNode{id='rand',a=a,b=b}
 	end,
 	
+	randSign=function()
+		return newNode{id='randSign'}
+	end,
+
 	randVec=function(r1,r2,a,b)
 		local script=getScript()
 		return script:randVec(r1,r2,solve(script,a),solve(script,b))
@@ -292,6 +300,9 @@ local builtinSymbol={
 	-- atan2rot=function(a,b)
 	-- 	return newNode{id='atan2rot',a=a,b=b}
 	-- end,
+	pow=function(a,b)
+		return newNode{id='pow',a=a,b=b}
+	end,
 
 	cos=function(a)
 		return newNode{id='cos',a=a}
