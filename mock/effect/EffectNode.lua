@@ -125,6 +125,10 @@ end
 function EffectNode:setVisible( fxState, visible )
 end
 
+function EffectNode:getResource( id )
+	return nil
+end
+
 
 ----------------------------------------------------------------------
 --CLASS: EffectGroup
@@ -404,6 +408,19 @@ end
 
 function EffectState:getEffectConfig()
 	return self._config
+end
+
+function EffectState:load()
+	if self._loaded then return true end
+	if not self._config then return false end
+	self._config:loadIntoState( self )
+	self._loaded = true
+	return true
+end
+
+function EffectState:start()
+	self:load()
+	self.timer:start()
 end
 
 function EffectState:isPlaying()

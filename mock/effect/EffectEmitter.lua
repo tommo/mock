@@ -82,12 +82,24 @@ function EffectEmitter:restart()
 	self:start()
 end
 
+function EffectEmitter:createEffectState( effectConfig )
+	if type( effectConfig ) == 'string' then
+		effectConfig = loadAsset( effectConfigPath )
+	end
+	if not effectConfig then
+		_error( 'nil effectConfig' )
+		return false
+	end
+	local state = EffectState( self, effectConfig )
+	self.activeStates[ state ] = true
+	return state
+end
+
 function EffectEmitter:start( waitStart )
 	if self.playing then return end
 	if not self.effectConfig then return end	
-	
-	local state = EffectState( self, self.effectConfig )
-	self.effectConfig:loadIntoState( state )
+	local state = self:createEffectState( self.effectConfig )
+	state:load()
 	self.activeStates[ state ] = true
 	self.time0 = os.clock()
 	if self.duration then
@@ -98,7 +110,7 @@ function EffectEmitter:start( waitStart )
 	self._entity.scene:addUpdateListener( self )
 	self.playing = true
 	if not waitStart then
-		state.timer:start()
+		state:start()
 	end
 	return state
 end

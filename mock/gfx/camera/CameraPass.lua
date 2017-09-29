@@ -414,6 +414,38 @@ function CameraPass:buildSingleQuadRenderLayer( texture, shader )
 	return layer, prop, quad
 end
 
+function CameraPass:pushColorOnlyRenderLayer( r,g,b,a, blend )
+	local layer, prop = self:buildColorOnlyRenderLayer( r,g,b,a )
+	setPropBlend( prop, blend or 'alpha' )
+	return self:pushRenderLayer( layer )
+end
+
+function CameraPass:buildColorOnlyRenderLayer( r,g,b,a )
+	local layer, w, h = self:buildSimpleOrthoRenderLayer()
+	local prop = MOAIProp.new()
+	
+	local deck  = MOAIScriptDeck.new()
+	deck:setRect( -0.5, -0.5, 0.5, 0.5 )
+	deck:setDrawCallback( 
+		function( idx, xOff, yOff, xScl, yScl )
+			return MOAIDraw.fillRect( -0.5, -0.5, 0.5, 0.5)
+		end
+		)
+
+	-- local deck = MOAIGeometry2DDeck.new()
+	-- deck:setRect( -0.5, -0.5, 0.5, 0.5 )
+	-- deck:reserve( 2 )
+	-- deck:setRectItem( 1, -0.5, -0.5, 0.5, 0.5, 1,1,1,1 )
+	-- deck:setRectItem( 2, -0.5, -0.5, 0.5, 0.5, 1,1,1,1 )
+
+	prop:setDeck( deck )
+	prop:setColor( r or 1,g or 1,b or 1,a or 1 )
+	prop:setIndex( 1 )
+	setPropBlend( prop, 'alpha' )
+	layer:insertProp( prop )
+	return layer, prop, deck
+end
+
 function CameraPass:buildCallbackRenderLayer( func )
 	local camera   = self.camera
 	local dummyProp = MOAIProp.new()

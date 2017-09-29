@@ -76,6 +76,12 @@ function EffectNodeParticleSystem:getTypeName()
 	return 'system'
 end
 
+function EffectNodeParticleSystem:getResource( state, id )
+	if id == 'system' then
+		return state[ self ]
+	end
+end
+
 function EffectNodeParticleSystem:postBuild()
 	local states   = {}
 	local forces   = {}

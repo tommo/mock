@@ -25,7 +25,7 @@ function EffectScript:onBuild()
 	end
 end
 
-function EffectState:onLoad( fxState )
+function EffectScript:onLoad( fxState )
 	if self._onLoad then
 		self._onLoad( fxState )
 	end

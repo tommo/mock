@@ -392,7 +392,8 @@ function SQNode:_warn( ... )
 end
 
 function SQNode:_error( ... )
-	return _log( string.format( '[ERROR:sq] %s\t>', self:getPosText() ), ... )
+	_log( string.format( '[ERROR:sq] %s\t>', self:getPosText() ), ... )
+	return error( 'SQ Execution Error' )
 end
 
 --------------------------------------------------------------------

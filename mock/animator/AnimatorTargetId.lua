@@ -337,13 +337,20 @@ function AnimatorGlobalEntityId:get( entity, scene )
 	local id = self.id
 	local targetClas = self.targetClas
 	local name = self.name
-
 	local candidate = false
+	local topScore = 0	
 	for entity in pairs( scene.entities ) do
 		if entity.__guid == id then 
 			return entity
-		elseif entity.__class == targetClas and entity:getName() == name then
-			candidate = entity
+		elseif entity:getName() == name then
+			local score = 1
+			if entity.__class == targetClas then
+				score = score + 1
+			end
+			if score > topScore then
+				topScore = score
+				candidate = entity
+			end
 		end
 	end
 	

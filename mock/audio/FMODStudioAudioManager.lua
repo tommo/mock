@@ -147,7 +147,7 @@ end
 function FMODStudioAudioManager:getCategoryVolume( category )
 	if category == 'master' then
 		if self.system.getMasterVolume then
-			return self.system:getMasterVolume()
+			return self.system:getMasterVolume( 1 )
 		end
 	end
 	local bus = self:getBus( category )
