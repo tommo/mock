@@ -470,6 +470,21 @@ function CameraPass:pushCallback( func, layerType )
 		)
 end
 
+function CameraPass:pushOneshotCallback( func, layerType )
+	local renderLayer
+	local done = false
+	local outterFunc = function( ... )
+		if done then return end --TODO: should be unnecessary?
+		done = true
+		renderLayer:setVisible( false )
+		return func( ... )
+	end	
+	renderLayer = self:buildCallbackRenderLayer( outterFunc )
+	return self:pushRenderLayer(
+			renderLayer,
+			layerType or 'call'
+		)
+end
 
 function CameraPass:pushSceneRenderPass( option )
 	local camera = self.camera

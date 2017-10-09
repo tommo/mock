@@ -33,6 +33,22 @@ function EffectNode:getTypeName()
 	return 'node'
 end
 
+function EffectNode:getName()
+	return self.name
+end
+
+function EffectNode:getFullname()
+	if not self.fullname then
+		if self.parent._isRoot then
+			self.fullname = self:getName()
+		else
+			local pname = self.parent:getFullname()
+			self.fullname = pname .. '/' .. self:getName()
+		end
+	end
+	return self.fullname
+end
+
 function EffectNode:setName( n )
 	self.name = n
 end
@@ -41,11 +57,40 @@ function EffectNode:getDelay()
 	return self.delay
 end
 
-function EffectNode:findChild( name )
+function EffectNode:findChildByFullname( name, deep )
 	for i, c in pairs( self.children ) do
-		if c.name == name then return c end
+		if c:getFullname() == name then return c end
+	end
+	if deep then
+		for i, c in pairs( self.children ) do
+			local found = c:findChildByFullname( name, true )
+			if found then return found end
+		end
 	end
 	return nil
+end
+
+function EffectNode:findChild( name, deep )
+	for i, c in pairs( self.children ) do
+		if c:getName() == name then return c end
+	end
+	if deep then
+		for i, c in pairs( self.children ) do
+			local found = c:findChild( name, true )
+			if found then return found end
+		end
+	end
+	return nil
+end
+
+function EffectNode:foreachChild( func, userdata )
+	for i, child in pairs( self.children ) do
+		if func( child, userdata ) == false then return false end
+	end
+	for i, child in pairs( self.children ) do
+		if child:foreachChild( func, userdata ) == false then return false end
+	end	
+	return true
 end
 
 function EffectNode:addChild( n, idx )
@@ -125,7 +170,7 @@ end
 function EffectNode:setVisible( fxState, visible )
 end
 
-function EffectNode:getResource( id )
+function EffectNode:getResource( fxState, id )
 	return nil
 end
 
@@ -177,6 +222,7 @@ function EffectRoot:__init()
 	self.loop = false
 	self.followEmitter = false
 	self.actionOnStop  = 'none'
+	self._isRoot = true
 end
 
 function EffectRoot:getDefaultName()
@@ -205,6 +251,7 @@ CLASS: EffectConfig ()
 
 function EffectConfig:__init()
 	self._root = EffectRoot()
+	self.nodeNameCache = {}
 end
 
 function EffectConfig:getRootNode()
@@ -212,7 +259,12 @@ function EffectConfig:getRootNode()
 end
 
 function EffectConfig:findNode( name )
-	return self._root:findChild( name )
+	local node = self.nodeNameCache[ name ]
+	if not node then
+		node = self._root:findChildByFullname( name, true )
+		if node then self.nodeNameCache[ name ] = node end
+	end
+	return node
 end
 
 function EffectConfig:loadIntoState( state )
@@ -495,6 +547,27 @@ function EffectState:update( dt )
 	end	
 end
 
+function EffectState:setDuration( duration )
+	self.duration = duration or false
+end
+
+function EffectState:findNode( name )
+	local config = self._config
+	return config:findNode( name )
+end
+
+function EffectState:findResource( path, id )
+	local node = self:findNode( path )
+	if not node then return nil end
+	return node:getResource( self, id or 'default' )
+end
+
+function EffectState:foreachNode( func, ud )
+	local innerCall = function( node, ud )
+		return func( self, node, ud )
+	end
+	self._config._root:foreachChild( innerCall, ud )
+end
 
 --------------------------------------------------------------------
 -- Asset Loader

@@ -170,6 +170,11 @@ function Component:getLayer()
 	return ent and ent:getLayer()
 end
 
+function Component:getTime()
+	local ent = self._entity
+	return ent and ent:getTime() or 0
+end
+
 function Component:attachGlobalAction( groupId, action )
 	return self._entity:attachGlobalAction( groupId, action )
 end

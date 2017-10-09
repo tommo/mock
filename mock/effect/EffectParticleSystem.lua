@@ -77,7 +77,7 @@ function EffectNodeParticleSystem:getTypeName()
 end
 
 function EffectNodeParticleSystem:getResource( state, id )
-	if id == 'system' then
+	if id == 'system' or id == 'default' then
 		return state[ self ]
 	end
 end
@@ -502,6 +502,12 @@ function EffectNodeParticleEmitter:setActive( state, active )
 		state:attachAction( em )
 	else
 		em:stop()
+	end
+end
+
+function EffectNodeParticleEmitter:getResource( state, id )
+	if id == 'emitter' or id == 'default' then
+		return state[ self ]
 	end
 end
 

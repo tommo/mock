@@ -28,7 +28,7 @@ function EffectEmitter:__init()
 	self.effect     = false
 	self.autoPlay   = true
 	self.effectConfig = false
-	self.playing    = false
+	self.hasActiveState    = false
 	self.prop       = MOAIProp.new()
 	self.activeStates    = {}
 	self.mirrorX    = false
@@ -36,16 +36,9 @@ function EffectEmitter:__init()
 	self.actionOnStop = 'default'
 	self.delay = 0
 	self.transformRole = 'render'
-end
+	
+	self.defaultState = false
 
-function EffectEmitter:setEffect( e )
-	local tt = type( e )
-	if tt == 'string' then --path
-		self.effect = e
-		self.effectConfig = mock.loadAsset( e )
-	else
-		self.effectConfig = e
-	end
 end
 
 function EffectEmitter:onAttach( entity )
@@ -59,10 +52,122 @@ end
 
 function EffectEmitter:onStart()
 	if self.autoPlay then
-		self:addCoroutine( function () 
-			self:wait( self.delay )
+		if self.delay > 0 then
+			self:addCoroutine( function () 
+				self:wait( self.delay )
+				self:start()
+			end)
+		else
 			self:start()
-		end)
+		end
+	end
+end
+
+function EffectEmitter:restart()
+	self:stop()
+	self:start()
+end
+
+function EffectEmitter:loadEffect( effectConfig )
+	if type( effectConfig ) == 'string' then
+		effectConfig = loadAsset( effectConfig )
+	end
+	if not effectConfig then
+		_error( 'nil effectConfig' )
+		return false
+	end
+	local state = EffectState( self, effectConfig )
+	self.activeStates[ state ] = true
+	state:load()
+	if not self.hasActiveState then
+		self._entity.scene:addUpdateListener( self )
+		self.hasActiveState = true
+	end
+	return state
+end
+
+function EffectEmitter:start()
+	if self.defaultState then return end
+	local effect = self.effect or self.effectConfig
+	if not effect then
+		return
+	end	
+	local state = self:loadEffect( effect )
+	self.defaultState = state
+	if self.duration then
+		state:setDuration( self.duration )
+	end
+	state:start()
+	return state
+end
+
+function EffectEmitter:stop( actionOnStop )
+	if not self.hasActiveState then return end
+	self._entity.scene:removeUpdateListener( self )
+	for state in pairs( self.activeStates ) do
+		state:stop()
+	end
+	self.defaultState = false
+	self.activeStates = {}
+	self.hasActiveState = false
+	local actionOnStop = actionOnStop or self.actionOnStop
+	if actionOnStop == 'default' then
+		if self.effectConfig then
+			actionOnStop = self.effectConfig:getRootNode().actionOnStop
+		end
+	end
+	if actionOnStop == 'detach' then
+		self._entity:detach( self )
+	elseif actionOnStop == 'destroy' then
+		self._entity:destroy()
+	else
+		-- do nothing
+	end
+end
+
+function EffectEmitter:onUpdate( dt )
+	local stoppedStates = false
+	for state in pairs( self.activeStates ) do
+		state:update( dt )
+		if not state:isPlaying() then
+			stoppedStates = stoppedStates or {}
+			stoppedStates[ state ] = true
+		end
+	end
+	local activeStates = self.activeStates
+	if stoppedStates then
+		for s in pairs( stoppedStates ) do
+			if s == self.defaultState then self.defaultState = false end
+			activeStates[ s ] = nil
+		end
+		if not next( activeStates ) then
+			self:stop()
+			return
+		end
+	end
+	
+end
+
+function EffectEmitter:setEffect( e )
+	local tt = type( e )
+	if tt == 'string' then --path
+		self.effect = e
+		self.effectConfig = mock.loadAsset( e )
+	else
+		self.effect = false
+		self.effectConfig = e
+	end
+end
+
+
+function EffectEmitter:setActionOnStop( f )
+	self.actionOnStop = f or 'default'
+end
+
+function EffectEmitter:setDuration( d )
+	self.duration = d
+	if self.defaultEffectState then
+		self.defaultEffectState:setDuration( d )
 	end
 end
 
@@ -77,103 +182,6 @@ function EffectEmitter:setMirrorY( mirror )
 	
 end
 
-function EffectEmitter:restart()
-	self:stop()
-	self:start()
-end
-
-function EffectEmitter:createEffectState( effectConfig )
-	if type( effectConfig ) == 'string' then
-		effectConfig = loadAsset( effectConfigPath )
-	end
-	if not effectConfig then
-		_error( 'nil effectConfig' )
-		return false
-	end
-	local state = EffectState( self, effectConfig )
-	self.activeStates[ state ] = true
-	return state
-end
-
-function EffectEmitter:start( waitStart )
-	if self.playing then return end
-	if not self.effectConfig then return end	
-	local state = self:createEffectState( self.effectConfig )
-	state:load()
-	self.activeStates[ state ] = true
-	self.time0 = os.clock()
-	if self.duration then
-		self.time1 = self.time0 + self.duration	
-	else
-		self.time1 = false
-	end
-	self._entity.scene:addUpdateListener( self )
-	self.playing = true
-	if not waitStart then
-		state:start()
-	end
-	return state
-end
-
-function EffectEmitter:stop( actionOnStop )
-	if not self.playing then return end
-	self.playing = false
-	-- local state = self.effectConfig
-	self._entity.scene:removeUpdateListener( self )
-	for state in pairs( self.activeStates ) do
-		state:stop()
-	end
-	self.activeStates = {}
-	local actionOnStop = actionOnStop or self.actionOnStop
-	if actionOnStop == 'default' then
-		actionOnStop = self.effectConfig:getRootNode().actionOnStop
-	end
-
-	if actionOnStop == 'detach' then
-		self._entity:detach( self )
-	elseif actionOnStop == 'destroy' then
-		self._entity:destroy()
-	else
-		-- do nothing
-	end
-end
-
-function EffectEmitter:onUpdate( dt )
-	local stopped = false
-	for state in pairs( self.activeStates ) do
-		state:update( dt )
-		if not state:isPlaying() then
-			stopped = stopped or {}
-			stopped[ state ] = true
-		end
-	end
-	if stopped then
-		for s in pairs( stopped ) do
-			self.activeStates[ s ] = nil
-		end
-		if not next( self.activeStates ) then
-			self:stop()
-			return
-		end
-	end
-	
-	local t = os.clock()
-	if self.time1 and t >= self.time1 then
-		self:stop()
-	end
-
-end
-
-function EffectEmitter:setActionOnStop( f )
-	self.actionOnStop = f or 'default'
-end
-
-function EffectEmitter:setDuration( d )
-	self.duration = d
-	if self.playing then
-		self.time1 = self.time0 + self.duration	
-	end
-end
 
 
 --------------------------------------------------------------------
