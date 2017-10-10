@@ -300,6 +300,10 @@ function PhysicsBody:setActive( active )
 	end
 end
 
+function PhysicsBody:getActive()
+	return self._bodyActive 
+end
+
 function PhysicsBody:refresh()
 	local body = self.body
 	if not body then return end
