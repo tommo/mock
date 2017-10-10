@@ -139,6 +139,10 @@ function FSMController:inStateGroup( s1, ... )
 	return _isStartWith( self:getState(), s1, ... )
 end
 
+function FSMController:acceptStateChange( s )
+	return true
+end
+
 function FSMController:setState( state )
 	self.state = state
 	self.stateElapsedTime = 0

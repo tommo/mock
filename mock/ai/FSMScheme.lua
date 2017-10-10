@@ -147,6 +147,10 @@ local function buildFSMScheme( scheme )
 			
 			local nextStateBody
 			local nextStateName
+
+			if controller:acceptStateChange( nextState ) == false then
+				return
+			end
 			--TRANSITION
 			local tt = type( nextState )
 			if tt == 'string' then --direct transition

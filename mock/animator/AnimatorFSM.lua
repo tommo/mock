@@ -37,15 +37,25 @@ local function parseArguments( raw )
 end
 
 local _noargs = {}
+local function _parseOptional( o )
+	if o == '?' then
+		return 'pass'
+	elseif o == '??' then
+		return 'reject'
+	else
+		return false
+	end
+end
+
 local function parseAnimatorFSMState( raw )
 	local entry = _stateParsingCache[ raw ]
 	if entry then return unpack( entry ) end
 	content = raw:trim()
 	--try  kv param
 	do
-		local name, optional, argstring = content:match('.*@([%w-_:%.]+)(%??)%s*%(%s*(.*)s*%)%s*')
+		local name, optional, argstring = content:match('.*@([%w-_:%.]+)(%?*)%s*%(%s*(.*)s*%)%s*')
 		if name then
-			optional = optional == '?'
+			optional = _parseOptional( optional )
 			local args = parseArguments( argstring )
 			_stateParsingCache[ raw ] = { name, args or _noargs, optional }
 			return name, args, optional
@@ -53,8 +63,8 @@ local function parseAnimatorFSMState( raw )
 	end
 	--test name
 	do
-		local name, optional = content:match('.*@([%w-_:%.]+)(%??)')
-		optional = optional == '?'
+		local name, optional = content:match('.*@([%w-_:%.]+)(%?*)')
+		optional = _parseOptional( optional )
 		_stateParsingCache[ raw ] = { name, _noargs, optional }
 		return name, _noargs, optional
 	end
@@ -92,6 +102,25 @@ function AnimatorFSM:updateScheme()
 			end
 		end
 	end
+end
+
+function AnimatorFSM:acceptStateChange( state )
+	local nextStateName
+	if type( state ) == 'string' then
+		nextStateName = state
+	else
+		local l = #state
+		nextStateName = state[l]
+	end
+	print( 'accepting state', nextStateName )
+	local name, args, optional = parseAnimatorFSMState( nextStateName )
+	if optional == 'reject' then --reject transition if clip not found
+		if name then
+			local animator = self.animator
+			if not ( animator and animator:hasClip( name ) ) then return false end
+		end
+	end
+	return true
 end
 
 function AnimatorFSM:setState( state )

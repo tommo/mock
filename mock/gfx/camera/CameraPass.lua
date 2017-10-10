@@ -417,7 +417,8 @@ end
 function CameraPass:pushColorOnlyRenderLayer( r,g,b,a, blend )
 	local layer, prop = self:buildColorOnlyRenderLayer( r,g,b,a )
 	setPropBlend( prop, blend or 'alpha' )
-	return self:pushRenderLayer( layer )
+	self:pushRenderLayer( layer )
+	return layer, prop
 end
 
 function CameraPass:buildColorOnlyRenderLayer( r,g,b,a )
