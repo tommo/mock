@@ -255,5 +255,13 @@ function easeCall( func, v0, v1, t, easeType, step )
 end
 
 
+function blockWithTimer( action, time )
+	local delayTimer = MOAITimer.new()
+	delayTimer:setSpan( time or 1 )
+	delayTimer:start()
+	MDDHelper.blockAction( action, delayTimer ) --
+	return delayTimer
+end
+
 -- function seekAttrs(  )
 -- end
