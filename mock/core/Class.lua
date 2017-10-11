@@ -967,6 +967,11 @@ function Field:widget( name )
 	return self
 end
 
+function Field:step( num )
+	if num then self:meta{ step = num } end
+	return self
+end
+
 function Field:default( ... )
 	return self:meta{ default_value = {...} }
 end
