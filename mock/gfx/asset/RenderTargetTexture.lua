@@ -73,17 +73,23 @@ function RenderTargetTexture:update()
 		filter           = _filterNameToFilter[ self.filter ],
 		colorFormat      = self.colorFormat
 	}
+
+	self.renderTarget:setDebugName( self.path or '' )
 	self.renderTarget:initFrameBuffer( option )
 	self.renderTarget.mode = 'fixed'
 	self.renderTarget:setPixelSize( self.width, self.height )
 	self.renderTarget:setFixedScale( self.width, self.height )
+	
+
 	self.updated = true
 end
 
 
 function RenderTargetTextureLoader( node )
 	local data = loadAssetDataTable( node:getObjectFile( 'def' ) )
-	return deserialize( nil, data )
+	local obj = deserialize( nil, data )
+	obj.path = node:getPath()
+	return obj
 end
 
 registerAssetLoader( 'render_target',   RenderTargetTextureLoader )

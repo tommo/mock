@@ -19,6 +19,9 @@ function DebugMemoryView:onDebugGUI( gui, scn )
 		if gui.CollapsingHeader( 'Trace', MOAIImGui.TreeNodeFlags_DefaultOpen ) then
 			self:subTrace( gui, scn )
 		end
+		if gui.CollapsingHeader( 'Textures' ) then
+			self:subTextures( gui, scn )
+		end
 	gui.End( 'Memory' )
 end
 
@@ -92,6 +95,11 @@ function DebugMemoryView:subTrace( gui, scn )
 	--sort by count
 	--sort by name
 	self:subTraceMOCK( gui, scn )
+	-- self:subTraceMOAI( gui, scn )
+	if gui.Button( 'Report MOAI Histogram' ) then
+		MOAILuaRuntime.setTrackingFlags( MOAILuaRuntime.TRACK_OBJECTS + MOAILuaRuntime.TRACK_OBJECTS_STACK_TRACE )
+		MOAILuaRuntime.reportHistogram()
+	end
 end
 
 function DebugMemoryView:updateMOCKTrace()
@@ -168,6 +176,34 @@ function DebugMemoryView:subTraceMOAI( gui, scn )
 		gui.Columns( 1 )
 	end
 	gui.Separator()
+end
+
+function DebugMemoryView:subTextures( gui, scn )
+	local textures = getLoadedMoaiTextures()
+	local report = {}
+	for tex in pairs( textures ) do
+		local w, h = tex:getSize()
+		local memSize = w * h * 4 --TODO: use texturesize in future
+		local sizeText = string.format( '%d,%d', w, h )
+		table.insert( report, { tex.debugName or '<unknown>', sizeText ,w*h*4 } )
+	end
+	local function _sortFunc( i1, i2 )
+		return i1[1] < i2[1]
+	end
+	table.sort( report, _sortFunc )
+
+	gui.Columns( 2 )
+	gui.Text'name';  gui.NextColumn()
+	gui.Text'size'; gui.NextColumn()
+	gui.Separator()
+	for i, entry in ipairs( report ) do
+		gui.Text( entry[1] )
+	end
+	gui.NextColumn()
+	for i, entry in ipairs( report ) do
+		gui.Text( tostring( entry[2] ) )
+	end
+	gui.Columns( 1 )
 end
 
 DebugMemoryView():register( 'memory' )
