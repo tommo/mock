@@ -122,13 +122,13 @@ function Camera:onAttach( entity )
 end
 
 function Camera:onDetach( entity )
-	getCameraManager():unregister( self )
-	for i, pass in ipairs( self.passes ) do
+	for _, pass in pairs( self.passes ) do
 		pass:release()
 	end
 	self.renderTarget:setParent( nil )
 	self.renderTarget:clear()
 	self.passes = {}
+	getCameraManager():unregister( self )
 	self.zoomControlNode:setCallback( nilFunc )
 	self.zoomControlNode.camera = nil
 	self.zoomControlNode = nil

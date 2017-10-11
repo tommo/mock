@@ -235,6 +235,9 @@ function CameraPass:requestRenderTarget( name, option )
 	renderTarget = self:buildRenderTarget( option )
 	renderTarget.__name = name
 	self.renderTargets[ name ] = renderTarget
+	local cameraName = self.camera:getEntityName() or self.camera:getClassName()
+	local debugName = string.format( 'CameraTarget:%s@%s', name, cameraName )
+	renderTarget:setDebugName( debugName )
 	return renderTarget
 end
 

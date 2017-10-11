@@ -316,6 +316,10 @@ function reportLoadedMoaiTextures()
 	end
 end
 
+function getLoadedMoaiTextures()
+	return _loadedTextureTable
+end
+
 
 TextureGroup :MODEL{
 		Field 'name'           :string()  :no_edit();
@@ -693,6 +697,9 @@ function TextureGroup:_loadSingleTexture( pixmapPath, debugName )
 		if tex:getSize() <= 0 then
 			_warn( 'failed load texture file:', filePath, debugName )
 			tex:load( getTexturePlaceHolderImage() )
+		end
+		if MOCKHelper.setTextureDebugName then
+			MOCKHelper.setTextureDebugName( tex, debugName )
 		end
 	end
 	tex.debugName = debugName

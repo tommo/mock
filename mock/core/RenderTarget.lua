@@ -6,6 +6,11 @@ CLASS: RenderTarget ( Viewport )
 function RenderTarget:__init()
 	self.mode = 'relative'
 	self.frameBuffer = false
+	self.debugName = ''
+end
+
+function RenderTarget:setDebugName( name )
+	self.debugName = name
 end
 
 function RenderTarget:getFrameBuffer()
@@ -123,7 +128,10 @@ function TextureRenderTarget:initFrameBuffer( option )
 	option = table.extend( table.simplecopy( DefaultFrameBufferOptions ), option or {} )
 	local frameBuffer = MOAIFrameBufferTexture.new()
 	self.frameBuffer = frameBuffer
-	
+	if MOCKHelper.setTextureDebugName then
+		local debugName = self.debugName or '<FrameBuffer?>'
+		MOCKHelper.setTextureDebugName( self.frameBuffer, debugName )
+	end
 	local clearColor = false
 	local clearDepth = option.clearDpeth or false   
 	local clearStencil = option.clearStencil or false 

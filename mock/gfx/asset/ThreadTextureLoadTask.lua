@@ -24,8 +24,12 @@ function ThreadTextureLoadTask:setDebugName( name )
 end
 
 function ThreadTextureLoadTask:onComplete( img )
-	self.texture:load ( img, self.imageTransform, self.debugName or self.imagePath )
+	local debugName = self.debugName or self.imagePath
+	self.texture:load ( img, self.imageTransform, debugName )
 	self.texture:affirm()	
+	if MOCKHelper.setTextureDebugName then
+		MOCKHelper.setTextureDebugName( self.texture, debugName )
+	end
 end
 
 function ThreadTextureLoadTask:onFail()
