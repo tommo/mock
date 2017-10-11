@@ -112,7 +112,7 @@ function AnimatorFSM:acceptStateChange( state )
 		local l = #state
 		nextStateName = state[l]
 	end
-	print( 'accepting state', nextStateName )
+	-- print( 'accepting state', nextStateName )
 	local name, args, optional = parseAnimatorFSMState( nextStateName )
 	if optional == 'reject' then --reject transition if clip not found
 		if name then
