@@ -449,15 +449,18 @@ function Actor:waitFieldFalse( name )
 	end
 end
 
-function Actor:waitSignal(sig)
-	local result=nil
-	local f=function(...)
-		result={...}
+function Actor:waitGlobalSignal(signame)
+	local sig = getGlobalSignal( sigName )
+	return self:waitSignal( sig )
+end
+
+function Actor:waitSignal( sig )
+	assert( isSignal( sig ) )
+	local seq0 = sig:getSeq()
+	while true do
+		yield()
+		if sig:getSeq() ~= seq0 then break end
 	end
-	connectSignalFunc(sig,f)
-	while not result do yield() end
-	disconnectSignal(sig,f)
-	return unpack(result)
 end
 
 function Actor:waitFrames(f)

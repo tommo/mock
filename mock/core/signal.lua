@@ -44,6 +44,7 @@ end
 
 local function newSignal()
 	local signal =  setmetatable( { 
+			seq   = 0,
 			slots = setmetatable( {}, weakMT ) 
 		}, 
 		signalMT
@@ -75,6 +76,7 @@ local function signalDisconnectAll( sig )
 end
 
 local function signalEmit( sig, ... )
+	sig.seq = sig.seq + 1
 	local slots = sig.slots
 	for obj, func in pairs( slots ) do
 		if func == staticHolder then
@@ -108,6 +110,10 @@ end
 
 function signalProto:emit( ... )
 	return signalEmit( self, ... )
+end
+
+function signalProto:getSeq()
+	return self.seq
 end
 
 --------------------------------------------------------------------
@@ -167,6 +173,11 @@ local function emitGlobalSignal( sigName, ... )
 	return signalEmit( sig, ... )
 end
 
+local function getGlobalSignalSeq( sigName )
+	local sig = getGlobalSignal( sigName )
+	return sig and sig.seq
+end
+
 --------------------------------------------------------------------
 --EXPORT
 --------------------------------------------------------------------
@@ -192,6 +203,7 @@ _G.disconnectSignal      = disconnectGlobalSignal
 _G.emitSignal            = emitGlobalSignal
 
 _G.getGlobalSignal             = getGlobalSignal
+_G.getGlobalSignalSeq          = getGlobalSignalSeq
 _G.connectGlobalSignalFunc     = connectGlobalSignalFunc
 _G.connectGlobalSignalMethod   = connectGlobalSignalMethod
 _G.disconnectGlobalSignal      = disconnectGlobalSignal
