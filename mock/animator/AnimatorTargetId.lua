@@ -380,5 +380,6 @@ function AnimatorGlobalEntityId:deserialize( data )
 end
 
 function AnimatorGlobalEntityId:toString()
-	return self.name or ( self.targetClas and ( '<'..self.targetClas.__name..'>' ) ) or '???'
+	local name = self.name or ( self.targetClas and ( '<'..self.targetClas.__name..'>' ) ) or '???'
+	return '[G]' .. name
 end
