@@ -1429,6 +1429,7 @@ end
 --------------------------------------------------------------------
 local function loadSQNode( data, parentNode, tags )
 	local node
+	if not data then return false end
 	local t = data.type
 	if t == 'context' then
 		node = SQNodeContext()
