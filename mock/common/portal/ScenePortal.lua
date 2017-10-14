@@ -64,6 +64,15 @@ function ScenePortal:exportData()
 	return data
 end
 
+function ScenePortal:isLocalPortal( targetId ) --same scene
+	local manager = self:getScenePortalManager()
+	if manager:findPortalInCurrentScene( targetId ) then
+		return true
+	else
+		return false
+	end
+end
+
 function ScenePortal:goto( targetId )
 	local manager = self:getScenePortalManager()
 	local fullname = self:getFullname()

@@ -107,11 +107,11 @@ function GlobalSoundPlayerSession:stopEvent( fadeDuration )
 	self.currentEvent  = false
 end
 
-function GlobalSoundPlayerSession:changeEvent( eventPath, fadeDuration, delay )
+function GlobalSoundPlayerSession:changeEvent( eventPath, delay, fadeInDuration, fadeOutDuration )
 	if self.currentEvent == eventPath then return end
 	self.currentEvent = eventPath
 	if self.running then
-		return self:playEvent( eventPath, fadeDuration, delay )
+		return self:playEvent( eventPath, delay, fadeInDuration, fadeOutDuration )
 	end
 end
 
@@ -130,17 +130,18 @@ function GlobalSoundPlayerSession:addMainCoroutine( func, ... )
 	return coro
 end
 
-function GlobalSoundPlayerSession:playEvent( eventPath, fadeDuration, delay )
-	self:stopEvent( fadeDuration )
+function GlobalSoundPlayerSession:playEvent( eventPath, delay, fadeInDuration, fadeOutDuration )
+	fadeOutDuration = fadeOutDuration or fadeInDuration or 0
+	self:stopEvent( fadeOutDuration )
 	local instance = AudioManager.get():playEvent2D( eventPath )
 	-- print( 'play event', eventPath, instance )
 	self.currentEvent = eventPath
 	self.soundInstance = instance
 	if instance then
-		if fadeDuration and fadeDuration > 0 then
+		if fadeInDuration and fadeInDuration > 0 then
 			instance:setVolume( 0 )
 			instance:pause()
-			local coro = self:addMainCoroutine( _actionSeekInstanceVolume, instance, self.volume, delay, fadeDuration )
+			local coro = self:addMainCoroutine( _actionSeekInstanceVolume, instance, self.volume, delay, fadeInDuration )
 			self.mainCoro = coro
 			return coro
 		else
