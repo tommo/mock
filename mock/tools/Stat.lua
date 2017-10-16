@@ -7,6 +7,7 @@ function Stat:__init( data )
 	self.values = {}
 	self.changeListeners = {}
 	self.changeSignals   = {}
+	self.allowNotifyChanges = true
 	self.globalChangeSignal = false
 	self.globalChangeListenerList = {}
 	self.changeListeners[ '*' ] = self.globalChangeListenerList
@@ -24,6 +25,14 @@ function Stat:__init( data )
 		
 	self.accessor = setmetatable( {}, accessorMT )
 
+end
+
+function Stat:disableNotifyChanges()
+	self.allowNotifyChanges = true
+end
+
+function Stat:enableNotifyChanges( enabled )
+	self.allowNotifyChanges = enabled ~= false
 end
 
 function Stat:getAccessor()
@@ -62,12 +71,16 @@ function Stat:sub( n, v )
 	return self:add( n, -v )
 end
 
-function Stat:set( n, v )
+function Stat:setRaw( n, v )
+	self.values[n]	= v
+end
+
+function Stat:set( n, v, notify )
 	local values = self.values
 	local v0 = values[n]
 	if v0 == v then return end
 	values[n]	= v
-
+	if not self.allowNotifyChanges then return end
 	for func in pairs( self.globalChangeListenerList ) do
 		func( n, v, v0 )
 	end
@@ -116,10 +129,18 @@ function Stat:addChangeListener( key, func )
 	l[ func ] = true
 end
 
-function Stat:removeChangeListener( key, func )
-	local l = self.changeListeners[ key ]
-	if not l then return end
-	l[ func ] = nil
+function Stat:removeChangeListener( a, b )
+	local key, func
+	if a and b then
+		key, func = a, b
+		local l = self.changeListeners[ key ]
+		if not l then return end
+		l[ func ] = nil
+	elseif type( a ) == 'function' then
+		for _, l in pairs( self.changeListeners ) do
+			l[ a ] = nil
+		end
+	end
 end
 
 function Stat:setGlobalChangeSignal( sigName )
