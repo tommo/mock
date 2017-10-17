@@ -24,6 +24,10 @@ function TextureInstanceBase:getSize()
 	return 1, 1
 end
 
+function TextureInstanceBase:getOrignalSize()
+	return self:getSize()
+end
+
 function TextureInstanceBase:getOutputSize()
 	return self:getSize()
 end

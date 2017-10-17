@@ -1736,6 +1736,15 @@ function parseSimpleValueList( data )
 	local output = {}
 	for s in data:gsplit( ',' ) do
 		s = s:trim()
+		table.insert( strToValue( s ) )
+	end
+	return output
+end
+
+function parseSimpleNamedValueList( data )
+	local output = {}
+	for s in data:gsplit( ',' ) do
+		s = s:trim()
 		local key, value = s:match( '^(%w+)%s*=(.*)')
 		if key then
 			value = strToValue( value )

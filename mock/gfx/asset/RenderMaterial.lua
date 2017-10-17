@@ -126,7 +126,7 @@ function RenderMaterial:affirmShader()
 
 	local shaderPath = self.shader
 	if shaderPath then
-		local parsedContext = parseSimpleValueList( self.shaderContext )
+		local parsedContext = parseSimpleNamedValueList( self.shaderContext )
 		parsedContext[ 'material' ] = self.assetPath
 		shader = buildMasterShader( shaderPath, self, parsedContext )
 	end

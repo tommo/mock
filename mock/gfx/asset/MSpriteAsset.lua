@@ -48,7 +48,7 @@ local function MSpriteLoader( node )
 		end
 		local mtex, uvRect = tex:getMoaiTextureUV() 
 		textures[ count ] = mtex
-		local tw, th = tex:getSize()
+		local tw, th = tex:getOriginalSize()
 		local ox, oy = 0, 0 --todo
 		texRects[ id ] = { tw, th, ox, oy } 
 		uvRects[ id ] = uvRect

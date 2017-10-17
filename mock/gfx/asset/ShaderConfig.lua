@@ -111,7 +111,7 @@ local function processContext( context )
 		return table.simplecopy( context )
 
 	elseif tt == 'string' then
-		return parseSimpleValueList( context )
+		return parseSimpleNamedValueList( context )
 	end
 	return nil
 end

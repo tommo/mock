@@ -70,6 +70,12 @@ function preloadTextureGroup( groupName )
 	return group:_preloadAll()
 end
 
+function initTextureLibrary( indexPath )
+	textureLibrary = TextureLibrary()	
+	textureLibrary:initDefault()
+	return textureLibrary
+end
+
 function loadTextureLibrary( indexPath )
 	if not indexPath then return end
 	_stat 'init texture library'
@@ -196,8 +202,12 @@ function Texture:updateConfigData( data )
 	
 end
 
-function Texture:getSize()
+function Texture:getOriginalSize()
 	return self.ow, self.oh
+end
+
+function Texture:getSize()
+	return self.w, self.h
 end
 
 function Texture:getOutputSize()
@@ -262,6 +272,10 @@ end
 
 function TextureInstance:getMoaiTexture()
 	return self._texture
+end
+
+function TextureInstance:getOriginalSize()
+	return self._src:getOriginalSize()
 end
 
 function TextureInstance:getSize()

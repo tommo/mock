@@ -407,12 +407,20 @@ function Game:initAsset( config, fromEditor )
 
 	--assetlibrary
 	_stat( '...loading asset library' )
+	if not MOAIFileSystem.checkFileExists( self.assetLibraryIndex ) then
+		if fromEditor then
+			--create empty asset-json
+			_error( 'no asset table, create empty' )
+			saveJSONFile( {}, self.assetLibraryIndex )
+		end
+	end
+	
 	if not loadAssetLibrary( self.assetLibraryIndex, not fromEditor ) then
 		error( 'failed loading asset library' )
 	end
+
 	loadTextureLibrary( self.textureLibraryIndex )
 	getTextureLibrary():clearEmptyNodes()
-	
 	--scriptlibrary
 	_stat( '...loading game modules' )
 	loadAllGameModules( config['script_library'] or false )
