@@ -161,10 +161,14 @@ function Stat:setChangeSignalList( t )
 	end
 end
 
+local function valueTableCopy( t )
+	MOAIJsonParser.decode( MOAIJsonParser.encode( t ) )
+end
+
 function Stat:serialize()
-	return MOAIJsonParser.decode( MOAIJsonParser.encode( self.values ) )
+	return valueTableCopy( self.values )
 end
 
 function Stat:deserialize( values )
-	self.values = values
+	self.values = valueTableCopy( values )
 end
