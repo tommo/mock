@@ -312,6 +312,15 @@ function PhysicsBody:refresh()
 	body:setActive( act )
 end
 
+function PhysicsBody:refreshActive()
+	local body = self.body
+	if not body then return end
+	local act = body:isActive()
+	if not act then return end
+	body:setActive( false )
+	body:setActive( true )
+end
+
 local ATTR_X_LOC = MOAITransform.ATTR_X_LOC
 local ATTR_Y_LOC = MOAITransform.ATTR_Y_LOC
 function PhysicsBody:seekPosition( x, y, duration, mode )
