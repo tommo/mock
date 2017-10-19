@@ -22,8 +22,6 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
-
-
 --------------------------------------------------------------------
 local DebugHelper = mock.DebugHelper
 _codemark = function(s,...) return DebugHelper:setCodeMark(s,...) end
@@ -54,6 +52,7 @@ local nameToLogLevel = {
 
 local _logLevel = MOAILogMgr.LOG_WARNING
 local _logFile  = false
+local _logFileHandle = false
 
 function setLogLevel( level )
 	if type(level) == 'string' then
@@ -65,28 +64,67 @@ end
 
 function openLogFile( path )
 	_logFile = path
-	MOAILogMgr.openFile( path )
+	-- MOAILogMgr.openFile( path )
+	_logFileHandle = io.open( path, 'a' )
+	_logFileHandle:write( '\n' )
+	_logFileHandle:write( '--------------------------------------------------------------------\n' )
+	_logFileHandle:write( 'Logging started:\t' .. os.date( "%Y-%m-%d %H:%M:%S" ) .. '\n' )
+	_logFileHandle:write( '--------------------------------------------------------------------\n' )
+
 end
 
 function closeLogFile()
-	MOAILogMgr.closeFile()
+	-- MOAILogMgr.closeFile()
 	_logFile = false
+	if _logFileHandle then
+		_logFileHandle:close()
+		_logFileHandle = false
+	end
 end
 
 function getLogFile()
 	return _logFile
 end
 
+
 --------------------------------------------------------------------
-local MOAILog = io.write
--- local MOAILog = MOAILogMgr.log
-function _log(...) 
-	for i = 1, select( '#', ... ) do
-		local v = select( i, ... )
-		MOAILog( tostring(v) )	
-		MOAILog('\t')
+-- local _writeLog = io.write
+-- local _writeLog = MOAILogMgr.log
+-- local _writeLog = log.info
+
+local open = io.open
+local logFP = false
+local logListeners = {}
+
+local function _writeLog( token, s )
+	local outputLine = string.format( '[%s]\t%s', token, s )
+	io.write( outputLine )
+	io.write( '\n' )
+	if _logFileHandle then
+		_logFileHandle:write( outputLine )
+		_logFileHandle:write( '\n' )
+		_logFileHandle:flush()
 	end
-	MOAILog('\n')
+	for listener in pairs( logListeners ) do
+		listener( token, s, outputLine  )
+	end
+end
+
+function addLogListener( func )
+	logListeners[ func ] = true
+end
+
+function removeLogListener( func )
+	logListeners[ func ] = nil
+end
+
+function _logWithToken( token, ... ) 
+	local output = string.join( {...}, '\t' ) or ''
+	_writeLog( token or '', output )
+end
+
+function _log(...) 
+	return _logWithToken( 'LOG  :mock', ... )
 end
 
 local function _nilFunc() end
@@ -99,8 +137,7 @@ end
 
 function _stat( ... )
 	if _logLevel >= MOAILogMgr.LOG_STATUS then
-		MOAILog('[STATUS:Lua]\t')
-		return _log( ... )
+		return _logWithToken( 'STAT :mock', ... )
 	end
 end
 
@@ -117,10 +154,8 @@ end
 function _error( ... )
 	if _logLevel >= MOAILogMgr.LOG_ERROR then
 		--print( debug.traceback( 2 ) )
-		MOAILog( singletraceback( 3 ) )
-		MOAILog('\n')
-		MOAILog('[ERROR:Lua]\t')
-		return _log( ... )
+		_logWithToken( 'ERROR:mock', singletraceback( 3 ) )
+		_logWithToken( 'ERROR:mock', ... )
 	end
 end
 
@@ -132,8 +167,7 @@ end
 
 function _warn( ... )
 	if _logLevel >= MOAILogMgr.LOG_WARNING then
-		MOAILog('[WARN:Lua]\t')
-		return _log( ... )
+		_logWithToken( 'WARN :mock', ... )
 	end
 end
 

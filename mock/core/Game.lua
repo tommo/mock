@@ -670,6 +670,18 @@ function Game:isDebugUIEnabled()
 	return getDebugUIManager():isEnabled()
 end
 
+function Game:setLogViewEnabled( enabled )
+	getLogViewManager():setEnabled( enabled )
+end
+
+function Game:isLogViewEnabled()
+	return getLogViewManager():isEnabled()
+end
+
+function Game:clearLogView()
+	getLogViewManager():clear()
+end
+
 function Game:setDeviceSize( w, h )
 	_stat( 'device.resize', w, h )
 	self.deviceRenderTarget:setPixelSize( w, h )
@@ -1164,6 +1176,7 @@ function Game:setRenderStack( context, deviceRenderTable, bufferTable, renderTab
 				emptyRenderStack = false
 				local finalTable = table.simplecopy( bufferTable )
 				if context == 'game' then
+					table.insert( finalTable, getLogViewManager():getRenderCommand() )
 					table.insert( finalTable, getDebugUIManager():getRenderCommand() )
 				end
 				MOAIRenderMgr.setBufferTable( finalTable )

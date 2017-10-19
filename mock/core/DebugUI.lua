@@ -31,7 +31,13 @@ end
 
 function DebugUIManager:onKeyEvent( key, down )
 	if key == '`' and down then
-		game:setDebugUIEnabled( not game:isDebugUIEnabled() )
+		if not ( isShiftDown() or isCtrlDown() or isAltDown() ) then
+			game:setDebugUIEnabled( not game:isDebugUIEnabled() )
+		elseif isCtrlDown() then
+			game:setLogViewEnabled( not game:isLogViewEnabled() ) 
+		elseif isAltDown() then
+			game:clearLogView() 
+		end
 	end
 end
 

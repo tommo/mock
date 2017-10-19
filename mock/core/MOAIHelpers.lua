@@ -130,12 +130,9 @@ function openRateURL(appID)
 	end
 end
 
-
 if checkOS('Android') then
 	print = MOAILogMgr.log
 end
-
-LOG = MOAILogMgr.log
 
 function grabNextFrame( filepath, frameBuffer, format )
 	format = format or MOAIImage.COLOR_FMT_RGB_888

@@ -60,6 +60,7 @@ require 'mock.core.InputSignal'
 require 'mock.core.ImGuiLayer'
 require 'mock.core.DebugUI'
 require 'mock.core.DebugDrawQueue'
+require 'mock.core.LogView'
 
 ----audio
 require 'mock.core.AudioManager'

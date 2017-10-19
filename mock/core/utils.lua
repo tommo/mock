@@ -1043,6 +1043,7 @@ end
 function string.join( t, sep )
 	local result = nil
 	for i, s in ipairs( t ) do
+		s = tostring( s )
 		if result then
 			result = result .. sep .. s
 		else
