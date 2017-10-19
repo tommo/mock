@@ -12,12 +12,11 @@ function LogViewManager:getKey()
 	return 'LogViewManager'
 end
 
-function LogViewManager:onInit()
+function LogViewManager:init()
 	connectGlobalSignalMethod( 'device.resize', self, 'onDeviceResize' )
 	local layer = MOAILayer.new()
 	local viewport = MOAIViewport.new ()
 	layer:setViewport( viewport )
-	layer:setCamera( quadCamera )
 	self.viewport = viewport
 
 	local textBox = MOAITextLabel.new()

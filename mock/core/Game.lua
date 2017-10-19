@@ -660,6 +660,7 @@ function Game:initDebugUI()
 	local debugUIManager = getDebugUIManager()
 	debugUIManager:init()
 	debugUIManager:setEnabled( false )
+	getLogViewManager():init()
 end
 
 function Game:setDebugUIEnabled( enabled )
